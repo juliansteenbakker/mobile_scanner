@@ -1,0 +1,1 @@
+export 'src/mobile_scanner.dart';
