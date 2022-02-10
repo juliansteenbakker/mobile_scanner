@@ -9,6 +9,7 @@ environment:
 
 dependencies:
   native_device_orientation: ^1.0.0
+  sensors_plus: ^1.2.1
   flutter:
     sdk: flutter
 
