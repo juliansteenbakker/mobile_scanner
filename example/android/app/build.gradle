@@ -24,8 +24,6 @@ if (flutterVersionName == null) {
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
-// Apply the Performance Monitoring plugin
-apply plugin: 'com.google.firebase.firebase-perf'
 
 android {
     compileSdkVersion flutter.compileSdkVersion
@@ -59,6 +57,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
+    namespace 'dev.steenbakker.mobile_scanner_example'
 }
 
 flutter {

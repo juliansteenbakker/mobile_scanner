@@ -31,10 +31,9 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     private var camera: Camera? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
 
-//    @AnalyzeMode
-//    private var analyzeMode: Int = AnalyzeMode.NONE
+    @AnalyzeMode
+    private var analyzeMode: Int = AnalyzeMode.NONE
 
-    @ExperimentalGetImage
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
         when (call.method) {
             "state" -> stateNative(result)
@@ -101,8 +100,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             val preview = Preview.Builder().build().apply { setSurfaceProvider(surfaceProvider) }
             // Analyzer
             val analyzer = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
-//                when (analyzeMode) {
-//                    AnalyzeMode.BARCODE -> {
+                when (analyzeMode) {
+                    AnalyzeMode.BARCODE -> {
                         val mediaImage = imageProxy.image ?: return@Analyzer
                         val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
                         val scanner = BarcodeScanning.getClient()
@@ -115,9 +114,9 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                                 }
                                 .addOnFailureListener { e -> Log.e(TAG, e.message, e) }
                                 .addOnCompleteListener { imageProxy.close() }
-//                    }
-//                    else -> imageProxy.close()
-//                }
+                    }
+                    else -> imageProxy.close()
+                }
             }
             val analysis = ImageAnalysis.Builder()
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -152,7 +151,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     }
 
     private fun analyzeNative(call: MethodCall, result: MethodChannel.Result) {
-//        analyzeMode = call.arguments as Int
+        analyzeMode = call.arguments as Int
         result.success(null)
     }
 
@@ -162,6 +161,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         cameraProvider!!.unbindAll()
         textureEntry!!.release()
 
+        analyzeMode = AnalyzeMode.NONE
         camera = null
         textureEntry = null
         cameraProvider = null
@@ -169,14 +169,13 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         result.success(null)
     }
 }
-//
-//
-//@IntDef(AnalyzeMode.NONE, AnalyzeMode.BARCODE)
-//@Target(AnnotationTarget.FIELD)
-//@Retention(AnnotationRetention.SOURCE)
-//annotation class AnalyzeMode {
-//    companion object {
-//        const val NONE = 0
-//        const val BARCODE = 1
-//    }
-//}
+
+@IntDef(AnalyzeMode.NONE, AnalyzeMode.BARCODE)
+@Target(AnnotationTarget.FIELD)
+@Retention(AnnotationRetention.SOURCE)
+annotation class AnalyzeMode {
+    companion object {
+        const val NONE = 0
+        const val BARCODE = 1
+    }
+}

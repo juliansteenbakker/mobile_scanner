@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -17,75 +16,74 @@ class AnalyzeView extends StatefulWidget {
 
 class _AnalyzeViewState extends State<AnalyzeView>
     with SingleTickerProviderStateMixin {
-
   List<Offset> points = [];
 
   CameraController cameraController = CameraController();
 
   String? barcode = null;
 
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        body: Builder(
-          builder: (context) {
-            return Stack(
-              children: [
-                CameraView(cameraController,
-                    onDetect: (barcode, args) {
-                  if (this.barcode != barcode.rawValue) {
-                    this.barcode = barcode.rawValue;
-                    if ( barcode.corners != null) {
-                      debugPrint('Size: ${MediaQuery.of(context).size}');
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${barcode.rawValue}'), duration: Duration(milliseconds: 200), animation: null,));
-                      setState(() {
-                        final List<Offset> points = [];
-                        double factorWidth = args.size.width / 520;
-                        double factorHeight = args.size.height / 640;
-                        for (var point in barcode.corners!) {
-                          points.add(Offset(point.dx * factorWidth, point.dy * factorHeight));
-                        }
-                        this.points = points;
-                      });
+        body: Builder(builder: (context) {
+          return Stack(
+            children: [
+              CameraView(
+                  controller: cameraController,
+                  onDetect: (barcode, args) {
+                    if (this.barcode != barcode.rawValue) {
+                      this.barcode = barcode.rawValue;
+                      if (barcode.corners != null) {
+                        debugPrint('Size: ${MediaQuery.of(context).size}');
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('${barcode.rawValue}'),
+                          duration: Duration(milliseconds: 200),
+                          animation: null,
+                        ));
+                        setState(() {
+                          final List<Offset> points = [];
+                          double factorWidth = args.size.width / 520;
+                          double factorHeight = args.size.height / 640;
+                          for (var point in barcode.corners!) {
+                            points.add(Offset(point.dx * factorWidth,
+                                point.dy * factorHeight));
+                          }
+                          this.points = points;
+                        });
+                      }
                     }
-                  }
-                  // Default 640 x480
-
-                    }),
-                Container(
-                  // width: 400,
-                  // height: 400,
-                  child: CustomPaint(
-                    painter: OpenPainter(points),
-                  ),
+                    // Default 640 x480
+                  }),
+              Container(
+                // width: 400,
+                // height: 400,
+                child: CustomPaint(
+                  painter: OpenPainter(points),
                 ),
-                Container(
-                  alignment: Alignment.bottomCenter,
-                  margin: EdgeInsets.only(bottom: 80.0),
-                  child: IconButton(
-                    icon: ValueListenableBuilder(
-                      valueListenable: cameraController.torchState,
-                      builder: (context, state, child) {
-                        final color =
-                        state == TorchState.off ? Colors.grey : Colors.white;
-                        return Icon(Icons.bolt, color: color);
-                      },
-                    ),
-                    iconSize: 32.0,
-                    onPressed: () => cameraController.torch(),
+              ),
+              Container(
+                alignment: Alignment.bottomCenter,
+                margin: EdgeInsets.only(bottom: 80.0),
+                child: IconButton(
+                  icon: ValueListenableBuilder(
+                    valueListenable: cameraController.torchState,
+                    builder: (context, state, child) {
+                      final color =
+                          state == TorchState.off ? Colors.grey : Colors.white;
+                      return Icon(Icons.bolt, color: color);
+                    },
                   ),
+                  iconSize: 32.0,
+                  onPressed: () => cameraController.torch(),
                 ),
-              ],
-            );
-          }
-        ),
+              ),
+            ],
+          );
+        }),
       ),
     );
   }
-
-
 
   @override
   void dispose() {

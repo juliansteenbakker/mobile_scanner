@@ -4,10 +4,19 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 
 import 'camera_args.dart';
-import 'camera_facing.dart';
 import 'objects/barcode.dart';
 import 'torch_state.dart';
 import 'util.dart';
+
+/// The facing of a camera.
+enum CameraFacing {
+  /// Front facing camera.
+  front,
+
+  /// Back facing camera.
+  back,
+}
+
 
 /// A camera controller.
 abstract class CameraController {
