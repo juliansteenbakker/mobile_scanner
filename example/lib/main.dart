@@ -18,7 +18,7 @@ class _AnalyzeViewState extends State<AnalyzeView>
     with SingleTickerProviderStateMixin {
   List<Offset> points = [];
 
-  CameraController cameraController = CameraController();
+  // CameraController cameraController = CameraController(context, width: 320, height: 150);
 
   String? barcode = null;
 
@@ -29,25 +29,34 @@ class _AnalyzeViewState extends State<AnalyzeView>
         body: Builder(builder: (context) {
           return Stack(
             children: [
-              CameraView(
-                  controller: cameraController,
+              MobileScanner(
+                // fitScreen: false,
+                  // controller: cameraController,
                   onDetect: (barcode, args) {
                     if (this.barcode != barcode.rawValue) {
                       this.barcode = barcode.rawValue;
                       if (barcode.corners != null) {
-                        debugPrint('Size: ${MediaQuery.of(context).size}');
                         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                           content: Text('${barcode.rawValue}'),
-                          duration: Duration(milliseconds: 200),
+                          duration: const Duration(milliseconds: 200),
                           animation: null,
                         ));
                         setState(() {
                           final List<Offset> points = [];
                           double factorWidth = args.size.width / 520;
-                          double factorHeight = args.size.height / 640;
+                          // double factorHeight = wanted / args.size.height;
+                          final size = MediaQuery.of(context).devicePixelRatio;
+                          debugPrint('Size: ${barcode.corners}');
                           for (var point in barcode.corners!) {
-                            points.add(Offset(point.dx * factorWidth,
-                                point.dy * factorHeight));
+                            final adjustedWith = point.dx ;
+                            final adjustedHeight= point.dy ;
+                            points.add(Offset(adjustedWith / size, adjustedHeight / size));
+                            // points.add(Offset((point.dx ) / size,
+                            //     (point.dy) / size));
+                            // final differenceWidth = (args.wantedSize!.width - args.size.width) / 2;
+                            // final differenceHeight = (args.wantedSize!.height - args.size.height) / 2;
+                            // points.add(Offset((point.dx + differenceWidth) / size,
+                            //     (point.dy + differenceHeight) / size));
                           }
                           this.points = points;
                         });
@@ -55,29 +64,25 @@ class _AnalyzeViewState extends State<AnalyzeView>
                     }
                     // Default 640 x480
                   }),
-              Container(
-                // width: 400,
-                // height: 400,
-                child: CustomPaint(
-                  painter: OpenPainter(points),
-                ),
+              CustomPaint(
+                painter: OpenPainter(points),
               ),
-              Container(
-                alignment: Alignment.bottomCenter,
-                margin: EdgeInsets.only(bottom: 80.0),
-                child: IconButton(
-                  icon: ValueListenableBuilder(
-                    valueListenable: cameraController.torchState,
-                    builder: (context, state, child) {
-                      final color =
-                          state == TorchState.off ? Colors.grey : Colors.white;
-                      return Icon(Icons.bolt, color: color);
-                    },
-                  ),
-                  iconSize: 32.0,
-                  onPressed: () => cameraController.torch(),
-                ),
-              ),
+              // Container(
+              //   alignment: Alignment.bottomCenter,
+              //   margin: EdgeInsets.only(bottom: 80.0),
+              //   child: IconButton(
+              //     icon: ValueListenableBuilder(
+              //       valueListenable: cameraController.torchState,
+              //       builder: (context, state, child) {
+              //         final color =
+              //             state == TorchState.off ? Colors.grey : Colors.white;
+              //         return Icon(Icons.bolt, color: color);
+              //       },
+              //     ),
+              //     iconSize: 32.0,
+              //     onPressed: () => cameraController.torch(),
+              //   ),
+              // ),
             ],
           );
         }),
@@ -87,7 +92,7 @@ class _AnalyzeViewState extends State<AnalyzeView>
 
   @override
   void dispose() {
-    cameraController.dispose();
+    // cameraController.dispose();
     super.dispose();
   }
 

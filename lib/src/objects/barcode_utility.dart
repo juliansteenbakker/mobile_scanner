@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'objects/barcode.dart';
+import 'barcode.dart';
 
 Size toSize(Map<dynamic, dynamic> data) {
   final width = data['width'];

@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import '../util.dart';
+import 'barcode_utility.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {

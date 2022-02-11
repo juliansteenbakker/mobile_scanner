@@ -80,6 +80,11 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             analyzing = true
             let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
             let image = VisionImage(image: buffer!.image)
+            image.orientation = imageOrientation(
+              deviceOrientation: UIDevice.current.orientation,
+              defaultOrientation: .portrait
+            )
+            
             let scanner = BarcodeScanner.barcodeScanner()
             scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
@@ -94,6 +99,26 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             break
         }
     }
+    
+    func imageOrientation(
+          deviceOrientation: UIDeviceOrientation,
+          defaultOrientation: UIDeviceOrientation
+        ) -> UIImage.Orientation {
+          switch deviceOrientation {
+          case .portrait:
+            return position == .front ? .leftMirrored : .right
+          case .landscapeLeft:
+            return position == .front ? .downMirrored : .up
+          case .portraitUpsideDown:
+            return position == .front ? .rightMirrored : .left
+          case .landscapeRight:
+            return position == .front ? .upMirrored : .down
+          case .faceDown, .faceUp, .unknown:
+            return .up
+          @unknown default:
+            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+            }
+        }
     
     func stateNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
@@ -111,10 +136,22 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
     
+    var position = AVCaptureDevice.Position.back
+    
     func startNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
-        let position = call.arguments as! Int == 0 ? AVCaptureDevice.Position.front : .back
+        
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        
+        guard let targetWidth = argReader.int(key: "targetWidth"),
+              let targetHeight = argReader.int(key: "targetHeight"),
+              let facing = argReader.int(key: "facing") else {
+            result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing a required argument", details: "Expecting targetWidth, targetHeight, formats, and optionally heartbeatTimeout"))
+            return
+        }
+        
+        position = facing == 0 ? AVCaptureDevice.Position.front : .back
         if #available(iOS 10.0, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
         } else {
@@ -129,10 +166,13 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         } catch {
             error.throwNative(result)
         }
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo;
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
+        
         videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
         videoOutput.alwaysDiscardsLateVideoFrames = true
+        
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession.addOutput(videoOutput)
         for connection in videoOutput.connections {
@@ -198,4 +238,26 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             break
         }
     }
+}
+
+class MapArgumentReader {
+  
+  let args: [String: Any]?
+  
+  init(_ args: [String: Any]?) {
+    self.args = args
+  }
+  
+  func string(key: String) -> String? {
+    return args?[key] as? String
+  }
+  
+  func int(key: String) -> Int? {
+    return (args?[key] as? NSNumber)?.intValue
+  }
+
+  func stringArray(key: String) -> [String]? {
+    return args?[key] as? [String]
+  }
+  
 }
