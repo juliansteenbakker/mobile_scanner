@@ -16,95 +16,57 @@ class AnalyzeView extends StatefulWidget {
 
 class _AnalyzeViewState extends State<AnalyzeView>
     with SingleTickerProviderStateMixin {
-  String? barcode;
+  List<Offset> points = [];
 
-  MobileScannerController controller = MobileScannerController(torchEnabled: true,
-    facing: CameraFacing.front,);
+  // CameraController cameraController = CameraController(context, width: 320, height: 150);
+
+  String? barcode = null;
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
-        backgroundColor: Colors.black,
         body: Builder(builder: (context) {
           return Stack(
             children: [
               MobileScanner(
-                controller: controller,
-                  fit: BoxFit.contain,
-                  // controller: MobileScannerController(
-                  //   torchEnabled: true,
-                  //   facing: CameraFacing.front,
-                  // ),
+                // fitScreen: false,
+                  // controller: cameraController,
                   onDetect: (barcode, args) {
                     if (this.barcode != barcode.rawValue) {
-                      setState(() {
-                        this.barcode = barcode.rawValue;
-                      });
+                      this.barcode = barcode.rawValue;
+                      if (barcode.corners != null) {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text('${barcode.rawValue}'),
+                          duration: const Duration(milliseconds: 200),
+                          animation: null,
+                        ));
+                        setState(() {
+                          final List<Offset> points = [];
+                          double factorWidth = args.size.width / 520;
+                          // double factorHeight = wanted / args.size.height;
+                          final size = MediaQuery.of(context).devicePixelRatio;
+                          debugPrint('Size: ${barcode.corners}');
+                          for (var point in barcode.corners!) {
+                            final adjustedWith = point.dx ;
+                            final adjustedHeight= point.dy ;
+                            points.add(Offset(adjustedWith / size, adjustedHeight / size));
+                            // points.add(Offset((point.dx ) / size,
+                            //     (point.dy) / size));
+                            // final differenceWidth = (args.wantedSize!.width - args.size.width) / 2;
+                            // final differenceHeight = (args.wantedSize!.height - args.size.height) / 2;
+                            // points.add(Offset((point.dx + differenceWidth) / size,
+                            //     (point.dy + differenceHeight) / size));
+                          }
+                          this.points = points;
+                        });
+                      }
                     }
+                    // Default 640 x480
                   }),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  alignment: Alignment.bottomCenter,
-                  height: 100,
-                  color: Colors.black.withOpacity(0.4),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      IconButton(
-                        color: Colors.white,
-                          icon: ValueListenableBuilder(
-                            valueListenable: controller.torchState,
-                            builder: (context, state, child) {
-                              switch (state as TorchState) {
-                                case TorchState.off:
-                                  return const Icon(Icons.flash_off, color: Colors.grey);
-                                case TorchState.on:
-                                  return const Icon(Icons.flash_on, color: Colors.yellow);
-                              }
-                            },
-                          ),
-                          iconSize: 32.0,
-                          onPressed: () => controller.toggleTorch(),
-                        ),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 120,
-                          height: 50,
-                          child: FittedBox(
-                            child: Text(
-                              barcode ?? 'Scan something!',
-                              overflow: TextOverflow.fade,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline4!
-                                  .copyWith(color: Colors.white),
-                            ),
-                          ),
-                        ),
-                      ),
-                      IconButton(
-                        color: Colors.white,
-                        icon: ValueListenableBuilder(
-                          valueListenable: controller.cameraFacingState,
-                          builder: (context, state, child) {
-                            if (state == CameraFacing.front) {
-                              return const Icon(Icons.camera_front);
-                            } else {
-                              return const Icon(Icons.camera_rear);
-                            }
-                          },
-                        ),
-                        iconSize: 32.0,
-                        onPressed: () => controller.switchCamera(),
-                      ),
-                    ],
-                  ),
-                ),
+              CustomPaint(
+                painter: OpenPainter(points),
               ),
-
               // Container(
               //   alignment: Alignment.bottomCenter,
               //   margin: EdgeInsets.only(bottom: 80.0),
@@ -136,6 +98,36 @@ class _AnalyzeViewState extends State<AnalyzeView>
 
   void display(Barcode barcode) {
     Navigator.of(context).popAndPushNamed('display', arguments: barcode);
+  }
+}
+
+class OpenPainter extends CustomPainter {
+  final List<Offset> points;
+
+  OpenPainter(this.points);
+  @override
+  void paint(Canvas canvas, Size size) {
+    var paint1 = Paint()
+      ..color = Color(0xff63aa65)
+      ..strokeWidth = 10;
+    //draw points on canvas
+    canvas.drawPoints(PointMode.points, points, paint1);
+  }
+
+  @override
+  bool shouldRepaint(CustomPainter oldDelegate) => true;
+}
+
+class OpacityCurve extends Curve {
+  @override
+  double transform(double t) {
+    if (t < 0.1) {
+      return t * 10;
+    } else if (t <= 0.9) {
+      return 1.0;
+    } else {
+      return (1.0 - t) * 10;
+    }
   }
 }
 

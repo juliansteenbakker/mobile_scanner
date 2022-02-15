@@ -7,7 +7,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodChannel
 
-/** CameraXPlugin */
+/** MobileScannerPlugin */
 class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     private var flutter: FlutterPlugin.FlutterPluginBinding? = null
     private var activity: ActivityPluginBinding? = null

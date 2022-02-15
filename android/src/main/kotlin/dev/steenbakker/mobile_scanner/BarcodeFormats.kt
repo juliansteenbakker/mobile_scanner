@@ -1,4 +1,4 @@
-package dev.steenbakker.mobile_scanner.old
+package dev.steenbakker.mobile_scanner
 
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import java.util.ArrayList
@@ -81,12 +81,12 @@ enum class BarcodeFormats(val intValue: Int) {
 
         init {
             val values = values()
-//            formatsMap =
-//                HashMap<String, Int>(com.github.rmtmckenzie.qrmobilevision.values.size * 4 / 3)
-//            for (value in com.github.rmtmckenzie.qrmobilevision.values) {
-//                formatsMap!![com.github.rmtmckenzie.qrmobilevision.value.name] =
-//                    com.github.rmtmckenzie.qrmobilevision.value.intValue
-//            }
+            formatsMap =
+                HashMap<String, Int>(values.size * 4 / 3)
+            for (value in values) {
+                formatsMap!![value.name] =
+                    value.intValue
+            }
         }
     }
 }

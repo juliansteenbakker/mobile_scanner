@@ -3,18 +3,22 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'mobile_scanner_arguments.dart';
 
+enum Ratio {
+  ratio_4_3,
+  ratio_16_9
+}
+
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
   final MobileScannerController? controller;
   final Function(Barcode barcode, MobileScannerArguments args)? onDetect;
-  final bool fitScreen;
-  final bool fitWidth;
+  final BoxFit fit;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner(
-      {Key? key, this.onDetect, this.controller, this.fitScreen = true, this.fitWidth = true})
-      : super(key: key);
+      {Key? key, this.onDetect, this.controller, this.fit = BoxFit.cover})
+      : assert((controller != null  )),  super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -23,19 +27,28 @@ class MobileScanner extends StatefulWidget {
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
   bool onScreen = true;
-  MobileScannerController? controller;
+  late MobileScannerController controller;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller == null) {
+      controller = MobileScannerController();
+    } else {
+      controller = widget.controller!;
+    }
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.resumed) {
       setState(() => onScreen = true);
     } else {
-      if (controller != null && onScreen) {
-        controller!.stop();
+      if (onScreen) {
+        controller.stop();
       }
       setState(() {
         onScreen = false;
-        controller = null;
       });
     }
   }
@@ -43,28 +56,28 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      final media = MediaQuery.of(context);
-
-      controller ??= MobileScannerController(context,
-          width: constraints.maxWidth, height: constraints.maxHeight);
       if (!onScreen) return const Text("Camera Paused.");
       return ValueListenableBuilder(
-          valueListenable: controller!.args,
+          valueListenable: controller.args,
           builder: (context, value, child) {
             value = value as MobileScannerArguments?;
             if (value == null) {
               return Container(color: Colors.black);
             } else {
-              controller!.barcodes.listen(
+              controller.barcodes.listen(
                   (a) => widget.onDetect!(a, value as MobileScannerArguments));
-              // Texture(textureId: value.textureId)
+              debugPrint(' size MediaQuery ${MediaQuery.of(context).size}');
               return ClipRect(
-                child: FittedBox(
-                  fit: BoxFit.cover,
-                  child: SizedBox(
-                    width: value.size.width,
-                    height: value.size.height,
-                    child: Texture(textureId: value.textureId),
+                child: SizedBox(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
+                  child: FittedBox(
+                    fit: widget.fit,
+                    child: SizedBox(
+                      width: value.size.width,
+                      height: value.size.height,
+                      child: Texture(textureId: value.textureId),
+                    ),
                   ),
                 ),
               );
@@ -75,17 +88,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
-    controller?.dispose();
+    controller.dispose();
     super.dispose();
-  }
-}
-
-extension on Size {
-  double fill(Size targetSize) {
-    if (targetSize.aspectRatio < aspectRatio) {
-      return targetSize.height * aspectRatio / targetSize.width;
-    } else {
-      return targetSize.width / aspectRatio / targetSize.height;
-    }
   }
 }

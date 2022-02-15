@@ -2,9 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'mobile_scanner_arguments.dart';
-import 'objects/barcode.dart';
 import 'objects/barcode_utility.dart';
 
 /// The facing of a camera.
@@ -16,11 +16,7 @@ enum CameraFacing {
   back,
 }
 
-enum MobileScannerState {
-  undetermined,
-  authorized,
-  denied
-}
+enum MobileScannerState { undetermined, authorized, denied }
 
 /// The state of torch.
 enum TorchState {
@@ -31,85 +27,52 @@ enum TorchState {
   on,
 }
 
-
-
-// /// A camera controller.
-// abstract class CameraController {
-//   /// Arguments for [CameraView].
-//   ValueNotifier<CameraArgs?> get args;
-//
-//   /// Torch state of the camera.
-//   ValueNotifier<TorchState> get torchState;
-//
-//   /// A stream of barcodes.
-//   Stream<Barcode> get barcodes;
-//
-//   /// Create a [CameraController].
-//   ///
-//   /// [facing] target facing used to select camera.
-//   ///
-//   /// [formats] the barcode formats for image analyzer.
-//   factory CameraController([CameraFacing facing = CameraFacing.back] ) =>
-//       _CameraController(facing);
-//
-//   /// Start the camera asynchronously.
-//   Future<void> start();
-//
-//   /// Switch the torch's state.
-//   void torch();
-//
-//   /// Release the resources of the camera.
-//   void dispose();
-// }
+enum AnalyzeMode { none, barcode }
 
 class MobileScannerController {
+  MethodChannel methodChannel =
+      const MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+  EventChannel eventChannel =
+      const EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
-  static const MethodChannel method =
-      MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
-  static const EventChannel event =
-      EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
+  int? _controllerHashcode;
+  StreamSubscription? events;
 
 
+  final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
+  final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
+  late final ValueNotifier<CameraFacing> cameraFacingState;
+  final Ratio? ratio;
+  final bool? torchEnabled;
 
-  static const analyze_none = 0;
-  static const analyze_barcode = 1;
-
-  static int? id;
-  static StreamSubscription? subscription;
-
-  final CameraFacing facing;
-  final ValueNotifier<MobileScannerArguments?> args;
-  final ValueNotifier<TorchState> torchState;
-
-  bool torchable;
+  CameraFacing facing;
+  bool hasTorch = false;
   late StreamController<Barcode> barcodesController;
 
   Stream<Barcode> get barcodes => barcodesController.stream;
 
-  MobileScannerController(BuildContext context, {required num width, required num height, this.facing = CameraFacing.back})
-      : args = ValueNotifier(null),
-        torchState = ValueNotifier(TorchState.off),
-        torchable = false {
-    // In case new instance before dispose.
-    if (id != null) {
+  MobileScannerController(
+      {this.facing = CameraFacing.back, this.ratio, this.torchEnabled}) {
+    // In case a new instance is created before calling dispose()
+    if (_controllerHashcode != null) {
       stop();
     }
-    id = hashCode;
-    // Create barcode stream controller.
+    _controllerHashcode = hashCode;
+
+    cameraFacingState = ValueNotifier(facing);
+
+    // Sets analyze mode and barcode stream
     barcodesController = StreamController.broadcast(
-      onListen: () => tryAnalyze(analyze_barcode),
-      onCancel: () => tryAnalyze(analyze_none),
+      onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
+      onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
     );
 
-    final devicePixelRatio = MediaQuery.of(context).devicePixelRatio;
+    start();
 
-
-    start(
-        width: (devicePixelRatio * width.toInt()).ceil(),
-    height: (devicePixelRatio * height.toInt()).ceil());
-    // Listen event handler.
-    subscription =
-        event.receiveBroadcastStream().listen((data) => handleEvent(data));
+    // Listen to events from the platform specific code
+    events = eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => handleEvent(data));
   }
 
   void handleEvent(Map<dynamic, dynamic> event) {
@@ -129,76 +92,91 @@ class MobileScannerController {
     }
   }
 
-  void tryAnalyze(int mode) {
-    if (hashCode != id) {
+  void setAnalyzeMode(int mode) {
+    if (hashCode != _controllerHashcode) {
       return;
     }
-    method.invokeMethod('analyze', mode);
+    methodChannel.invokeMethod('analyze', mode);
   }
 
-  Future<void> start({
-    int? width,
-    int? height,
-    // List<BarcodeFormats>? formats = _defaultBarcodeFormats,
-  }) async {
+  // List<BarcodeFormats>? formats = _defaultBarcodeFormats,
+  /// Start barcode scanning. This will first check if the required permissions
+  /// are set.
+  Future<void> start() async {
     ensure('startAsync');
-    // Check authorization state.
-    MobileScannerState state = MobileScannerState.values[await method.invokeMethod('state')];
+
+    setAnalyzeMode(AnalyzeMode.barcode.index);
+    // Check authorization status
+    MobileScannerState state = MobileScannerState.values[await methodChannel.invokeMethod('state')];
     switch (state) {
       case MobileScannerState.undetermined:
-        final bool result = await method.invokeMethod('request');
-        state = result ? MobileScannerState.authorized : MobileScannerState.denied;
-        break;
-      case MobileScannerState.authorized:
+        final bool result = await methodChannel.invokeMethod('request');
+        state =
+            result ? MobileScannerState.authorized : MobileScannerState.denied;
         break;
       case MobileScannerState.denied:
         throw PlatformException(code: 'NO ACCESS');
+      case MobileScannerState.authorized:
+        break;
     }
 
-    debugPrint('TARGET RESOLUTION $width, $height');
-    // Start camera.
-    final answer =
-        await method.invokeMapMethod<String, dynamic>('start', {
-          'targetWidth': width,
-          'targetHeight': height,
-          'facing': facing.index
-        });
-    final textureId = answer?['textureId'];
-    final Size size = toSize(answer?['size']);
-    debugPrint('RECEIVED SIZE: ${size.width} ${size.height}');
-    if (width != null && height != null) {
-      args.value = MobileScannerArguments(textureId: textureId, size: size, wantedSize: Size(width.toDouble(), height.toDouble()));
-    } else {
-      args.value = MobileScannerArguments(textureId: textureId, size: size);
-    }
+    cameraFacingState.value = facing;
 
-    torchable = answer?['torchable'];
+    // Set the starting arguments for the camera
+    Map arguments = {};
+    arguments['facing'] = facing.index;
+    if (ratio != null) arguments['ratio'] = ratio;
+    if (torchEnabled != null) arguments['torch'] = torchEnabled;
+
+    // Start the camera with arguments
+    final Map<String, dynamic>? startResult = await methodChannel.invokeMapMethod<String, dynamic>(
+        'start', arguments);
+
+    if (startResult == null) throw PlatformException(code: 'INITIALIZATION ERROR');
+
+    hasTorch = startResult['torchable'];
+    args.value = MobileScannerArguments(textureId: startResult['textureId'], size: toSize(startResult['size']), hasTorch: hasTorch);
   }
 
-  void torch() {
-    ensure('torch');
-    if (!torchable) return;
-    var state =
+  Future<void> stop() async => await methodChannel.invokeMethod('stop');
+
+  /// Switches the torch on or off.
+  ///
+  /// Only works if torch is available.
+  void toggleTorch() {
+    ensure('toggleTorch');
+    if (!hasTorch) return;
+    TorchState state =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
-    method.invokeMethod('torch', state.index);
+    methodChannel.invokeMethod('torch', state.index);
   }
 
+  /// Switches the torch on or off.
+  ///
+  /// Only works if torch is available.
+  Future<void> switchCamera() async {
+    ensure('switchCamera');
+    await stop();
+    facing = facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
+    start();
+  }
+
+  /// Disposes the controller and closes all listeners.
   void dispose() {
-    if (hashCode == id) {
+    if (hashCode == _controllerHashcode) {
       stop();
-      subscription?.cancel();
-      subscription = null;
-      id = null;
+      events?.cancel();
+      events = null;
+      _controllerHashcode = null;
     }
     barcodesController.close();
   }
 
-  void stop() => method.invokeMethod('stop');
-
+  /// Checks if the controller is bound to the correct MobileScanner object.
   void ensure(String name) {
     final message =
         'CameraController.$name called after CameraController.dispose\n'
         'CameraController methods should not be used after calling dispose.';
-    assert(hashCode == id, message);
+    assert(hashCode == _controllerHashcode, message);
   }
 }

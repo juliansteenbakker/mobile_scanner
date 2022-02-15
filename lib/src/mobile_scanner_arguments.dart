@@ -8,9 +8,8 @@ class MobileScannerArguments {
   /// Size of the texture.
   final Size size;
 
-  /// Size of the texture.
-  final Size? wantedSize;
+  final bool hasTorch;
 
   /// Create a [MobileScannerArguments].
-  MobileScannerArguments({required this.textureId,required this.size, this.wantedSize});
+  MobileScannerArguments({required this.textureId,required this.size, required this.hasTorch});
 }
