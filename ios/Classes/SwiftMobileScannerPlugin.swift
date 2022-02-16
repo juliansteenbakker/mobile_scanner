@@ -5,40 +5,53 @@ import MLKitBarcodeScanning
 
 public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
+    let registry: FlutterTextureRegistry
+    
+    // Sink for publishing event changes
+    var sink: FlutterEventSink!
+    
+    // Texture id of the camera preview
+    var textureId: Int64!
+    
+    // Capture session of the camera
+    var captureSession: AVCaptureSession!
+    
+    // The selected camera
+    var device: AVCaptureDevice!
+    
+    // Image to be sent to the texture
+    var latestBuffer: CVImageBuffer!
+    
+    
+    var analyzeMode: Int = 0
+    var analyzing: Bool = false
+    var position = AVCaptureDevice.Position.back
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(registrar.textures())
         
-        let method = FlutterMethodChannel(name: "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
+        let method = FlutterMethodChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
+        let event = FlutterEventChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: method)
-        
-        let event = FlutterEventChannel(name: "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger())
         event.setStreamHandler(instance)
     }
     
-    let registry: FlutterTextureRegistry
-    var sink: FlutterEventSink!
-    var textureId: Int64!
-    var captureSession: AVCaptureSession!
-    var device: AVCaptureDevice!
-    var latestBuffer: CVImageBuffer!
-    var analyzeMode: Int
-    var analyzing: Bool
-    
     init(_ registry: FlutterTextureRegistry) {
         self.registry = registry
-        analyzeMode = 0
-        analyzing = false
         super.init()
     }
+    
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "state":
-            stateNative(call, result)
+            checkPermission(call, result)
         case "request":
-            requestNative(call, result)
+            requestPermission(call, result)
         case "start":
-            startNative(call, result)
+            start(call, result)
         case "torch":
             torchNative(call, result)
         case "analyze":
@@ -50,16 +63,19 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
+    // FlutterStreamHandler
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         sink = events
         return nil
     }
     
+    // FlutterStreamHandler
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         sink = nil
         return nil
     }
     
+    // FlutterTexture
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
         if latestBuffer == nil {
             return nil
@@ -67,60 +83,60 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
     
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
-        latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-        registry.textureFrameAvailable(textureId)
-        
-        switch analyzeMode {
-        case 1: // barcode
-            if analyzing {
-                break
-            }
-            analyzing = true
-            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-            let image = VisionImage(image: buffer!.image)
-            image.orientation = imageOrientation(
-              deviceOrientation: UIDevice.current.orientation,
-              defaultOrientation: .portrait
-            )
-            
-            let scanner = BarcodeScanner.barcodeScanner()
-            scanner.process(image) { [self] barcodes, error in
-                if error == nil && barcodes != nil {
-                    for barcode in barcodes! {
-                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
-                        sink?(event)
-                    }
-                }
-                analyzing = false
-            }
-        default: // none
-            break
-        }
-    }
+//    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+//
+//        latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+//        registry.textureFrameAvailable(textureId)
+//
+//        switch analyzeMode {
+//        case 1: // barcode
+//            if analyzing {
+//                break
+//            }
+//            analyzing = true
+//            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+//            let image = VisionImage(image: buffer!.image)
+//            image.orientation = imageOrientation(
+//              deviceOrientation: UIDevice.current.orientation,
+//              defaultOrientation: .portrait
+//            )
+//
+//            let scanner = BarcodeScanner.barcodeScanner()
+//            scanner.process(image) { [self] barcodes, error in
+//                if error == nil && barcodes != nil {
+//                    for barcode in barcodes! {
+//                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
+//                        sink?(event)
+//                    }
+//                }
+//                analyzing = false
+//            }
+//        default: // none
+//            break
+//        }
+//    }
     
-    func imageOrientation(
-          deviceOrientation: UIDeviceOrientation,
-          defaultOrientation: UIDeviceOrientation
-        ) -> UIImage.Orientation {
-          switch deviceOrientation {
-          case .portrait:
-            return position == .front ? .leftMirrored : .right
-          case .landscapeLeft:
-            return position == .front ? .downMirrored : .up
-          case .portraitUpsideDown:
-            return position == .front ? .rightMirrored : .left
-          case .landscapeRight:
-            return position == .front ? .upMirrored : .down
-          case .faceDown, .faceUp, .unknown:
-            return .up
-          @unknown default:
-            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
-            }
-        }
+//    func imageOrientation(
+//          deviceOrientation: UIDeviceOrientation,
+//          defaultOrientation: UIDeviceOrientation
+//        ) -> UIImage.Orientation {
+//          switch deviceOrientation {
+//          case .portrait:
+//            return position == .front ? .leftMirrored : .right
+//          case .landscapeLeft:
+//            return position == .front ? .downMirrored : .up
+//          case .portraitUpsideDown:
+//            return position == .front ? .rightMirrored : .left
+//          case .landscapeRight:
+//            return position == .front ? .upMirrored : .down
+//          case .faceDown, .faceUp, .unknown:
+//            return .up
+//          @unknown default:
+//            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+//            }
+//        }
     
-    func stateNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
         switch status {
         case .notDetermined:
@@ -132,20 +148,18 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-    func requestNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func requestPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
-    
-    var position = AVCaptureDevice.Position.back
-    
-    func startNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+
+    func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
         
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         
-        guard let targetWidth = argReader.int(key: "targetWidth"),
-              let targetHeight = argReader.int(key: "targetHeight"),
+        guard let ratio = argReader.int(key: "ratio"),
+              let torch = argReader.int(key: "torch"),
               let facing = argReader.int(key: "facing") else {
             result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing a required argument", details: "Expecting targetWidth, targetHeight, formats, and optionally heartbeatTimeout"))
             return
