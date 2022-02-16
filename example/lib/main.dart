@@ -18,8 +18,10 @@ class _AnalyzeViewState extends State<AnalyzeView>
     with SingleTickerProviderStateMixin {
   String? barcode;
 
-  MobileScannerController controller = MobileScannerController(torchEnabled: true,
-    facing: CameraFacing.front,);
+  MobileScannerController controller = MobileScannerController(
+    torchEnabled: true,
+    facing: CameraFacing.front,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +32,7 @@ class _AnalyzeViewState extends State<AnalyzeView>
           return Stack(
             children: [
               MobileScanner(
-                controller: controller,
+                  controller: controller,
                   fit: BoxFit.contain,
                   // controller: MobileScannerController(
                   //   torchEnabled: true,
@@ -55,20 +57,22 @@ class _AnalyzeViewState extends State<AnalyzeView>
                     children: [
                       IconButton(
                         color: Colors.white,
-                          icon: ValueListenableBuilder(
-                            valueListenable: controller.torchState,
-                            builder: (context, state, child) {
-                              switch (state as TorchState) {
-                                case TorchState.off:
-                                  return const Icon(Icons.flash_off, color: Colors.grey);
-                                case TorchState.on:
-                                  return const Icon(Icons.flash_on, color: Colors.yellow);
-                              }
-                            },
-                          ),
-                          iconSize: 32.0,
-                          onPressed: () => controller.toggleTorch(),
+                        icon: ValueListenableBuilder(
+                          valueListenable: controller.torchState,
+                          builder: (context, state, child) {
+                            switch (state as TorchState) {
+                              case TorchState.off:
+                                return const Icon(Icons.flash_off,
+                                    color: Colors.grey);
+                              case TorchState.on:
+                                return const Icon(Icons.flash_on,
+                                    color: Colors.yellow);
+                            }
+                          },
                         ),
+                        iconSize: 32.0,
+                        onPressed: () => controller.toggleTorch(),
+                      ),
                       Center(
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width - 120,

@@ -11,5 +11,6 @@ class MobileScannerArguments {
   final bool hasTorch;
 
   /// Create a [MobileScannerArguments].
-  MobileScannerArguments({required this.textureId,required this.size, required this.hasTorch});
+  MobileScannerArguments(
+      {required this.textureId, required this.size, required this.hasTorch});
 }

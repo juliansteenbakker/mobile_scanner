@@ -30,40 +30,41 @@ class _AnalyzeViewState extends State<AnalyzeView>
           return Stack(
             children: [
               MobileScanner(
-                // fitScreen: false,
+                  // fitScreen: false,
                   // controller: cameraController,
                   onDetect: (barcode, args) {
-                    if (this.barcode != barcode.rawValue) {
-                      this.barcode = barcode.rawValue;
-                      if (barcode.corners != null) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                          content: Text('${barcode.rawValue}'),
-                          duration: const Duration(milliseconds: 200),
-                          animation: null,
-                        ));
-                        setState(() {
-                          final List<Offset> points = [];
-                          double factorWidth = args.size.width / 520;
-                          // double factorHeight = wanted / args.size.height;
-                          final size = MediaQuery.of(context).devicePixelRatio;
-                          debugPrint('Size: ${barcode.corners}');
-                          for (var point in barcode.corners!) {
-                            final adjustedWith = point.dx ;
-                            final adjustedHeight= point.dy ;
-                            points.add(Offset(adjustedWith / size, adjustedHeight / size));
-                            // points.add(Offset((point.dx ) / size,
-                            //     (point.dy) / size));
-                            // final differenceWidth = (args.wantedSize!.width - args.size.width) / 2;
-                            // final differenceHeight = (args.wantedSize!.height - args.size.height) / 2;
-                            // points.add(Offset((point.dx + differenceWidth) / size,
-                            //     (point.dy + differenceHeight) / size));
-                          }
-                          this.points = points;
-                        });
+                if (this.barcode != barcode.rawValue) {
+                  this.barcode = barcode.rawValue;
+                  if (barcode.corners != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      content: Text('${barcode.rawValue}'),
+                      duration: const Duration(milliseconds: 200),
+                      animation: null,
+                    ));
+                    setState(() {
+                      final List<Offset> points = [];
+                      double factorWidth = args.size.width / 520;
+                      // double factorHeight = wanted / args.size.height;
+                      final size = MediaQuery.of(context).devicePixelRatio;
+                      debugPrint('Size: ${barcode.corners}');
+                      for (var point in barcode.corners!) {
+                        final adjustedWith = point.dx;
+                        final adjustedHeight = point.dy;
+                        points.add(
+                            Offset(adjustedWith / size, adjustedHeight / size));
+                        // points.add(Offset((point.dx ) / size,
+                        //     (point.dy) / size));
+                        // final differenceWidth = (args.wantedSize!.width - args.size.width) / 2;
+                        // final differenceHeight = (args.wantedSize!.height - args.size.height) / 2;
+                        // points.add(Offset((point.dx + differenceWidth) / size,
+                        //     (point.dy + differenceHeight) / size));
                       }
-                    }
-                    // Default 640 x480
-                  }),
+                      this.points = points;
+                    });
+                  }
+                }
+                // Default 640 x480
+              }),
               CustomPaint(
                 painter: OpenPainter(points),
               ),

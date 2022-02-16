@@ -38,7 +38,6 @@ class MobileScannerController {
   int? _controllerHashcode;
   StreamSubscription? events;
 
-
   final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
   late final ValueNotifier<CameraFacing> cameraFacingState;
@@ -107,7 +106,8 @@ class MobileScannerController {
 
     setAnalyzeMode(AnalyzeMode.barcode.index);
     // Check authorization status
-    MobileScannerState state = MobileScannerState.values[await methodChannel.invokeMethod('state')];
+    MobileScannerState state =
+        MobileScannerState.values[await methodChannel.invokeMethod('state')];
     switch (state) {
       case MobileScannerState.undetermined:
         final bool result = await methodChannel.invokeMethod('request');
@@ -129,13 +129,17 @@ class MobileScannerController {
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
     // Start the camera with arguments
-    final Map<String, dynamic>? startResult = await methodChannel.invokeMapMethod<String, dynamic>(
-        'start', arguments);
+    final Map<String, dynamic>? startResult = await methodChannel
+        .invokeMapMethod<String, dynamic>('start', arguments);
 
-    if (startResult == null) throw PlatformException(code: 'INITIALIZATION ERROR');
+    if (startResult == null)
+      throw PlatformException(code: 'INITIALIZATION ERROR');
 
     hasTorch = startResult['torchable'];
-    args.value = MobileScannerArguments(textureId: startResult['textureId'], size: toSize(startResult['size']), hasTorch: hasTorch);
+    args.value = MobileScannerArguments(
+        textureId: startResult['textureId'],
+        size: toSize(startResult['size']),
+        hasTorch: hasTorch);
   }
 
   Future<void> stop() async => await methodChannel.invokeMethod('stop');
@@ -157,7 +161,8 @@ class MobileScannerController {
   Future<void> switchCamera() async {
     ensure('switchCamera');
     await stop();
-    facing = facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
+    facing =
+        facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
     start();
   }
 
