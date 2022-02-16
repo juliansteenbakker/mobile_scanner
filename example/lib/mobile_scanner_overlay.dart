@@ -20,7 +20,7 @@ class _AnalyzeViewState extends State<AnalyzeView>
 
   // CameraController cameraController = CameraController(context, width: 320, height: 150);
 
-  String? barcode = null;
+  String? barcode;
 
   @override
   Widget build(BuildContext context) {
@@ -37,13 +37,13 @@ class _AnalyzeViewState extends State<AnalyzeView>
                   this.barcode = barcode.rawValue;
                   if (barcode.corners != null) {
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      content: Text('${barcode.rawValue}'),
+                      content: Text(barcode.rawValue),
                       duration: const Duration(milliseconds: 200),
                       animation: null,
                     ));
                     setState(() {
                       final List<Offset> points = [];
-                      double factorWidth = args.size.width / 520;
+                      // double factorWidth = args.size.width / 520;
                       // double factorHeight = wanted / args.size.height;
                       final size = MediaQuery.of(context).devicePixelRatio;
                       debugPrint('Size: ${barcode.corners}');
@@ -109,7 +109,7 @@ class OpenPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     var paint1 = Paint()
-      ..color = Color(0xff63aa65)
+      ..color = const Color(0xff63aa65)
       ..strokeWidth = 10;
     //draw points on canvas
     canvas.drawPoints(PointMode.points, points, paint1);

@@ -132,8 +132,9 @@ class MobileScannerController {
     final Map<String, dynamic>? startResult = await methodChannel
         .invokeMapMethod<String, dynamic>('start', arguments);
 
-    if (startResult == null)
+    if (startResult == null) {
       throw PlatformException(code: 'INITIALIZATION ERROR');
+    }
 
     hasTorch = startResult['torchable'];
     args.value = MobileScannerArguments(

@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_scanner/src/mobile_scanner.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('mobile_scanner');

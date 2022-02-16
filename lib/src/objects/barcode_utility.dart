@@ -29,7 +29,7 @@ BarcodeFormat toFormat(int value) {
     case 8:
       return BarcodeFormat.codebar;
     case 16:
-      return BarcodeFormat.data_matrix;
+      return BarcodeFormat.dataMatrix;
     case 32:
       return BarcodeFormat.ean13;
     case 64:
@@ -37,11 +37,11 @@ BarcodeFormat toFormat(int value) {
     case 128:
       return BarcodeFormat.itf;
     case 256:
-      return BarcodeFormat.qr_code;
+      return BarcodeFormat.qrCode;
     case 512:
-      return BarcodeFormat.upc_a;
+      return BarcodeFormat.upcA;
     case 1024:
-      return BarcodeFormat.upc_e;
+      return BarcodeFormat.upcE;
     case 2048:
       return BarcodeFormat.pdf417;
     case 4096:
