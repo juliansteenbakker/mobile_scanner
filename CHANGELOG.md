@@ -1,3 +1,8 @@
+## 0.0.2
+Fixed on iOS:
+* You can now set the torch
+* You can select the camera you want to use
+
 ## 0.0.1
 Initial release!
 Things working on Android:
