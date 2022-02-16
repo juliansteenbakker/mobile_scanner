@@ -490,7 +490,7 @@ enum BarcodeFormat {
   /// Barcode format constant for Data Matrix.
   ///
   /// Constant Value: 16
-  data_matrix,
+  dataMatrix,
 
   /// Barcode format constant for EAN-13.
   ///
@@ -510,17 +510,17 @@ enum BarcodeFormat {
   /// Barcode format constant for QR Code.
   ///
   /// Constant Value: 256
-  qr_code,
+  qrCode,
 
   /// Barcode format constant for UPC-A.
   ///
   /// Constant Value: 512
-  upc_a,
+  upcA,
 
   /// Barcode format constant for UPC-E.
   ///
   /// Constant Value: 1024
-  upc_e,
+  upcE,
 
   /// Barcode format constant for PDF-417.
   ///

@@ -24,5 +24,3 @@ flutter:
         pluginClass: MobileScannerPlugin
       ios:
         pluginClass: MobileScannerPlugin
-      macos:
-        pluginClass: MobileScannerPlugin

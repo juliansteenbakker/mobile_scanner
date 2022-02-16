@@ -3,10 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'mobile_scanner_arguments.dart';
 
-enum Ratio {
-  ratio_4_3,
-  ratio_16_9
-}
+enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
@@ -18,7 +15,8 @@ class MobileScanner extends StatefulWidget {
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner(
       {Key? key, this.onDetect, this.controller, this.fit = BoxFit.cover})
-      : assert((controller != null  )),  super(key: key);
+      : assert((controller != null)),
+        super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();

@@ -5,61 +5,77 @@ import MLKitBarcodeScanning
 
 public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
+    let registry: FlutterTextureRegistry
+    
+    // Sink for publishing event changes
+    var sink: FlutterEventSink!
+    
+    // Texture id of the camera preview
+    var textureId: Int64!
+    
+    // Capture session of the camera
+    var captureSession: AVCaptureSession!
+    
+    // The selected camera
+    var device: AVCaptureDevice!
+    
+    // Image to be sent to the texture
+    var latestBuffer: CVImageBuffer!
+    
+    
+    var analyzeMode: Int = 0
+    var analyzing: Bool = false
+    var position = AVCaptureDevice.Position.back
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(registrar.textures())
         
-        let method = FlutterMethodChannel(name: "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
+        let method = FlutterMethodChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
+        let event = FlutterEventChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger())
         registrar.addMethodCallDelegate(instance, channel: method)
-        
-        let event = FlutterEventChannel(name: "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger())
         event.setStreamHandler(instance)
     }
     
-    let registry: FlutterTextureRegistry
-    var sink: FlutterEventSink!
-    var textureId: Int64!
-    var captureSession: AVCaptureSession!
-    var device: AVCaptureDevice!
-    var latestBuffer: CVImageBuffer!
-    var analyzeMode: Int
-    var analyzing: Bool
-    
     init(_ registry: FlutterTextureRegistry) {
         self.registry = registry
-        analyzeMode = 0
-        analyzing = false
         super.init()
     }
+    
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "state":
-            stateNative(call, result)
+            checkPermission(call, result)
         case "request":
-            requestNative(call, result)
+            requestPermission(call, result)
         case "start":
-            startNative(call, result)
+            start(call, result)
         case "torch":
-            torchNative(call, result)
+            switchTorch(call, result)
         case "analyze":
-            analyzeNative(call, result)
+            switchAnalyzeMode(call, result)
         case "stop":
-            stopNative(result)
+            stop(result)
         default:
             result(FlutterMethodNotImplemented)
         }
     }
     
+    // FlutterStreamHandler
     public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
         sink = events
         return nil
     }
     
+    // FlutterStreamHandler
     public func onCancel(withArguments arguments: Any?) -> FlutterError? {
         sink = nil
         return nil
     }
     
+    // FlutterTexture
     public func copyPixelBuffer() -> Unmanaged<CVPixelBuffer>? {
         if latestBuffer == nil {
             return nil
@@ -67,11 +83,12 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
     
+    // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
+
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         registry.textureFrameAvailable(textureId)
-        
+
         switch analyzeMode {
         case 1: // barcode
             if analyzing {
@@ -84,7 +101,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
               deviceOrientation: UIDevice.current.orientation,
               defaultOrientation: .portrait
             )
-            
+
             let scanner = BarcodeScanner.barcodeScanner()
             scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
@@ -120,7 +137,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             }
         }
     
-    func stateNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
         switch status {
         case .notDetermined:
@@ -132,34 +149,45 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-    func requestNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func requestPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
-    
-    var position = AVCaptureDevice.Position.back
-    
-    func startNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+
+    func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
         
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         
-        guard let targetWidth = argReader.int(key: "targetWidth"),
-              let targetHeight = argReader.int(key: "targetHeight"),
-              let facing = argReader.int(key: "facing") else {
-            result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing a required argument", details: "Expecting targetWidth, targetHeight, formats, and optionally heartbeatTimeout"))
-            return
-        }
-        
+//        let ratio: Int = argReader.int(key: "ratio")
+        let torch: Bool = argReader.bool(key: "torch") ?? false
+        let facing: Int = argReader.int(key: "facing") ?? 1
+
+        // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
+        
+        // Open the camera device
         if #available(iOS 10.0, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
         } else {
             device = AVCaptureDevice.devices(for: .video).filter({$0.position == position}).first
         }
+        
+        // Enable the torch if parameter is set and torch is available
+        if (device.hasTorch && device.isTorchAvailable) {
+            do {
+                try device.lockForConfiguration()
+            device.torchMode = torch ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            error.throwNative(result)
+            }
+        }
+        
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         captureSession.beginConfiguration()
-        // Add device input.
+        
+        // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
             captureSession.addInput(input)
@@ -191,7 +219,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(answer)
     }
     
-    func torchNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func switchTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try device.lockForConfiguration()
             device.torchMode = call.arguments as! Int == 1 ? .on : .off
@@ -202,12 +230,12 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-    func analyzeNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         analyzeMode = call.arguments as! Int
         result(nil)
     }
     
-    func stopNative(_ result: FlutterResult) {
+    func stop(_ result: FlutterResult) {
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -227,6 +255,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(nil)
     }
     
+    // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
@@ -255,6 +284,10 @@ class MapArgumentReader {
   func int(key: String) -> Int? {
     return (args?[key] as? NSNumber)?.intValue
   }
+    
+    func bool(key: String) -> Bool? {
+      return (args?[key] as? NSNumber)?.boolValue
+    }
 
   func stringArray(key: String) -> [String]? {
     return args?[key] as? [String]
