@@ -53,11 +53,11 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         case "start":
             start(call, result)
         case "torch":
-            torchNative(call, result)
+            switchTorch(call, result)
         case "analyze":
-            analyzeNative(call, result)
+            switchAnalyzeMode(call, result)
         case "stop":
-            stopNative(result)
+            stop(result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -83,58 +83,59 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
     
-//    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-//
-//        latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-//        registry.textureFrameAvailable(textureId)
-//
-//        switch analyzeMode {
-//        case 1: // barcode
-//            if analyzing {
-//                break
-//            }
-//            analyzing = true
-//            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-//            let image = VisionImage(image: buffer!.image)
-//            image.orientation = imageOrientation(
-//              deviceOrientation: UIDevice.current.orientation,
-//              defaultOrientation: .portrait
-//            )
-//
-//            let scanner = BarcodeScanner.barcodeScanner()
-//            scanner.process(image) { [self] barcodes, error in
-//                if error == nil && barcodes != nil {
-//                    for barcode in barcodes! {
-//                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
-//                        sink?(event)
-//                    }
-//                }
-//                analyzing = false
-//            }
-//        default: // none
-//            break
-//        }
-//    }
+    // Gets called when a new image is added to the buffer
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+
+        latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+        registry.textureFrameAvailable(textureId)
+
+        switch analyzeMode {
+        case 1: // barcode
+            if analyzing {
+                break
+            }
+            analyzing = true
+            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+            let image = VisionImage(image: buffer!.image)
+            image.orientation = imageOrientation(
+              deviceOrientation: UIDevice.current.orientation,
+              defaultOrientation: .portrait
+            )
+
+            let scanner = BarcodeScanner.barcodeScanner()
+            scanner.process(image) { [self] barcodes, error in
+                if error == nil && barcodes != nil {
+                    for barcode in barcodes! {
+                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
+                        sink?(event)
+                    }
+                }
+                analyzing = false
+            }
+        default: // none
+            break
+        }
+    }
     
-//    func imageOrientation(
-//          deviceOrientation: UIDeviceOrientation,
-//          defaultOrientation: UIDeviceOrientation
-//        ) -> UIImage.Orientation {
-//          switch deviceOrientation {
-//          case .portrait:
-//            return position == .front ? .leftMirrored : .right
-//          case .landscapeLeft:
-//            return position == .front ? .downMirrored : .up
-//          case .portraitUpsideDown:
-//            return position == .front ? .rightMirrored : .left
-//          case .landscapeRight:
-//            return position == .front ? .upMirrored : .down
-//          case .faceDown, .faceUp, .unknown:
-//            return .up
-//          @unknown default:
-//            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
-//            }
-//        }
+    func imageOrientation(
+          deviceOrientation: UIDeviceOrientation,
+          defaultOrientation: UIDeviceOrientation
+        ) -> UIImage.Orientation {
+          switch deviceOrientation {
+          case .portrait:
+            return position == .front ? .leftMirrored : .right
+          case .landscapeLeft:
+            return position == .front ? .downMirrored : .up
+          case .portraitUpsideDown:
+            return position == .front ? .rightMirrored : .left
+          case .landscapeRight:
+            return position == .front ? .upMirrored : .down
+          case .faceDown, .faceUp, .unknown:
+            return .up
+          @unknown default:
+            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+            }
+        }
     
     func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
@@ -158,22 +159,35 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         
-        guard let ratio = argReader.int(key: "ratio"),
-              let torch = argReader.int(key: "torch"),
-              let facing = argReader.int(key: "facing") else {
-            result(FlutterError(code: "INVALID_ARGUMENT", message: "Missing a required argument", details: "Expecting targetWidth, targetHeight, formats, and optionally heartbeatTimeout"))
-            return
-        }
-        
+//        let ratio: Int = argReader.int(key: "ratio")
+        let torch: Bool = argReader.bool(key: "torch") ?? false
+        let facing: Int = argReader.int(key: "facing") ?? 1
+
+        // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
+        
+        // Open the camera device
         if #available(iOS 10.0, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
         } else {
             device = AVCaptureDevice.devices(for: .video).filter({$0.position == position}).first
         }
+        
+        // Enable the torch if parameter is set and torch is available
+        if (device.hasTorch && device.isTorchAvailable) {
+            do {
+                try device.lockForConfiguration()
+            device.torchMode = torch ? .on : .off
+            device.unlockForConfiguration()
+        } catch {
+            error.throwNative(result)
+            }
+        }
+        
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         captureSession.beginConfiguration()
-        // Add device input.
+        
+        // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
             captureSession.addInput(input)
@@ -205,7 +219,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(answer)
     }
     
-    func torchNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func switchTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try device.lockForConfiguration()
             device.torchMode = call.arguments as! Int == 1 ? .on : .off
@@ -216,12 +230,12 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-    func analyzeNative(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         analyzeMode = call.arguments as! Int
         result(nil)
     }
     
-    func stopNative(_ result: FlutterResult) {
+    func stop(_ result: FlutterResult) {
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -241,6 +255,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(nil)
     }
     
+    // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
@@ -269,6 +284,10 @@ class MapArgumentReader {
   func int(key: String) -> Int? {
     return (args?[key] as? NSNumber)?.intValue
   }
+    
+    func bool(key: String) -> Bool? {
+      return (args?[key] as? NSNumber)?.boolValue
+    }
 
   func stringArray(key: String) -> [String]? {
     return args?[key] as? [String]
