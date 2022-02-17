@@ -7,9 +7,23 @@ enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
+
   /// The controller of the camera.
   final MobileScannerController? controller;
+
+  /// Function that gets called when a Barcode is detected.
+  ///
+  /// [barcode] The barcode object with all information about the scanned code.
+  /// [args] Information about the state of the MobileScanner widget
   final Function(Barcode barcode, MobileScannerArguments args)? onDetect;
+
+  /// TODO: Function that gets called when the Widget is initialized. Can be usefull
+  /// to check wether the device has a torch(flash) or not.
+  ///
+  /// [args] Information about the state of the MobileScanner widget
+  // final Function(MobileScannerArguments args)? onInitialize;
+
+  /// Handles how the widget should fit the screen.
   final BoxFit fit;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
@@ -64,7 +78,6 @@ class _MobileScannerState extends State<MobileScanner>
             } else {
               controller.barcodes.listen(
                   (a) => widget.onDetect!(a, value as MobileScannerArguments));
-              debugPrint(' size MediaQuery ${MediaQuery.of(context).size}');
               return ClipRect(
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
