@@ -1,3 +1,7 @@
+## 0.0.3
+* Added some API docs and README
+* Updated the example app
+
 ## 0.0.2
 Fixed on iOS:
 * You can now set the torch
