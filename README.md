@@ -11,6 +11,10 @@ An universal scanner for Flutter based on MLKit.
 | :-----: | :-: | :---: | :-: | :---: | :-----: |
 |   ✔️    | ✔️  |     |   |     |      |
 
+CameraX for Android requires at least SDK 21.
+
+MLKit for iOS requires at least iOS 11 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
+
 # Usage
 
 Import `package:mobile_scanner/mobile_scanner.dart`, and use the widget with or without the controller.
