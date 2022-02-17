@@ -3,7 +3,7 @@
 [![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
 [![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
 
-An universal scanner for Flutter based on MLKit.
+A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
 
 ## Platform Support
 
