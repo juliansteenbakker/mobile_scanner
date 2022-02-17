@@ -92,10 +92,11 @@ class _AnalyzeViewState extends State<AnalyzeView>
                         icon: ValueListenableBuilder(
                           valueListenable: controller.cameraFacingState,
                           builder: (context, state, child) {
-                            if (state == CameraFacing.front) {
-                              return const Icon(Icons.camera_front);
-                            } else {
-                              return const Icon(Icons.camera_rear);
+                            switch (state as CameraFacing) {
+                              case CameraFacing.front:
+                                return const Icon(Icons.camera_front);
+                              case CameraFacing.back:
+                                return const Icon(Icons.camera_rear);
                             }
                           },
                         ),
