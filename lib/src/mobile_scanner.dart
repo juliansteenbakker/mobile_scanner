@@ -26,9 +26,12 @@ class MobileScanner extends StatefulWidget {
   final BoxFit fit;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
-  const MobileScanner(
-      {Key? key, this.onDetect, this.controller, this.fit = BoxFit.cover})
-      : assert((controller != null)),
+  const MobileScanner({
+    Key? key,
+    this.onDetect,
+    this.controller,
+    this.fit = BoxFit.cover,
+  })  : assert((controller != null)),
         super(key: key);
 
   @override
@@ -43,11 +46,7 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void initState() {
     super.initState();
-    if (widget.controller == null) {
-      controller = MobileScannerController();
-    } else {
-      controller = widget.controller!;
-    }
+    controller = widget.controller ?? MobileScannerController();
   }
 
   @override
@@ -97,8 +96,25 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
+  void didUpdateWidget(covariant MobileScanner oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller == null) {
+      if (widget.controller != null) {
+        controller.dispose();
+        controller = widget.controller!;
+      }
+    } else {
+      if (widget.controller == null) {
+        controller = MobileScannerController();
+      } else if (oldWidget.controller != widget.controller) {
+        controller = widget.controller!;
+      }
+    }
+  }
+
+  @override
   void dispose() {
-    controller.dispose();
+    if (widget.controller == null) controller.dispose();
     super.dispose();
   }
 }
