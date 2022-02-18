@@ -1,6 +1,6 @@
 name: mobile_scanner
 description: A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
-version: 0.0.3
+version: 0.1.0
 repository: https://github.com/juliansteenbakker/mobile_scanner
 
 environment:
@@ -23,4 +23,6 @@ flutter:
         package: dev.steenbakker.mobile_scanner
         pluginClass: MobileScannerPlugin
       ios:
+        pluginClass: MobileScannerPlugin
+      macos:
         pluginClass: MobileScannerPlugin

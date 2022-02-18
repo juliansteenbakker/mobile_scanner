@@ -18,7 +18,7 @@ class Barcode {
   /// Returns raw bytes as it was encoded in the barcode.
   ///
   /// Returns null if the raw bytes can not be determined.
-  final Uint8List rawBytes;
+  final Uint8List? rawBytes;
 
   /// Returns barcode value as it was encoded in the barcode. Structured values are not parsed, for example: 'MEBKM:TITLE:Google;URL://www.google.com;;'.
   ///
@@ -62,6 +62,8 @@ class Barcode {
 
   /// Gets parsed WiFi AP details.
   final WiFi? wifi;
+
+  Barcode({this.corners, this.format = BarcodeFormat.ean13, this.rawBytes, this.type = BarcodeType.text, this.calendarEvent, this.contactInfo, this.driverLicense, this.email, this.geoPoint, this.phone, this.sms, this.url, this.wifi, required this.rawValue});
 
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map<dynamic, dynamic> data)

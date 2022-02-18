@@ -1,3 +1,7 @@
+## 0.1.0
+We now have MacOS support using Apple's Vision framework!
+Keep in mind that for now, only the raw value is supported.
+
 ## 0.0.3
 * Added some API docs and README
 * Updated the example app

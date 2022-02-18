@@ -86,6 +86,9 @@ class MobileScannerController {
         final barcode = Barcode.fromNative(data);
         barcodesController.add(barcode);
         break;
+      case 'barcodeMac':
+        barcodesController.add(Barcode(rawValue: data['payload']));
+        break;
       default:
         throw UnimplementedError();
     }
