@@ -63,7 +63,21 @@ class Barcode {
   /// Gets parsed WiFi AP details.
   final WiFi? wifi;
 
-  Barcode({this.corners, this.format = BarcodeFormat.ean13, this.rawBytes, this.type = BarcodeType.text, this.calendarEvent, this.contactInfo, this.driverLicense, this.email, this.geoPoint, this.phone, this.sms, this.url, this.wifi, required this.rawValue});
+  Barcode(
+      {this.corners,
+      this.format = BarcodeFormat.ean13,
+      this.rawBytes,
+      this.type = BarcodeType.text,
+      this.calendarEvent,
+      this.contactInfo,
+      this.driverLicense,
+      this.email,
+      this.geoPoint,
+      this.phone,
+      this.sms,
+      this.url,
+      this.wifi,
+      required this.rawValue});
 
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map<dynamic, dynamic> data)
