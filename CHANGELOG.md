@@ -1,3 +1,6 @@
+## 0.1.1
+mobile_scanner is now compatible with sdk >= 2.12 and flutter >= 2.2.0
+
 ## 0.1.0
 We now have MacOS support using Apple's Vision framework!
 Keep in mind that for now, only the raw value of the barcode object is supported.
