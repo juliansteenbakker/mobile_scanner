@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 void main() {
@@ -73,7 +74,7 @@ class _AnalyzeViewState extends State<AnalyzeView>
                       ),
                       Center(
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 120,
+                          width: MediaQuery.of(context).size.width - 180,
                           height: 50,
                           child: FittedBox(
                             child: Text(
@@ -102,6 +103,19 @@ class _AnalyzeViewState extends State<AnalyzeView>
                         ),
                         iconSize: 32.0,
                         onPressed: () => controller.switchCamera(),
+                      ),
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(Icons.browse_gallery),
+                        iconSize: 32.0,
+                        onPressed: () async {
+                          final ImagePicker _picker = ImagePicker();
+                          // Pick an image
+                          final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                          if (image != null) {
+                            controller.analyzeImage(image.path);
+                          }
+                        },
                       ),
                     ],
                   ),

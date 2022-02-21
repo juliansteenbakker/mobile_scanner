@@ -170,6 +170,10 @@ class MobileScannerController {
     start();
   }
 
+  Future<void> analyzeImage(dynamic path) async {
+    await methodChannel.invokeMethod('analyzeImage', path);
+  }
+
   /// Disposes the controller and closes all listeners.
   void dispose() {
     if (hashCode == _controllerHashcode) {
