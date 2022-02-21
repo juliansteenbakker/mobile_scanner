@@ -3,13 +3,13 @@
 [![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
 [![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
 
-A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
+A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX on Android, AVFoundation on iOS and Apple vision & AVFoundation on macOS. 
 
 ## Platform Support
 
 | Android | iOS | MacOS | Web | Linux | Windows |
 | :-----: | :-: | :---: | :-: | :---: | :-----: |
-|   ✔️    | ✔️  |     |   |     |      |
+|   ✔️    | ✔️  |  ✔  |   |     |      |
 
 CameraX for Android requires at least SDK 21.
 

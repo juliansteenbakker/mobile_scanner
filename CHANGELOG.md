@@ -1,6 +1,9 @@
 ## 0.1.0
 We now have MacOS support using Apple's Vision framework!
-Keep in mind that for now, only the raw value is supported.
+Keep in mind that for now, only the raw value of the barcode object is supported.
+
+Bugfixes:
+* Fixed a crash when dispose is called in a overridden method. [#5](https://github.com/juliansteenbakker/mobile_scanner/issues/5) 
 
 ## 0.0.3
 * Added some API docs and README
