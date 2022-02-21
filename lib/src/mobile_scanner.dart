@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'mobile_scanner_arguments.dart';
+
+import  'web/flutter_qr_web.dart';
 
 enum Ratio { ratio_4_3, ratio_16_9 }
 
@@ -14,7 +17,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// [barcode] The barcode object with all information about the scanned code.
   /// [args] Information about the state of the MobileScanner widget
-  final Function(Barcode barcode, MobileScannerArguments args)? onDetect;
+  final Function(Barcode barcode, MobileScannerArguments? args)? onDetect;
 
   /// TODO: Function that gets called when the Widget is initialized. Can be usefull
   /// to check wether the device has a torch(flash) or not.
@@ -66,34 +69,48 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      if (!onScreen) return const Text("Camera Paused.");
-      return ValueListenableBuilder(
-          valueListenable: controller.args,
-          builder: (context, value, child) {
-            value = value as MobileScannerArguments?;
-            if (value == null) {
-              return Container(color: Colors.black);
-            } else {
-              controller.barcodes.listen(
-                  (a) => widget.onDetect!(a, value as MobileScannerArguments));
-              return ClipRect(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: FittedBox(
-                    fit: widget.fit,
-                    child: SizedBox(
-                      width: value.size.width,
-                      height: value.size.height,
-                      child: Texture(textureId: value.textureId),
+    if (kIsWeb) {
+      return createWebQrView(
+        onDetect: (barcode) => widget.onDetect!(barcode, null),
+        cameraFacing: CameraFacing.back,
+      );
+    } else {
+      return LayoutBuilder(builder: (context, BoxConstraints constraints) {
+        if (!onScreen) return const Text("Camera Paused.");
+        return ValueListenableBuilder(
+            valueListenable: controller.args,
+            builder: (context, value, child) {
+              value = value as MobileScannerArguments?;
+              if (value == null) {
+                return Container(color: Colors.black);
+              } else {
+                controller.barcodes.listen(
+                        (a) =>
+                        widget.onDetect!(a, value as MobileScannerArguments));
+                return ClipRect(
+                  child: SizedBox(
+                    width: MediaQuery
+                        .of(context)
+                        .size
+                        .width,
+                    height: MediaQuery
+                        .of(context)
+                        .size
+                        .height,
+                    child: FittedBox(
+                      fit: widget.fit,
+                      child: SizedBox(
+                        width: value.size.width,
+                        height: value.size.height,
+                        child: Texture(textureId: value.textureId),
+                      ),
                     ),
                   ),
-                ),
-              );
-            }
-          });
-    });
+                );
+              }
+            });
+      });
+    }
   }
 
   @override

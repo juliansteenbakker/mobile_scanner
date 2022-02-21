@@ -8,6 +8,7 @@ environment:
   flutter: ">=2.5.0"
 
 dependencies:
+  js: ^0.6.4
   flutter:
     sdk: flutter
 
