@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'dart:math' as math;
 
 import 'mobile_scanner_arguments.dart';
 
@@ -85,7 +86,12 @@ class _MobileScannerState extends State<MobileScanner>
                     child: SizedBox(
                       width: value.size.width,
                       height: value.size.height,
-                      child: Texture(textureId: value.textureId),
+                      child: Transform.rotate(
+                          angle: MediaQuery.of(context).orientation ==
+                                  Orientation.portrait
+                              ? 0
+                              : -90 * math.pi / 180,
+                          child: Texture(textureId: value.textureId)),
                     ),
                   ),
                 ),
