@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'mobile_scanner_arguments.dart';
-
 enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
