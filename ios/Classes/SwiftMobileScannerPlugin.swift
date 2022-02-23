@@ -23,7 +23,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     var latestBuffer: CVImageBuffer!
     
     
-    var analyzeMode: Int = 0
+//    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
@@ -53,9 +53,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         case "start":
             start(call, result)
         case "torch":
-            switchTorch(call, result)
-        case "analyze":
-            switchAnalyzeMode(call, result)
+            toggleTorch(call, result)
+//        case "analyze":
+//            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
         default:
@@ -89,10 +89,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         registry.textureFrameAvailable(textureId)
 
-        switch analyzeMode {
-        case 1: // barcode
+//        switch analyzeMode {
+//        case 1: // barcode
             if analyzing {
-                break
+                return
             }
             analyzing = true
             let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
@@ -112,9 +112,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                 }
                 analyzing = false
             }
-        default: // none
-            break
-        }
+//        default: // none
+//            break
+//        }
     }
     
     func imageOrientation(
@@ -154,6 +154,13 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     }
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        if (device != nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called start() while already started!",
+                                    details: nil))
+            return
+        }
+        
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
         
@@ -219,7 +226,13 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(answer)
     }
     
-    func switchTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called toggleTorch() while stopped!",
+                                    details: nil))
+            return
+        }
         do {
             try device.lockForConfiguration()
             device.torchMode = call.arguments as! Int == 1 ? .on : .off
@@ -230,12 +243,18 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        analyzeMode = call.arguments as! Int
-        result(nil)
-    }
+//    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+//        analyzeMode = call.arguments as! Int
+//        result(nil)
+//    }
     
     func stop(_ result: FlutterResult) {
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called stop() while already stopped!",
+                                    details: nil))
+            return
+        }
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -246,7 +265,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
         
-        analyzeMode = 0
+//        analyzeMode = 0
         latestBuffer = nil
         captureSession = nil
         device = nil
