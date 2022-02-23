@@ -27,7 +27,7 @@ enum TorchState {
   on,
 }
 
-enum AnalyzeMode { none, barcode }
+// enum AnalyzeMode { none, barcode }
 
 class MobileScannerController {
   MethodChannel methodChannel =
@@ -62,9 +62,9 @@ class MobileScannerController {
 
     // Sets analyze mode and barcode stream
     barcodesController = StreamController.broadcast(
-      onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
-      onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
-    );
+        // onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
+        // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
+        );
 
     start();
 
@@ -94,12 +94,13 @@ class MobileScannerController {
     }
   }
 
-  void setAnalyzeMode(int mode) {
-    if (hashCode != _controllerHashcode) {
-      return;
-    }
-    methodChannel.invokeMethod('analyze', mode);
-  }
+  // TODO: Add more analyzers like text analyzer
+  // void setAnalyzeMode(int mode) {
+  //   if (hashCode != _controllerHashcode) {
+  //     return;
+  //   }
+  //   methodChannel.invokeMethod('analyze', mode);
+  // }
 
   // List<BarcodeFormats>? formats = _defaultBarcodeFormats,
   /// Start barcode scanning. This will first check if the required permissions
@@ -107,7 +108,7 @@ class MobileScannerController {
   Future<void> start() async {
     ensure('startAsync');
 
-    setAnalyzeMode(AnalyzeMode.barcode.index);
+    // setAnalyzeMode(AnalyzeMode.barcode.index);
     // Check authorization status
     MobileScannerState state =
         MobileScannerState.values[await methodChannel.invokeMethod('state')];
@@ -132,8 +133,15 @@ class MobileScannerController {
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
     // Start the camera with arguments
-    final Map<String, dynamic>? startResult = await methodChannel
-        .invokeMapMethod<String, dynamic>('start', arguments);
+    Map<String, dynamic>? startResult = {};
+    try {
+      startResult = await methodChannel.invokeMapMethod<String, dynamic>(
+          'start', arguments);
+    } on PlatformException catch (error) {
+      debugPrint('${error.code}: ${error.message}');
+      // setAnalyzeMode(AnalyzeMode.none.index);
+      return;
+    }
 
     if (startResult == null) {
       throw PlatformException(code: 'INITIALIZATION ERROR');
@@ -146,17 +154,32 @@ class MobileScannerController {
         hasTorch: hasTorch);
   }
 
-  Future<void> stop() async => await methodChannel.invokeMethod('stop');
+  Future<void> stop() async {
+    try {
+      await methodChannel.invokeMethod('stop');
+    } on PlatformException catch (error) {
+      debugPrint('${error.code}: ${error.message}');
+    }
+  }
 
   /// Switches the torch on or off.
   ///
   /// Only works if torch is available.
-  void toggleTorch() {
+  Future<void> toggleTorch() async {
     ensure('toggleTorch');
-    if (!hasTorch) return;
+    if (!hasTorch) {
+      debugPrint('Device has no torch/flash.');
+      return;
+    }
+
     TorchState state =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
-    methodChannel.invokeMethod('torch', state.index);
+
+    try {
+      await methodChannel.invokeMethod('torch', state.index);
+    } on PlatformException catch (error) {
+      debugPrint('${error.code}: ${error.message}');
+    }
   }
 
   /// Switches the torch on or off.
@@ -164,10 +187,16 @@ class MobileScannerController {
   /// Only works if torch is available.
   Future<void> switchCamera() async {
     ensure('switchCamera');
-    await stop();
+    try {
+      await methodChannel.invokeMethod('stop');
+    } on PlatformException catch (error) {
+      debugPrint(
+          '${error.code}: camera is stopped! Please start before switching camera.');
+      return;
+    }
     facing =
         facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
-    start();
+    await start();
   }
 
   /// Disposes the controller and closes all listeners.

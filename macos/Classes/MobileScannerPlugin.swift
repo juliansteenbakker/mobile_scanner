@@ -22,7 +22,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var latestBuffer: CVImageBuffer!
     
     
-    var analyzeMode: Int = 0
+//    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
@@ -52,9 +52,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         case "start":
             start(call, result)
         case "torch":
-            switchTorch(call, result)
-        case "analyze":
-            switchAnalyzeMode(call, result)
+            toggleTorch(call, result)
+//        case "analyze":
+//            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
         default:
@@ -92,14 +92,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         registry.textureFrameAvailable(textureId)
 
-        switch analyzeMode {
-        case 1: // barcode
+//        switch analyzeMode {
+//        case 1: // barcode
             
             // Limit the analyzer because the texture output will freeze otherwise
             if i / 10 == 1 {
                 i = 0
             } else {
-                break
+                return
             }
                 let imageRequestHandler = VNImageRequestHandler(
                     cvPixelBuffer: latestBuffer,
@@ -129,9 +129,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
               print(error)
             }
 
-        default: // none
-            break
-        }
+//        default: // none
+//            break
+//        }
     }
     
     func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -159,6 +159,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        if (device != nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called start() while already started!",
+                                    details: nil))
+            return
+        }
+        
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
         
@@ -176,6 +183,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
         } else {
             device = AVCaptureDevice.devices(for: .video).filter({$0.position == position}).first
+        }
+        
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "No camera found or failed to open camera!",
+                                    details: nil))
+            return
         }
         
         // Enable the torch if parameter is set and torch is available
@@ -222,7 +236,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(answer)
     }
     
-    func switchTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called toggleTorch() while stopped!",
+                                    details: nil))
+            return
+        }
         do {
             try device.lockForConfiguration()
             device.torchMode = call.arguments as! Int == 1 ? .on : .off
@@ -232,13 +252,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
         }
     }
-    
-    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        analyzeMode = call.arguments as! Int
-        result(nil)
-    }
-    
+
+//    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+//        analyzeMode = call.arguments as! Int
+//        result(nil)
+//    }
+
     func stop(_ result: FlutterResult) {
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "Called stop() while already stopped!",
+                                    details: nil))
+            return
+        }
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -249,7 +275,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
         
-        analyzeMode = 0
+//        analyzeMode = 0
         latestBuffer = nil
         captureSession = nil
         device = nil

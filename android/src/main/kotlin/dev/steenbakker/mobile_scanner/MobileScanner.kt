@@ -38,8 +38,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     private var camera: Camera? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
 
-    @AnalyzeMode
-    private var analyzeMode: Int = AnalyzeMode.NONE
+//    @AnalyzeMode
+//    private var analyzeMode: Int = AnalyzeMode.NONE
 
     @ExperimentalGetImage
     override fun onMethodCall(@NonNull call: MethodCall, @NonNull result: MethodChannel.Result) {
@@ -47,8 +47,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             "state" -> checkPermission(result)
             "request" -> requestPermission(result)
             "start" -> start(call, result)
-            "torch" -> switchTorch(call, result)
-            "analyze" -> switchAnalyzeMode(call, result)
+            "torch" -> toggleTorch(call, result)
+//            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
             else -> result.notImplemented()
         }
@@ -92,8 +92,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     @ExperimentalGetImage
     val analyzer = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
-        when (analyzeMode) {
-            AnalyzeMode.BARCODE -> {
+//        when (analyzeMode) {
+//            AnalyzeMode.BARCODE -> {
                 val mediaImage = imageProxy.image ?: return@Analyzer
                 val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
@@ -106,9 +106,9 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                         }
                         .addOnFailureListener { e -> Log.e(TAG, e.message, e) }
                         .addOnCompleteListener { imageProxy.close() }
-            }
-            else -> imageProxy.close()
-        }
+//            }
+//            else -> imageProxy.close()
+//        }
     }
 
 
@@ -116,6 +116,10 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
+        if (camera != null) {
+            result.error(TAG, "Called start() while already started!", null)
+            return
+        }
 
         val facing: Int = call.argument<Int>("facing") ?: 0
         val ratio: Int? = call.argument<Int>("ratio")
@@ -186,24 +190,32 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         }, executor)
     }
 
-    private fun switchTorch(call: MethodCall, result: MethodChannel.Result) {
-        val state = call.arguments == 1
-        camera!!.cameraControl.enableTorch(state)
+    private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
+        if (camera == null) {
+            result.error(TAG,"Called toggleTorch() while stopped!", null)
+            return
+        }
+        camera!!.cameraControl.enableTorch(call.arguments == 1)
         result.success(null)
     }
 
-    private fun switchAnalyzeMode(call: MethodCall, result: MethodChannel.Result) {
-        analyzeMode = call.arguments as Int
-        result.success(null)
-    }
+//    private fun switchAnalyzeMode(call: MethodCall, result: MethodChannel.Result) {
+//        analyzeMode = call.arguments as Int
+//        result.success(null)
+//    }
 
     private fun stop(result: MethodChannel.Result) {
+        if (camera == null) {
+            result.error(TAG,"Called stop() while already stopped!", null)
+            return
+        }
+
         val owner = activity as LifecycleOwner
         camera!!.cameraInfo.torchState.removeObservers(owner)
         cameraProvider!!.unbindAll()
         textureEntry!!.release()
 
-        analyzeMode = AnalyzeMode.NONE
+//        analyzeMode = AnalyzeMode.NONE
         camera = null
         textureEntry = null
         cameraProvider = null
