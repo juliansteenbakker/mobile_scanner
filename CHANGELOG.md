@@ -2,7 +2,9 @@
 * MobileScannerArguments is now exported. [7](https://github.com/juliansteenbakker/mobile_scanner/issues/7)
 
 Bugfixes:
-* Fixed application crashing when stop() or start() is called multiple times. [5](https://github.com/juliansteenbakker/mobile_scanner/issues/5)
+* Fixed application crashing when stop() or start() is called multiple times. [#5](https://github.com/juliansteenbakker/mobile_scanner/issues/5)
+* Fixes controller not being disposed correctly. [#23](https://github.com/juliansteenbakker/mobile_scanner/issues/23)
+* Catch error when no camera is found. [#19](https://github.com/juliansteenbakker/mobile_scanner/issues/19)
 
 ## 0.1.1
 mobile_scanner is now compatible with sdk >= 2.12 and flutter >= 2.2.0
