@@ -187,7 +187,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         if (device == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "No camera found!",
+                                    message: "No camera found or failed to open camera!",
                                     details: nil))
             return
         }
