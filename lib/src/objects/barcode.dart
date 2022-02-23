@@ -202,7 +202,7 @@ class Address {
   final List<String> addressLines;
 
   /// Gets type of the address.
-  /// 
+  ///
   /// Returns null if not available.
   final AddressType? type;
 
