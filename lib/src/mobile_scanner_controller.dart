@@ -62,9 +62,9 @@ class MobileScannerController {
 
     // Sets analyze mode and barcode stream
     barcodesController = StreamController.broadcast(
-      // onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
-      // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
-    );
+        // onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
+        // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
+        );
 
     start();
 
@@ -106,7 +106,6 @@ class MobileScannerController {
   /// Start barcode scanning. This will first check if the required permissions
   /// are set.
   Future<void> start() async {
-
     ensure('startAsync');
 
     // setAnalyzeMode(AnalyzeMode.barcode.index);
@@ -136,8 +135,8 @@ class MobileScannerController {
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};
     try {
-      startResult = await methodChannel
-          .invokeMapMethod<String, dynamic>('start', arguments);
+      startResult = await methodChannel.invokeMapMethod<String, dynamic>(
+          'start', arguments);
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
       // setAnalyzeMode(AnalyzeMode.none.index);
@@ -191,7 +190,8 @@ class MobileScannerController {
     try {
       await methodChannel.invokeMethod('stop');
     } on PlatformException catch (error) {
-      debugPrint('${error.code}: camera is stopped! Please start before switching camera.');
+      debugPrint(
+          '${error.code}: camera is stopped! Please start before switching camera.');
       return;
     }
     facing =
