@@ -185,6 +185,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             device = AVCaptureDevice.devices(for: .video).filter({$0.position == position}).first
         }
         
+        if (device == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "No camera found!",
+                                    details: nil))
+            return
+        }
+        
         // Enable the torch if parameter is set and torch is available
         if (device.hasTorch) {
             do {
