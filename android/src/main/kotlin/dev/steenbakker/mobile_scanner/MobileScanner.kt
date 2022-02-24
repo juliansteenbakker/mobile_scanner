@@ -113,6 +113,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
 
     private var scanner = BarcodeScanning.getClient()
+    private lateinit var imageCapture: ImageCapture
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
@@ -161,10 +162,14 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             }
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
 
+            imageCapture = ImageCapture.Builder()
+                .setCaptureMode(ImageCapture.CAPTURE_MODE_MINIMIZE_LATENCY)
+                .build()
+
             // Select the correct camera
             val selector = if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-            camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, analysis)
+            camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, imageCapture)
 
             val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
             val previewSize = preview.resolutionInfo?.resolution ?: Size(0, 0)
