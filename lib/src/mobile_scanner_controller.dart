@@ -102,12 +102,18 @@ class MobileScannerController {
   // }
 
   // List<BarcodeFormats>? formats = _defaultBarcodeFormats,
+  bool isStarting = false;
+
   /// Start barcode scanning. This will first check if the required permissions
   /// are set.
   Future<void> start() async {
     ensure('startAsync');
-
+    if (isStarting) {
+      throw Exception('mobile_scanner: Called start() while already starting.');
+    }
+    isStarting = true;
     // setAnalyzeMode(AnalyzeMode.barcode.index);
+
     // Check authorization status
     MobileScannerState state =
         MobileScannerState.values[await methodChannel.invokeMethod('state')];
@@ -118,6 +124,7 @@ class MobileScannerController {
             result ? MobileScannerState.authorized : MobileScannerState.denied;
         break;
       case MobileScannerState.denied:
+        isStarting = false;
         throw PlatformException(code: 'NO ACCESS');
       case MobileScannerState.authorized:
         break;
@@ -138,11 +145,13 @@ class MobileScannerController {
           'start', arguments);
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
+      isStarting = false;
       // setAnalyzeMode(AnalyzeMode.none.index);
       return;
     }
 
     if (startResult == null) {
+      isStarting = false;
       throw PlatformException(code: 'INITIALIZATION ERROR');
     }
 
@@ -151,6 +160,7 @@ class MobileScannerController {
         textureId: startResult['textureId'],
         size: toSize(startResult['size']),
         hasTorch: hasTorch);
+    isStarting = false;
   }
 
   Future<void> stop() async {
