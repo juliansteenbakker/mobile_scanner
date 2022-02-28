@@ -136,6 +136,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
         future.addListener({
             cameraProvider = future.get()
+            cameraProvider!!.unbindAll()
             textureEntry = textureRegistry.createSurfaceTexture()
 
             // Preview
