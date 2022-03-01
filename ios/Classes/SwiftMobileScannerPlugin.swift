@@ -61,6 +61,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             stop(result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "fromFile":
+            fromFile(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -330,6 +332,39 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         result(nil)
     }
     
+    func fromFile(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let path = call.arguments as! String;
+        let image = UIImage(contentsOfFile: path);
+
+        if (image == nil) {
+            result(
+                FlutterError(
+                    code: "MobileScanner",
+                    message: "No image found.",
+                    details: nil
+                )
+            )
+            return
+        }
+
+        let scanner = BarcodeScanner.barcodeScanner()
+        scanner.process(VisionImage(image:image!)) { [self] barcodes, error in
+            if error == nil && barcodes != nil {
+                result(["type": "GoogleMLKitVision", "data": barcodes!.map { $0.data }]);
+            }
+            else {
+                let nsError = error as NSError?;
+                result(
+                    FlutterError(
+                        code: "MobileScanner",
+                        message: "An error occured while scanning from file.",
+                        details: nsError?.localizedDescription
+                    )
+                )
+            }
+        }
+    }
+
     // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {

@@ -505,7 +505,7 @@ enum BarcodeFormat {
   /// Barcode format constant for Codabar.
   ///
   /// Constant Value: 8
-  codebar,
+  codabar,
 
   /// Barcode format constant for Data Matrix.
   ///
@@ -551,6 +551,16 @@ enum BarcodeFormat {
   ///
   /// Constant Value: 4096
   aztec,
+
+  /// Barcode format constant for i2of5.
+  ///
+  /// Constant Value:  8192
+  i2of5,
+
+  /// Barcode format constant for GS1.
+  ///
+  /// Constant Value: 16384
+  gs1,
 }
 
 extension BarcodeValue on BarcodeFormat {
@@ -566,7 +576,7 @@ extension BarcodeValue on BarcodeFormat {
         return 2;
       case BarcodeFormat.code93:
         return 4;
-      case BarcodeFormat.codebar:
+      case BarcodeFormat.codabar:
         return 8;
       case BarcodeFormat.dataMatrix:
         return 16;
@@ -586,6 +596,10 @@ extension BarcodeValue on BarcodeFormat {
         return 2048;
       case BarcodeFormat.aztec:
         return 4096;
+      case BarcodeFormat.i2of5:
+        return 8192;
+      case BarcodeFormat.gs1:
+        return 16384;
     }
   }
 }

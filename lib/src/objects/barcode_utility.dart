@@ -27,7 +27,7 @@ BarcodeFormat toFormat(int value) {
     case 4:
       return BarcodeFormat.code93;
     case 8:
-      return BarcodeFormat.codebar;
+      return BarcodeFormat.codabar;
     case 16:
       return BarcodeFormat.dataMatrix;
     case 32:
@@ -46,6 +46,11 @@ BarcodeFormat toFormat(int value) {
       return BarcodeFormat.pdf417;
     case 4096:
       return BarcodeFormat.aztec;
+    case 8192:
+      return BarcodeFormat.i2of5;
+    case 16384:
+      return BarcodeFormat.gs1;
+    case -1:
     default:
       return BarcodeFormat.unknown;
   }

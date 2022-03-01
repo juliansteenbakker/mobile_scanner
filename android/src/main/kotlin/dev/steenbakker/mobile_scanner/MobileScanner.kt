@@ -54,6 +54,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "fromFile" -> fromFile(call, result)
             else -> result.notImplemented()
         }
     }
@@ -259,6 +260,21 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         result.success(null)
     }
 
+    private fun fromFile(call: MethodCall, result: MethodChannel.Result) {
+        try {
+        val uri = Uri.fromFile( File(call.arguments.toString()))
+        val inputImage = InputImage.fromFilePath(activity, uri)
+
+        val scanner = BarcodeScanning.getClient()
+        val foundBarcodes = mutableListOf<Barcode>()
+        scanner.process(inputImage)
+            .addOnSuccessListener { barcodes -> foundBarcodes.addAll(barcodes) }
+            .addOnFailureListener { e -> Log.e(TAG, e.message, e); result.error(TAG, e.message, e)}
+            .addOnCompleteListener { result.success(mapOf("type" to "GoogleMLKitVision", "data" to foundBarcodes.map { it.data })) }
+        } catch(e: Throwable) {
+            result.error(TAG, e.message, e)
+        }
+    }
 
     private val Barcode.data: Map<String, Any?>
         get() = mapOf("corners" to cornerPoints?.map { corner -> corner.data }, "format" to format,
