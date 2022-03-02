@@ -1,5 +1,9 @@
+## 0.1.3
+* Fixed crash after asking permission. [#29](https://github.com/juliansteenbakker/mobile_scanner/issues/29)
+* Upgraded cameraX from 1.1.0-beta01 to 1.1.0-beta02
+
 ## 0.1.2
-* MobileScannerArguments is now exported. [7](https://github.com/juliansteenbakker/mobile_scanner/issues/7)
+* MobileScannerArguments is now exported. [#7](https://github.com/juliansteenbakker/mobile_scanner/issues/7)
 
 Bugfixes:
 * Fixed application crashing when stop() or start() is called multiple times. [#5](https://github.com/juliansteenbakker/mobile_scanner/issues/5)
