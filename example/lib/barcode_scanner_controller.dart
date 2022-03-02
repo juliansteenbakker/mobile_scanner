@@ -19,6 +19,8 @@ class _BarcodeScannerWithControllerState
     // facing: CameraFacing.front,
   );
 
+  bool isStarted = true;
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -69,9 +71,21 @@ class _BarcodeScannerWithControllerState
                         iconSize: 32.0,
                         onPressed: () => controller.toggleTorch(),
                       ),
+                      IconButton(
+                          color: Colors.white,
+                          icon: isStarted
+                              ? const Icon(Icons.stop)
+                              : const Icon(Icons.play_arrow),
+                          iconSize: 32.0,
+                          onPressed: () => setState(() {
+                                isStarted
+                                    ? controller.stop()
+                                    : controller.start();
+                                isStarted = !isStarted;
+                              })),
                       Center(
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 120,
+                          width: MediaQuery.of(context).size.width - 160,
                           height: 50,
                           child: FittedBox(
                             child: Text(
