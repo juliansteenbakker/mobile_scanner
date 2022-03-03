@@ -1,5 +1,5 @@
-// This is here because dart doesn't seem to support this properly
-// https://stackoverflow.com/questions/61161135/adding-support-for-navigator-mediadevices-getusermedia-to-dart
+// // This is here because dart doesn't seem to support this properly
+// // https://stackoverflow.com/questions/61161135/adding-support-for-navigator-mediadevices-getusermedia-to-dart
 
 @JS('navigator.mediaDevices')
 library media_devices;
@@ -22,9 +22,11 @@ class UserMediaOptions {
 class VideoOptions {
   external String get facingMode;
   // external DeviceIdOptions get deviceId;
+  external Map get width;
+  external Map get height;
 
   external factory VideoOptions(
-      {String? facingMode, DeviceIdOptions? deviceId});
+      {String? facingMode, DeviceIdOptions? deviceId, Map? width, Map? height});
 }
 
 @JS()

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'mobile_scanner_arguments.dart';
 import 'objects/barcode_utility.dart';
 
 /// The facing of a camera.

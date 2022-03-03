@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -67,7 +68,7 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   Widget build(BuildContext context) {
     if (kIsWeb) {
-      return createWebQrView(
+      return WebScanner(
         onDetect: (barcode) => widget.onDetect!(barcode, null),
         cameraFacing: CameraFacing.back,
       );
@@ -105,7 +106,6 @@ class _MobileScannerState extends State<MobileScanner>
                 );
               }
             });
-      }
       });
     }
   }

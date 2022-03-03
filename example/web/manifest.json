@@ -1,11 +1,11 @@
 {
-    "name": "example",
-    "short_name": "example",
+    "name": "Mobile Scanner Example",
+    "short_name": "mobile_scanner_example",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "A barcode and qr code scanner example.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

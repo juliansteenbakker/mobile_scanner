@@ -3,7 +3,6 @@
 import 'dart:async';
 import 'dart:core';
 import 'dart:html' as html;
-import 'dart:js_util';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -18,21 +17,21 @@ import 'media.dart';
 /// Copyright 2020 @treeder
 /// Copyright 2021 The one with the braid
 
-class WebQrView extends StatefulWidget {
+class WebScanner extends StatefulWidget {
   final Function(Barcode) onDetect;
   final CameraFacing? cameraFacing;
 
-  const WebQrView(
+  const WebScanner(
       {Key? key,
       required this.onDetect,
       this.cameraFacing = CameraFacing.front})
       : super(key: key);
 
   @override
-  _WebQrViewState createState() => _WebQrViewState();
+  _WebScannerState createState() => _WebScannerState();
 
-  static html.DivElement vidDiv =
-      html.DivElement(); // need a global for the registerViewFactory
+  // need a global for the registerViewFactory
+  static html.DivElement vidDiv = html.DivElement();
 
   static Future<bool> cameraAvailable() async {
     final sources =
@@ -49,50 +48,65 @@ class WebQrView extends StatefulWidget {
   }
 }
 
-class _WebQrViewState extends State<WebQrView> {
+class _WebScannerState extends State<WebScanner> {
+  // Which way the camera is facing
+  // late CameraFacing facing;
+
+  // The camera stream to display to the user
   html.MediaStream? _localStream;
-  // html.CanvasElement canvas;
-  // html.CanvasRenderingContext2D ctx;
+
+  // Check if analyzer is processing barcode
   bool _currentlyProcessing = false;
 
   // QRViewControllerWeb? _controller;
 
-  late Size _size = const Size(0, 0);
+  // Set size of the webview
+  // Size _size = const Size(0, 0);
+
+  // TODO: Timer for capture?
   Timer? timer;
-  String? code;
+
+  // String? code;
+
+  // TODO: Error message if error
   String? _errorMsg;
+
+  // Video element to be played on
   html.VideoElement video = html.VideoElement();
-  String viewID = 'QRVIEW-' + DateTime.now().millisecondsSinceEpoch.toString();
 
-  final StreamController<Barcode> _scanUpdateController =
-      StreamController<Barcode>();
-  late CameraFacing facing;
+  // ID of the video feed
+  String viewID =
+      'WebScanner-' + DateTime.now().millisecondsSinceEpoch.toString();
 
+  // final StreamController<Barcode> _scanUpdateController =
+  //     StreamController<Barcode>();
+
+  // Timer for interval capture
   Timer? _frameIntervall;
 
   @override
   void initState() {
     super.initState();
+    // facing = widget.cameraFacing ?? CameraFacing.front;
+    WebScanner.vidDiv.children = [video];
 
-    facing = widget.cameraFacing ?? CameraFacing.front;
-
-    // video = html.VideoElement();
-    WebQrView.vidDiv.children = [video];
     // ignore: UNDEFINED_PREFIXED_NAME
     ui.platformViewRegistry
-        .registerViewFactory(viewID, (int id) => WebQrView.vidDiv);
+        .registerViewFactory(viewID, (int id) => WebScanner.vidDiv);
+
     // giving JavaScipt some time to process the DOM changes
     Timer(const Duration(milliseconds: 500), () {
       start();
     });
   }
 
+  /// Initialize camera and capture frame
   Future start() async {
-    await _makeCall();
+    await _startVideoStream();
     _frameIntervall?.cancel();
     _frameIntervall =
         Timer.periodic(const Duration(milliseconds: 200), (timer) {
-      _captureFrame2();
+      _captureFrame();
     });
   }
 
@@ -102,7 +116,7 @@ class _WebQrViewState extends State<WebQrView> {
       timer = null;
     }
     if (_currentlyProcessing) {
-      _stopStream();
+      _stopVideoStream();
     }
   }
 
@@ -112,30 +126,42 @@ class _WebQrViewState extends State<WebQrView> {
     super.dispose();
   }
 
-  // Platform messages are asynchronous, so we initialize in an async method.
-  Future<void> _makeCall() async {
-    if (_localStream != null) {
-      return;
-    }
+  /// Starts a video stream if not started already
+  Future<void> _startVideoStream() async {
+    // Check if stream is running
+    if (_localStream != null) return;
 
     try {
-      var constraints = UserMediaOptions(
-          video: VideoOptions(
-        facingMode: (facing == CameraFacing.front ? 'user' : 'environment'),
-      ));
-      // dart style, not working properly:
-      // var stream =
-      //     await html.window.navigator.mediaDevices.getUserMedia(constraints);
-      // straight JS:
-      var stream = await promiseToFuture(getUserMedia(constraints));
-      _localStream = stream;
+      // Check if browser supports multiple camera's and set if supported
+      Map? capabilities =
+          html.window.navigator.mediaDevices?.getSupportedConstraints();
+      if (capabilities != null && capabilities['facingMode']) {
+        UserMediaOptions constraints = UserMediaOptions(
+            video: VideoOptions(
+          facingMode: (widget.cameraFacing == CameraFacing.front
+              ? 'user'
+              : 'environment'),
+          width: {'ideal': 4096},
+          height: {'ideal': 2160},
+        ));
+
+        _localStream =
+            await html.window.navigator.getUserMedia(video: constraints);
+      } else {
+        _localStream = await html.window.navigator.getUserMedia(video: true);
+      }
+
       video.srcObject = _localStream;
-      video.setAttribute('playsinline',
-          'true'); // required to tell iOS safari we don't want fullscreen
+
+      // required to tell iOS safari we don't want fullscreen
+      video.setAttribute('playsinline', 'true');
+
+      // TODO: Check controller
       // if (_controller == null) {
       //   _controller = QRViewControllerWeb(this);
       //   widget.onPlatformViewCreated(_controller!);
       // }
+
       await video.play();
     } catch (e) {
       cancel();
@@ -144,6 +170,7 @@ class _WebQrViewState extends State<WebQrView> {
       });
       return;
     }
+
     if (!mounted) return;
 
     setState(() {
@@ -151,45 +178,43 @@ class _WebQrViewState extends State<WebQrView> {
     });
   }
 
-  Future<void> _stopStream() async {
+  Future<void> _stopVideoStream() async {
     try {
-      // await _localStream.dispose();
+      // Stop the camera stream
       _localStream!.getTracks().forEach((track) {
         if (track.readyState == 'live') {
           track.stop();
         }
       });
-      // video.stop();
+
       video.srcObject = null;
       _localStream = null;
-      // _localRenderer.srcObject = null;
-      // ignore: empty_catches
-    } catch (e) {}
+    } catch (e) {
+      debugPrint('Failed to stop stream: $e');
+    }
   }
 
-  Future<dynamic> _captureFrame2() async {
-    if (_localStream == null) {
-      return null;
-    }
-    final canvas =
-        html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
+  Future<dynamic> _captureFrame() async {
+    if (_localStream == null) return null;
+    final canvas = html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
     final ctx = canvas.context2D;
-    // canvas.width = video.videoWidth;
-    // canvas.height = video.videoHeight;
+
     ctx.drawImage(video, 0, 0);
     final imgData = ctx.getImageData(0, 0, canvas.width!, canvas.height!);
 
-    final size =
-        Size(canvas.width?.toDouble() ?? 0, canvas.height?.toDouble() ?? 0);
-    if (size != _size) {
-      setState(() {
-        _setCanvasSize(size);
-      });
-    }
+    // final size =
+    //     Size(canvas.width?.toDouble() ?? 0, canvas.height?.toDouble() ?? 0);
+    // if (size != _size) {
+    //   setState(() {
+    //     _setCanvasSize(size);
+    //   });
+    // }
+    // debugPrint('img.data: ${imgData.data}');
     final code = jsQR(imgData.data, canvas.width, canvas.height);
     // ignore: unnecessary_null_comparison
     if (code != null) {
-      widget.onDetect(Barcode(rawValue: code.data));
+      debugPrint('CODE: $code');
+    //   widget.onDetect(Barcode(rawValue: code.data));
       // print('Barcode: ${code.data}');
       // _scanUpdateController
       //     .add(Barcode(rawValue: code.data));
@@ -204,118 +229,14 @@ class _WebQrViewState extends State<WebQrView> {
     if (_localStream == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        var zoom = 1.0;
 
-        if (_size.height != 0) zoom = constraints.maxHeight / _size.height;
-
-        if (_size.width != 0) {
-          final horizontalZoom = constraints.maxWidth / _size.width;
-          if (horizontalZoom > zoom) {
-            zoom = horizontalZoom;
-          }
-        }
-
-        return SizedBox(
-          width: constraints.maxWidth,
-          height: constraints.maxHeight,
-          child: Center(
-            child: SizedBox.fromSize(
-              size: _size,
-              child: Transform.scale(
-                alignment: Alignment.center,
-                scale: zoom,
-                child: HtmlElementView(viewType: viewID),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _setCanvasSize(ui.Size size) {
-    setState(() {
-      _size = size;
-    });
+    return SizedBox(
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height,
+        child: FittedBox(
+            child: SizedBox(
+                width: video.videoWidth.toDouble(),
+                height: video.videoHeight.toDouble(),
+                child: HtmlElementView(viewType: viewID))));
   }
 }
-//
-// class QRViewControllerWeb implements QRViewController {
-//   final _WebQrViewState _state;
-//
-//   QRViewControllerWeb(this._state);
-//   @override
-//   void dispose() => _state.cancel();
-//
-//   @override
-//   Future<CameraFacing> flipCamera() async {
-//     // TODO: improve error handling
-//     _state.facing = _state.facing == CameraFacing.front
-//         ? CameraFacing.back
-//         : CameraFacing.front;
-//     await _state.start();
-//     return _state.facing;
-//   }
-//
-//   @override
-//   Future<CameraFacing> getCameraInfo() async {
-//     return _state.facing;
-//   }
-//
-//   @override
-//   Future<bool?> getFlashStatus() async {
-//     // TODO: flash is simply not supported by JavaScipt. To avoid issuing applications, we always return it to be off.
-//     return false;
-//   }
-//
-//   @override
-//   Future<SystemFeatures> getSystemFeatures() {
-//     // TODO: implement getSystemFeatures
-//     throw UnimplementedError();
-//   }
-//
-//   @override
-//   // TODO: implement hasPermissions. Blocking: WebQrView.cameraAvailable() returns a Future<bool> whereas a bool is required
-//   bool get hasPermissions => throw UnimplementedError();
-//
-//   @override
-//   Future<void> pauseCamera() {
-//     // TODO: implement pauseCamera
-//     throw UnimplementedError();
-//   }
-//
-//   @override
-//   Future<void> resumeCamera() {
-//     // TODO: implement resumeCamera
-//     throw UnimplementedError();
-//   }
-//
-//   @override
-//   Stream<Barcode> get scannedDataStream => _state._scanUpdateController.stream;
-//
-//   @override
-//   Future<void> stopCamera() {
-//     // TODO: implement stopCamera
-//     throw UnimplementedError();
-//   }
-//
-//   @override
-//   Future<void> toggleFlash() async {
-//     // TODO: flash is simply not supported by JavaScipt
-//     return;
-//   }
-//
-//   @override
-//   Future<void> scanInvert(bool isScanInvert) {
-//     // TODO: implement scanInvert
-//     throw UnimplementedError();
-//   }
-// }
-
-Widget createWebQrView({required Function(Barcode) onDetect, CameraFacing? cameraFacing}) =>
-    WebQrView(
-      onDetect: onDetect,
-      cameraFacing: cameraFacing,
-    );
