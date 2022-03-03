@@ -115,6 +115,19 @@ class _BarcodeScannerWithControllerState
                         iconSize: 32.0,
                         onPressed: () => controller.switchCamera(),
                       ),
+                      IconButton(
+                        color: Colors.white,
+                        icon: Icon(Icons.browse_gallery),
+                        iconSize: 32.0,
+                        onPressed: () async {
+                          // final ImagePicker _picker = ImagePicker();
+                          // // Pick an image
+                          // final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
+                          // if (image != null) {
+                          //   controller.analyzeImage(image.path);
+                          // }
+                        },
+                      ),
                     ],
                   ),
                 ),
