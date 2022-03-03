@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'mobile_scanner_arguments.dart';
-
 enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
@@ -31,8 +29,7 @@ class MobileScanner extends StatefulWidget {
     this.onDetect,
     this.controller,
     this.fit = BoxFit.cover,
-  })  : assert((controller != null)),
-        super(key: key);
+  }) : super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -40,33 +37,32 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
-  bool onScreen = true;
   late MobileScannerController controller;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance?.addObserver(this);
     controller = widget.controller ?? MobileScannerController();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      setState(() => onScreen = true);
-    } else {
-      if (onScreen) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        if (!controller.isStarting) controller.start();
+        break;
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.paused:
+      case AppLifecycleState.detached:
         controller.stop();
-      }
-      setState(() {
-        onScreen = false;
-      });
+        break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      if (!onScreen) return const Text("Camera Paused.");
       return ValueListenableBuilder(
           valueListenable: controller.args,
           builder: (context, value, child) {
@@ -114,7 +110,8 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
-    if (widget.controller == null) controller.dispose();
+    controller.dispose();
+    WidgetsBinding.instance?.removeObserver(this);
     super.dispose();
   }
 }

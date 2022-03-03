@@ -25,7 +25,7 @@ class Barcode {
   /// It's only available when the barcode is encoded in the UTF-8 format, and for non-UTF8 ones use [rawBytes] instead.
   ///
   /// Returns null if the raw value can not be determined.
-  final String rawValue;
+  final String? rawValue;
 
   /// Returns format type of the barcode value.
   ///
@@ -165,22 +165,22 @@ class ContactInfo {
   /// Gets contact person's organization.
   ///
   /// Returns null if not available.
-  final String organization;
+  final String? organization;
 
   /// Gets contact person's phones.
   ///
   /// Returns an empty list if nothing found.
-  final List<Phone> phones;
+  final List<Phone>? phones;
 
   /// Gets contact person's title.
   ///
   /// Returns null if not available.
-  final String title;
+  final String? title;
 
   /// Gets contact person's urls.
   ///
   /// Returns an empty list if nothing found.
-  final List<String> urls;
+  final List<String>? urls;
 
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map<dynamic, dynamic> data)
@@ -202,7 +202,9 @@ class Address {
   final List<String> addressLines;
 
   /// Gets type of the address.
-  final AddressType type;
+  ///
+  /// Returns null if not available.
+  final AddressType? type;
 
   /// Create a [Address] from native data.
   Address.fromNative(Map<dynamic, dynamic> data)
@@ -215,37 +217,37 @@ class PersonName {
   /// Gets first name.
   ///
   /// Returns null if not available.
-  final String first;
+  final String? first;
 
   /// Gets middle name.
   ///
   /// Returns null if not available.
-  final String middle;
+  final String? middle;
 
   /// Gets last name.
   ///
   /// Returns null if not available.
-  final String last;
+  final String? last;
 
   /// Gets prefix of the name.
   ///
   /// Returns null if not available.
-  final String prefix;
+  final String? prefix;
 
   /// Gets suffix of the person's name.
   ///
   /// Returns null if not available.
-  final String suffix;
+  final String? suffix;
 
   /// Gets the properly formatted name.
   ///
   /// Returns null if not available.
-  final String formattedName;
+  final String? formattedName;
 
   /// Designates a text string to be set as the kana name in the phonebook. Used for Japanese contacts.
   ///
   /// Returns null if not available.
-  final String pronunciation;
+  final String? pronunciation;
 
   /// Create a [PersonName] from native data.
   PersonName.fromNative(Map<dynamic, dynamic> data)
@@ -263,74 +265,74 @@ class DriverLicense {
   /// Gets city of holder's address.
   ///
   /// Returns null if not available.
-  final String addressCity;
+  final String? addressCity;
 
   /// Gets state of holder's address.
   ///
   /// Returns null if not available.
-  final String addressState;
+  final String? addressState;
 
   /// Gets holder's street address.
   ///
   /// Returns null if not available.
-  final String addressStreet;
+  final String? addressStreet;
 
   /// Gets postal code of holder's address.
   ///
   /// Returns null if not available.
-  final String addressZip;
+  final String? addressZip;
 
   /// Gets birth date of the holder.
   ///
   /// Returns null if not available.
-  final String birthDate;
+  final String? birthDate;
 
   /// Gets "DL" for driver licenses, "ID" for ID cards.
   ///
   /// Returns null if not available.
-  final String documentType;
+  final String? documentType;
 
   /// Gets expiry date of the license.
   ///
   /// Returns null if not available.
-  final String expiryDate;
+  final String? expiryDate;
 
   /// Gets holder's first name.
   ///
   /// Returns null if not available.
-  final String firstName;
+  final String? firstName;
 
   /// Gets holder's gender. 1 - male, 2 - female.
   ///
   /// Returns null if not available.
-  final String gender;
+  final String? gender;
 
   /// Gets issue date of the license.
   ///
   /// The date format depends on the issuing country. MMDDYYYY for the US, YYYYMMDD for Canada.
   ///
   /// Returns null if not available.
-  final String issueDate;
+  final String? issueDate;
 
   /// Gets the three-letter country code in which DL/ID was issued.
   ///
   /// Returns null if not available.
-  final String issuingCountry;
+  final String? issuingCountry;
 
   /// Gets holder's last name.
   ///
   /// Returns null if not available.
-  final String lastName;
+  final String? lastName;
 
   /// Gets driver license ID number.
   ///
   /// Returns null if not available.
-  final String licenseNumber;
+  final String? licenseNumber;
 
   /// Gets holder's middle name.
   ///
   /// Returns null if not available.
-  final String middleName;
+  final String? middleName;
 
   /// Create a [DriverLicense] from native data.
   DriverLicense.fromNative(Map<dynamic, dynamic> data)
@@ -355,22 +357,23 @@ class Email {
   /// Gets email's address.
   ///
   /// Returns null if not available.
-  final String address;
+  final String? address;
 
   /// Gets email's body.
   ///
   /// Returns null if not available.
-  final String body;
+  final String? body;
 
   /// Gets email's subject.
   ///
   /// Returns null if not available.
-  final String subject;
+  final String? subject;
 
   /// Gets type of the email.
   ///
   /// See also [EmailType].
-  final EmailType type;
+  /// Returns null if not available.
+  final EmailType? type;
 
   /// Create a [Email] from native data.
   Email.fromNative(Map<dynamic, dynamic> data)
@@ -383,10 +386,10 @@ class Email {
 /// GPS coordinates from a 'GEO:' or similar QRCode type.
 class GeoPoint {
   /// Gets the latitude.
-  final double latitude;
+  final double? latitude;
 
   /// Gets the longitude.
-  final double longitude;
+  final double? longitude;
 
   /// Create a [GeoPoint] from native data.
   GeoPoint.fromNative(Map<dynamic, dynamic> data)
@@ -399,12 +402,13 @@ class Phone {
   /// Gets phone number.
   ///
   /// Returns null if not available.
-  final String number;
+  final String? number;
 
   /// Gets type of the phone number.
   ///
   /// See also [PhoneType].
-  final PhoneType type;
+  /// Returns null if not available.
+  final PhoneType? type;
 
   /// Create a [Phone] from native data.
   Phone.fromNative(Map<dynamic, dynamic> data)
@@ -417,12 +421,12 @@ class SMS {
   /// Gets the message content of the sms.
   ///
   /// Returns null if not available.
-  final String message;
+  final String? message;
 
   /// Gets the phone number of the sms.
   ///
   /// Returns null if not available.
-  final String phoneNumber;
+  final String? phoneNumber;
 
   /// Create a [SMS] from native data.
   SMS.fromNative(Map<dynamic, dynamic> data)
@@ -435,12 +439,12 @@ class UrlBookmark {
   /// Gets the title of the bookmark.
   ///
   /// Returns null if not available.
-  final String title;
+  final String? title;
 
   /// Gets the url of the bookmark.
   ///
   /// Returns null if not available.
-  final String url;
+  final String? url;
 
   /// Create a [UrlBookmark] from native data.
   UrlBookmark.fromNative(Map<dynamic, dynamic> data)
@@ -458,12 +462,12 @@ class WiFi {
   /// Gets the ssid of the WIFI.
   ///
   /// Returns null if not available.
-  final String ssid;
+  final String? ssid;
 
   /// Gets the password of the WIFI.
   ///
   /// Returns null if not available.
-  final String password;
+  final String? password;
 
   /// Create a [WiFi] from native data.
   WiFi.fromNative(Map<dynamic, dynamic> data)
