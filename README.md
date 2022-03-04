@@ -17,11 +17,12 @@ SDK 21 and newer. Reason: CameraX requires at least SDK 21.
 ### iOS
 iOS 11 and newer. Reason: MLKit for iOS requires at least iOS 11 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
 
-Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:
+**Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
 
-If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)
+**If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)**
+  
 NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
   
 ### macOS
