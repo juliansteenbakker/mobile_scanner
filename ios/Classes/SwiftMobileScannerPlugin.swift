@@ -26,7 +26,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
-    let scanner = BarcodeScanner.barcodeScanner()
+    var scanner = BarcodeScanner.barcodeScanner()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(registrar.textures())
@@ -171,7 +171,16 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //        let ratio: Int = argReader.int(key: "ratio")
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
-
+        let formats: Array = argReader.intArray(key: "formats") ?? []
+        
+        let formatList: NSMutableArray = []
+        for index in formats {
+            formatList.add(BarcodeFormat(rawValue: index))
+        }
+        
+        let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
+        scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
+        
         // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
         
@@ -356,5 +365,9 @@ class MapArgumentReader {
   func stringArray(key: String) -> [String]? {
     return args?[key] as? [String]
   }
+    
+    func intArray(key: String) -> [Int]? {
+      return args?[key] as? [Int]
+    }
   
 }

@@ -17,6 +17,7 @@ class _BarcodeScannerWithControllerState
 
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
+    // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
   );
 
