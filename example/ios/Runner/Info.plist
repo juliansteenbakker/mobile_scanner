@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access in order to open photos of barcodes</string>
 	<key>NSCameraUsageDescription</key>
 	<string>We use the camera to scan barcodes</string>
 	<key>CFBundleDevelopmentRegion</key>

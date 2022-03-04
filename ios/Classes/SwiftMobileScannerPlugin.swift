@@ -22,10 +22,11 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
     
-    
 //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
+    
+    let scanner = BarcodeScanner.barcodeScanner()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(registrar.textures())
@@ -58,6 +59,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
+        case "analyzeImage":
+            analyzeImage(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -102,7 +105,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
               defaultOrientation: .portrait
             )
 
-            let scanner = BarcodeScanner.barcodeScanner()
             scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
                     for barcode in barcodes! {
@@ -254,6 +256,42 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //        analyzeMode = call.arguments as! Int
 //        result(nil)
 //    }
+    
+    func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let uiImage = UIImage(contentsOfFile: call.arguments as! String)
+        
+        if (uiImage == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                    message: "No image found in analyzeImage!",
+                                    details: nil))
+            return
+        }
+        
+        let image = VisionImage(image: uiImage!)
+        image.orientation = imageOrientation(
+          deviceOrientation: UIDevice.current.orientation,
+          defaultOrientation: .portrait
+        )
+        
+        var barcodeFound = false
+
+        scanner.process(image) { [self] barcodes, error in
+            if error == nil && barcodes != nil {
+                for barcode in barcodes! {
+                    barcodeFound = true
+                    let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
+                    sink?(event)
+                }
+            } else if error != nil {
+                result(FlutterError(code: "MobileScanner",
+                                    message: error?.localizedDescription,
+                                    details: "analyzeImage()"))
+            }
+            analyzing = false
+            result(barcodeFound)
+        }
+
+    }
     
     func stop(_ result: FlutterResult) {
         if (device == nil) {

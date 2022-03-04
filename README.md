@@ -11,9 +11,23 @@ A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX
 | :-----: | :-: | :---: | :-: | :---: | :-----: |
 |   ✔️    | ✔️   |  ✔️  |   |     |      |
 
-CameraX for Android requires at least SDK 21.
+Android: SDK 21 and newer. Reason: CameraX requires at least SDK 21.
+iOS: iOS 11 and newer. Reason: MLKit for iOS requires at least iOS 11 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
+macOS: macOS 10.13. Reason: Apple Vision library.
 
-MLKit for iOS requires at least iOS 11 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
+### iOS
+Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:
+
+NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
+
+If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)
+NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
+
+## Feature Support
+
+| Features               | Android            | iOS                | macOS | Web |
+|------------------------|--------------------|--------------------|-------|-----|
+| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: |   :x:    |  :x:   |
 
 # Usage
 

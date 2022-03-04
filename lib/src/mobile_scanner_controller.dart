@@ -208,11 +208,16 @@ class MobileScannerController {
     await start();
   }
 
-  Future<void> analyzeImage(dynamic path) async {
-    await methodChannel.invokeMethod('analyzeImage', path);
+  /// Handles a local image file.
+  /// Returns true if a barcode or QR code is found.
+  /// Returns false if nothing is found.
+  ///
+  /// [path] The path of the image on the devices
+  Future<bool> analyzeImage(String path) async {
+    return await methodChannel.invokeMethod('analyzeImage', path);
   }
 
-  /// Disposes the controller and closes all listeners.
+  /// Disposes the MobileScannerController and closes all listeners.
   void dispose() {
     if (hashCode == _controllerHashcode) {
       stop();
@@ -223,11 +228,11 @@ class MobileScannerController {
     barcodesController.close();
   }
 
-  /// Checks if the controller is bound to the correct MobileScanner object.
+  /// Checks if the MobileScannerController is bound to the correct MobileScanner object.
   void ensure(String name) {
     final message =
-        'CameraController.$name called after CameraController.dispose\n'
-        'CameraController methods should not be used after calling dispose.';
+        'MobileScannerController.$name called after MobileScannerController.dispose\n'
+        'MobileScannerController methods should not be used after calling dispose.';
     assert(hashCode == _controllerHashcode, message);
   }
 }
