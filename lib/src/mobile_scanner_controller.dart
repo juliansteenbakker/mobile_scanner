@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -42,6 +43,7 @@ class MobileScannerController {
   late final ValueNotifier<CameraFacing> cameraFacingState;
   final Ratio? ratio;
   final bool? torchEnabled;
+  final List<BarcodeFormat>? formats;
 
   CameraFacing facing;
   bool hasTorch = false;
@@ -50,7 +52,7 @@ class MobileScannerController {
   Stream<Barcode> get barcodes => barcodesController.stream;
 
   MobileScannerController(
-      {this.facing = CameraFacing.back, this.ratio, this.torchEnabled}) {
+      {this.facing = CameraFacing.back, this.ratio, this.torchEnabled, this.formats}) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
       stop();
@@ -137,6 +139,15 @@ class MobileScannerController {
     arguments['facing'] = facing.index;
     if (ratio != null) arguments['ratio'] = ratio;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
+
+    if (formats != null) {
+      if (Platform.isAndroid) {
+        arguments['formats'] = formats!.map((e) => e.index).toList();
+      } else if (Platform.isIOS || Platform.isMacOS) {
+        arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+      }
+
+    }
 
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};

@@ -553,6 +553,45 @@ enum BarcodeFormat {
   aztec,
 }
 
+extension BarcodeValue on BarcodeFormat {
+
+  int get rawValue {
+    switch (this) {
+      case BarcodeFormat.unknown:
+        return -1;
+      case BarcodeFormat.all:
+        return 0;
+      case BarcodeFormat.code128:
+        return 1;
+      case BarcodeFormat.code39:
+        return 2;
+      case BarcodeFormat.code93:
+        return 4;
+      case BarcodeFormat.codebar:
+        return 8;
+      case BarcodeFormat.dataMatrix:
+        return 16;
+      case BarcodeFormat.ean13:
+        return 32;
+      case BarcodeFormat.ean8:
+        return 64;
+      case BarcodeFormat.itf:
+        return 128;
+      case BarcodeFormat.qrCode:
+        return 256;
+      case BarcodeFormat.upcA:
+        return 512;
+      case BarcodeFormat.upcE:
+        return 1024;
+      case BarcodeFormat.pdf417:
+        return 2048;
+      case BarcodeFormat.aztec:
+        return 4096;
+    }
+  }
+
+}
+
 /// Address type constants.
 enum AddressType {
   /// Unknown address type.

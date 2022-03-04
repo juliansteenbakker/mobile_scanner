@@ -128,11 +128,18 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         val facing: Int = call.argument<Int>("facing") ?: 0
         val ratio: Int? = call.argument<Int>("ratio")
         val torch: Boolean = call.argument<Boolean>("torch") ?: false
-        val formatStrings: List<String>? = call.argument<List<String>>("formats")
+        val formats: List<Int>? = call.argument<List<Int>>("formats")
 
-        if (formatStrings != null) {
-            val options: BarcodeScannerOptions = BarcodeFormats.optionsFromStringList(formatStrings)
-            scanner = BarcodeScanning.getClient(options)
+        if (formats != null) {
+            val formatsList: MutableList<Int> = mutableListOf()
+            for (index in formats) {
+                formatsList.add(BarcodeFormats.values()[index].intValue)
+            }
+            scanner = if (formatsList.size == 1) {
+                BarcodeScanning.getClient( BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first()).build());
+            } else {
+                BarcodeScanning.getClient( BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first(), *formatsList.subList(1, formatsList.size).toIntArray() ).build());
+            }
         }
 
         val future = ProcessCameraProvider.getInstance(activity)
