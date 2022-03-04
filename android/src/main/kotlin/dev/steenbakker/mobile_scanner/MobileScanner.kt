@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Point
+import android.net.Uri
 import android.util.Log
 import android.util.Size
 import android.view.Surface
@@ -22,6 +23,8 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
+import java.io.File
+import java.net.URI
 
 
 class MobileScanner(private val activity: Activity, private val textureRegistry: TextureRegistry)
@@ -50,6 +53,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             "torch" -> toggleTorch(call, result)
 //            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
+            "analyzeImage" -> analyzeImage(call, result)
             else -> result.notImplemented()
         }
     }
@@ -204,6 +208,24 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //        analyzeMode = call.arguments as Int
 //        result.success(null)
 //    }
+
+    private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
+        val uri = Uri.fromFile( File(call.arguments.toString()))
+        val inputImage = InputImage.fromFilePath(activity, uri)
+
+        var barcodeFound = false
+        scanner.process(inputImage)
+            .addOnSuccessListener { barcodes ->
+                for (barcode in barcodes) {
+                    barcodeFound = true
+                    sink?.success(mapOf("name" to "barcode", "data" to barcode.data))
+                }
+            }
+            .addOnFailureListener { e -> Log.e(TAG, e.message, e)
+                result.error(TAG, e.message, e)}
+            .addOnCompleteListener { result.success(barcodeFound) }
+
+    }
 
     private fun stop(result: MethodChannel.Result) {
         if (camera == null) {
