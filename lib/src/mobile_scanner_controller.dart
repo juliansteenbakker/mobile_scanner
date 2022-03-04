@@ -43,6 +43,10 @@ class MobileScannerController {
   late final ValueNotifier<CameraFacing> cameraFacingState;
   final Ratio? ratio;
   final bool? torchEnabled;
+
+  /// If provided, the scanner will only detect those specific formats.
+  ///
+  /// WARNING: On iOS, only 1 format is supported.
   final List<BarcodeFormat>? formats;
 
   CameraFacing facing;
@@ -52,7 +56,10 @@ class MobileScannerController {
   Stream<Barcode> get barcodes => barcodesController.stream;
 
   MobileScannerController(
-      {this.facing = CameraFacing.back, this.ratio, this.torchEnabled, this.formats}) {
+      {this.facing = CameraFacing.back,
+      this.ratio,
+      this.torchEnabled,
+      this.formats}) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
       stop();
@@ -146,7 +153,6 @@ class MobileScannerController {
       } else if (Platform.isIOS || Platform.isMacOS) {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
       }
-
     }
 
     // Start the camera with arguments

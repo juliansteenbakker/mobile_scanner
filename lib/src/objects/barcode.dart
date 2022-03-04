@@ -554,7 +554,6 @@ enum BarcodeFormat {
 }
 
 extension BarcodeValue on BarcodeFormat {
-
   int get rawValue {
     switch (this) {
       case BarcodeFormat.unknown:
@@ -589,7 +588,6 @@ extension BarcodeValue on BarcodeFormat {
         return 4096;
     }
   }
-
 }
 
 /// Address type constants.
