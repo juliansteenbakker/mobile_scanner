@@ -24,12 +24,9 @@ class MobileScanner extends StatefulWidget {
   final BoxFit fit;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
-  const MobileScanner({
-    Key? key,
-    this.onDetect,
-    this.controller,
-    this.fit = BoxFit.cover,
-  }) : super(key: key);
+  const MobileScanner(
+      {Key? key, this.onDetect, this.controller, this.fit = BoxFit.cover})
+      : super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -50,7 +47,7 @@ class _MobileScannerState extends State<MobileScanner>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        controller.start();
+        if (!controller.isStarting) controller.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
