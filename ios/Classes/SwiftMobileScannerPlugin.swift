@@ -178,8 +178,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             formatList.add(BarcodeFormat(rawValue: index))
         }
         
-        let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
-        scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
+        if (formatList.count != 0) {
+            let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
+            scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
+        }
         
         // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
