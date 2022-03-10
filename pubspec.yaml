@@ -8,7 +8,7 @@ environment:
   flutter: ">=1.10.0"
 
 dependencies:
-  js: ^0.6.4
+  js: ^0.6.3
   flutter:
     sdk: flutter
   flutter_web_plugins:
