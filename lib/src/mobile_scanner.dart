@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -12,7 +13,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// [barcode] The barcode object with all information about the scanned code.
   /// [args] Information about the state of the MobileScanner widget
-  final Function(Barcode barcode, MobileScannerArguments args)? onDetect;
+  final Function(Barcode barcode, MobileScannerArguments? args)? onDetect;
 
   /// TODO: Function that gets called when the Widget is initialized. Can be usefull
   /// to check wether the device has a torch(flash) or not.
@@ -78,7 +79,9 @@ class _MobileScannerState extends State<MobileScanner>
                     child: SizedBox(
                       width: value.size.width,
                       height: value.size.height,
-                      child: Texture(textureId: value.textureId),
+                      child: kIsWeb
+                          ? HtmlElementView(viewType: value.webId!)
+                          : Texture(textureId: value.textureId!),
                     ),
                   ),
                 ),
