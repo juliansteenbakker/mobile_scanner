@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
@@ -44,6 +45,11 @@ class MobileScannerController {
   final Ratio? ratio;
   final bool? torchEnabled;
 
+  /// If provided, the scanner will only detect those specific formats.
+  ///
+  /// WARNING: On iOS, only 1 format is supported.
+  final List<BarcodeFormat>? formats;
+
   CameraFacing facing;
   bool hasTorch = false;
   late StreamController<Barcode> barcodesController;
@@ -51,7 +57,10 @@ class MobileScannerController {
   Stream<Barcode> get barcodes => barcodesController.stream;
 
   MobileScannerController(
-      {this.facing = CameraFacing.back, this.ratio, this.torchEnabled}) {
+      {this.facing = CameraFacing.back,
+      this.ratio,
+      this.torchEnabled,
+      this.formats}) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
       stop();
@@ -103,12 +112,18 @@ class MobileScannerController {
   // }
 
   // List<BarcodeFormats>? formats = _defaultBarcodeFormats,
+  bool isStarting = false;
+
   /// Start barcode scanning. This will first check if the required permissions
   /// are set.
   Future<void> start() async {
     ensure('startAsync');
-
+    if (isStarting) {
+      throw Exception('mobile_scanner: Called start() while already starting.');
+    }
+    isStarting = true;
     // setAnalyzeMode(AnalyzeMode.barcode.index);
+
     // Check authorization status
     MobileScannerState state =
         MobileScannerState.values[await methodChannel.invokeMethod('state')];
@@ -119,6 +134,7 @@ class MobileScannerController {
             result ? MobileScannerState.authorized : MobileScannerState.denied;
         break;
       case MobileScannerState.denied:
+        isStarting = false;
         throw PlatformException(code: 'NO ACCESS');
       case MobileScannerState.authorized:
         break;
@@ -132,6 +148,14 @@ class MobileScannerController {
     if (ratio != null) arguments['ratio'] = ratio;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
+    if (formats != null) {
+      if (Platform.isAndroid) {
+        arguments['formats'] = formats!.map((e) => e.index).toList();
+      } else if (Platform.isIOS || Platform.isMacOS) {
+        arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+      }
+    }
+
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};
     try {
@@ -139,11 +163,13 @@ class MobileScannerController {
           'start', arguments);
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
+      isStarting = false;
       // setAnalyzeMode(AnalyzeMode.none.index);
       return;
     }
 
     if (startResult == null) {
+      isStarting = false;
       throw PlatformException(code: 'INITIALIZATION ERROR');
     }
 
@@ -152,6 +178,7 @@ class MobileScannerController {
         textureId: startResult['textureId'],
         size: toSize(startResult['size']),
         hasTorch: hasTorch);
+    isStarting = false;
   }
 
   Future<void> stop() async {
@@ -199,7 +226,16 @@ class MobileScannerController {
     await start();
   }
 
-  /// Disposes the controller and closes all listeners.
+  /// Handles a local image file.
+  /// Returns true if a barcode or QR code is found.
+  /// Returns false if nothing is found.
+  ///
+  /// [path] The path of the image on the devices
+  Future<bool> analyzeImage(String path) async {
+    return await methodChannel.invokeMethod('analyzeImage', path);
+  }
+
+  /// Disposes the MobileScannerController and closes all listeners.
   void dispose() {
     if (hashCode == _controllerHashcode) {
       stop();
@@ -210,11 +246,11 @@ class MobileScannerController {
     barcodesController.close();
   }
 
-  /// Checks if the controller is bound to the correct MobileScanner object.
+  /// Checks if the MobileScannerController is bound to the correct MobileScanner object.
   void ensure(String name) {
     final message =
-        'CameraController.$name called after CameraController.dispose\n'
-        'CameraController methods should not be used after calling dispose.';
+        'MobileScannerController.$name called after MobileScannerController.dispose\n'
+        'MobileScannerController methods should not be used after calling dispose.';
     assert(hashCode == _controllerHashcode, message);
   }
 }

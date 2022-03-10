@@ -9,7 +9,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.1.1'
+        classpath 'com.android.tools.build:gradle:7.1.2'
     }
 }
 
@@ -47,8 +47,8 @@ android {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
     implementation 'com.google.mlkit:barcode-scanning:17.0.2'
-    implementation "androidx.camera:camera-camera2:1.1.0-beta01"
-    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta01'
+    implementation "androidx.camera:camera-camera2:1.1.0-beta02"
+    implementation 'androidx.camera:camera-lifecycle:1.1.0-beta02'
 
 //    // The following line is optional, as the core library is included indirectly by camera-camera2
 //    implementation "androidx.camera:camera-core:1.1.0-alpha11"
