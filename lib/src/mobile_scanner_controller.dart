@@ -6,7 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'mobile_scanner_arguments.dart';
 import 'objects/barcode_utility.dart';
 
 /// The facing of a camera.
@@ -188,7 +187,6 @@ class MobileScannerController {
           size: Size(startResult['videoWidth'], startResult['videoHeight']),
           hasTorch: hasTorch);
     } else {
-
       args.value = MobileScannerArguments(
           textureId: startResult['textureId'],
           size: toSize(startResult['size']),

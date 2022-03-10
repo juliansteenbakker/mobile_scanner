@@ -16,10 +16,10 @@ class _BarcodeScannerWithControllerState
   String? barcode;
 
   MobileScannerController controller = MobileScannerController(
-      torchEnabled: true,
-      // formats: [BarcodeFormat.qrCode]
-      // facing: CameraFacing.front,
-      );
+    torchEnabled: true,
+    // formats: [BarcodeFormat.qrCode]
+    // facing: CameraFacing.front,
+  );
 
   bool isStarted = true;
 
