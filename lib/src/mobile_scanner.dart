@@ -2,10 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'mobile_scanner_arguments.dart';
-
-import  'web/flutter_qr_web.dart';
-
 enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
@@ -64,12 +60,6 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      return WebScanner(
-        onDetect: (barcode) => widget.onDetect!(barcode, null),
-        cameraFacing: CameraFacing.back,
-      );
-    } else {
       return LayoutBuilder(builder: (context, BoxConstraints constraints) {
         return ValueListenableBuilder(
             valueListenable: controller.args,
@@ -96,7 +86,7 @@ class _MobileScannerState extends State<MobileScanner>
                       child: SizedBox(
                         width: value.size.width,
                         height: value.size.height,
-                        child: Texture(textureId: value.textureId),
+                        child: kIsWeb ? HtmlElementView(viewType: value.webId!) : Texture(textureId: value.textureId!),
                       ),
                     ),
                   ),
@@ -105,7 +95,6 @@ class _MobileScannerState extends State<MobileScanner>
             });
       });
     }
-  }
 
   @override
   void didUpdateWidget(covariant MobileScanner oldWidget) {

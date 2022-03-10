@@ -11,6 +11,8 @@ dependencies:
   js: ^0.6.4
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
@@ -27,3 +29,6 @@ flutter:
         pluginClass: MobileScannerPlugin
       macos:
         pluginClass: MobileScannerPlugin
+      web:
+        pluginClass: MobileScannerWebPlugin
+        fileName: mobile_scanner_web_plugin.dart

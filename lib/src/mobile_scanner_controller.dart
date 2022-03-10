@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -98,6 +99,9 @@ class MobileScannerController {
       case 'barcodeMac':
         barcodesController.add(Barcode(rawValue: data['payload']));
         break;
+      case 'barcodeWeb':
+        barcodesController.add(Barcode(rawValue: data));
+        break;
       default:
         throw UnimplementedError();
     }
@@ -125,19 +129,22 @@ class MobileScannerController {
     // setAnalyzeMode(AnalyzeMode.barcode.index);
 
     // Check authorization status
-    MobileScannerState state =
-        MobileScannerState.values[await methodChannel.invokeMethod('state')];
-    switch (state) {
-      case MobileScannerState.undetermined:
-        final bool result = await methodChannel.invokeMethod('request');
-        state =
-            result ? MobileScannerState.authorized : MobileScannerState.denied;
-        break;
-      case MobileScannerState.denied:
-        isStarting = false;
-        throw PlatformException(code: 'NO ACCESS');
-      case MobileScannerState.authorized:
-        break;
+    if (!kIsWeb) {
+      MobileScannerState state =
+          MobileScannerState.values[await methodChannel.invokeMethod('state')];
+      switch (state) {
+        case MobileScannerState.undetermined:
+          final bool result = await methodChannel.invokeMethod('request');
+          state = result
+              ? MobileScannerState.authorized
+              : MobileScannerState.denied;
+          break;
+        case MobileScannerState.denied:
+          isStarting = false;
+          throw PlatformException(code: 'NO ACCESS');
+        case MobileScannerState.authorized:
+          break;
+      }
     }
 
     cameraFacingState.value = facing;
@@ -174,10 +181,20 @@ class MobileScannerController {
     }
 
     hasTorch = startResult['torchable'];
-    args.value = MobileScannerArguments(
-        textureId: startResult['textureId'],
-        size: toSize(startResult['size']),
-        hasTorch: hasTorch);
+
+    if (kIsWeb) {
+      args.value = MobileScannerArguments(
+          webId: startResult['ViewID'],
+          size: Size(startResult['videoWidth'], startResult['videoHeight']),
+          hasTorch: hasTorch);
+    } else {
+
+      args.value = MobileScannerArguments(
+          textureId: startResult['textureId'],
+          size: toSize(startResult['size']),
+          hasTorch: hasTorch);
+    }
+
     isStarting = false;
   }
 
