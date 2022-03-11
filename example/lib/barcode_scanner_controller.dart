@@ -33,7 +33,7 @@ class _BarcodeScannerWithControllerState
             MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                allowDuplicates: false,
+                // allowDuplicates: true,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,

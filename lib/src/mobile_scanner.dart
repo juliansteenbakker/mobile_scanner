@@ -33,7 +33,7 @@ class MobileScanner extends StatefulWidget {
       this.onDetect,
       this.controller,
       this.fit = BoxFit.cover,
-      this.allowDuplicates = true})
+      this.allowDuplicates = false})
       : super(key: key);
 
   @override
