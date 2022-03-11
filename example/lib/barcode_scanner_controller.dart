@@ -33,16 +33,15 @@ class _BarcodeScannerWithControllerState
             MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
+                allowDuplicates: false,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,
                 // ),
                 onDetect: (barcode, args) {
-                  if (this.barcode != barcode.rawValue) {
-                    setState(() {
-                      this.barcode = barcode.rawValue;
-                    });
-                  }
+                  setState(() {
+                    this.barcode = barcode.rawValue;
+                  });
                 }),
             Align(
               alignment: Alignment.bottomCenter,
@@ -73,17 +72,17 @@ class _BarcodeScannerWithControllerState
                       onPressed: () => controller.toggleTorch(),
                     ),
                     IconButton(
-                      color: Colors.white,
-                      icon: isStarted
-                          ? const Icon(Icons.stop)
-                          : const Icon(Icons.play_arrow),
-                      iconSize: 32.0,
+                        color: Colors.white,
+                        icon: isStarted
+                            ? const Icon(Icons.stop)
+                            : const Icon(Icons.play_arrow),
+                        iconSize: 32.0,
                         onPressed: () => setState(() {
-                          isStarted
-                              ? controller.stop()
-                              : controller.start();
-                          isStarted = !isStarted;
-                        })),
+                              isStarted
+                                  ? controller.stop()
+                                  : controller.start();
+                              isStarted = !isStarted;
+                            })),
                     Center(
                       child: SizedBox(
                         width: MediaQuery.of(context).size.width - 200,

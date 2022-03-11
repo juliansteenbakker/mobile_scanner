@@ -23,12 +23,11 @@ class _BarcodeScannerWithoutControllerState
           children: [
             MobileScanner(
                 fit: BoxFit.contain,
+                allowDuplicates: false,
                 onDetect: (barcode, args) {
-                  if (this.barcode != barcode.rawValue) {
-                    setState(() {
-                      this.barcode = barcode.rawValue;
-                    });
-                  }
+                  setState(() {
+                    this.barcode = barcode.rawValue;
+                  });
                 }),
             Align(
               alignment: Alignment.bottomCenter,
