@@ -10,7 +10,7 @@ A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX
 
 | Android | iOS | MacOS | Web | Linux | Windows |
 | :-----: | :-: | :---: | :-: | :---: | :-----: |
-|   ✔️    | ✔️   |  ✔️  |   |     |      |
+|   ✔️    | ✔️   |  ✔️  | ✔️  |     |      |
 
 ### Android
 SDK 21 and newer. Reason: CameraX requires at least SDK 21.
@@ -29,6 +29,10 @@ NSPhotoLibraryUsageDescription - describe why your app needs permission for the 
 ### macOS
 macOS 10.13 or newer. Reason: Apple Vision library.
 
+### Web
+Web only supports QR codes for now. 
+Do you have experience with Flutter Web development? [Help me with migrating from jsQR to qr-scanner for full barcode support!](https://github.com/juliansteenbakker/mobile_scanner/issues/54)
+
 ## Features Supported
 
 | Features               | Android            | iOS                | macOS | Web |
@@ -41,6 +45,8 @@ Import `package:mobile_scanner/mobile_scanner.dart`, and use the widget with or 
 
 If you don't provide a controller, you can't control functions like the torch(flash) or switching camera.
 
+If you don't set allowDuplicates to false, you can get multiple scans in a very short time, causing things like pop() to fire lots of times.
+
 Example without controller:
 
 ```dart
@@ -51,6 +57,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
+          allowDuplicates: false,
           onDetect: (barcode, args) {
             final String code = barcode.rawValue;
             debugPrint('Barcode found! $code');
@@ -69,6 +76,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
+          allowDuplicates: false,
           controller: MobileScannerController(
             facing: CameraFacing.front, torchEnabled: true),
           onDetect: (barcode, args) {
@@ -127,6 +135,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
           ],
         ),
         body: MobileScanner(
+            allowDuplicates: false,
             controller: cameraController,
             onDetect: (barcode, args) {
               final String code = barcode.rawValue;

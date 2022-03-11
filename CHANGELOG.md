@@ -1,3 +1,18 @@
+## 1.0.0
+BREAKING CHANGES:
+This version adds a new allowDuplicates option which now defaults to FALSE. this means that it will only call onDetect once after a scan.
+If you still want duplicates, you can set allowDuplicates to true.
+This also means that you don't have to check for duplicates yourself anymore.
+
+New features:
+* We now have web support! Keep in mind that only QR codes are supported right now.
+
+Bugfixes:
+* Fixed hot reload not working.
+* Fixed Navigator.of(context).pop() not working in the example app due to duplicate MaterialApp declaration.
+* Fixed iOS MLKit version not resolving the latest version.
+* Updated all dependencies
+
 ## 0.2.0
 You can provide a path to controller.analyzeImage(path) in order to scan a local photo from the gallery!
 Check out the example app to see how you can use the image_picker plugin to retrieve a photo from
