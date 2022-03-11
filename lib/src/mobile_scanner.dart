@@ -24,9 +24,16 @@ class MobileScanner extends StatefulWidget {
   /// Handles how the widget should fit the screen.
   final BoxFit fit;
 
+  /// Set to false if you don't want duplicate scans.
+  final bool allowDuplicates;
+
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner(
-      {Key? key, this.onDetect, this.controller, this.fit = BoxFit.cover})
+      {Key? key,
+      this.onDetect,
+      this.controller,
+      this.fit = BoxFit.cover,
+      this.allowDuplicates = true})
       : super(key: key);
 
   @override
@@ -58,6 +65,8 @@ class _MobileScannerState extends State<MobileScanner>
     }
   }
 
+  String? lastScanned;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
@@ -68,8 +77,16 @@ class _MobileScannerState extends State<MobileScanner>
             if (value == null) {
               return Container(color: Colors.black);
             } else {
-              controller.barcodes.listen(
-                  (a) => widget.onDetect!(a, value as MobileScannerArguments));
+              controller.barcodes.listen((barcode) {
+                if (!widget.allowDuplicates) {
+                  if (lastScanned != barcode.rawValue) {
+                    lastScanned = barcode.rawValue;
+                    widget.onDetect!(barcode, value as MobileScannerArguments);
+                  }
+                } else {
+                  widget.onDetect!(barcode, value as MobileScannerArguments);
+                }
+              });
               return ClipRect(
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
