@@ -2,6 +2,7 @@
 
 [![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
 [![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=Like%20my%20work%3F%20Consider%20sponsoring%20me%21)](https://github.com/sponsors/juliansteenbakker)
 
 A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX on Android, AVFoundation on iOS and Apple Vision & AVFoundation on macOS. 
 
