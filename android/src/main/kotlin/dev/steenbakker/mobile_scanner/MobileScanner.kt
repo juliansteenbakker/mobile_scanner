@@ -24,7 +24,6 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 import java.io.File
-import java.net.URI
 
 
 class MobileScanner(private val activity: Activity, private val textureRegistry: TextureRegistry)
@@ -39,6 +38,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
 
 //    @AnalyzeMode
@@ -120,86 +120,91 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
-        if (camera != null) {
-            result.error(TAG, "Called start() while already started!", null)
-            return
-        }
-
-        val facing: Int = call.argument<Int>("facing") ?: 0
-        val ratio: Int? = call.argument<Int>("ratio")
-        val torch: Boolean = call.argument<Boolean>("torch") ?: false
-        val formats: List<Int>? = call.argument<List<Int>>("formats")
-
-        if (formats != null) {
-            val formatsList: MutableList<Int> = mutableListOf()
-            for (index in formats) {
-                formatsList.add(BarcodeFormats.values()[index].intValue)
-            }
-            scanner = if (formatsList.size == 1) {
-                BarcodeScanning.getClient( BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first()).build());
-            } else {
-                BarcodeScanning.getClient( BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first(), *formatsList.subList(1, formatsList.size).toIntArray() ).build());
-            }
-        }
-
-        val future = ProcessCameraProvider.getInstance(activity)
-        val executor = ContextCompat.getMainExecutor(activity)
-
-        future.addListener({
-            cameraProvider = future.get()
-            cameraProvider!!.unbindAll()
-            textureEntry = textureRegistry.createSurfaceTexture()
-
-            // Preview
-            val surfaceProvider = Preview.SurfaceProvider { request ->
-                val texture = textureEntry!!.surfaceTexture()
-                texture.setDefaultBufferSize(request.resolution.width, request.resolution.height)
-                val surface = Surface(texture)
-                request.provideSurface(surface, executor) { }
-            }
-
-            // Build the preview to be shown on the Flutter texture
-            val previewBuilder = Preview.Builder()
-            if (ratio != null) {
-                previewBuilder.setTargetAspectRatio(ratio)
-            }
-            val preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
-
-            // Build the analyzer to be passed on to MLKit
-            val analysisBuilder = ImageAnalysis.Builder()
-                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            if (ratio != null) {
-                analysisBuilder.setTargetAspectRatio(ratio)
-            }
-            val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
-
-            // Select the correct camera
-            val selector = if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-
-            camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, analysis)
-
-            val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
-            val previewSize = preview.resolutionInfo?.resolution ?: Size(0, 0)
-            Log.i("LOG", "Analyzer: $analysisSize")
-            Log.i("LOG", "Preview: $previewSize")
-
-            // Register the torch listener
-            camera!!.cameraInfo.torchState.observe(activity) { state ->
-                // TorchState.OFF = 0; TorchState.ON = 1
-                sink?.success(mapOf("name" to "torchState", "data" to state))
-            }
-
-            // Enable torch if provided
-            camera!!.cameraControl.enableTorch(torch)
-
-            val resolution = preview.resolutionInfo!!.resolution
+        if (camera != null && preview != null) {
+            val resolution = preview!!.resolutionInfo!!.resolution
             val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
             val size = if (portrait) mapOf("width" to width, "height" to height) else mapOf("width" to height, "height" to width)
             val answer = mapOf("textureId" to textureEntry!!.id(), "size" to size, "torchable" to camera!!.cameraInfo.hasFlashUnit())
             result.success(answer)
-        }, executor)
+        } else {
+            val facing: Int = call.argument<Int>("facing") ?: 0
+            val ratio: Int? = call.argument<Int>("ratio")
+            val torch: Boolean = call.argument<Boolean>("torch") ?: false
+            val formats: List<Int>? = call.argument<List<Int>>("formats")
+
+            if (formats != null) {
+                val formatsList: MutableList<Int> = mutableListOf()
+                for (index in formats) {
+                    formatsList.add(BarcodeFormats.values()[index].intValue)
+                }
+                scanner = if (formatsList.size == 1) {
+                    BarcodeScanning.getClient(BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first()).build())
+                } else {
+                    BarcodeScanning.getClient(BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first(), *formatsList.subList(1, formatsList.size).toIntArray()).build())
+                }
+            }
+
+            val future = ProcessCameraProvider.getInstance(activity)
+            val executor = ContextCompat.getMainExecutor(activity)
+
+            future.addListener({
+                cameraProvider = future.get()
+                cameraProvider!!.unbindAll()
+                textureEntry = textureRegistry.createSurfaceTexture()
+
+                // Preview
+                val surfaceProvider = Preview.SurfaceProvider { request ->
+                    val texture = textureEntry!!.surfaceTexture()
+                    texture.setDefaultBufferSize(request.resolution.width, request.resolution.height)
+                    val surface = Surface(texture)
+                    request.provideSurface(surface, executor) { }
+                }
+
+                // Build the preview to be shown on the Flutter texture
+                val previewBuilder = Preview.Builder()
+                if (ratio != null) {
+                    previewBuilder.setTargetAspectRatio(ratio)
+                }
+                preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
+
+                // Build the analyzer to be passed on to MLKit
+                val analysisBuilder = ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                if (ratio != null) {
+                    analysisBuilder.setTargetAspectRatio(ratio)
+                }
+                val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
+
+                // Select the correct camera
+                val selector = if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+
+                camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, analysis)
+
+                val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
+                val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
+                Log.i("LOG", "Analyzer: $analysisSize")
+                Log.i("LOG", "Preview: $previewSize")
+
+                // Register the torch listener
+                camera!!.cameraInfo.torchState.observe(activity) { state ->
+                    // TorchState.OFF = 0; TorchState.ON = 1
+                    sink?.success(mapOf("name" to "torchState", "data" to state))
+                }
+
+                // Enable torch if provided
+                camera!!.cameraControl.enableTorch(torch)
+
+                val resolution = preview!!.resolutionInfo!!.resolution
+                val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
+                val width = resolution.width.toDouble()
+                val height = resolution.height.toDouble()
+                val size = if (portrait) mapOf("width" to width, "height" to height) else mapOf("width" to height, "height" to width)
+                val answer = mapOf("textureId" to textureEntry!!.id(), "size" to size, "torchable" to camera!!.cameraInfo.hasFlashUnit())
+                result.success(answer)
+            }, executor)
+        }
     }
 
     private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
@@ -235,18 +240,19 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     }
 
     private fun stop(result: MethodChannel.Result) {
-        if (camera == null) {
+        if (camera == null && preview == null) {
             result.error(TAG,"Called stop() while already stopped!", null)
             return
         }
 
         val owner = activity as LifecycleOwner
-        camera!!.cameraInfo.torchState.removeObservers(owner)
-        cameraProvider!!.unbindAll()
-        textureEntry!!.release()
+        camera?.cameraInfo?.torchState?.removeObservers(owner)
+        cameraProvider?.unbindAll()
+        textureEntry?.release()
 
 //        analyzeMode = AnalyzeMode.NONE
         camera = null
+        preview = null
         textureEntry = null
         cameraProvider = null
 
