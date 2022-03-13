@@ -30,6 +30,12 @@ NSPhotoLibraryUsageDescription - describe why your app needs permission for the 
 macOS 10.13 or newer. Reason: Apple Vision library.
 
 ### Web
+Add this to `web/index.html`:
+
+```html
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+```
+
 Web only supports QR codes for now. 
 Do you have experience with Flutter Web development? [Help me with migrating from jsQR to qr-scanner for full barcode support!](https://github.com/juliansteenbakker/mobile_scanner/issues/54)
 
