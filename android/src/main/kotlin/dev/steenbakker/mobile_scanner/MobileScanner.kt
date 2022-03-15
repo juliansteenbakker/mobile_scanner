@@ -66,7 +66,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         sink = null
     }
 
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
         return listener?.onRequestPermissionsResult(requestCode, permissions, grantResults) ?: false
     }
 
