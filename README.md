@@ -155,3 +155,37 @@ import 'package:mobile_scanner/mobile_scanner.dart';
             }));
   }
 ```
+
+### More customization 
+
+Example using child property:
+
+```dart
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mobile Scanner')),
+      body: Center(
+        child: SizedBox(
+          width: 200,
+          height: 200,
+          child: MobileScanner(
+            child: (arguments) => ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: kIsWeb
+                  ? HtmlElementView(viewType: arguments!.webId!)
+                  : Texture(textureId: arguments!.textureId!),
+            ),
+            allowDuplicates: false,
+            onDetect: (barcode, args) {
+              final String code = barcode.rawValue!;
+              debugPrint('Barcode found! $code');
+            },
+          ),
+        ),
+      ),
+    );
+  }
+```

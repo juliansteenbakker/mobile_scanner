@@ -27,14 +27,19 @@ class MobileScanner extends StatefulWidget {
   /// Set to false if you don't want duplicate scans.
   final bool allowDuplicates;
 
+  /// Function that has [MobileScannerArguments] and return a widget, this widget 
+  /// will replace the default widget to give more customization.
+  final Widget Function(MobileScannerArguments? arguments)? child;
+
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
-  const MobileScanner(
-      {Key? key,
-      this.onDetect,
-      this.controller,
-      this.fit = BoxFit.cover,
-      this.allowDuplicates = false})
-      : super(key: key);
+  const MobileScanner({
+    Key? key,
+    this.onDetect,
+    this.controller,
+    this.fit = BoxFit.cover,
+    this.child,
+    this.allowDuplicates = false,
+  }) : super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -87,6 +92,11 @@ class _MobileScannerState extends State<MobileScanner>
                   widget.onDetect!(barcode, value as MobileScannerArguments);
                 }
               });
+
+              if (widget.child != null) {
+                return widget.child!(value);
+              }
+
               return ClipRect(
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
