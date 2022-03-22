@@ -81,7 +81,7 @@ class MobileScannerWebPlugin {
     vidDiv.children = [video];
 
     final CameraFacing cameraFacing =
-        arguments['cameraFacing'] ?? CameraFacing.front;
+        arguments['facing'] ?? CameraFacing.front;
 
     // See https://github.com/flutter/flutter/issues/41563
     // ignore: UNDEFINED_PREFIXED_NAME
