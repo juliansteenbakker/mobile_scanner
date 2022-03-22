@@ -116,6 +116,7 @@ class MobileScannerWebPlugin {
         _localStream =
             await html.window.navigator.getUserMedia(video: constraints);
       } else {
+        debugPrint('no facingMode capabilities :(');
         _localStream = await html.window.navigator.getUserMedia(video: true);
       }
 
