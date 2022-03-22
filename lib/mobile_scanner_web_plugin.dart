@@ -80,8 +80,9 @@ class MobileScannerWebPlugin {
   Future<Map> _start(arguments) async {
     vidDiv.children = [video];
 
-    final CameraFacing cameraFacing =
-        arguments['facing'] ?? CameraFacing.front;
+    var cameraFacing = CameraFacing.front;
+    if (arguments.containsKey('facing'))
+      cameraFacing = CameraFacing.values[arguments['facing']];
 
     // See https://github.com/flutter/flutter/issues/41563
     // ignore: UNDEFINED_PREFIXED_NAME
@@ -116,7 +117,6 @@ class MobileScannerWebPlugin {
         _localStream =
             await html.window.navigator.getUserMedia(video: constraints);
       } else {
-        debugPrint('no facingMode capabilities :(');
         _localStream = await html.window.navigator.getUserMedia(video: true);
       }
 
