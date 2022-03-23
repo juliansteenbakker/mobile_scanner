@@ -114,8 +114,10 @@ class MobileScannerWebPlugin {
           height: {'ideal': 2160},
         ));
 
+        // test just using a raw map
+        var videoConstraints = {'facingMode': cameraFacing == CameraFacing.front ? 'user' : 'environment'};
         _localStream =
-            await html.window.navigator.getUserMedia(video: constraints);
+            await html.window.navigator.getUserMedia(video: videoConstraints);
       } else {
         _localStream = await html.window.navigator.getUserMedia(video: true);
       }
