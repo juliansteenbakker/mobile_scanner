@@ -108,9 +108,7 @@ class MobileScannerWebPlugin {
       if (capabilities != null && capabilities['facingMode']) {
         var constraints = VideoOptions(
           facingMode:
-              (cameraFacing == CameraFacing.front ? 'user' : 'environment'),
-          width: {'ideal': 4096},
-          height: {'ideal': 2160},
+              (cameraFacing == CameraFacing.front ? 'user' : 'environment')
         );
 
         _localStream =
