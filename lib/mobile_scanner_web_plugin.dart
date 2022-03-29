@@ -107,9 +107,8 @@ class MobileScannerWebPlugin {
           html.window.navigator.mediaDevices?.getSupportedConstraints();
       if (capabilities != null && capabilities['facingMode']) {
         var constraints = VideoOptions(
-          facingMode:
-              (cameraFacing == CameraFacing.front ? 'user' : 'environment')
-        );
+            facingMode:
+                (cameraFacing == CameraFacing.front ? 'user' : 'environment'));
 
         _localStream =
             await html.window.navigator.getUserMedia(video: constraints);
