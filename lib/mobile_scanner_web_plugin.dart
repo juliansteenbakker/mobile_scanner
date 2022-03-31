@@ -106,14 +106,17 @@ class MobileScannerWebPlugin {
       Map? capabilities =
           html.window.navigator.mediaDevices?.getSupportedConstraints();
       if (capabilities != null && capabilities['facingMode']) {
-        var constraints = VideoOptions(
-            facingMode:
-                (cameraFacing == CameraFacing.front ? 'user' : 'environment'));
+        var constraints = {
+          'video': VideoOptions(
+              facingMode:
+                  (cameraFacing == CameraFacing.front ? 'user' : 'environment'))
+        };
 
         _localStream =
-            await html.window.navigator.getUserMedia(video: constraints);
+            await html.window.navigator.mediaDevices?.getUserMedia(constraints);
       } else {
-        _localStream = await html.window.navigator.getUserMedia(video: true);
+        _localStream = await html.window.navigator.mediaDevices
+            ?.getUserMedia({'video': true});
       }
 
       video.srcObject = _localStream;
