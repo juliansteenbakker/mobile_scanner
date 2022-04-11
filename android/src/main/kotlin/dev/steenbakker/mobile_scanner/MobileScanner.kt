@@ -283,7 +283,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 "title" to title, "urls" to urls)
 
     private val Barcode.Address.data: Map<String, Any?>
-        get() = mapOf("addressLines" to addressLines, "type" to type)
+        get() = mapOf("addressLines" to addressLines.map { addressLine -> addressLine.toString() }, "type" to type)
 
     private val Barcode.PersonName.data: Map<String, Any?>
         get() = mapOf("first" to first, "formattedName" to formattedName, "last" to last,
