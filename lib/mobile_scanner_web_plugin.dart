@@ -30,7 +30,7 @@ class MobileScannerWebPlugin {
   }
 
   // Controller to send events back to the framework
-  StreamController controller = StreamController();
+  StreamController controller = StreamController.broadcast();
 
   // The video stream. Will be initialized later to see which camera needs to be used.
   html.MediaStream? _localStream;
