@@ -120,13 +120,17 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
-        if (camera != null && preview != null) {
-            val resolution = preview!!.resolutionInfo!!.resolution
-            val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
+        val cameraCopy = camera
+        val previewCopy = preview
+        val textureEntryCopy = textureEntry
+
+        if (previewCopy != null && cameraCopy != null && textureEntryCopy != null) {
+            val resolution = previewCopy.resolutionInfo?.resolution ?: Size(0, 0)
+            val portrait = cameraCopy.cameraInfo.sensorRotationDegrees % 180 == 0
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
             val size = if (portrait) mapOf("width" to width, "height" to height) else mapOf("width" to height, "height" to width)
-            val answer = mapOf("textureId" to textureEntry!!.id(), "size" to size, "torchable" to camera!!.cameraInfo.hasFlashUnit())
+            val answer = mapOf("textureId" to textureEntryCopy.id(), "size" to size, "torchable" to cameraCopy.cameraInfo.hasFlashUnit())
             result.success(answer)
         } else {
             val facing: Int = call.argument<Int>("facing") ?: 0
@@ -151,58 +155,69 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
             future.addListener({
                 cameraProvider = future.get()
-                cameraProvider!!.unbindAll()
+                cameraProvider?.unbindAll()
                 textureEntry = textureRegistry.createSurfaceTexture()
 
-                // Preview
-                val surfaceProvider = Preview.SurfaceProvider { request ->
-                    val texture = textureEntry!!.surfaceTexture()
-                    texture.setDefaultBufferSize(request.resolution.width, request.resolution.height)
-                    val surface = Surface(texture)
-                    request.provideSurface(surface, executor) { }
+                if(textureEntry == null) {
+                    result.error(TAG, "SurfaceTextureEntry can not be accessed!", null)
+                    return@addListener
                 }
 
-                // Build the preview to be shown on the Flutter texture
-                val previewBuilder = Preview.Builder()
-                if (ratio != null) {
-                    previewBuilder.setTargetAspectRatio(ratio)
-                }
-                preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
+                try {
+                    // Preview
+                    val surfaceProvider = Preview.SurfaceProvider { request ->
+                        textureEntry?.let {
+                            val texture = it.surfaceTexture()
+                            texture.setDefaultBufferSize(request.resolution.width, request.resolution.height)
+                            val surface = Surface(texture)
+                            request.provideSurface(surface, executor) { }
+                        }
+                    }
 
-                // Build the analyzer to be passed on to MLKit
-                val analysisBuilder = ImageAnalysis.Builder()
+                    // Build the preview to be shown on the Flutter texture
+                    val previewBuilder = Preview.Builder()
+                    if (ratio != null) {
+                        previewBuilder.setTargetAspectRatio(ratio)
+                    }
+                    preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
+
+                    // Build the analyzer to be passed on to MLKit
+                    val analysisBuilder = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                if (ratio != null) {
-                    analysisBuilder.setTargetAspectRatio(ratio)
+                    if (ratio != null) {
+                        analysisBuilder.setTargetAspectRatio(ratio)
+                    }
+                    val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
+
+                    // Select the correct camera
+                    val selector = if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+
+                    camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, analysis)
+
+                    val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
+                    val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
+                    Log.i("LOG", "Analyzer: $analysisSize")
+                    Log.i("LOG", "Preview: $previewSize")
+
+                    // Register the torch listener
+                    camera!!.cameraInfo.torchState.observe(activity) { state ->
+                        // TorchState.OFF = 0; TorchState.ON = 1
+                        sink?.success(mapOf("name" to "torchState", "data" to state))
+                    }
+
+                    // Enable torch if provided
+                    camera!!.cameraControl.enableTorch(torch)
+
+                    val resolution = preview!!.resolutionInfo!!.resolution
+                    val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
+                    val width = resolution.width.toDouble()
+                    val height = resolution.height.toDouble()
+                    val size = if (portrait) mapOf("width" to width, "height" to height) else mapOf("width" to height, "height" to width)
+                    val answer = mapOf("textureId" to textureEntry!!.id(), "size" to size, "torchable" to camera!!.cameraInfo.hasFlashUnit())
+                    result.success(answer)
+                } catch (e: Throwable) {
+                    result.error(TAG, "Error during accessing camera preview!", e.message)
                 }
-                val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
-
-                // Select the correct camera
-                val selector = if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
-
-                camera = cameraProvider!!.bindToLifecycle(activity as LifecycleOwner, selector, preview, analysis)
-
-                val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
-                val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
-                Log.i("LOG", "Analyzer: $analysisSize")
-                Log.i("LOG", "Preview: $previewSize")
-
-                // Register the torch listener
-                camera!!.cameraInfo.torchState.observe(activity) { state ->
-                    // TorchState.OFF = 0; TorchState.ON = 1
-                    sink?.success(mapOf("name" to "torchState", "data" to state))
-                }
-
-                // Enable torch if provided
-                camera!!.cameraControl.enableTorch(torch)
-
-                val resolution = preview!!.resolutionInfo!!.resolution
-                val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
-                val width = resolution.width.toDouble()
-                val height = resolution.height.toDouble()
-                val size = if (portrait) mapOf("width" to width, "height" to height) else mapOf("width" to height, "height" to width)
-                val answer = mapOf("textureId" to textureEntry!!.id(), "size" to size, "torchable" to camera!!.cameraInfo.hasFlashUnit())
-                result.success(answer)
             }, executor)
         }
     }
@@ -212,7 +227,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             result.error(TAG,"Called toggleTorch() while stopped!", null)
             return
         }
-        camera!!.cameraControl.enableTorch(call.arguments == 1)
+        camera?.cameraControl?.enableTorch(call.arguments == 1)
         result.success(null)
     }
 

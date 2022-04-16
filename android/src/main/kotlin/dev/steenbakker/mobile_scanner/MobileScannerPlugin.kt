@@ -10,7 +10,7 @@ import io.flutter.plugin.common.MethodChannel
 /** MobileScannerPlugin */
 class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     private var flutter: FlutterPlugin.FlutterPluginBinding? = null
-    private var activity: ActivityPluginBinding? = null
+    private var binding: ActivityPluginBinding? = null
     private var handler: MobileScanner? = null
     private var method: MethodChannel? = null
     private var event: EventChannel? = null
@@ -24,13 +24,22 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
-        activity = binding
-        handler = MobileScanner(activity!!.activity, flutter!!.textureRegistry)
-        method = MethodChannel(flutter!!.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/method")
-        event = EventChannel(flutter!!.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/event")
-        method!!.setMethodCallHandler(handler)
-        event!!.setStreamHandler(handler)
-        activity!!.addRequestPermissionsResultListener(handler!!)
+        this.binding = binding
+
+        flutter?.let {
+            handler = MobileScanner(binding.activity, it.textureRegistry)
+                .apply {
+                    binding.addRequestPermissionsResultListener(this)
+                }
+            method = MethodChannel(it.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/method")
+                .apply {
+                    setMethodCallHandler(handler)
+                }
+            event = EventChannel(it.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/event")
+                .apply {
+                    setStreamHandler(handler)
+                }
+        }
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -38,13 +47,13 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
-        activity!!.removeRequestPermissionsResultListener(handler!!)
-        event!!.setStreamHandler(null)
-        method!!.setMethodCallHandler(null)
+        handler?.let { binding?.removeRequestPermissionsResultListener(it) }
+        event?.setStreamHandler(null)
+        method?.setMethodCallHandler(null)
         event = null
         method = null
         handler = null
-        activity = null
+        binding = null
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
