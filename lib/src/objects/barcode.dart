@@ -63,21 +63,22 @@ class Barcode {
   /// Gets parsed WiFi AP details.
   final WiFi? wifi;
 
-  Barcode(
-      {this.corners,
-      this.format = BarcodeFormat.ean13,
-      this.rawBytes,
-      this.type = BarcodeType.text,
-      this.calendarEvent,
-      this.contactInfo,
-      this.driverLicense,
-      this.email,
-      this.geoPoint,
-      this.phone,
-      this.sms,
-      this.url,
-      this.wifi,
-      required this.rawValue, });
+  Barcode({
+    this.corners,
+    this.format = BarcodeFormat.ean13,
+    this.rawBytes,
+    this.type = BarcodeType.text,
+    this.calendarEvent,
+    this.contactInfo,
+    this.driverLicense,
+    this.email,
+    this.geoPoint,
+    this.phone,
+    this.sms,
+    this.url,
+    this.wifi,
+    required this.rawValue,
+  });
 
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map<String, dynamic> data)
@@ -86,7 +87,8 @@ class Barcode {
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
         type = BarcodeType.values[data['type'] as int],
-        calendarEvent = toCalendarEvent(data['calendarEvent'] as Map<String, String?>?),
+        calendarEvent =
+            toCalendarEvent(data['calendarEvent'] as Map<String, String?>?),
         contactInfo = toContactInfo(data['contactInfo'] as Map?),
         driverLicense = toDriverLicense(data['driverLicense'] as Map?),
         email = toEmail(data['email'] as Map?),
@@ -185,13 +187,16 @@ class ContactInfo {
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map<dynamic, dynamic> data)
       : addresses = List.unmodifiable(
-            (data['addresses'] as List<Map>).map((e) => Address.fromNative(e)),),
-        emails =
-            List.unmodifiable((data['emails'] as List<Map>).map((e) => Email.fromNative(e))),
+          (data['addresses'] as List<Map>).map((e) => Address.fromNative(e)),
+        ),
+        emails = List.unmodifiable(
+          (data['emails'] as List<Map>).map((e) => Email.fromNative(e)),
+        ),
         name = toName(data['name'] as Map?),
         organization = data['organization'] as String?,
-        phones =
-            List.unmodifiable((data['phones'] as List<Map>).map((e) => Phone.fromNative(e))),
+        phones = List.unmodifiable(
+          (data['phones'] as List<Map>).map((e) => Phone.fromNative(e)),
+        ),
         title = data['title'] as String?,
         urls = List.unmodifiable(data['urls'] as List);
 }

@@ -55,11 +55,12 @@ class MobileScannerController {
 
   Stream<Barcode> get barcodes => barcodesController.stream;
 
-  MobileScannerController(
-      {this.facing = CameraFacing.back,
-      this.ratio,
-      this.torchEnabled,
-      this.formats, }) {
+  MobileScannerController({
+    this.facing = CameraFacing.back,
+    this.ratio,
+    this.torchEnabled,
+    this.formats,
+  }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
       stop();
@@ -95,7 +96,11 @@ class MobileScannerController {
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
-        barcodesController.add(Barcode(rawValue: (data as Map<String, dynamic>)['payload'] as String));
+        barcodesController.add(
+          Barcode(
+            rawValue: (data as Map<String, dynamic>)['payload'] as String,
+          ),
+        );
         break;
       case 'barcodeWeb':
         barcodesController.add(Barcode(rawValue: data as String));
@@ -128,11 +133,12 @@ class MobileScannerController {
 
     // Check authorization status
     if (!kIsWeb) {
-      MobileScannerState state =
-          MobileScannerState.values[await methodChannel.invokeMethod('state') as int];
+      MobileScannerState state = MobileScannerState
+          .values[await methodChannel.invokeMethod('state') as int];
       switch (state) {
         case MobileScannerState.undetermined:
-          final bool result = await methodChannel.invokeMethod('request') as bool;
+          final bool result =
+              await methodChannel.invokeMethod('request') as bool;
           state = result
               ? MobileScannerState.authorized
               : MobileScannerState.denied;
@@ -165,7 +171,9 @@ class MobileScannerController {
     Map<String, dynamic>? startResult = {};
     try {
       startResult = await methodChannel.invokeMapMethod<String, dynamic>(
-          'start', arguments,);
+        'start',
+        arguments,
+      );
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
       isStarting = false;
@@ -182,14 +190,19 @@ class MobileScannerController {
 
     if (kIsWeb) {
       args.value = MobileScannerArguments(
-          webId: startResult['ViewID'] as String?,
-          size: Size(startResult['videoWidth'] as double, startResult['videoHeight'] as double),
-          hasTorch: hasTorch,);
+        webId: startResult['ViewID'] as String?,
+        size: Size(
+          startResult['videoWidth'] as double,
+          startResult['videoHeight'] as double,
+        ),
+        hasTorch: hasTorch,
+      );
     } else {
       args.value = MobileScannerArguments(
-          textureId: startResult['textureId'] as int,
-          size: toSize(startResult['size'] as Map<String, double>),
-          hasTorch: hasTorch,);
+        textureId: startResult['textureId'] as int,
+        size: toSize(startResult['size'] as Map<String, double>),
+        hasTorch: hasTorch,
+      );
     }
 
     isStarting = false;
@@ -232,7 +245,8 @@ class MobileScannerController {
       await methodChannel.invokeMethod('stop');
     } on PlatformException catch (error) {
       debugPrint(
-          '${error.code}: camera is stopped! Please start before switching camera.',);
+        '${error.code}: camera is stopped! Please start before switching camera.',
+      );
       return;
     }
     facing =

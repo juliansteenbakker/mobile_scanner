@@ -14,13 +14,15 @@ import 'package:mobile_scanner/src/web/media.dart';
 class MobileScannerWebPlugin {
   static void registerWith(Registrar registrar) {
     final PluginEventChannel event = PluginEventChannel(
-        'dev.steenbakker.mobile_scanner/scanner/event',
-        const StandardMethodCodec(),
-        registrar,);
+      'dev.steenbakker.mobile_scanner/scanner/event',
+      const StandardMethodCodec(),
+      registrar,
+    );
     final MethodChannel channel = MethodChannel(
-        'dev.steenbakker.mobile_scanner/scanner/method',
-        const StandardMethodCodec(),
-        registrar,);
+      'dev.steenbakker.mobile_scanner/scanner/method',
+      const StandardMethodCodec(),
+      registrar,
+    );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -57,9 +59,10 @@ class MobileScannerWebPlugin {
         return cancel();
       default:
         throw PlatformException(
-            code: 'Unimplemented',
-            details: "The mobile_scanner plugin for web doesn't implement "
-                "the method '${call.method}'",);
+          code: 'Unimplemented',
+          details: "The mobile_scanner plugin for web doesn't implement "
+              "the method '${call.method}'",
+        );
     }
   }
 
@@ -87,10 +90,11 @@ class MobileScannerWebPlugin {
     // See https://github.com/flutter/flutter/issues/41563
     // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
     ui.platformViewRegistry.registerViewFactory(
-        viewID,
-        (int id) => vidDiv
-          ..style.width = '100%'
-          ..style.height = '100%',);
+      viewID,
+      (int id) => vidDiv
+        ..style.width = '100%'
+        ..style.height = '100%',
+    );
 
     // Check if stream is running
     if (_localStream != null) {
@@ -108,8 +112,9 @@ class MobileScannerWebPlugin {
       if (capabilities != null && capabilities['facingMode'] as bool) {
         final constraints = {
           'video': VideoOptions(
-              facingMode:
-                  cameraFacing == CameraFacing.front ? 'user' : 'environment',)
+            facingMode:
+                cameraFacing == CameraFacing.front ? 'user' : 'environment',
+          )
         };
 
         _localStream =

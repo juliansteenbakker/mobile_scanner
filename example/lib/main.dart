@@ -19,17 +19,22 @@ class MyHome extends StatelessWidget {
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const BarcodeScannerWithController(),
-                ),);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BarcodeScannerWithController(),
+                  ),
+                );
               },
               child: const Text('MobileScanner with Controller'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const BarcodeScannerWithoutController(),
-                ),);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const BarcodeScannerWithoutController(),
+                  ),
+                );
               },
               child: const Text('MobileScanner without Controller'),
             ),

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-
 Size toSize(Map<dynamic, double> data) {
   final width = data['width']!;
   final height = data['height']!;
@@ -10,7 +9,9 @@ Size toSize(Map<dynamic, double> data) {
 
 List<Offset>? toCorners(List<Map>? data) {
   if (data != null) {
-    return List.unmodifiable(data.map((e) => Offset(e['x'] as double, e['y'] as double)));
+    return List.unmodifiable(
+      data.map((e) => Offset(e['x'] as double, e['y'] as double)),
+    );
   } else {
     return null;
   }
