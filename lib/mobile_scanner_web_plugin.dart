@@ -52,7 +52,7 @@ class MobileScannerWebPlugin {
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'start':
-        return _start(call.arguments as Map<String, dynamic>);
+        return _start(call.arguments as Map);
       case 'torch':
         return _torch(call.arguments);
       case 'stop':
@@ -79,7 +79,7 @@ class MobileScannerWebPlugin {
   }
 
   /// Starts the video stream and the scanner
-  Future<Map> _start(Map<String, dynamic> arguments) async {
+  Future<Map> _start(Map arguments) async {
     vidDiv.children = [video];
 
     var cameraFacing = CameraFacing.front;

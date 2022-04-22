@@ -92,13 +92,13 @@ class MobileScannerController {
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data as Map<String, dynamic>);
+        final barcode = Barcode.fromNative(data as Map);
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
         barcodesController.add(
           Barcode(
-            rawValue: (data as Map<String, dynamic>)['payload'] as String,
+            rawValue: (data as Map)['payload'] as String,
           ),
         );
         break;
@@ -200,7 +200,7 @@ class MobileScannerController {
     } else {
       args.value = MobileScannerArguments(
         textureId: startResult['textureId'] as int,
-        size: toSize(startResult['size'] as Map<String, double>),
+        size: toSize(startResult['size'] as Map),
         hasTorch: hasTorch,
       );
     }

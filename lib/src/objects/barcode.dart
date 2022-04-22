@@ -81,14 +81,14 @@ class Barcode {
   });
 
   /// Create a [Barcode] from native data.
-  Barcode.fromNative(Map<String, dynamic> data)
-      : corners = toCorners(data['corners'] as List<Map>?),
+  Barcode.fromNative(Map data)
+      : corners = toCorners(data['corners'] as List?),
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
         type = BarcodeType.values[data['type'] as int],
         calendarEvent =
-            toCalendarEvent(data['calendarEvent'] as Map<String, String?>?),
+            toCalendarEvent(data['calendarEvent'] as Map?),
         contactInfo = toContactInfo(data['contactInfo'] as Map?),
         driverLicense = toDriverLicense(data['driverLicense'] as Map?),
         email = toEmail(data['email'] as Map?),
@@ -137,14 +137,14 @@ class CalendarEvent {
   final String? summary;
 
   /// Create a [CalendarEvent] from native data.
-  CalendarEvent.fromNative(Map<dynamic, String?> data)
-      : description = data['description'],
-        start = DateTime.tryParse(data['start']!),
-        end = DateTime.tryParse(data['end']!),
-        location = data['location'],
-        organizer = data['organizer'],
-        status = data['status'],
-        summary = data['summary'];
+  CalendarEvent.fromNative(Map data)
+      : description = data['description'] as String?,
+        start = data['start'] != null ? DateTime.tryParse(data['start'] as String) : null,
+        end = data['end'] != null ? DateTime.tryParse(data['end'] as String) : null,
+        location = data['location'] as String?,
+        organizer = data['organizer'] as String?,
+        status = data['status'] as String?,
+        summary = data['summary'] as String?;
 }
 
 /// A person's or organization's business card. For example a VCARD.
@@ -185,17 +185,17 @@ class ContactInfo {
   final List<String>? urls;
 
   /// Create a [ContactInfo] from native data.
-  ContactInfo.fromNative(Map<dynamic, dynamic> data)
+  ContactInfo.fromNative(Map data)
       : addresses = List.unmodifiable(
-          (data['addresses'] as List<Map>).map((e) => Address.fromNative(e)),
+          (data['addresses'] as List).map((e) => Address.fromNative(e as Map)),
         ),
         emails = List.unmodifiable(
-          (data['emails'] as List<Map>).map((e) => Email.fromNative(e)),
+          (data['emails'] as List).map((e) => Email.fromNative(e as Map)),
         ),
         name = toName(data['name'] as Map?),
         organization = data['organization'] as String?,
         phones = List.unmodifiable(
-          (data['phones'] as List<Map>).map((e) => Phone.fromNative(e)),
+          (data['phones'] as List).map((e) => Phone.fromNative(e as Map)),
         ),
         title = data['title'] as String?,
         urls = List.unmodifiable(data['urls'] as List);
@@ -212,7 +212,7 @@ class Address {
   final AddressType? type;
 
   /// Create a [Address] from native data.
-  Address.fromNative(Map<dynamic, dynamic> data)
+  Address.fromNative(Map data)
       : addressLines = List.unmodifiable(data['addressLines'] as List),
         type = AddressType.values[data['type'] as int];
 }
@@ -255,7 +255,7 @@ class PersonName {
   final String? pronunciation;
 
   /// Create a [PersonName] from native data.
-  PersonName.fromNative(Map<dynamic, dynamic> data)
+  PersonName.fromNative(Map data)
       : first = data['first'] as String?,
         middle = data['middle'] as String?,
         last = data['last'] as String?,
@@ -340,7 +340,7 @@ class DriverLicense {
   final String? middleName;
 
   /// Create a [DriverLicense] from native data.
-  DriverLicense.fromNative(Map<dynamic, dynamic> data)
+  DriverLicense.fromNative(Map data)
       : addressCity = data['addressCity'] as String?,
         addressState = data['addressState'] as String?,
         addressStreet = data['addressStreet'] as String?,
@@ -381,7 +381,7 @@ class Email {
   final EmailType? type;
 
   /// Create a [Email] from native data.
-  Email.fromNative(Map<dynamic, dynamic> data)
+  Email.fromNative(Map data)
       : address = data['address'] as String?,
         body = data['body'] as String?,
         subject = data['subject'] as String?,
@@ -397,7 +397,7 @@ class GeoPoint {
   final double? longitude;
 
   /// Create a [GeoPoint] from native data.
-  GeoPoint.fromNative(Map<dynamic, dynamic> data)
+  GeoPoint.fromNative(Map data)
       : latitude = data['latitude'] as double?,
         longitude = data['longitude'] as double?;
 }
@@ -416,7 +416,7 @@ class Phone {
   final PhoneType? type;
 
   /// Create a [Phone] from native data.
-  Phone.fromNative(Map<dynamic, dynamic> data)
+  Phone.fromNative(Map data)
       : number = data['number'] as String?,
         type = PhoneType.values[data['type'] as int];
 }
@@ -434,7 +434,7 @@ class SMS {
   final String? phoneNumber;
 
   /// Create a [SMS] from native data.
-  SMS.fromNative(Map<dynamic, dynamic> data)
+  SMS.fromNative(Map data)
       : message = data['message'] as String?,
         phoneNumber = data['phoneNumber'] as String?;
 }
@@ -452,7 +452,7 @@ class UrlBookmark {
   final String? url;
 
   /// Create a [UrlBookmark] from native data.
-  UrlBookmark.fromNative(Map<dynamic, dynamic> data)
+  UrlBookmark.fromNative(Map data)
       : title = data['title'] as String?,
         url = data['url'] as String?;
 }
@@ -475,7 +475,7 @@ class WiFi {
   final String? password;
 
   /// Create a [WiFi] from native data.
-  WiFi.fromNative(Map<dynamic, dynamic> data)
+  WiFi.fromNative(Map data)
       : encryptionType = EncryptionType.values[data['encryptionType'] as int],
         ssid = data['ssid'] as String?,
         password = data['password'] as String?;
