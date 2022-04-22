@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'barcode.dart';
 
-Size toSize(Map<dynamic, dynamic> data) {
-  final width = data['width'];
-  final height = data['height'];
+Size toSize(Map<dynamic, double> data) {
+  final width = data['width']!;
+  final height = data['height']!;
   return Size(width, height);
 }
 
-List<Offset>? toCorners(List<dynamic>? data) {
+List<Offset>? toCorners(List<Map>? data) {
   if (data != null) {
-    return List.unmodifiable(data.map((e) => Offset(e['x'], e['y'])));
+    return List.unmodifiable(data.map((e) => Offset(e['x'] as double, e['y'] as double)));
   } else {
     return null;
   }
@@ -51,7 +51,7 @@ BarcodeFormat toFormat(int value) {
   }
 }
 
-CalendarEvent? toCalendarEvent(Map<dynamic, dynamic>? data) {
+CalendarEvent? toCalendarEvent(Map<dynamic, String?>? data) {
   if (data != null) {
     return CalendarEvent.fromNative(data);
   } else {
@@ -59,15 +59,15 @@ CalendarEvent? toCalendarEvent(Map<dynamic, dynamic>? data) {
   }
 }
 
-DateTime? toDateTime(Map<dynamic, dynamic>? data) {
+DateTime? toDateTime(Map<String, dynamic>? data) {
   if (data != null) {
-    final year = data['year'];
-    final month = data['month'];
-    final day = data['day'];
-    final hour = data['hours'];
-    final minute = data['minutes'];
-    final second = data['seconds'];
-    return data['isUtc']
+    final year = data['year'] as int;
+    final month = data['month'] as int;
+    final day = data['day'] as int;
+    final hour = data['hours'] as int;
+    final minute = data['minutes'] as int;
+    final second = data['seconds'] as int;
+    return data['isUtc'] as bool
         ? DateTime.utc(year, month, day, hour, minute, second)
         : DateTime(year, month, day, hour, minute, second);
   } else {

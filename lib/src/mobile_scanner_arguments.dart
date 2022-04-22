@@ -14,5 +14,5 @@ class MobileScannerArguments {
 
   /// Create a [MobileScannerArguments].
   MobileScannerArguments(
-      {this.textureId, required this.size, required this.hasTorch, this.webId});
+      {this.textureId, required this.size, required this.hasTorch, this.webId, });
 }

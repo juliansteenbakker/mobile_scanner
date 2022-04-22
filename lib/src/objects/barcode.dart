@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'barcode_utility.dart';
+import 'package:mobile_scanner/src/objects/barcode_utility.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
@@ -77,24 +77,24 @@ class Barcode {
       this.sms,
       this.url,
       this.wifi,
-      required this.rawValue});
+      required this.rawValue, });
 
   /// Create a [Barcode] from native data.
-  Barcode.fromNative(Map<dynamic, dynamic> data)
-      : corners = toCorners(data['corners']),
-        format = toFormat(data['format']),
-        rawBytes = data['rawBytes'],
-        rawValue = data['rawValue'],
-        type = BarcodeType.values[data['type']],
-        calendarEvent = toCalendarEvent(data['calendarEvent']),
-        contactInfo = toContactInfo(data['contactInfo']),
-        driverLicense = toDriverLicense(data['driverLicense']),
-        email = toEmail(data['email']),
-        geoPoint = toGeoPoint(data['geoPoint']),
-        phone = toPhone(data['phone']),
-        sms = toSMS(data['sms']),
-        url = toUrl(data['url']),
-        wifi = toWiFi(data['wifi']);
+  Barcode.fromNative(Map<String, dynamic> data)
+      : corners = toCorners(data['corners'] as List<Map>?),
+        format = toFormat(data['format'] as int),
+        rawBytes = data['rawBytes'] as Uint8List?,
+        rawValue = data['rawValue'] as String?,
+        type = BarcodeType.values[data['type'] as int],
+        calendarEvent = toCalendarEvent(data['calendarEvent'] as Map<String, String?>?),
+        contactInfo = toContactInfo(data['contactInfo'] as Map?),
+        driverLicense = toDriverLicense(data['driverLicense'] as Map?),
+        email = toEmail(data['email'] as Map?),
+        geoPoint = toGeoPoint(data['geoPoint'] as Map?),
+        phone = toPhone(data['phone'] as Map?),
+        sms = toSMS(data['sms'] as Map?),
+        url = toUrl(data['url'] as Map?),
+        wifi = toWiFi(data['wifi'] as Map?);
 }
 
 /// A calendar event extracted from QRCode.
@@ -135,10 +135,10 @@ class CalendarEvent {
   final String? summary;
 
   /// Create a [CalendarEvent] from native data.
-  CalendarEvent.fromNative(Map<dynamic, dynamic> data)
+  CalendarEvent.fromNative(Map<dynamic, String?> data)
       : description = data['description'],
-        start = DateTime.tryParse(data['start']),
-        end = DateTime.tryParse(data['end']),
+        start = DateTime.tryParse(data['start']!),
+        end = DateTime.tryParse(data['end']!),
         location = data['location'],
         organizer = data['organizer'],
         status = data['status'],
@@ -185,15 +185,15 @@ class ContactInfo {
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map<dynamic, dynamic> data)
       : addresses = List.unmodifiable(
-            data['addresses'].map((e) => Address.fromNative(e))),
+            (data['addresses'] as List<Map>).map((e) => Address.fromNative(e)),),
         emails =
-            List.unmodifiable(data['emails'].map((e) => Email.fromNative(e))),
-        name = toName(data['name']),
-        organization = data['organization'],
+            List.unmodifiable((data['emails'] as List<Map>).map((e) => Email.fromNative(e))),
+        name = toName(data['name'] as Map?),
+        organization = data['organization'] as String?,
         phones =
-            List.unmodifiable(data['phones'].map((e) => Phone.fromNative(e))),
-        title = data['title'],
-        urls = List.unmodifiable(data['urls']);
+            List.unmodifiable((data['phones'] as List<Map>).map((e) => Phone.fromNative(e))),
+        title = data['title'] as String?,
+        urls = List.unmodifiable(data['urls'] as List);
 }
 
 /// An address.
@@ -208,8 +208,8 @@ class Address {
 
   /// Create a [Address] from native data.
   Address.fromNative(Map<dynamic, dynamic> data)
-      : addressLines = List.unmodifiable(data['addressLines']),
-        type = AddressType.values[data['type']];
+      : addressLines = List.unmodifiable(data['addressLines'] as List),
+        type = AddressType.values[data['type'] as int];
 }
 
 /// A person's name, both formatted version and individual name components.
@@ -251,13 +251,13 @@ class PersonName {
 
   /// Create a [PersonName] from native data.
   PersonName.fromNative(Map<dynamic, dynamic> data)
-      : first = data['first'],
-        middle = data['middle'],
-        last = data['last'],
-        prefix = data['prefix'],
-        suffix = data['suffix'],
-        formattedName = data['formattedName'],
-        pronunciation = data['pronunciation'];
+      : first = data['first'] as String?,
+        middle = data['middle'] as String?,
+        last = data['last'] as String?,
+        prefix = data['prefix'] as String?,
+        suffix = data['suffix'] as String?,
+        formattedName = data['formattedName'] as String?,
+        pronunciation = data['pronunciation'] as String?;
 }
 
 /// A driver license or ID card.
@@ -336,20 +336,20 @@ class DriverLicense {
 
   /// Create a [DriverLicense] from native data.
   DriverLicense.fromNative(Map<dynamic, dynamic> data)
-      : addressCity = data['addressCity'],
-        addressState = data['addressState'],
-        addressStreet = data['addressStreet'],
-        addressZip = data['addressZip'],
-        birthDate = data['birthDate'],
-        documentType = data['documentType'],
-        expiryDate = data['expiryDate'],
-        firstName = data['firstName'],
-        gender = data['gender'],
-        issueDate = data['issueDate'],
-        issuingCountry = data['issuingCountry'],
-        lastName = data['lastName'],
-        licenseNumber = data['licenseNumber'],
-        middleName = data['middleName'];
+      : addressCity = data['addressCity'] as String?,
+        addressState = data['addressState'] as String?,
+        addressStreet = data['addressStreet'] as String?,
+        addressZip = data['addressZip'] as String?,
+        birthDate = data['birthDate'] as String?,
+        documentType = data['documentType'] as String?,
+        expiryDate = data['expiryDate'] as String?,
+        firstName = data['firstName'] as String?,
+        gender = data['gender'] as String?,
+        issueDate = data['issueDate'] as String?,
+        issuingCountry = data['issuingCountry'] as String?,
+        lastName = data['lastName'] as String?,
+        licenseNumber = data['licenseNumber'] as String?,
+        middleName = data['middleName'] as String?;
 }
 
 /// An email message from a 'MAILTO:' or similar QRCode type.
@@ -377,10 +377,10 @@ class Email {
 
   /// Create a [Email] from native data.
   Email.fromNative(Map<dynamic, dynamic> data)
-      : address = data['address'],
-        body = data['body'],
-        subject = data['subject'],
-        type = EmailType.values[data['type']];
+      : address = data['address'] as String?,
+        body = data['body'] as String?,
+        subject = data['subject'] as String?,
+        type = EmailType.values[data['type'] as int];
 }
 
 /// GPS coordinates from a 'GEO:' or similar QRCode type.
@@ -393,8 +393,8 @@ class GeoPoint {
 
   /// Create a [GeoPoint] from native data.
   GeoPoint.fromNative(Map<dynamic, dynamic> data)
-      : latitude = data['latitude'],
-        longitude = data['longitude'];
+      : latitude = data['latitude'] as double?,
+        longitude = data['longitude'] as double?;
 }
 
 /// Phone number info.
@@ -412,8 +412,8 @@ class Phone {
 
   /// Create a [Phone] from native data.
   Phone.fromNative(Map<dynamic, dynamic> data)
-      : number = data['number'],
-        type = PhoneType.values[data['type']];
+      : number = data['number'] as String?,
+        type = PhoneType.values[data['type'] as int];
 }
 
 /// A sms message from a 'SMS:' or similar QRCode type.
@@ -430,8 +430,8 @@ class SMS {
 
   /// Create a [SMS] from native data.
   SMS.fromNative(Map<dynamic, dynamic> data)
-      : message = data['message'],
-        phoneNumber = data['phoneNumber'];
+      : message = data['message'] as String?,
+        phoneNumber = data['phoneNumber'] as String?;
 }
 
 /// A URL and title from a 'MEBKM:' or similar QRCode type.
@@ -448,8 +448,8 @@ class UrlBookmark {
 
   /// Create a [UrlBookmark] from native data.
   UrlBookmark.fromNative(Map<dynamic, dynamic> data)
-      : title = data['title'],
-        url = data['url'];
+      : title = data['title'] as String?,
+        url = data['url'] as String?;
 }
 
 /// A wifi network parameters from a 'WIFI:' or similar QRCode type.
@@ -471,9 +471,9 @@ class WiFi {
 
   /// Create a [WiFi] from native data.
   WiFi.fromNative(Map<dynamic, dynamic> data)
-      : encryptionType = EncryptionType.values[data['encryptionType']],
-        ssid = data['ssid'],
-        password = data['password'];
+      : encryptionType = EncryptionType.values[data['encryptionType'] as int],
+        ssid = data['ssid'] as String?,
+        password = data['password'] as String?;
 }
 
 enum BarcodeFormat {

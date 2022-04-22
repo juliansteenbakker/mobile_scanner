@@ -33,7 +33,7 @@ class MobileScanner extends StatefulWidget {
       this.onDetect,
       this.controller,
       this.fit = BoxFit.cover,
-      this.allowDuplicates = false})
+      this.allowDuplicates = false, })
       : super(key: key);
 
   @override
@@ -81,10 +81,10 @@ class _MobileScannerState extends State<MobileScanner>
                 if (!widget.allowDuplicates) {
                   if (lastScanned != barcode.rawValue) {
                     lastScanned = barcode.rawValue;
-                    widget.onDetect!(barcode, value as MobileScannerArguments);
+                    widget.onDetect!(barcode, value! as MobileScannerArguments);
                   }
                 } else {
-                  widget.onDetect!(barcode, value as MobileScannerArguments);
+                  widget.onDetect!(barcode, value! as MobileScannerArguments);
                 }
               });
               return ClipRect(
@@ -104,8 +104,8 @@ class _MobileScannerState extends State<MobileScanner>
                 ),
               );
             }
-          });
-    });
+          },);
+    },);
   }
 
   @override

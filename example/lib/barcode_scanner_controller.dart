@@ -42,7 +42,7 @@ class _BarcodeScannerWithControllerState
                   setState(() {
                     this.barcode = barcode.rawValue;
                   });
-                }),
+                },),
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -50,7 +50,6 @@ class _BarcodeScannerWithControllerState
                 height: 100,
                 color: Colors.black.withOpacity(0.4),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     IconButton(
@@ -58,13 +57,17 @@ class _BarcodeScannerWithControllerState
                       icon: ValueListenableBuilder(
                         valueListenable: controller.torchState,
                         builder: (context, state, child) {
+                          if (state == null) {
+                            return const Icon(Icons.flash_off,
+                              color: Colors.grey,);
+                          }
                           switch (state as TorchState) {
                             case TorchState.off:
                               return const Icon(Icons.flash_off,
-                                  color: Colors.grey);
+                                  color: Colors.grey,);
                             case TorchState.on:
                               return const Icon(Icons.flash_on,
-                                  color: Colors.yellow);
+                                  color: Colors.yellow,);
                           }
                         },
                       ),
@@ -82,7 +85,7 @@ class _BarcodeScannerWithControllerState
                                   ? controller.stop()
                                   : controller.start();
                               isStarted = !isStarted;
-                            })),
+                            }),),
                     Center(
                       child: SizedBox(
                         width: MediaQuery.of(context).size.width - 200,
@@ -104,6 +107,9 @@ class _BarcodeScannerWithControllerState
                       icon: ValueListenableBuilder(
                         valueListenable: controller.cameraFacingState,
                         builder: (context, state, child) {
+                          if (state == null) {
+                            return const Icon(Icons.camera_front);
+                          }
                           switch (state as CameraFacing) {
                             case CameraFacing.front:
                               return const Icon(Icons.camera_front);
@@ -123,20 +129,22 @@ class _BarcodeScannerWithControllerState
                         final ImagePicker _picker = ImagePicker();
                         // Pick an image
                         final XFile? image = await _picker.pickImage(
-                            source: ImageSource.gallery);
+                            source: ImageSource.gallery,);
                         if (image != null) {
                           if (await controller.analyzeImage(image.path)) {
+                            if (!mounted) return;
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
                               content: Text('Barcode found!'),
                               backgroundColor: Colors.green,
-                            ));
+                            ),);
                           } else {
+                            if (!mounted) return;
                             ScaffoldMessenger.of(context)
                                 .showSnackBar(const SnackBar(
                               content: Text('No barcode found!'),
                               backgroundColor: Colors.red,
-                            ));
+                            ),);
                           }
                         }
                       },
@@ -147,7 +155,7 @@ class _BarcodeScannerWithControllerState
             ),
           ],
         );
-      }),
+      },),
     );
   }
 }

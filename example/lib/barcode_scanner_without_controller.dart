@@ -28,7 +28,7 @@ class _BarcodeScannerWithoutControllerState
                   setState(() {
                     this.barcode = barcode.rawValue;
                   });
-                }),
+                },),
             Align(
               alignment: Alignment.bottomCenter,
               child: Container(
@@ -36,7 +36,6 @@ class _BarcodeScannerWithoutControllerState
                 height: 100,
                 color: Colors.black.withOpacity(0.4),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
                     Center(
@@ -61,7 +60,7 @@ class _BarcodeScannerWithoutControllerState
             ),
           ],
         );
-      }),
+      },),
     );
   }
 }

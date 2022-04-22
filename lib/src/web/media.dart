@@ -26,7 +26,7 @@ class VideoOptions {
   external Map get height;
 
   external factory VideoOptions(
-      {String? facingMode, DeviceIdOptions? deviceId, Map? width, Map? height});
+      {String? facingMode, DeviceIdOptions? deviceId, Map? width, Map? height, });
 }
 
 @JS()
