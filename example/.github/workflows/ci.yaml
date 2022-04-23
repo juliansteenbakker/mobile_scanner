@@ -1,9 +1,9 @@
 name: CI
 
 on:
-  # Triggers the workflow on pull request events but only for the main branch
+  # Triggers the workflow on pull request events but only for the master branch
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 env:
   FLUTTER_VERSION: 2.10.4
