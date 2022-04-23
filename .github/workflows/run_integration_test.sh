@@ -1,8 +1,5 @@
 # #!/bin/bash
 
-# List Flutter devices
-flutter devices
-
 # Navigate to example
 cd example
 
