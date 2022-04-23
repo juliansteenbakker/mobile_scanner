@@ -6,6 +6,9 @@ flutter devices
 # Grant camera permissions
 adb shell pm grant dev.steenbakker.mobile_scanner.example android.permission.CAMERA
 
+# Navigate to example
+cd example
+
 echo "pwd"
 pwd
 

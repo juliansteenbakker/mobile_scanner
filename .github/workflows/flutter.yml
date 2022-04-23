@@ -29,3 +29,22 @@ jobs:
       - uses: subosito/flutter-action@v2.3.0
       - name: Format
         run: flutter format -n --set-exit-if-changed .
+  integration-test:
+    # Is recommended to run job with macOS to take advantage of hardware
+    # acceleration support provided by HAXM.
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [29]
+        target: [default, google_apis]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: subosito/flutter-action@v1
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus 6
+          script: ./gradlew connectedCheck
