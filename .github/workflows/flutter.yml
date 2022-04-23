@@ -34,6 +34,7 @@ jobs:
     # acceleration support provided by HAXM.
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         api-level: [29]
         target: [default, google_apis]
@@ -51,4 +52,4 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: Nexus 6
-          script: ./github/workflows/run_integration_test.sh
+          script: ./run_integration_test.sh
