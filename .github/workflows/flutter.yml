@@ -33,6 +33,7 @@ jobs:
     # Is recommended to run job with macOS to take advantage of hardware
     # acceleration support provided by HAXM.
     runs-on: macos-latest
+    timeout-minutes: 10
     strategy:
       fail-fast: false
       matrix:
