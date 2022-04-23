@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  # Triggers the workflow on pull request events but only for the main branch
+  pull_request:
+    branches: [ main ]
+
+env:
+  FLUTTER_VERSION: 2.10.4
+
+jobs:
+  integration-test:
+    # Is recommended to run job with macOS to take advantage of hardware
+    # acceleration support provided by HAXM.
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        api-level: [29]
+        target: [default, google_apis]
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: subosito/flutter-action@v1
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: run tests
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: x86_64
+          profile: Nexus 6
+          script: ./gradlew connectedCheck
+
