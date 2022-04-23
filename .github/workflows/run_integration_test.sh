@@ -13,4 +13,4 @@ echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.poste
 echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
 
-flutter test integration_test/app_test.dart -d emulator-5554
+sudo flutter test integration_test/app_test.dart -d emulator-5554
