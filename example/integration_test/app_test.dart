@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
@@ -6,10 +8,22 @@ import 'package:mobile_scanner_example/main.dart';
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  // This test needs some local setup before working:
-  // 1. Add the screenshot "qr_code.jpg" to your Android emulator camera:
-  //    https://stackoverflow.com/a/64922184/8358501
-  // 2. Grand the camera permission with
+  setUpAll(() {
+    if (Platform.isAndroid) {
+      // Grand access to camera with adb, because the Flutter integration test
+      // can't interact with native buttons.
+      Process.run('adb', [
+        'shell',
+        'pm',
+        'grant',
+        'dev.steenbakker.mobile_scanner.example',
+        'android.permission.CAMERA'
+      ]);
+    }
+  });
+
+  // Before running the test, add the screenshot "qr_code.jpg" to your Android
+  // emulator camera: https://stackoverflow.com/a/64922184/8358501
   testWidgets(
     "scan qr code",
     (tester) async {
