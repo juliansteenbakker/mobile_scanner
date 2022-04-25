@@ -10,7 +10,7 @@ Size toSize(Map data) {
 List<Offset>? toCorners(List? data) {
   if (data != null) {
     return List.unmodifiable(
-      data.map((e ) => Offset((e as Map)['x'] as double, e['y'] as double)),
+      data.map((e) => Offset((e as Map)['x'] as double, e['y'] as double)),
     );
   } else {
     return null;

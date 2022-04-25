@@ -87,8 +87,7 @@ class Barcode {
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
         type = BarcodeType.values[data['type'] as int],
-        calendarEvent =
-            toCalendarEvent(data['calendarEvent'] as Map?),
+        calendarEvent = toCalendarEvent(data['calendarEvent'] as Map?),
         contactInfo = toContactInfo(data['contactInfo'] as Map?),
         driverLicense = toDriverLicense(data['driverLicense'] as Map?),
         email = toEmail(data['email'] as Map?),
@@ -139,8 +138,12 @@ class CalendarEvent {
   /// Create a [CalendarEvent] from native data.
   CalendarEvent.fromNative(Map data)
       : description = data['description'] as String?,
-        start = data['start'] != null ? DateTime.tryParse(data['start'] as String) : null,
-        end = data['end'] != null ? DateTime.tryParse(data['end'] as String) : null,
+        start = data['start'] != null
+            ? DateTime.tryParse(data['start'] as String)
+            : null,
+        end = data['end'] != null
+            ? DateTime.tryParse(data['end'] as String)
+            : null,
         location = data['location'] as String?,
         organizer = data['organizer'] as String?,
         status = data['status'] as String?,
