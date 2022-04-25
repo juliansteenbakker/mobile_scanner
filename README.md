@@ -71,8 +71,12 @@ import 'package:mobile_scanner/mobile_scanner.dart';
       body: MobileScanner(
           allowDuplicates: false,
           onDetect: (barcode, args) {
-            final String code = barcode.rawValue;
-            debugPrint('Barcode found! $code');
+            if (barcode.rawValue == null) {
+              debugPrint('Failed to scan Barcode');
+            } else {
+              final String code = barcode.rawValue!;
+              debugPrint('Barcode found! $code');
+            }
           }),
     );
   }
@@ -92,8 +96,12 @@ import 'package:mobile_scanner/mobile_scanner.dart';
           controller: MobileScannerController(
             facing: CameraFacing.front, torchEnabled: true),
           onDetect: (barcode, args) {
-            final String code = barcode.rawValue;
-            debugPrint('Barcode found! $code');
+            if (barcode.rawValue == null) {
+              debugPrint('Failed to scan Barcode');
+            } else {
+              final String code = barcode.rawValue!;
+              debugPrint('Barcode found! $code');
+            }
           }),
     );
   }
@@ -150,8 +158,12 @@ import 'package:mobile_scanner/mobile_scanner.dart';
             allowDuplicates: false,
             controller: cameraController,
             onDetect: (barcode, args) {
-              final String code = barcode.rawValue;
-              debugPrint('Barcode found! $code');
+              if (barcode.rawValue == null) {
+                debugPrint('Failed to scan Barcode');
+              } else {
+                final String code = barcode.rawValue!;
+                debugPrint('Barcode found! $code');
+              }
             }));
   }
 ```
