@@ -28,13 +28,13 @@ class MobileScanner extends StatefulWidget {
   final bool allowDuplicates;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
-  const MobileScanner(
-      {Key? key,
-      this.onDetect,
-      this.controller,
-      this.fit = BoxFit.cover,
-      this.allowDuplicates = false})
-      : super(key: key);
+  const MobileScanner({
+    Key? key,
+    this.onDetect,
+    this.controller,
+    this.fit = BoxFit.cover,
+    this.allowDuplicates = false,
+  }) : super(key: key);
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -69,8 +69,9 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(builder: (context, BoxConstraints constraints) {
-      return ValueListenableBuilder(
+    return LayoutBuilder(
+      builder: (context, BoxConstraints constraints) {
+        return ValueListenableBuilder(
           valueListenable: controller.args,
           builder: (context, value, child) {
             value = value as MobileScannerArguments?;
@@ -81,10 +82,10 @@ class _MobileScannerState extends State<MobileScanner>
                 if (!widget.allowDuplicates) {
                   if (lastScanned != barcode.rawValue) {
                     lastScanned = barcode.rawValue;
-                    widget.onDetect!(barcode, value as MobileScannerArguments);
+                    widget.onDetect!(barcode, value! as MobileScannerArguments);
                   }
                 } else {
-                  widget.onDetect!(barcode, value as MobileScannerArguments);
+                  widget.onDetect!(barcode, value! as MobileScannerArguments);
                 }
               });
               return ClipRect(
@@ -104,8 +105,10 @@ class _MobileScannerState extends State<MobileScanner>
                 ),
               );
             }
-          });
-    });
+          },
+        );
+      },
+    );
   }
 
   @override

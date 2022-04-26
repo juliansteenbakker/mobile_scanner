@@ -16,21 +16,25 @@ class MyHome extends StatelessWidget {
         height: MediaQuery.of(context).size.height,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const BarcodeScannerWithController(),
-                ));
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BarcodeScannerWithController(),
+                  ),
+                );
               },
               child: const Text('MobileScanner with Controller'),
             ),
             ElevatedButton(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => const BarcodeScannerWithoutController(),
-                ));
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        const BarcodeScannerWithoutController(),
+                  ),
+                );
               },
               child: const Text('MobileScanner without Controller'),
             ),

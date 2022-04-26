@@ -6,9 +6,9 @@ environment:
   sdk: ">=2.12.0 <3.0.0"
 
 dependencies:
-  image_picker: ^0.8.4+9
   flutter:
     sdk: flutter
+  image_picker: ^0.8.4+9
 
   mobile_scanner:
     path: ../
@@ -16,7 +16,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^1.0.4
+  lint: ^1.8.2
 
 flutter:
   uses-material-design: true

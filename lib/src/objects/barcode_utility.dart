@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
-import 'barcode.dart';
-
-Size toSize(Map<dynamic, dynamic> data) {
-  final width = data['width'];
-  final height = data['height'];
+Size toSize(Map data) {
+  final width = data['width'] as double;
+  final height = data['height'] as double;
   return Size(width, height);
 }
 
-List<Offset>? toCorners(List<dynamic>? data) {
+List<Offset>? toCorners(List? data) {
   if (data != null) {
-    return List.unmodifiable(data.map((e) => Offset(e['x'], e['y'])));
+    return List.unmodifiable(
+      data.map((e) => Offset((e as Map)['x'] as double, e['y'] as double)),
+    );
   } else {
     return null;
   }
@@ -51,7 +52,7 @@ BarcodeFormat toFormat(int value) {
   }
 }
 
-CalendarEvent? toCalendarEvent(Map<dynamic, dynamic>? data) {
+CalendarEvent? toCalendarEvent(Map? data) {
   if (data != null) {
     return CalendarEvent.fromNative(data);
   } else {
@@ -59,15 +60,15 @@ CalendarEvent? toCalendarEvent(Map<dynamic, dynamic>? data) {
   }
 }
 
-DateTime? toDateTime(Map<dynamic, dynamic>? data) {
+DateTime? toDateTime(Map<String, dynamic>? data) {
   if (data != null) {
-    final year = data['year'];
-    final month = data['month'];
-    final day = data['day'];
-    final hour = data['hours'];
-    final minute = data['minutes'];
-    final second = data['seconds'];
-    return data['isUtc']
+    final year = data['year'] as int;
+    final month = data['month'] as int;
+    final day = data['day'] as int;
+    final hour = data['hours'] as int;
+    final minute = data['minutes'] as int;
+    final second = data['seconds'] as int;
+    return data['isUtc'] as bool
         ? DateTime.utc(year, month, day, hour, minute, second)
         : DateTime(year, month, day, hour, minute, second);
   } else {
@@ -75,7 +76,7 @@ DateTime? toDateTime(Map<dynamic, dynamic>? data) {
   }
 }
 
-ContactInfo? toContactInfo(Map<dynamic, dynamic>? data) {
+ContactInfo? toContactInfo(Map? data) {
   if (data != null) {
     return ContactInfo.fromNative(data);
   } else {
@@ -83,7 +84,7 @@ ContactInfo? toContactInfo(Map<dynamic, dynamic>? data) {
   }
 }
 
-PersonName? toName(Map<dynamic, dynamic>? data) {
+PersonName? toName(Map? data) {
   if (data != null) {
     return PersonName.fromNative(data);
   } else {
@@ -91,7 +92,7 @@ PersonName? toName(Map<dynamic, dynamic>? data) {
   }
 }
 
-DriverLicense? toDriverLicense(Map<dynamic, dynamic>? data) {
+DriverLicense? toDriverLicense(Map? data) {
   if (data != null) {
     return DriverLicense.fromNative(data);
   } else {
@@ -99,7 +100,7 @@ DriverLicense? toDriverLicense(Map<dynamic, dynamic>? data) {
   }
 }
 
-Email? toEmail(Map<dynamic, dynamic>? data) {
+Email? toEmail(Map? data) {
   if (data != null) {
     return Email.fromNative(data);
   } else {
@@ -107,7 +108,7 @@ Email? toEmail(Map<dynamic, dynamic>? data) {
   }
 }
 
-GeoPoint? toGeoPoint(Map<dynamic, dynamic>? data) {
+GeoPoint? toGeoPoint(Map? data) {
   if (data != null) {
     return GeoPoint.fromNative(data);
   } else {
@@ -115,7 +116,7 @@ GeoPoint? toGeoPoint(Map<dynamic, dynamic>? data) {
   }
 }
 
-Phone? toPhone(Map<dynamic, dynamic>? data) {
+Phone? toPhone(Map? data) {
   if (data != null) {
     return Phone.fromNative(data);
   } else {
@@ -123,7 +124,7 @@ Phone? toPhone(Map<dynamic, dynamic>? data) {
   }
 }
 
-SMS? toSMS(Map<dynamic, dynamic>? data) {
+SMS? toSMS(Map? data) {
   if (data != null) {
     return SMS.fromNative(data);
   } else {
@@ -131,7 +132,7 @@ SMS? toSMS(Map<dynamic, dynamic>? data) {
   }
 }
 
-UrlBookmark? toUrl(Map<dynamic, dynamic>? data) {
+UrlBookmark? toUrl(Map? data) {
   if (data != null) {
     return UrlBookmark.fromNative(data);
   } else {
@@ -139,7 +140,7 @@ UrlBookmark? toUrl(Map<dynamic, dynamic>? data) {
   }
 }
 
-WiFi? toWiFi(Map<dynamic, dynamic>? data) {
+WiFi? toWiFi(Map? data) {
   if (data != null) {
     return WiFi.fromNative(data);
   } else {

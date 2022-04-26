@@ -4,7 +4,7 @@ library qrscanner;
 import 'package:js/js.dart';
 
 @JS('QrScanner')
-external String scanImage(var data);
+external String scanImage(dynamic data);
 
 @JS()
 class QrScanner {
