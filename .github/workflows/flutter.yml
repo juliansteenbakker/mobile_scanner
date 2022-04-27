@@ -53,7 +53,7 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: pixel_3a
-          pre-emulator-launcher-script: |
+          pre-emulator-launch-script: |
             # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
             # camera emulator.
             # 
