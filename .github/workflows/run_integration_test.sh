@@ -4,7 +4,7 @@
 cd example
 
 flutter build apk
-adb install build/app/outputs/apk/app-debug.apk
+adb install build/app/outputs/flutter-apk/app-release.apk
 
 # Grant permission to camera
 adb shell pm grant dev.steenbakker.mobile_scanner.example android.permission.CAMERA
