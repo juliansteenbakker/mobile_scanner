@@ -13,9 +13,12 @@ echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.poste
 echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 
 echo "cat ~/Library/Android/sdk/emulator/resources/Toren1BD.posters"
-cat ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 
 mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+
+pushd ~/Library/Android/sdk/emulator/resources/
+ls
+popd
 
 # We can't use the "flutter test" command, because it will not execute the adb
 # command to access the camera (defined in the "test_driver/integration_test.jpg")
