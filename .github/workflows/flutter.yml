@@ -47,7 +47,7 @@ jobs:
           java-version: '11'
       - uses: subosito/flutter-action@v2.3.0
       - name: Run integration tests
-        uses: nilsreichardt/android-emulator-runner
+        uses: nilsreichardt/android-emulator-runner@963ac8352be1661c3a8a4973ba8b42d38e5627f0
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
