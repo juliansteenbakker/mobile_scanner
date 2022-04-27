@@ -11,6 +11,10 @@ echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 echo "position 0 0 -1.8" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
 echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+
+echo "cat ~/Library/Android/sdk/emulator/resources/Toren1BD.posters"
+cat ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+
 mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
 
 # We can't use the "flutter test" command, because it will not execute the adb
