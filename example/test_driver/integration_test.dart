@@ -9,7 +9,7 @@ Future<void> main() async {
     'shell',
     'pm',
     'grant',
-    'dev.steenbakker.mobile_scanner.example',
+    'dev.steenbakker.mobile_scanner_example',
     'android.permission.CAMERA'
   ]);
 
