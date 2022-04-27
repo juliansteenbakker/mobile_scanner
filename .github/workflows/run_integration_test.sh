@@ -3,12 +3,6 @@
 # Navigate to example
 cd example
 
-flutter build apk
-adb install build/app/outputs/flutter-apk/app-release.apk
-
-# Grant permission to camera
-adb shell pm grant dev.steenbakker.mobile_scanner.example android.permission.CAMERA
-
 # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
 # camera emulator.
 echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
