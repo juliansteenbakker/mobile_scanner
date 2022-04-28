@@ -58,7 +58,7 @@ jobs:
           target: ${{ matrix.target }}
           arch: ${{ matrix.arch }}
           profile: pixel_3a
-          emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back emulated -camera-front emulated -gpu swiftshader_indirect
+          emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back virtualscene -camera-front emulated -gpu swiftshader_indirect
           working-directory: ./example
           pre-emulator-launch-script: |
             # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
@@ -78,24 +78,35 @@ jobs:
           #   flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
           script: |
             mkdir test_results
+            # Download app
+            curl -X GET -o "app.apk" "https://firebasestorage.googleapis.com/v0/b/nilsreichardt.appspot.com/o/mobile_scanner%2Fapp-release-2.apk?alt=media&token=3ff4fe70-3d23-4c7e-9849-edd622e7f7f1"
+            
+            # Install app
+            adb install app.apk
 
-            adb shell "am start -a android.media.action.VIDEO_CAPTURE"
-            adb shell am start -a android.media.action.VIDEO_CAMERA
+            # Grant permission
+            adb shell pm grant dev.steenbakker.mobile_scanner_example android.permission.CAMERA
+
+            # Open app
+            adb shell monkey -p dev.steenbakker.mobile_scanner_example -c android.intent.category.LAUNCHER 1
 
             sleep 1
             adb shell screencap -p > test_results/1.jpg
-
+            
             sleep 1
             adb shell screencap -p > test_results/2.jpg
-
+            
             sleep 1
             adb shell screencap -p > test_results/3.jpg
-
+            
             sleep 1
             adb shell screencap -p > test_results/4.jpg
-
+            
             sleep 1
             adb shell screencap -p > test_results/5.jpg
+
+            sleep 1
+            adb shell screencap -p > test_results/6.jpg
       - name: Upload emulator tests artifact
         uses: actions/upload-artifact@v1
         if: always()
