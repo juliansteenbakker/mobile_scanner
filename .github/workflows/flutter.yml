@@ -74,7 +74,18 @@ jobs:
           #   flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
           script: |
             mkdir test_results
-            adb shell am start -a android.media.action.STILL_IMAGE_CAMERA
+
+            # Download app
+            curl -X GET \
+            -o "app.apk" \
+            "https://firebasestorage.googleapis.com/v0/b/nilsreichardt.appspot.com/o/mobile_scanner%2Fapp-release.apk?alt=media&token=0730e27b-d74a-46fd-bae0-b96e742ec90f"
+            
+            # Install app
+            adb install app.apk
+
+            # Open app
+            adb shell monkey -p dev.steenbakker.mobile_scanner_example -c android.intent.category.LAUNCHER 1
+
             sleep 6
             adb shell screencap -p > test_results/myfile.jpg
       - name: Upload emulator tests artifact
