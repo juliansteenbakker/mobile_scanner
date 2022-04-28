@@ -17,7 +17,7 @@ void main() {
       await tester.tap(find.text('MobileScanner with Controller'));
       await tester.pumpAndSettle();
 
-      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6_';
+      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6';
       try {
         await waitFor(
           tester,
@@ -25,22 +25,11 @@ void main() {
           timeout: const Duration(seconds: 3),
         );
       } catch (e) {
-        await tester.tap(find.byKey(const Key('camera_switch')));
-        await tester.pump();
+        await binding.convertFlutterSurfaceToImage();
 
-        try {
-          await waitFor(
-            tester,
-            find.text(link),
-            timeout: const Duration(seconds: 3),
-          );
-        } catch (e) {
-          await binding.convertFlutterSurfaceToImage();
-
-          // Trigger a frame.
-          await tester.pumpAndSettle();
-          await binding.takeScreenshot('screenshot-1');
-        }
+        // Trigger a frame.
+        await tester.pumpAndSettle();
+        await binding.takeScreenshot('screenshot-1');
       }
 
       expect(
