@@ -46,7 +46,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-      - uses: subosito/flutter-action@v2.3.0
+      # - uses: subosito/flutter-action@v2.3.0
       - name: Run integration tests
         uses: nilsreichardt/android-emulator-runner@hot-fix-pre-emulator-launch-script
         with:
@@ -68,10 +68,15 @@ jobs:
             echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
             echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
             mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+          # script: |
+          #   # We can't use the "flutter test" command, because it will not execute the adb
+          #   # command to access the camera (defined in the "test_driver/integration_test.jpg")
+          #   flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
           script: |
-            # We can't use the "flutter test" command, because it will not execute the adb
-            # command to access the camera (defined in the "test_driver/integration_test.jpg")
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
+            mkdir test_results
+            adb shell "am start -a android.media.action.IMAGE_CAPTURE"
+            sleep 6
+            adb shell screencap -p > myfile.jpg
       - name: Upload emulator tests artifact
         uses: actions/upload-artifact@v1
         if: failure()
