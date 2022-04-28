@@ -76,10 +76,10 @@ jobs:
             mkdir test_results
             adb shell am start -a android.media.action.STILL_IMAGE_CAMERA
             sleep 6
-            adb shell screencap -p > myfile.jpg
+            adb shell screencap -p > test_results/myfile.jpg
       - name: Upload emulator tests artifact
         uses: actions/upload-artifact@v1
         if: always()
         with:
-          name: failure_screenshots_${{ matrix.target }}_${{ matrix.api-level }}
+          name: failure_screenshots_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
           path: ./example/test_results
