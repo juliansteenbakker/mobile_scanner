@@ -37,9 +37,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [29, 30, 31]
+        api-level: [30]
         target: [default]
-        arch: [x86_64]
+        arch: [x86_64, x84]
         exclude:
           - target: default
             arch: x86
@@ -75,7 +75,7 @@ jobs:
           script: |
             mkdir test_results
             # Download app
-            curl -X GET -o "app.apk" "https://firebasestorage.googleapis.com/v0/b/nilsreichardt.appspot.com/o/mobile_scanner%2Fapp-release-2.apk?alt=media&token=3ff4fe70-3d23-4c7e-9849-edd622e7f7f1"
+            curl -X GET -o "app.apk" "https://firebasestorage.googleapis.com/v0/b/talentscout-34f1b.appspot.com/o/mobile_scanner%2Fapp-release-2.apk?alt=media&token=0ff0a9ad-c691-4ba2-bc9d-f3108455a55f"
             
             # Install app
             adb install app.apk
