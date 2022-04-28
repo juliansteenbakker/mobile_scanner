@@ -78,6 +78,7 @@ jobs:
           #   flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
           script: |
             mkdir test_results
+
             # Download app
             curl -X GET -o "app.apk" "https://firebasestorage.googleapis.com/v0/b/nilsreichardt.appspot.com/o/mobile_scanner%2Fapp-release-2.apk?alt=media&token=3ff4fe70-3d23-4c7e-9849-edd622e7f7f1"
             
@@ -112,6 +113,11 @@ jobs:
         if: always()
         with:
           name: failure_screenshots_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
-          path: | 
-            ./example/test_results
-            ~/Library/Android/sdk/emulator/resources
+          path: ./example/test_results
+      - name: Upload emulator config artifact
+        uses: actions/upload-artifact@v1
+        if: always()
+        with:
+          name: emulator_configs_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
+          path: ~/Library/Android/sdk/emulator/resources
+      
