@@ -38,8 +38,8 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [30]
-        target: [default]
-        arch: [x86_64, x84]
+        target: [default, google_apis, playstore]
+        arch: [x86_64]
         exclude:
           - target: default
             arch: x86
