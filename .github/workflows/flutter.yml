@@ -37,9 +37,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        api-level: [30]
-        target: [default, google_apis]
-        arch: [x86, x86_64]
+        api-level: [29, 30, 31]
+        target: [default]
+        arch: [x86_64]
         exclude:
           - target: default
             arch: x86
@@ -73,25 +73,38 @@ jobs:
           #   echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
           #   mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
           script: |
-            # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
-            # camera emulator.
-            # 
-            # Source: https://stackoverflow.com/a/64922184/8358501
-            echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "poster qr_code" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "position 0 0.3 -1.0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+            mkdir test_results
+            # Download app
+            curl -X GET -o "app.apk" "https://firebasestorage.googleapis.com/v0/b/nilsreichardt.appspot.com/o/mobile_scanner%2Fapp-release-2.apk?alt=media&token=3ff4fe70-3d23-4c7e-9849-edd622e7f7f1"
+            
+            # Install app
+            adb install app.apk
+            # Grant permission
+            adb shell pm grant dev.steenbakker.mobile_scanner_example android.permission.CAMERA
+            # Open app
+            adb shell monkey -p dev.steenbakker.mobile_scanner_example -c android.intent.category.LAUNCHER 1
 
-            # We can't use the "flutter test" command, because it will not execute the adb
-            # command to access the camera (defined in the "test_driver/integration_test.jpg")
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
-      - name: Upload failure screenshots
+            sleep 1
+            adb shell screencap -p > test_results/1.jpg
+            
+            sleep 1
+            adb shell screencap -p > test_results/2.jpg
+            
+            sleep 1
+            adb shell screencap -p > test_results/3.jpg
+            
+            sleep 1
+            adb shell screencap -p > test_results/4.jpg
+            
+            sleep 1
+            adb shell screencap -p > test_results/5.jpg
+
+            sleep 1
+            adb shell screencap -p > test_results/6.jpg
+      - name: Upload emulator tests artifact
         uses: actions/upload-artifact@v1
-        if: failure()
+        if: always()
         with:
-          name: screenshots_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
+          name: failure_screenshots_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
           path: ./example/test_results
       
