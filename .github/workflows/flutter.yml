@@ -52,7 +52,7 @@ jobs:
         with:
           api-level: ${{ matrix.api-level }}
           target: ${{ matrix.target }}
-          arch: x86_64
+          arch: ${{ matrix.arch }}
           profile: pixel_3a
           emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back emulated -camera-front emulated
           working-directory: ./example
