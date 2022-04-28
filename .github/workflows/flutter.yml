@@ -82,7 +82,7 @@ jobs:
             # Grant permission
             adb shell pm grant dev.steenbakker.mobile_scanner_example android.permission.CAMERA
             # Open app
-            adb shell monkey -p dev.steenbakker.mobile_scanner_example -c android.intent.category.LAUNCHER 1
+            adb shell am start -n dev.steenbakker.mobile_scanner_example/io.flutter.embedding.android.FlutterActivity
 
             sleep 1
             adb shell screencap -p > test_results/1.jpg
