@@ -75,5 +75,5 @@ jobs:
         uses: actions/upload-artifact@v1
         if: failure()
         with:
-          name: failure_screenshots_${{ matrix.target }}_${{ api-level }}
+          name: failure_screenshots_${{ matrix.target }}_${{ matrix.api-level }}
           path: ./example/test_results
