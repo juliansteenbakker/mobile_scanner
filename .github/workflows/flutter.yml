@@ -53,7 +53,7 @@ jobs:
           target: ${{ matrix.target }}
           arch: x86_64
           profile: pixel_3a
-          emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back none -camera-front emulated -gpu swiftshader_indirect
+          emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back emulated -camera-front emulated -gpu swiftshader_indirect
           working-directory: ./example
           # pre-emulator-launch-script: |
           #   # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
