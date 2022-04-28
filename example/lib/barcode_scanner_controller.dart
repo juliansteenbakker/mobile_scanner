@@ -18,7 +18,7 @@ class _BarcodeScannerWithControllerState
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
-    // facing: CameraFacing.front,
+    facing: CameraFacing.front,
   );
 
   bool isStarted = true;
@@ -100,6 +100,7 @@ class _BarcodeScannerWithControllerState
                       ),
                     ),
                     IconButton(
+                      key: const Key('camera_switch'),
                       color: Colors.white,
                       icon: ValueListenableBuilder(
                         valueListenable: controller.cameraFacingState,

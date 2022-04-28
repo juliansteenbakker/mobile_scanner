@@ -17,18 +17,30 @@ void main() {
       await tester.tap(find.text('MobileScanner with Controller'));
       await tester.pumpAndSettle();
 
-      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6';
+      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6_';
       try {
         await waitFor(
           tester,
           find.text(link),
-          timeout: const Duration(seconds: 20),
+          timeout: const Duration(seconds: 3),
         );
       } catch (e) {
-        // This is required prior to taking the screenshot (Android only).
-        await binding.convertFlutterSurfaceToImage();
+        await tester.tap(find.byKey(const Key('camera_switch')));
         await tester.pump();
-        await binding.takeScreenshot('screenshot-1');
+
+        try {
+          await waitFor(
+            tester,
+            find.text(link),
+            timeout: const Duration(seconds: 3),
+          );
+        } catch (e) {
+          await binding.convertFlutterSurfaceToImage();
+
+          // Trigger a frame.
+          await tester.pumpAndSettle();
+          await binding.takeScreenshot('screenshot-1');
+        }
       }
 
       expect(
