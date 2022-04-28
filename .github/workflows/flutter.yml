@@ -79,7 +79,6 @@ jobs:
             adb shell screencap -p > myfile.jpg
       - name: Upload emulator tests artifact
         uses: actions/upload-artifact@v1
-        if: failure()
         with:
           name: failure_screenshots_${{ matrix.target }}_${{ matrix.api-level }}
           path: ./example/test_results
