@@ -50,7 +50,7 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '11'
-      - uses: subosito/flutter-action@v2.3.0
+      # - uses: subosito/flutter-action@v2.3.0
       - name: Run integration tests
         uses: nilsreichardt/android-emulator-runner@hot-fix-pre-emulator-launch-script
         with:
@@ -72,14 +72,16 @@ jobs:
             echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
             echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
             mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+          # script: |
+          #   # We can't use the "flutter test" command, because it will not execute the adb
+          #   # command to access the camera (defined in the "test_driver/integration_test.jpg")
+          #   flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
           script: |
-            # We can't use the "flutter test" command, because it will not execute the adb
-            # command to access the camera (defined in the "test_driver/integration_test.jpg")
-            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
-      - name: Upload emulator tests artifact
+            cp -a ~/Library/Android/sdk/emulator/. ./emulator-resources
+      - name: Upload emulator config artifact
         uses: actions/upload-artifact@v1
-        if: failure()
+        if: always()
         with:
-          name: failure_screenshots_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
-          path: ./example/test_results
+          name: emulator_configs_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
+          path: ./emulator-resources
       
