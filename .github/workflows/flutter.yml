@@ -71,3 +71,9 @@ jobs:
             # We can't use the "flutter test" command, because it will not execute the adb
             # command to access the camera (defined in the "test_driver/integration_test.jpg")
             flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
+      - name: Upload emulator tests artifact
+        uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: failure_screenshots
+          path: ./example/test_results
