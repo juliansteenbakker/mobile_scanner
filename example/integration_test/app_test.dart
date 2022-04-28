@@ -17,7 +17,7 @@ void main() {
       await tester.tap(find.text('MobileScanner with Controller'));
       await tester.pumpAndSettle();
 
-      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6_';
+      const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6';
       try {
         await waitFor(
           tester,
