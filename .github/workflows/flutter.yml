@@ -81,6 +81,9 @@ jobs:
             # Install app
             adb install app.apk
 
+            # Grant permission
+            adb shell pm grant dev.steenbakker.mobile_scanner_example android.permission.CAMERA
+
             # Open app
             adb shell monkey -p dev.steenbakker.mobile_scanner_example -c android.intent.category.LAUNCHER 1
 
