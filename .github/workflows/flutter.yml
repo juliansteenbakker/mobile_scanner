@@ -1,6 +1,6 @@
 name: code analysis & formatting
 
-on: [pull_request]
+on: [push]
 
 jobs:
   analysis:
