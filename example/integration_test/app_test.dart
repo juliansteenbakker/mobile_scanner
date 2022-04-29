@@ -15,7 +15,7 @@ void main() {
       await tester.pumpWidget(const MaterialApp(home: MyHome()));
 
       await tester.tap(find.text('MobileScanner with Controller'));
-      await tester.pumpAndSettle();
+      await tester.pump();
 
       const link = 'https://sharez.one/pGmfH4rTQeuxXbLE6';
       try {
@@ -28,7 +28,7 @@ void main() {
         await binding.convertFlutterSurfaceToImage();
 
         // Trigger a frame.
-        await tester.pumpAndSettle();
+        await tester.pump();
         await binding.takeScreenshot('screenshot-1');
       }
 
