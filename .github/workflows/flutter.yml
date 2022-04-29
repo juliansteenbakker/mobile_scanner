@@ -33,7 +33,7 @@ jobs:
     # Is recommended to run job with macOS to take advantage of hardware
     # acceleration support provided by HAXM.
     runs-on: macos-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -73,13 +73,13 @@ jobs:
             # camera emulator.
             # 
             # Source: https://stackoverflow.com/a/64922184/8358501
-            echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "poster qr_code" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "position 0 0.3 -1.0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
-            mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+            # echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # echo "poster qr_code" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # echo "position 0 0.3 -1.0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            # mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
 
             # We can't use the "flutter test" command, because it will not execute the adb
             # command to access the camera (defined in the "test_driver/integration_test.jpg")
