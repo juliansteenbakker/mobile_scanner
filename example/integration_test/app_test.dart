@@ -25,6 +25,7 @@ void main() {
           timeout: const Duration(seconds: 3),
         );
       } catch (e) {
+        // This is required prior to taking the screenshot (Android only).
         await binding.convertFlutterSurfaceToImage();
 
         // Trigger a frame.
