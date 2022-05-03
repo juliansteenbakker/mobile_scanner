@@ -70,6 +70,7 @@ jobs:
             echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
             mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
           script: |
+            # We 
             ./.github/workflows/make_screenshots.sh &
 
             # We can't use the "flutter test" command, because it will not execute the adb
@@ -77,7 +78,7 @@ jobs:
             flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
       - name: Upload failure screenshots
         uses: actions/upload-artifact@v1
-        if: failure()
+        if: always()
         with:
           name: emulator_configs_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
           path: ./example/test_results
