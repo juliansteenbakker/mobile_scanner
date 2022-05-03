@@ -38,6 +38,7 @@ jobs:
       fail-fast: false
       matrix:
         api-level: [28, 31]
+        # The package requires the PlayStore on the device.
         target: [playstore]
         arch: [x86_64]
     steps:
