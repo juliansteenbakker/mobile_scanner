@@ -1,5 +1,5 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="dev.steenbakker.mobile_scanner.example">
+    package="dev.steenbakker.mobile_scanner_example">
 
    <application
         android:label="mobile_scanner_example"
