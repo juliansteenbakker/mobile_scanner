@@ -24,7 +24,7 @@ Future<void> main() async {
   ]);
 
   await integrationDriver(
-    onScreenshot: (String screenshotName, List<int> screenshotBytes) async {
+    onScreenshot: (screenshotName, screenshotBytes) async {
       final image = await File('test_results/$screenshotName.png').create(
         // Create the folder "test_results" if it doesn't exist.
         recursive: true,
