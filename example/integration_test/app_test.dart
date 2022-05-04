@@ -24,7 +24,7 @@ void main() {
           find.text(link),
           // We need a long timeout because the Android emulator in CI
           // environment is a very slow.
-          timeout: const Duration(seconds: 25),
+          timeout: const Duration(minutes: 1),
         );
       } catch (e) {
         // When the test fails, the screenshot will be taken.
