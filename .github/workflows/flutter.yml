@@ -82,3 +82,4 @@ jobs:
         with:
           name: emulator_configs_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
           path: ./example/test_results
+          if-no-files-found: ignore
