@@ -1,27 +1,28 @@
 import 'dart:async';
+import 'dart:html' as html;
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/web/jsqr.dart';
-import 'dart:html' as html;
-import 'dart:ui' as ui;
-
 import 'package:mobile_scanner/src/web/media.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
 class MobileScannerWebPlugin {
   static void registerWith(Registrar registrar) {
-    PluginEventChannel event = PluginEventChannel(
-        'dev.steenbakker.mobile_scanner/scanner/event',
-        const StandardMethodCodec(),
-        registrar);
-    MethodChannel channel = MethodChannel(
-        'dev.steenbakker.mobile_scanner/scanner/method',
-        const StandardMethodCodec(),
-        registrar);
+    final PluginEventChannel event = PluginEventChannel(
+      'dev.steenbakker.mobile_scanner/scanner/event',
+      const StandardMethodCodec(),
+      registrar,
+    );
+    final MethodChannel channel = MethodChannel(
+      'dev.steenbakker.mobile_scanner/scanner/method',
+      const StandardMethodCodec(),
+      registrar,
+    );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
     WidgetsFlutterBinding.ensureInitialized();
 
@@ -51,16 +52,17 @@ class MobileScannerWebPlugin {
   Future<dynamic> handleMethodCall(MethodCall call) async {
     switch (call.method) {
       case 'start':
-        return await _start(call.arguments);
+        return _start(call.arguments as Map);
       case 'torch':
-        return await _torch(call.arguments);
+        return _torch(call.arguments);
       case 'stop':
-        return await cancel();
+        return cancel();
       default:
         throw PlatformException(
-            code: 'Unimplemented',
-            details: "The mobile_scanner plugin for web doesn't implement "
-                "the method '${call.method}'");
+          code: 'Unimplemented',
+          details: "The mobile_scanner plugin for web doesn't implement "
+              "the method '${call.method}'",
+        );
     }
   }
 
@@ -77,21 +79,22 @@ class MobileScannerWebPlugin {
   }
 
   /// Starts the video stream and the scanner
-  Future<Map> _start(arguments) async {
+  Future<Map> _start(Map arguments) async {
     vidDiv.children = [video];
 
     var cameraFacing = CameraFacing.front;
     if (arguments.containsKey('facing')) {
-      cameraFacing = CameraFacing.values[arguments['facing']];
+      cameraFacing = CameraFacing.values[arguments['facing'] as int];
     }
 
     // See https://github.com/flutter/flutter/issues/41563
-    // ignore: UNDEFINED_PREFIXED_NAME
+    // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
     ui.platformViewRegistry.registerViewFactory(
-        viewID,
-        (int id) => vidDiv
-          ..style.width = '100%'
-          ..style.height = '100%');
+      viewID,
+      (int id) => vidDiv
+        ..style.width = '100%'
+        ..style.height = '100%',
+    );
 
     // Check if stream is running
     if (_localStream != null) {
@@ -104,13 +107,14 @@ class MobileScannerWebPlugin {
 
     try {
       // Check if browser supports multiple camera's and set if supported
-      Map? capabilities =
+      final Map? capabilities =
           html.window.navigator.mediaDevices?.getSupportedConstraints();
-      if (capabilities != null && capabilities['facingMode']) {
-        var constraints = {
+      if (capabilities != null && capabilities['facingMode'] as bool) {
+        final constraints = {
           'video': VideoOptions(
-              facingMode:
-                  (cameraFacing == CameraFacing.front ? 'user' : 'environment'))
+            facingMode:
+                cameraFacing == CameraFacing.front ? 'user' : 'environment',
+          )
         };
 
         _localStream =
@@ -156,6 +160,8 @@ class MobileScannerWebPlugin {
     final sources =
         await html.window.navigator.mediaDevices!.enumerateDevices();
     for (final e in sources) {
+      // TODO:
+      // ignore: avoid_dynamic_calls
       if (e.kind == 'videoinput') {
         return true;
       }

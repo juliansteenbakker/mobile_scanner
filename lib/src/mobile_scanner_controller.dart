@@ -5,8 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-
-import 'objects/barcode_utility.dart';
+import 'package:mobile_scanner/src/objects/barcode_utility.dart';
 
 /// The facing of a camera.
 enum CameraFacing {
@@ -56,11 +55,12 @@ class MobileScannerController {
 
   Stream<Barcode> get barcodes => barcodesController.stream;
 
-  MobileScannerController(
-      {this.facing = CameraFacing.back,
-      this.ratio,
-      this.torchEnabled,
-      this.formats}) {
+  MobileScannerController({
+    this.facing = CameraFacing.back,
+    this.ratio,
+    this.torchEnabled,
+    this.formats,
+  }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
       stop();
@@ -80,26 +80,30 @@ class MobileScannerController {
     // Listen to events from the platform specific code
     events = eventChannel
         .receiveBroadcastStream()
-        .listen((data) => handleEvent(data));
+        .listen((data) => handleEvent(data as Map));
   }
 
-  void handleEvent(Map<dynamic, dynamic> event) {
+  void handleEvent(Map event) {
     final name = event['name'];
     final data = event['data'];
     switch (name) {
       case 'torchState':
-        final state = TorchState.values[data];
+        final state = TorchState.values[data as int];
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data);
+        final barcode = Barcode.fromNative(data as Map);
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
-        barcodesController.add(Barcode(rawValue: data['payload']));
+        barcodesController.add(
+          Barcode(
+            rawValue: (data as Map)['payload'] as String,
+          ),
+        );
         break;
       case 'barcodeWeb':
-        barcodesController.add(Barcode(rawValue: data));
+        barcodesController.add(Barcode(rawValue: data as String));
         break;
       default:
         throw UnimplementedError();
@@ -129,11 +133,12 @@ class MobileScannerController {
 
     // Check authorization status
     if (!kIsWeb) {
-      MobileScannerState state =
-          MobileScannerState.values[await methodChannel.invokeMethod('state')];
+      MobileScannerState state = MobileScannerState
+          .values[await methodChannel.invokeMethod('state') as int];
       switch (state) {
         case MobileScannerState.undetermined:
-          final bool result = await methodChannel.invokeMethod('request');
+          final bool result =
+              await methodChannel.invokeMethod('request') as bool;
           state = result
               ? MobileScannerState.authorized
               : MobileScannerState.denied;
@@ -149,7 +154,7 @@ class MobileScannerController {
     cameraFacingState.value = facing;
 
     // Set the starting arguments for the camera
-    Map arguments = {};
+    final Map arguments = {};
     arguments['facing'] = facing.index;
     if (ratio != null) arguments['ratio'] = ratio;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
@@ -166,7 +171,9 @@ class MobileScannerController {
     Map<String, dynamic>? startResult = {};
     try {
       startResult = await methodChannel.invokeMapMethod<String, dynamic>(
-          'start', arguments);
+        'start',
+        arguments,
+      );
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
       isStarting = false;
@@ -179,18 +186,23 @@ class MobileScannerController {
       throw PlatformException(code: 'INITIALIZATION ERROR');
     }
 
-    hasTorch = startResult['torchable'];
+    hasTorch = startResult['torchable'] as bool;
 
     if (kIsWeb) {
       args.value = MobileScannerArguments(
-          webId: startResult['ViewID'],
-          size: Size(startResult['videoWidth'], startResult['videoHeight']),
-          hasTorch: hasTorch);
+        webId: startResult['ViewID'] as String?,
+        size: Size(
+          startResult['videoWidth'] as double,
+          startResult['videoHeight'] as double,
+        ),
+        hasTorch: hasTorch,
+      );
     } else {
       args.value = MobileScannerArguments(
-          textureId: startResult['textureId'],
-          size: toSize(startResult['size']),
-          hasTorch: hasTorch);
+        textureId: startResult['textureId'] as int,
+        size: toSize(startResult['size'] as Map),
+        hasTorch: hasTorch,
+      );
     }
 
     isStarting = false;
@@ -214,7 +226,7 @@ class MobileScannerController {
       return;
     }
 
-    TorchState state =
+    final TorchState state =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
     try {
@@ -233,7 +245,8 @@ class MobileScannerController {
       await methodChannel.invokeMethod('stop');
     } on PlatformException catch (error) {
       debugPrint(
-          '${error.code}: camera is stopped! Please start before switching camera.');
+        '${error.code}: camera is stopped! Please start before switching camera.',
+      );
       return;
     }
     facing =
@@ -247,7 +260,7 @@ class MobileScannerController {
   ///
   /// [path] The path of the image on the devices
   Future<bool> analyzeImage(String path) async {
-    return await methodChannel.invokeMethod('analyzeImage', path);
+    return methodChannel.invokeMethod('analyzeImage', path) as bool;
   }
 
   /// Disposes the MobileScannerController and closes all listeners.
