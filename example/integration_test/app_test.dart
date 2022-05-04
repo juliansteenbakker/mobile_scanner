@@ -22,7 +22,9 @@ void main() {
         await waitFor(
           tester,
           find.text(link),
-          timeout: const Duration(seconds: 3),
+          // We need a long timeout because the Android emulator in CI
+          // environment is a very slow.
+          timeout: const Duration(seconds: 25),
         );
       } catch (e) {
         // When the test fails, the screenshot will be taken.
