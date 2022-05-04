@@ -25,6 +25,8 @@ void main() {
           timeout: const Duration(seconds: 3),
         );
       } catch (e) {
+        // When the test fails, the screenshot will be taken.
+
         // This is required prior to taking the screenshot (Android only).
         await binding.convertFlutterSurfaceToImage();
 
