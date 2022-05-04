@@ -1,6 +1,6 @@
 name: code analysis & formatting
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   analysis:
@@ -49,6 +49,9 @@ jobs:
           java-version: '11'
       - uses: subosito/flutter-action@v2.3.0
       - name: Run integration tests
+        # We need to the fork until
+        # https://github.com/ReactiveCircus/android-emulator-runner/pull/247 is
+        # merged.
         uses: nilsreichardt/android-emulator-runner@hot-fix-pre-emulator-launch-script
         with:
           api-level: ${{ matrix.api-level }}
