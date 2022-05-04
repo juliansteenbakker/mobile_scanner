@@ -16,7 +16,7 @@ mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
 ```
 Source: [Android emulator camera custom image](https://stackoverflow.com/a/64922184/8358501)
 
-It's also important that you run start an Android Emulator with PlayStore services and the virtual scene as back camera.
+It's also important that you run start an Android Emulator with PlayStore services and the virtual scene as back camera. Additionally, you should be able to run command with `adb` from your terminal (it's required to grant the app permissions to the camera).
 
 ### Run
 To run the integration tests, execute this command:
