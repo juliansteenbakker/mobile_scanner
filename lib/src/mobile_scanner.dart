@@ -99,7 +99,40 @@ class _MobileScannerState extends State<MobileScanner>
                       height: value.size.height,
                       child: kIsWeb
                           ? HtmlElementView(viewType: value.webId!)
-                          : Texture(textureId: value.textureId!),
+                          : Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Texture(textureId: value.textureId!),
+                                ColorFiltered(
+                                  colorFilter: ColorFilter.mode(
+                                    Colors.black.withOpacity(0.8),
+                                    BlendMode.srcOut,
+                                  ),
+                                  child: Stack(
+                                    fit: StackFit.expand,
+                                    children: [
+                                      Container(
+                                        decoration: const BoxDecoration(
+                                          color: Colors.black,
+                                          backgroundBlendMode: BlendMode.dstOut,
+                                        ),
+                                      ),
+                                      Center(
+                                        child: Container(
+                                          height: value.size.width * 0.6,
+                                          width: value.size.width * 0.6,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(25),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                     ),
                   ),
                 ),
