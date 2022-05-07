@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/custom_border.dart';
 
 enum Ratio { ratio_4_3, ratio_16_9 }
 
@@ -129,6 +130,22 @@ class _MobileScannerState extends State<MobileScanner>
                                         ),
                                       ),
                                     ],
+                                  ),
+                                ),
+                                Center(
+                                  child: CustomPaint(
+                                    size: Size(
+                                      value.size.width * 0.7,
+                                      value.size.width * 0.7,
+                                    ),
+                                    foregroundPainter: BorderPainter(
+                                      strokeWidth: 10,
+                                      boxWidth: value.size.width * 0.7,
+                                      boxHeight: value.size.width * 0.7,
+                                      strokeColor: Colors.redAccent,
+                                      cornerSide:
+                                          (value.size.width * 0.7) * 0.1,
+                                    ),
                                   ),
                                 )
                               ],
