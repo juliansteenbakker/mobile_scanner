@@ -36,6 +36,9 @@ class MobileScanner extends StatefulWidget {
   ///Out of range wil have unexpected effects.
   final double overlayOpacity;
 
+  ///Radius of the scan region box
+  final double scanRegionBoxRadius;
+
   ///Height of the scan region box
   ///
   ///Defaults to the [width] of the texture specified * 0.6
@@ -70,6 +73,7 @@ class MobileScanner extends StatefulWidget {
     this.allowDuplicates = false,
     this.enableScanRegion = true,
     this.overlayOpacity = 0.75,
+    this.scanRegionBoxRadius = 25,
     this.scanRegionHeight,
     this.scanRegionWidth,
     this.borderHeightOffset = 100,
@@ -182,7 +186,9 @@ class _MobileScannerState extends State<MobileScanner>
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
-                                                    BorderRadius.circular(25),
+                                                    BorderRadius.circular(
+                                                  widget.scanRegionBoxRadius,
+                                                ),
                                               ),
                                             ),
                                           ),
