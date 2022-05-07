@@ -37,25 +37,29 @@ class MobileScanner extends StatefulWidget {
   final double overlayOpacity;
 
   ///Height of the scan region box
+  ///
+  ///Defaults to the [width] of the texture specified * 0.6
   final double? scanRegionHeight;
 
   ///Width of the scan region box
+  ///
+  ///Defaults to the [width] of the texture specified * 0.6
   final double? scanRegionWidth;
 
   ///Height offset of the scan region box's border
-  final double? borderHeightOffset;
+  final double borderHeightOffset;
 
   ///Width  offset of the scan region box's border
-  final double? borderWidthOffset;
+  final double borderWidthOffset;
 
   ///The stroke width for the scan region border
-  final double? borderStrokeWidth;
+  final double borderStrokeWidth;
 
   ///The stroke color for the scan region border
-  final Color? borderStrokeColor;
+  final Color borderStrokeColor;
 
   ///Length of scan region border's corner sides
-  final double? borderCornerSide;
+  final double borderCornerSide;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
@@ -68,11 +72,11 @@ class MobileScanner extends StatefulWidget {
     this.overlayOpacity = 0.75,
     this.scanRegionHeight,
     this.scanRegionWidth,
-    this.borderHeightOffset,
-    this.borderWidthOffset,
-    this.borderStrokeWidth,
-    this.borderStrokeColor,
-    this.borderCornerSide,
+    this.borderHeightOffset = 100,
+    this.borderWidthOffset = 100,
+    this.borderStrokeWidth = 10,
+    this.borderStrokeColor = Colors.redAccent,
+    this.borderCornerSide = 50,
   }) : super(key: key);
 
   @override
@@ -128,18 +132,15 @@ class _MobileScannerState extends State<MobileScanner>
                 }
               });
 
+              final double scanRegionWidth =
+                  widget.scanRegionWidth ?? (value.size.width * 0.6);
+              final double scanRegionHeight =
+                  widget.scanRegionHeight ?? (value.size.width * 0.6);
+
               final double scanRegionBorderBoxWidth =
-                  widget.borderWidthOffset == null
-                      ? (widget.scanRegionWidth ?? value.size.width * 0.6) +
-                          ((widget.scanRegionWidth ?? value.size.width) *
-                              0.1) //scanRegion width + an offset of 0.1
-                      : widget.borderWidthOffset!;
+                  scanRegionWidth + widget.borderWidthOffset;
               final double scanRegionBorderBoxHeight =
-                  widget.borderHeightOffset == null
-                      ? (widget.scanRegionHeight ?? value.size.width * 0.6) +
-                          ((widget.scanRegionHeight ?? value.size.width) *
-                              0.1) //scanRegion height + an offset of 0.1
-                      : widget.borderHeightOffset!;
+                  scanRegionHeight + widget.borderHeightOffset;
 
               return ClipRect(
                 child: SizedBox(
@@ -176,10 +177,8 @@ class _MobileScannerState extends State<MobileScanner>
                                           ),
                                           Center(
                                             child: Container(
-                                              height: widget.scanRegionHeight ??
-                                                  value.size.width * 0.6,
-                                              width: widget.scanRegionWidth ??
-                                                  value.size.width * 0.6,
+                                              height: scanRegionHeight,
+                                              width: scanRegionWidth,
                                               decoration: BoxDecoration(
                                                 color: Colors.white,
                                                 borderRadius:
@@ -197,15 +196,11 @@ class _MobileScannerState extends State<MobileScanner>
                                           scanRegionBorderBoxHeight,
                                         ),
                                         foregroundPainter: BorderPainter(
-                                          strokeWidth:
-                                              widget.borderStrokeWidth ?? 10,
+                                          strokeWidth: widget.borderStrokeWidth,
                                           boxWidth: scanRegionBorderBoxWidth,
                                           boxHeight: scanRegionBorderBoxHeight,
-                                          strokeColor:
-                                              widget.borderStrokeColor ??
-                                                  Colors.redAccent,
-                                          cornerSide:
-                                              widget.borderCornerSide ?? 50,
+                                          strokeColor: widget.borderStrokeColor,
+                                          cornerSide: widget.borderCornerSide,
                                         ),
                                       ),
                                     )
