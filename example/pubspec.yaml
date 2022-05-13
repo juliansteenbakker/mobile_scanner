@@ -10,6 +10,8 @@ dependencies:
     sdk: flutter
   image_picker: ^0.8.4+9
 
+  file_selector: ^0.8.4
+  image_picker: ^0.8.4+10
   mobile_scanner:
     path: ../
 

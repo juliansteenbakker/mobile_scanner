@@ -57,6 +57,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 //            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
+        case "fromFile":
+            fromFile(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -283,7 +285,111 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         result(nil)
     }
-    
+
+    func fromFile(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let path = call.arguments as! String;
+        let imageRequestHandler = VNImageRequestHandler(url: URL(fileURLWithPath: path))
+        
+        do {
+            try imageRequestHandler.perform([VNDetectBarcodesRequest { (request, error) in
+                if error == nil {
+                    if let results = request.results as? [VNBarcodeObservation] {
+                        result(["type": "AppleVision", "data" : results.map { barcode in
+                            let event: [String: Any?] =  ["payload": barcode.payloadStringValue, "format": MobileScannerPlugin.symbologyToFormatInteger(_:barcode.symbology)]
+                            return event
+                         } as [[String: Any?]]]);
+                    }
+                    else {
+                        result(["type": "AppleVision", "data" : [] as [[String: Any?]]]);
+                    }
+                } else {
+                    let nsError = error as NSError?;
+                    result(
+                        FlutterError(
+                            code: "MobileScanner",
+                            message: "An error occured while scanning from file.",
+                            details: nsError?.localizedDescription
+                        )
+                    )
+                }
+            }])
+        } catch {
+            let nsError = error as NSError?;
+            result(
+                FlutterError(
+                    code: "MobileScanner",
+                    message: "An error occured while scanning from file.",
+                    details: nsError?.localizedDescription
+                )
+            )
+        }
+    }
+
+    static func symbologyToFormatInteger(_ symbology: VNBarcodeSymbology) -> Int
+    {
+        switch(symbology)
+        {
+        case .code128,
+                .Code128:
+            return 1;
+        case .code39, .code39Checksum,.code39FullASCII, .code39FullASCIIChecksum,
+                .Code39, .Code39Checksum,.Code39FullASCII, .Code39FullASCIIChecksum:
+            return 2;
+        case .code93, .code93i,
+                .Code93, .Code93i:
+            return 4;
+        case .dataMatrix,
+                .DataMatrix:
+            return 16;
+        case .ean13,
+                .EAN13:
+            return 32;
+        case .ean8,
+                .EAN8:
+            return 64;
+        case .itf14,
+                .ITF14:
+            return 128;
+        case .qr,
+                .QR: // split ?
+            return 256;
+        /*
+        case .upca :
+            return 512;
+         */
+        case .upce,
+                .UPCE:
+            return 1024;
+        case .pdf417,
+                .PDF417:
+            return 2048;
+        case .aztec,
+                .Aztec:
+            return 4096;
+        case .i2of5, .i2of5Checksum,
+                .I2of5, .I2of5Checksum:
+            return 8192;
+        default:
+            if #available(macOS 12.0, *) {
+                switch(symbology)
+                {
+                case .codabar:
+                    return 8;
+                case .microQR:
+                    return symbologyToFormatInteger(.qr);
+                case .microPDF417:
+                    return symbologyToFormatInteger(.pdf417);
+                case .gs1DataBar, .gs1DataBarLimited, .gs1DataBarExpanded:
+                    return 16384;
+                default:
+                    return -1;
+                }
+            }
+            return -1;
+        }
+        
+    }
+
     // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
