@@ -15,6 +15,7 @@ A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX
 
 ### Android
 SDK 21 and newer. Reason: CameraX requires at least SDK 21.
+Also, make sure you upgrade kotlin to the latest version in your project.
 
 This packages uses the **bundled version** of MLKit Barcode-scanning for Android. This version is more accurate and immediately available to devices. However, this version will increas the size of the app with approximately 3 to 10 MB. The alternative for this is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is older than the bundled version however this only increases the size by around 600KB. 
 
