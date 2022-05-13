@@ -24,7 +24,7 @@ To use this version you must alter the mobile_scanner gradle file to replace `co
 [You can read more about the difference between the two versions here.](https://developers.google.com/ml-kit/vision/barcode-scanning/android)
 
 ### iOS
-iOS 11 and newer. Reason: MLKit for iOS requires at least iOS 11 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
+iOS 11 and newer. Reason: MLKit for iOS requires at least iOS 10 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
 
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 
