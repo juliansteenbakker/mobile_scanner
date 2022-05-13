@@ -1,3 +1,10 @@
+## 1.1.0
+Bugfixes:
+* Fix for 'stream already listened to' exception.
+* Fix building on Android with latest Flutter version.
+* Add several WEB improvements.
+* Upgraded several dependencies.
+
 ## 1.0.0
 BREAKING CHANGES:
 This version adds a new allowDuplicates option which now defaults to FALSE. this means that it will only call onDetect once after a scan.
