@@ -120,7 +120,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
-        if (camera != null && preview != null) {
+        if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
             val resolution = preview!!.resolutionInfo!!.resolution
             val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
             val width = resolution.width.toDouble()
@@ -151,9 +151,16 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
             future.addListener({
                 cameraProvider = future.get()
+                if (cameraProvider == null) {
+                    result.error("cameraProvider", "cameraProvider is null", null)
+                    return@addListener
+                }
                 cameraProvider!!.unbindAll()
                 textureEntry = textureRegistry.createSurfaceTexture()
-
+                if (textureEntry == null) {
+                    result.error("textureEntry", "textureEntry is null", null)
+                    return@addListener
+                }
                 // Preview
                 val surfaceProvider = Preview.SurfaceProvider { request ->
                     val texture = textureEntry!!.surfaceTexture()
@@ -186,6 +193,11 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
                 Log.i("LOG", "Analyzer: $analysisSize")
                 Log.i("LOG", "Preview: $previewSize")
+
+                if (camera == null) {
+                    result.error("camera", "camera is null", null)
+                    return@addListener
+                }
 
                 // Register the torch listener
                 camera!!.cameraInfo.torchState.observe(activity) { state ->
