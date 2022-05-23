@@ -1,3 +1,8 @@
+## 1.1.1-play-services
+This version uses the MLKit play-services model on Android in order to save space.
+With the example app, this version reduces the release version from 14.9MB to 7MB.
+More information: https://developers.google.com/ml-kit/vision/barcode-scanning/android
+
 ## 1.1.1
 Bugfixes:
 * Add null checks for Android.
