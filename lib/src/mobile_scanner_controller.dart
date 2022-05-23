@@ -260,7 +260,7 @@ class MobileScannerController {
   ///
   /// [path] The path of the image on the devices
   Future<bool> analyzeImage(String path) async {
-    return methodChannel.invokeMethod('analyzeImage', path) as bool;
+    return methodChannel.invokeMethod('analyzeImage', path) as Future<bool>;
   }
 
   /// Disposes the MobileScannerController and closes all listeners.
