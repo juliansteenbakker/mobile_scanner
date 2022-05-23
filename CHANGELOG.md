@@ -1,3 +1,10 @@
+## 1.1.1
+Bugfixes:
+* Add null checks for Android.
+* Update camera dependency for Android.
+* Fix return type for analyzeImage.
+* Add fixes for Flutter 3.
+
 ## 1.1.0
 Bugfixes:
 * Fix for 'stream already listened to' exception.
