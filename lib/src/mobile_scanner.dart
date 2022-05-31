@@ -13,7 +13,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// [barcode] The barcode object with all information about the scanned code.
   /// [args] Information about the state of the MobileScanner widget
-  final Function(Barcode barcode, MobileScannerArguments? args)? onDetect;
+  final Function(Barcode barcode, MobileScannerArguments? args) onDetect;
 
   /// TODO: Function that gets called when the Widget is initialized. Can be usefull
   /// to check wether the device has a torch(flash) or not.
@@ -30,7 +30,7 @@ class MobileScanner extends StatefulWidget {
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
     Key? key,
-    this.onDetect,
+    required this.onDetect,
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
@@ -82,10 +82,10 @@ class _MobileScannerState extends State<MobileScanner>
                 if (!widget.allowDuplicates) {
                   if (lastScanned != barcode.rawValue) {
                     lastScanned = barcode.rawValue;
-                    widget.onDetect!(barcode, value! as MobileScannerArguments);
+                    widget.onDetect(barcode, value! as MobileScannerArguments);
                   }
                 } else {
-                  widget.onDetect!(barcode, value! as MobileScannerArguments);
+                  widget.onDetect(barcode, value! as MobileScannerArguments);
                 }
               });
               return ClipRect(
