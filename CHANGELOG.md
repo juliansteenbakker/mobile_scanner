@@ -1,3 +1,9 @@
+## 1.1.2
+This version is the last version that will run on Flutter 2.x
+
+Bugfixes:
+* Changed onDetect to be mandatory.
+
 ## 1.1.1-play-services
 This version uses the MLKit play-services model on Android in order to save space.
 With the example app, this version reduces the release version from 14.9MB to 7MB.
