@@ -1,3 +1,9 @@
+## 1.1.2
+This version is the last version that will run on Flutter 2.x
+
+Bugfixes:
+* Changed onDetect to be mandatory.
+
 ## 1.1.1
 Bugfixes:
 * Add null checks for Android.
