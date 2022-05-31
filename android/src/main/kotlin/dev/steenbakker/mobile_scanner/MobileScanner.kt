@@ -278,7 +278,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 "calendarEvent" to calendarEvent?.data, "contactInfo" to contactInfo?.data,
                 "driverLicense" to driverLicense?.data, "email" to email?.data,
                 "geoPoint" to geoPoint?.data, "phone" to phone?.data, "sms" to sms?.data,
-                "url" to url?.data, "wifi" to wifi?.data)
+                "url" to url?.data, "wifi" to wifi?.data, "displayValue" to displayValue)
 
     private val Point.data: Map<String, Double>
         get() = mapOf("x" to x.toDouble(), "y" to y.toDouble())

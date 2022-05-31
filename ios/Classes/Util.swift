@@ -70,7 +70,7 @@ extension UIDeviceOrientation {
 extension Barcode {
     var data: [String: Any?] {
         let corners = cornerPoints?.map({$0.cgPointValue.data})
-        return ["corners": corners, "format": format.rawValue, "rawBytes": rawData, "rawValue": rawValue, "type": valueType.rawValue, "calendarEvent": calendarEvent?.data, "contactInfo": contactInfo?.data, "driverLicense": driverLicense?.data, "email": email?.data, "geoPoint": geoPoint?.data, "phone": phone?.data, "sms": sms?.data, "url": url?.data, "wifi": wifi?.data]
+        return ["corners": corners, "format": format.rawValue, "rawBytes": rawData, "rawValue": rawValue, "type": valueType.rawValue, "calendarEvent": calendarEvent?.data, "contactInfo": contactInfo?.data, "driverLicense": driverLicense?.data, "email": email?.data, "geoPoint": geoPoint?.data, "phone": phone?.data, "sms": sms?.data, "url": url?.data, "wifi": wifi?.data, "displayValue": displayValue]
     }
 }
 
