@@ -49,6 +49,9 @@ class MobileScannerController {
   /// WARNING: On iOS, only 1 format is supported.
   final List<BarcodeFormat>? formats;
 
+  /// can be used to limit the scan area to a portion of the screen
+  final Rect? scanWindow;
+
   CameraFacing facing;
   bool hasTorch = false;
   late StreamController<Barcode> barcodesController;
@@ -60,6 +63,7 @@ class MobileScannerController {
     this.ratio,
     this.torchEnabled,
     this.formats,
+    this.scanWindow,
   }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
@@ -156,6 +160,14 @@ class MobileScannerController {
     // Set the starting arguments for the camera
     final Map arguments = {};
     arguments['facing'] = facing.index;
+    if (scanWindow != null) {
+      arguments['scanWindow'] = [
+        scanWindow!.left,
+        scanWindow!.top,
+        scanWindow!.right,
+        scanWindow!.bottom,
+      ];
+    }
     if (ratio != null) arguments['ratio'] = ratio;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
