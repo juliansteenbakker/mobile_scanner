@@ -28,7 +28,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     var position = AVCaptureDevice.Position.back
 
     // optional frame to crop camera image before barcode detection
-    var scanWindow: CGRect?
+    var scanWindow: CGRect? = nil;
     
     var scanner = BarcodeScanner.barcodeScanner()
     
