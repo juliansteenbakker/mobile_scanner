@@ -27,6 +27,15 @@ class Barcode {
   /// Returns null if the raw value can not be determined.
   final String? rawValue;
 
+  /// Returns barcode value in a user-friendly format.
+  ///
+  /// This method may omit some of the information encoded in the barcode. For example, if [rawValue] returns 'MEBKM:TITLE:Google;URL://www.google.com;;', the display value might be '//www.google.com'.
+  ///
+  /// This value may be multiline, for example, when line breaks are encoded into the original TEXT barcode value. May include the supplement value.
+  ///
+  /// Returns null if nothing found.
+  final String? displayValue;
+
   /// Returns format type of the barcode value.
   ///
   /// For example, TYPE_TEXT, TYPE_PRODUCT, TYPE_URL, etc.
@@ -77,6 +86,7 @@ class Barcode {
     this.sms,
     this.url,
     this.wifi,
+    this.displayValue,
     required this.rawValue,
   });
 
@@ -86,6 +96,7 @@ class Barcode {
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
+        displayValue = data['displayValue'] as String?,
         type = BarcodeType.values[data['type'] as int],
         calendarEvent = toCalendarEvent(data['calendarEvent'] as Map?),
         contactInfo = toContactInfo(data['contactInfo'] as Map?),
