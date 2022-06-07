@@ -27,7 +27,6 @@ class MobileScanner extends StatefulWidget {
   /// Set to false if you don't want duplicate scans.
   final bool allowDuplicates;
 
-
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
     Key? key,
