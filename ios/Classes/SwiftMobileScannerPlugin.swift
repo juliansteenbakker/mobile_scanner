@@ -26,9 +26,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
-
-    // optional frame to crop camera image before barcode detection
-    var scanWindow: CGRect? = nil;
     
     var scanner = BarcodeScanner.barcodeScanner()
     
@@ -102,23 +99,15 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                 return
             }
             analyzing = true
-            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-            
-            var image: VisionImage?
-            
-            if (scanWindow != nil) {
-                let cropped = cropSampleBuffer(imageBuffer: buffer!, cropRect: scanWindow!)
-                image = VisionImage(image: cropped)
-             } else {
-                image = VisionImage(image: buffer!.image)
-             }
+            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)            
+            var image = VisionImage(image: buffer!.image)
 
-            image!.orientation = imageOrientation(
+            image.orientation = imageOrientation(
               deviceOrientation: UIDevice.current.orientation,
               defaultOrientation: .portrait
             )
 
-            scanner.process(image!) { [self] barcodes, error in
+            scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
                     for barcode in barcodes! {
                         let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
@@ -130,29 +119,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //        default: // none
 //            break
 //        }
-    }
-
-    public func cropSampleBuffer(imageBuffer: CVImageBuffer, cropRect: CGRect) -> UIImage {
-        CVPixelBufferLockBaseAddress(imageBuffer, .readOnly)
-
-        let baseAddress = CVPixelBufferGetBaseAddress(imageBuffer)!
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(imageBuffer)
-        let cropX = Int(cropRect.minX)
-        let cropY = Int(cropRect.minY)
-        let cropWidth = Int(cropRect.width)
-        let cropHeight = Int(cropRect.height)
-        let colorSpace = CGColorSpaceCreateDeviceRGB()
-
-        // calculate start position
-        let bytesPerPixel = 4
-        let startAddress = baseAddress + cropY * bytesPerRow + cropX * bytesPerPixel
-
-        let context = CGContext(data: startAddress, width: cropWidth, height: cropHeight, bitsPerComponent: 8, bytesPerRow: bytesPerRow, space: colorSpace, bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue)
-        CVPixelBufferUnlockBaseAddress(imageBuffer, .readOnly)
-    
-        // create image
-        let cgImage: CGImage = context!.makeImage()!
-        return UIImage(cgImage: cgImage)
     }
     
     func imageOrientation(
@@ -208,15 +174,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
-
-        let scanWindowData: Array? = argReader.intArray(key: "scanWindow")
-        if(scanWindowData != nil) {
-            scanWindow = CGRect(
-                x: scanWindowData![0],
-                y: scanWindowData![1],
-                width: scanWindowData![2] - scanWindowData![0],
-                height: scanWindowData![3] - scanWindowData![1])
-        }
         
         let formatList: NSMutableArray = []
         for index in formats {
@@ -283,6 +240,23 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
+        
+        /// limit captureSession area of interest to the scanWindow if provided
+        let scanWindowData: Array? = argReader.intArray(key: "scanWindow")
+        if(scanWindowData != nil) {
+
+            let captureMetadataOutput = AVCaptureMetadataOutput()
+
+            captureMetadataOutput.rectOfInterest = CGRect(
+                    x: scanWindowData![0],
+                    y: scanWindowData![1],
+                    width: scanWindowData![2] - scanWindowData![0],
+                    height: scanWindowData![3] - scanWindowData![1])  
+
+            captureSession.addOutput(captureMetadataOutput)
+        }
+
+
         let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let width = Double(demensions.height)
         let height = Double(demensions.width)
