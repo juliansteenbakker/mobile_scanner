@@ -250,12 +250,16 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 
             let captureMetadataOutput = AVCaptureMetadataOutput()
 
-            let x = scanWindowData![0] / CGFloat(demensions.width)
-            let y = scanWindowData![1] / CGFloat(demensions.height)
-            let w = scanWindowData![2] - scanWindowData![0] / CGFloat(demensions.width)
-            let h = scanWindowData![3] - scanWindowData![1] / CGFloat(demensions.height)
+            let minX = scanWindowData![0] / CGFloat(demensions.width)
+            let minY = scanWindowData![1] / CGFloat(demensions.height)
 
-            captureMetadataOutput.rectOfInterest = CGRect(x: x, y: y, width: w, height: h)
+            let maxX = scanWindowData![2] / CGFloat(demensions.width)
+            let maxY = scanWindowData![3] / CGFloat(demensions.height)
+
+            let width = maxX - minX
+            let height = maxY - minY
+
+            captureMetadataOutput.rectOfInterest = CGRect(x: minX, y: minY, width: width, height: height)
             captureSession.addOutput(captureMetadataOutput)
         }
         
