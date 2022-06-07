@@ -231,6 +231,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         videoOutput.alwaysDiscardsLateVideoFrames = true
         
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        
         captureSession.addOutput(videoOutput)
         for connection in videoOutput.connections {
             connection.videoOrientation = .portrait
@@ -240,25 +241,25 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
-        
-        let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-       
 
-         /// limit captureSession area of interest to the scanWindow if provided
-        let scanWindowData: Array? = argReader.intArray(key: "scanWindow")
+        let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+
+        /// limit captureSession area of interest to the scanWindow if provided
+        let scanWindowData: Array? = argReader.floatArray(key: "scanWindow")
         if(scanWindowData != nil) {
 
             let captureMetadataOutput = AVCaptureMetadataOutput()
 
-            let x = CGFloat(scanWindowData![0] / Int(demensions.width))
-            let y = CGFloat(scanWindowData![1] / Int(demensions.height))
-            let w = CGFloat((scanWindowData![2] - scanWindowData![0]) / Int(demensions.width))
-            let h = CGFloat((scanWindowData![3] - scanWindowData![1]) / Int(demensions.height))
+            let x = scanWindowData![0] / CGFloat(demensions.width)
+            let y = scanWindowData![1] / CGFloat(demensions.height)
+            let w = scanWindowData![2] - scanWindowData![0] / CGFloat(demensions.width)
+            let h = scanWindowData![3] - scanWindowData![1] / CGFloat(demensions.height)
 
             captureMetadataOutput.rectOfInterest = CGRect(x: x, y: y, width: w, height: h)
             captureSession.addOutput(captureMetadataOutput)
         }
-
+        
+        
         let width = Double(demensions.height)
         let height = Double(demensions.width)
         let size = ["width": width, "height": height]
@@ -390,6 +391,10 @@ class MapArgumentReader {
     
   func intArray(key: String) -> [Int]? {
     return args?[key] as? [Int]
+  }
+
+  func floatArray(key: String) -> [CGFloat]? {
+    return args?[key] as? [CGFloat]
   }
   
 }
