@@ -241,23 +241,24 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         captureSession.commitConfiguration()
         captureSession.startRunning()
         
-        /// limit captureSession area of interest to the scanWindow if provided
+        let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+       
+
+         /// limit captureSession area of interest to the scanWindow if provided
         let scanWindowData: Array? = argReader.intArray(key: "scanWindow")
         if(scanWindowData != nil) {
 
             let captureMetadataOutput = AVCaptureMetadataOutput()
 
-            captureMetadataOutput.rectOfInterest = CGRect(
-                    x: scanWindowData![0],
-                    y: scanWindowData![1],
-                    width: scanWindowData![2] - scanWindowData![0],
-                    height: scanWindowData![3] - scanWindowData![1])  
+            let x = CGFloat(scanWindowData![0] / Int(demensions.width))
+            let y = CGFloat(scanWindowData![1] / Int(demensions.height))
+            let w = CGFloat((scanWindowData![2] - scanWindowData![0]) / Int(demensions.width))
+            let h = CGFloat((scanWindowData![3] - scanWindowData![1]) / Int(demensions.height))
 
+            captureMetadataOutput.rectOfInterest = CGRect(x: x, y: y, width: w, height: h)
             captureSession.addOutput(captureMetadataOutput)
         }
 
-
-        let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let width = Double(demensions.height)
         let height = Double(demensions.width)
         let size = ["width": width, "height": height]
@@ -387,8 +388,8 @@ class MapArgumentReader {
     return args?[key] as? [String]
   }
     
-    func intArray(key: String) -> [Int]? {
-      return args?[key] as? [Int]
-    }
+  func intArray(key: String) -> [Int]? {
+    return args?[key] as? [Int]
+  }
   
 }
