@@ -53,6 +53,9 @@ class MobileScannerController {
   bool hasTorch = false;
   late StreamController<Barcode> barcodesController;
 
+  /// Whether to automatically resume the camera when the application is resumed
+  bool autoResume;
+
   Stream<Barcode> get barcodes => barcodesController.stream;
 
   MobileScannerController({
@@ -60,6 +63,7 @@ class MobileScannerController {
     this.ratio,
     this.torchEnabled,
     this.formats,
+    this.autoResume = true,
   }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
