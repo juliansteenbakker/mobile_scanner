@@ -103,24 +103,16 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //        when (analyzeMode) {
 //            AnalyzeMode.BARCODE -> {
                 val mediaImage = imageProxy.image ?: return@Analyzer
-                var inputImage: InputImage?;
-
-                if(scanWindow != null) {
-                    val croppedImage = croppedNV21(mediaImage, scanWindow!!)
-                    inputImage =  InputImage.fromByteArray(
-                        croppedImage, 
-                        scanWindow!!.width(),
-                        scanWindow!!.height(),
-                        imageProxy.imageInfo.rotationDegrees,
-                        IMAGE_FORMAT_NV21,
-                        )
-                } else {
-                    inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
-                }
+                var inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
                 scanner.process(inputImage)
                         .addOnSuccessListener { barcodes ->
                             for (barcode in barcodes) {
+                                if(scanWindow != null) {
+                                    val boundingBox = barcode.getBoundingBox()
+                                    if(boundingBox == null || !scanWindow!!.contains(boundingBox!!)) continue
+                                }
+
                                 val event = mapOf("name" to "barcode", "data" to barcode.data)
                                 sink?.success(event)
                             }
@@ -131,51 +123,6 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //            else -> imageProxy.close()
 //        }
     }
-
-     private fun croppedNV21(mediaImage: Image, cropRect: Rect): ByteArray {
-        val yBuffer = mediaImage.planes[0].buffer // Y
-        val vuBuffer = mediaImage.planes[2].buffer // VU
-
-        val ySize = yBuffer.remaining()
-        val vuSize = vuBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + vuSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vuBuffer.get(nv21, ySize, vuSize)
-
-        return cropByteArray(nv21, mediaImage.width, mediaImage.height, cropRect)
-    }
-
-    private fun cropByteArray(src: ByteArray, width: Int, height: Int, cropRect: Rect, ): ByteArray {
-        val x = cropRect.left * 2 / 2
-        val y = cropRect.top * 2 / 2
-        val w = cropRect.width() * 2 / 2
-        val h = cropRect.height() * 2 / 2
-        val yUnit = w * h
-        val uv = yUnit / 2
-        val nData = ByteArray(yUnit + uv)
-        val uvIndexDst = w * h - y / 2 * w
-        val uvIndexSrc = width * height + x
-        var srcPos0 = y * width
-        var destPos0 = 0
-        var uvSrcPos0 = uvIndexSrc
-        var uvDestPos0 = uvIndexDst
-        for (i in y until y + h) {
-            System.arraycopy(src, srcPos0 + x, nData, destPos0, w) //y memory block copy
-            srcPos0 += width
-            destPos0 += w
-            if (i and 1 == 0) {
-                System.arraycopy(src, uvSrcPos0, nData, uvDestPos0, w) //uv memory block copy
-                uvSrcPos0 += width
-                uvDestPos0 += w
-            }
-        }
-        return nData
-    }
-
-
-
 
     private var scanner = BarcodeScanning.getClient()
 
@@ -305,6 +252,11 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
                 for (barcode in barcodes) {
+                    if(scanWindow != null) {
+                        val boundingBox = barcode.getBoundingBox()
+                        if(boundingBox == null || !scanWindow!!.contains(boundingBox!!)) continue
+                    }
+
                     barcodeFound = true
                     sink?.success(mapOf("name" to "barcode", "data" to barcode.data))
                 }

@@ -26,6 +26,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
+
+    var scanWindow: CGRect?
     
     var scanner = BarcodeScanner.barcodeScanner()
     
@@ -110,6 +112,14 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
                     for barcode in barcodes! {
+
+                        if scanWindow != nil {
+                            let boundingBox = barcode.frame
+                            if !scanWindow!.contains(boundingBox) {
+                                continue
+                            }
+                        }
+
                         let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                         sink?(event)
                     }
@@ -174,6 +184,20 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
+        let scanWindowData: Array? = argReader.floatArray(key: "scanWindow")
+
+        if(scanWindowData != nil) {
+
+            let minX = scanWindowData![0] 
+            let minY = scanWindowData![1]
+     
+            let width = scanWindowData![2]  - minX
+            let height = scanWindowData![3] - minY
+
+            scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        }
+        
+        
         
         let formatList: NSMutableArray = []
         for index in formats {
@@ -243,27 +267,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         captureSession.startRunning()
 
         let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-
-        /// limit captureSession area of interest to the scanWindow if provided
-        let scanWindowData: Array? = argReader.floatArray(key: "scanWindow")
-        if(scanWindowData != nil) {
-
-            let captureMetadataOutput = AVCaptureMetadataOutput()
-
-            let minX = scanWindowData![0] / CGFloat(demensions.width)
-            let minY = scanWindowData![1] / CGFloat(demensions.height)
-
-            let maxX = scanWindowData![2] / CGFloat(demensions.width)
-            let maxY = scanWindowData![3] / CGFloat(demensions.height)
-
-            let width = maxX - minX
-            let height = maxY - minY
-
-            captureMetadataOutput.rectOfInterest = CGRect(x: minX, y: minY, width: width, height: height)
-            captureSession.addOutput(captureMetadataOutput)
-        }
-        
-        
         let width = Double(demensions.height)
         let height = Double(demensions.width)
         let size = ["width": width, "height": height]
@@ -314,6 +317,14 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         scanner.process(image) { [self] barcodes, error in
             if error == nil && barcodes != nil {
                 for barcode in barcodes! {
+
+                    if scanWindow != nil {
+                        let boundingBox = barcode.frame
+                        if !scanWindow!.contains(boundingBox) {
+                            continue
+                        }
+                    }
+
                     barcodeFound = true
                     let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                     sink?(event)
