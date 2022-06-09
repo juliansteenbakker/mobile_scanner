@@ -50,7 +50,6 @@ class MobileScannerController {
   final List<BarcodeFormat>? formats;
 
   /// can be used to limit the scan area to a portion of the screen
-  /// only for Android and IOS!
   final Rect? scanWindow;
 
   CameraFacing facing;

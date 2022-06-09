@@ -1,6 +1,7 @@
 import AVFoundation
 import FlutterMacOS
 import Vision
+import UIKit
 
 public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
@@ -20,6 +21,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
+
+    // optional window to limit scan search
+    var scanWindow: CGRect?
     
     
 //    var analyzeMode: Int = 0
@@ -109,7 +113,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
               try imageRequestHandler.perform([VNDetectBarcodesRequest { (request, error) in
                   if error == nil {
                       if let results = request.results as? [VNBarcodeObservation] {
-                                  for barcode in results {
+                                for barcode in results {
+                                    if scanWindow != nil {
+                                        let boundingBox = barcode.frame
+                                        if !scanWindow!.contains(boundingBox) {
+                                            continue
+                                        }
+                                    }
+
+
                                       let barcodeType = String(barcode.symbology.rawValue).replacingOccurrences(of: "VNBarcodeSymbology", with: "")
                                       let event: [String: Any?] = ["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcodeType]]
                                       self.sink?(event)
@@ -174,6 +186,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 //        let ratio: Int = argReader.int(key: "ratio")
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
+
+        let scanWindowData: Array? = argReader.floatArray(key: "scanWindow")
+
+        if(scanWindowData != nil) {
+
+            let minX = scanWindowData![0] 
+            let minY = scanWindowData![1]
+     
+            let width = scanWindowData![2]  - minX
+            let height = scanWindowData![3] - minY
+
+            scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        }
 
         // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
@@ -320,6 +345,10 @@ class MapArgumentReader {
 
   func stringArray(key: String) -> [String]? {
     return args?[key] as? [String]
+  }
+
+  func floatArray(key: String) -> [CGFloat]? {
+    return args?[key] as? [CGFloat]
   }
   
 }
