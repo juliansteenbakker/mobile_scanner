@@ -36,7 +36,6 @@ class _BarcodeScannerWithScanWindowState
 
     controller = MobileScannerController(
       torchEnabled: true,
-      scanWindow: scanWindow,
     );
   }
 
@@ -52,6 +51,7 @@ class _BarcodeScannerWithScanWindowState
             children: [
               MobileScanner(
                 fit: BoxFit.contain,
+                scanWindow: scanWindow,
                 controller: controller,
                 onDetect: (barcode, args) {
                   setState(() {

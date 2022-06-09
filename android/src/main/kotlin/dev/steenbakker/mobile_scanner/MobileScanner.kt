@@ -58,6 +58,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
     }
@@ -108,9 +109,10 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 scanner.process(inputImage)
                         .addOnSuccessListener { barcodes ->
                             for (barcode in barcodes) {
+
                                 if(scanWindow != null) {
-                                    val boundingBox = barcode.getBoundingBox()
-                                    if(boundingBox == null || !scanWindow!!.contains(boundingBox!!)) continue
+                                    val match = isbarCodeInScanWindow(scanWindow!!, barcode, inputImage)
+                                    if(!match) continue
                                 }
 
                                 val event = mapOf("name" to "barcode", "data" to barcode.data)
@@ -125,6 +127,34 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     }
 
     private var scanner = BarcodeScanning.getClient()
+
+
+    private fun updateScanWindow(call: MethodCall) {
+        val scanWindowData: List<Int>? = call.argument("rect")
+        if(scanWindowData == null) return
+            
+        scanWindow = Rect(scanWindowData!![0], scanWindowData!![1], scanWindowData!![2], scanWindowData!![3])
+    }
+
+    // scales the scanWindow to the provided inputImage and checks if that scaled
+    // scanWindow contains the barcode
+    private fun isbarCodeInScanWindow(scanWindow: Rect, barcode: Barcode, inputImage: InputImage): Boolean {
+        val barcodeBoundingBox = barcode.getBoundingBox()
+        if(barcodeBoundingBox == null) return false
+        
+        val imageWidth = inputImage.getWidth();
+        val imageHeight = inputImage.getHeight();
+
+        val left = scanWindow.left * imageWidth
+        val top = scanWindow.top * imageHeight
+        val right = scanWindow.right * imageWidth
+        val bottom = scanWindow.bottom * imageHeight
+
+        val scaledScanWindow = Rect(left, top, right, bottom)
+        return scaledScanWindow.contains(barcodeBoundingBox)
+    }
+
+
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
@@ -141,9 +171,6 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             val ratio: Int? = call.argument<Int>("ratio")
             val torch: Boolean = call.argument<Boolean>("torch") ?: false
             val formats: List<Int>? = call.argument<List<Int>>("formats")
-
-            val scanWindowData: List<Int>? = call.argument("scanWindow")
-            if(scanWindowData != null) scanWindow = Rect(scanWindowData!![0], scanWindowData!![1], scanWindowData!![2], scanWindowData!![3])
 
             if (formats != null) {
                 val formatsList: MutableList<Int> = mutableListOf()
@@ -253,8 +280,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             .addOnSuccessListener { barcodes ->
                 for (barcode in barcodes) {
                     if(scanWindow != null) {
-                        val boundingBox = barcode.getBoundingBox()
-                        if(boundingBox == null || !scanWindow!!.contains(boundingBox!!)) continue
+                        val match = isbarCodeInScanWindow(scanWindow!!, barcode, inputImage)
+                        if(!match) continue
                     }
 
                     barcodeFound = true

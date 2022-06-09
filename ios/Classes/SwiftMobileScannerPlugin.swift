@@ -64,6 +64,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             stop(result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "updateScanWindow":
+            updateScanWindow(call)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -114,8 +116,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                     for barcode in barcodes! {
 
                         if scanWindow != nil {
-                            let boundingBox = barcode.frame
-                            if !scanWindow!.contains(boundingBox) {
+                            let match = isbarCodeInScanWindow(scanWindow!, barcode, buffer!.image)
+                            if (!match) {
                                 continue
                             }
                         }
@@ -167,6 +169,38 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
 
+    func updateScanWindow(_ call: FlutterMethodCall) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let scanWindowData: Array? = argReader.floatArray(key: "rect")
+
+        if (scanWindowData == nil) {
+            return 
+        }
+
+        let minX = scanWindowData![0] 
+        let minY = scanWindowData![1]
+
+        let width = scanWindowData![2]  - minX
+        let height = scanWindowData![3] - minY
+
+        scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+    }
+
+   func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: Barcode, _ inputImage: UIImage) -> Bool {
+        let barcodeBoundingBox = barcode.frame
+
+        let imageWidth = inputImage.size.width;
+        let imageHeight = inputImage.size.height;
+
+        let minX = scanWindow.minX * imageWidth
+        let minY = scanWindow.minY * imageHeight
+        let width = scanWindow.width * imageWidth
+        let height = scanWindow.height * imageHeight
+
+        let scaledScanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        return scaledScanWindow.contains(barcodeBoundingBox)
+   }
+
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil) {
             result(FlutterError(code: "MobileScanner",
@@ -184,21 +218,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
-        let scanWindowData: Array? = argReader.floatArray(key: "scanWindow")
-
-        if(scanWindowData != nil) {
-
-            let minX = scanWindowData![0] 
-            let minY = scanWindowData![1]
-     
-            let width = scanWindowData![2]  - minX
-            let height = scanWindowData![3] - minY
-
-            scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
-        }
-        
-        
-        
+               
         let formatList: NSMutableArray = []
         for index in formats {
             formatList.add(BarcodeFormat(rawValue: index))
@@ -319,8 +339,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                 for barcode in barcodes! {
 
                     if scanWindow != nil {
-                        let boundingBox = barcode.frame
-                        if !scanWindow!.contains(boundingBox) {
+                        let match = isbarCodeInScanWindow(scanWindow!, barcode, uiImage!)
+                        if (!match) {
                             continue
                         }
                     }
