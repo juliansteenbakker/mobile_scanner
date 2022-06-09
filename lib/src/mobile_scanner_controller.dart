@@ -156,7 +156,7 @@ class MobileScannerController {
     // Set the starting arguments for the camera
     final Map arguments = {};
     arguments['facing'] = facing.index;
- /*    if (scanWindow != null) {
+    /*    if (scanWindow != null) {
       arguments['scanWindow'] = [
         scanWindow!.left,
         scanWindow!.top,

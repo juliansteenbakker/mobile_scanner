@@ -50,7 +50,7 @@ class _BarcodeScannerWithScanWindowState
           return Stack(
             children: [
               MobileScanner(
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 scanWindow: scanWindow,
                 controller: controller,
                 onDetect: (barcode, args) {

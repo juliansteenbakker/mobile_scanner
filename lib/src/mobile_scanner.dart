@@ -92,7 +92,7 @@ class _MobileScannerState extends State<MobileScanner>
     /// map the texture size to get its new size after fitted to screen
     final fittedSizes = applyBoxFit(fit, textureSize, widgetSize);
     final fittedTextureSize = fittedSizes.destination;
-    
+
     /// create a new rectangle that represents the texture on the screen
     final minX = widgetSize.width / 2 - fittedTextureSize.width / 2;
     final minY = widgetSize.height / 2 - fittedTextureSize.height / 2;
