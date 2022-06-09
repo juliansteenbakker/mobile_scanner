@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Point
 import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
 import android.util.Log
 import android.util.Size
@@ -27,6 +28,7 @@ import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 import java.io.File
+import kotlin.math.roundToInt
 
 
 class MobileScanner(private val activity: Activity, private val textureRegistry: TextureRegistry)
@@ -43,7 +45,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
-    private var scanWindow: Rect? = null;
+    private var scanWindow: List<Float>? = null;
 
 //    @AnalyzeMode
 //    private var analyzeMode: Int = AnalyzeMode.NONE
@@ -128,27 +130,23 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
     private var scanner = BarcodeScanning.getClient()
 
-
     private fun updateScanWindow(call: MethodCall) {
-        val scanWindowData: List<Int>? = call.argument("rect")
-        if(scanWindowData == null) return
-            
-        scanWindow = Rect(scanWindowData!![0], scanWindowData!![1], scanWindowData!![2], scanWindowData!![3])
+        scanWindow = call.argument<List<Float>>("rect")
     }
 
     // scales the scanWindow to the provided inputImage and checks if that scaled
     // scanWindow contains the barcode
-    private fun isbarCodeInScanWindow(scanWindow: Rect, barcode: Barcode, inputImage: InputImage): Boolean {
+    private fun isbarCodeInScanWindow(scanWindow: List<Float>, barcode: Barcode, inputImage: InputImage): Boolean {
         val barcodeBoundingBox = barcode.getBoundingBox()
         if(barcodeBoundingBox == null) return false
-        
+
         val imageWidth = inputImage.getWidth();
         val imageHeight = inputImage.getHeight();
 
-        val left = scanWindow.left * imageWidth
-        val top = scanWindow.top * imageHeight
-        val right = scanWindow.right * imageWidth
-        val bottom = scanWindow.bottom * imageHeight
+        val left = (scanWindow[0] * imageWidth).roundToInt()
+        val top = (scanWindow[1] * imageHeight).roundToInt()
+        val right = (scanWindow[2] * imageWidth).roundToInt()
+        val bottom = (scanWindow[3] * imageHeight).roundToInt()
 
         val scaledScanWindow = Rect(left, top, right, bottom)
         return scaledScanWindow.contains(barcodeBoundingBox)

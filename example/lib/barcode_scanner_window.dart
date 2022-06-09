@@ -35,7 +35,7 @@ class _BarcodeScannerWithScanWindowState
     );
 
     controller = MobileScannerController(
-      torchEnabled: true,
+      torchEnabled: false,
     );
   }
 

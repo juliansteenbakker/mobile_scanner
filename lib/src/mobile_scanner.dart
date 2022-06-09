@@ -92,20 +92,20 @@ class _MobileScannerState extends State<MobileScanner>
     /// map the texture size to get its new size after fitted to screen
     final fittedSizes = applyBoxFit(fit, textureSize, widgetSize);
     final fittedTextureSize = fittedSizes.destination;
-
+    
+    /// create a new rectangle that represents the texture on the screen
     final minX = widgetSize.width / 2 - fittedTextureSize.width / 2;
     final minY = widgetSize.height / 2 - fittedTextureSize.height / 2;
     final width = fittedTextureSize.width;
     final height = fittedTextureSize.height;
-
     final textureWindow = Rect.fromLTWH(minX, minY, width, height);
 
-    /// create a new scan window and with only the area of the rect intersecting the texture
+    /// create a new scan window and with only the area of the rect intersecting the texture window
     final scanWindowInTexture = scanWindow.intersect(textureWindow);
 
     /// update the scanWindow left and top to be relative to the texture not the widget
-    final newLeft = scanWindowInTexture.left - minX;
-    final newTop = scanWindowInTexture.top - minY;
+    final newLeft = scanWindowInTexture.left - textureWindow.left;
+    final newTop = scanWindowInTexture.top - textureWindow.top;
     final newWidth = scanWindowInTexture.width;
     final newHeight = scanWindowInTexture.height;
 
@@ -114,8 +114,8 @@ class _MobileScannerState extends State<MobileScanner>
 
     /// get the scanWindow as a percentage of the texture
     final percentageLeft = windowInTexture.left / fittedTextureSize.width;
-    final percentageRight = windowInTexture.right / fittedTextureSize.width;
     final percentageTop = windowInTexture.top / fittedTextureSize.height;
+    final percentageRight = windowInTexture.right / fittedTextureSize.width;
     final percentagebottom = windowInTexture.bottom / fittedTextureSize.height;
 
     /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
@@ -145,16 +145,15 @@ class _MobileScannerState extends State<MobileScanner>
                   value.size,
                   Size(constraints.maxWidth, constraints.maxHeight),
                 );
-                print(window);
+
                 controller.updateScanWindow(window);
               }
 
               controller.barcodes.listen((barcode) {
                 if (!widget.allowDuplicates) {
-                  if (lastScanned != barcode.rawValue) {
-                    lastScanned = barcode.rawValue;
-                    widget.onDetect(barcode, value! as MobileScannerArguments);
-                  }
+                  if (lastScanned == barcode.rawValue) return;
+                  lastScanned = barcode.rawValue;
+                  widget.onDetect(barcode, value! as MobileScannerArguments);
                 } else {
                   widget.onDetect(barcode, value! as MobileScannerArguments);
                 }
