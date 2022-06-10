@@ -1,7 +1,5 @@
 import AVFoundation
 import Flutter
-import MLKitVision
-import MLKitBarcodeScanning
 
 public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
@@ -22,11 +20,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
     
-//    var analyzeMode: Int = 0
+    //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
-    
-    var scanner = BarcodeScanner.barcodeScanner()
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(registrar.textures())
@@ -55,8 +51,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             start(call, result)
         case "torch":
             toggleTorch(call, result)
-//        case "analyze":
-//            switchAnalyzeMode(call, result)
+            //        case "analyze":
+            //            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
         case "analyzeImage":
@@ -92,52 +88,49 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
         registry.textureFrameAvailable(textureId)
 
-//        switch analyzeMode {
-//        case 1: // barcode
-            if analyzing {
-                return
-            }
-            analyzing = true
-            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-            let image = VisionImage(image: buffer!.image)
-            image.orientation = imageOrientation(
-              deviceOrientation: UIDevice.current.orientation,
-              defaultOrientation: .portrait
-            )
-
-            scanner.process(image) { [self] barcodes, error in
-                if error == nil && barcodes != nil {
-                    for barcode in barcodes! {
-                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
-                        sink?(event)
-                    }
-                }
-                analyzing = false
-            }
-//        default: // none
-//            break
-//        }
-    }
-    
-    func imageOrientation(
-          deviceOrientation: UIDeviceOrientation,
-          defaultOrientation: UIDeviceOrientation
-        ) -> UIImage.Orientation {
-          switch deviceOrientation {
-          case .portrait:
-            return position == .front ? .leftMirrored : .right
-          case .landscapeLeft:
-            return position == .front ? .downMirrored : .up
-          case .portraitUpsideDown:
-            return position == .front ? .rightMirrored : .left
-          case .landscapeRight:
-            return position == .front ? .upMirrored : .down
-          case .faceDown, .faceUp, .unknown:
-            return .up
-          @unknown default:
-            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
-            }
+        //        switch analyzeMode {
+        //        case 1: // barcode
+        if analyzing {
+            return
         }
+        analyzing = true
+        let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
+
+        guard let image = buffer?.image else {
+            return analyzing = false
+        }
+
+        guard let features = detectQRCode(image), !features.isEmpty else {
+            return analyzing = false
+        }
+        for case let row as CIQRCodeFeature in features {
+            if let messageString = row.messageString {
+                let event: [String: Any?] = ["name": "barcode", "data": ["rawValue": messageString, "format": 256, "type": 0]]
+                sink?(event)
+            }
+            analyzing = false
+        }
+    }
+
+    func imageOrientation(
+        deviceOrientation: UIDeviceOrientation,
+        defaultOrientation: UIDeviceOrientation
+    ) -> UIImage.Orientation {
+        switch deviceOrientation {
+        case .portrait:
+            return position == .front ? .leftMirrored : .right
+        case .landscapeLeft:
+            return position == .front ? .downMirrored : .up
+        case .portraitUpsideDown:
+            return position == .front ? .rightMirrored : .left
+        case .landscapeRight:
+            return position == .front ? .upMirrored : .down
+        case .faceDown, .faceUp, .unknown:
+            return .up
+        @unknown default:
+            return imageOrientation(deviceOrientation: defaultOrientation, defaultOrientation: .portrait)
+        }
+    }
     
     func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
@@ -158,8 +151,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "Called start() while already started!",
-                                    details: nil))
+                                message: "Called start() while already started!",
+                                details: nil))
             return
         }
         
@@ -168,21 +161,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         
-//        let ratio: Int = argReader.int(key: "ratio")
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
-        let formats: Array = argReader.intArray(key: "formats") ?? []
-        
-        let formatList: NSMutableArray = []
-        for index in formats {
-            formatList.add(BarcodeFormat(rawValue: index))
-        }
-        
-        if (formatList.count != 0) {
-            let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
-            scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-        }
-        
+
+
         // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
         
@@ -195,8 +177,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         
         if (device == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "No camera found or failed to open camera!",
-                                    details: nil))
+                                message: "No camera found or failed to open camera!",
+                                details: nil))
             return
         }
         
@@ -204,10 +186,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         if (device.hasTorch && device.isTorchAvailable) {
             do {
                 try device.lockForConfiguration()
-            device.torchMode = torch ? .on : .off
-            device.unlockForConfiguration()
-        } catch {
-            error.throwNative(result)
+                device.torchMode = torch ? .on : .off
+                device.unlockForConfiguration()
+            } catch {
+                error.throwNative(result)
             }
         }
         
@@ -249,8 +231,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "Called toggleTorch() while stopped!",
-                                    details: nil))
+                                message: "Called toggleTorch() while stopped!",
+                                details: nil))
             return
         }
         do {
@@ -263,52 +245,57 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
     }
     
-//    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-//        analyzeMode = call.arguments as! Int
-//        result(nil)
-//    }
-    
+    //    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    //        analyzeMode = call.arguments as! Int
+    //        result(nil)
+    //    }
+
+    func detectQRCode(_ image: UIImage?) -> [CIFeature]? {
+        if let image = image, let ciImage = CIImage.init(image: image){
+            var options: [String: Any]
+            let context = CIContext()
+            options = [CIDetectorAccuracy: CIDetectorAccuracyHigh]
+            let qrDetector = CIDetector(ofType: CIDetectorTypeQRCode, context: context, options: options)
+            if ciImage.properties.keys.contains((kCGImagePropertyOrientation as String)){
+                options = [CIDetectorImageOrientation: ciImage.properties[(kCGImagePropertyOrientation as String)] ?? 1]
+            } else {
+                options = [CIDetectorImageOrientation: 1]
+            }
+            let features = qrDetector?.features(in: ciImage, options: options)
+            return features
+
+        }
+        return nil
+    }
+
     func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let uiImage = UIImage(contentsOfFile: call.arguments as! String)
         
         if (uiImage == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "No image found in analyzeImage!",
-                                    details: nil))
+                                message: "No image found in analyzeImage!",
+                                details: nil))
             return
         }
-        
-        let image = VisionImage(image: uiImage!)
-        image.orientation = imageOrientation(
-          deviceOrientation: UIDevice.current.orientation,
-          defaultOrientation: .portrait
-        )
-        
-        var barcodeFound = false
 
-        scanner.process(image) { [self] barcodes, error in
-            if error == nil && barcodes != nil {
-                for barcode in barcodes! {
-                    barcodeFound = true
-                    let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
-                    sink?(event)
-                }
-            } else if error != nil {
-                result(FlutterError(code: "MobileScanner",
-                                    message: error?.localizedDescription,
-                                    details: "analyzeImage()"))
-            }
-            analyzing = false
-            result(barcodeFound)
+        guard let features = detectQRCode(uiImage!), !features.isEmpty else {
+            return analyzing = false
         }
 
+        for case let row as CIQRCodeFeature in features {
+            if let messageString = row.messageString {
+                let event: [String: Any?] = ["name": "barcode", "data": ["rawValue": messageString, "format": 256, "type": 0]]
+                sink?(event)
+            }
+            analyzing = false
+        }
     }
     
     func stop(_ result: FlutterResult) {
         if (device == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "Called stop() while already stopped!",
-                                    details: nil))
+                                message: "Called stop() while already stopped!",
+                                details: nil))
             return
         }
         captureSession.stopRunning()
@@ -321,7 +308,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
         
-//        analyzeMode = 0
+        //        analyzeMode = 0
         latestBuffer = nil
         captureSession = nil
         device = nil
@@ -345,31 +332,31 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 }
 
 class MapArgumentReader {
-  
-  let args: [String: Any]?
-  
-  init(_ args: [String: Any]?) {
-    self.args = args
-  }
-  
-  func string(key: String) -> String? {
-    return args?[key] as? String
-  }
-  
-  func int(key: String) -> Int? {
-    return (args?[key] as? NSNumber)?.intValue
-  }
-    
-    func bool(key: String) -> Bool? {
-      return (args?[key] as? NSNumber)?.boolValue
+
+    let args: [String: Any]?
+
+    init(_ args: [String: Any]?) {
+        self.args = args
     }
 
-  func stringArray(key: String) -> [String]? {
-    return args?[key] as? [String]
-  }
+    func string(key: String) -> String? {
+        return args?[key] as? String
+    }
+
+    func int(key: String) -> Int? {
+        return (args?[key] as? NSNumber)?.intValue
+    }
+    
+    func bool(key: String) -> Bool? {
+        return (args?[key] as? NSNumber)?.boolValue
+    }
+
+    func stringArray(key: String) -> [String]? {
+        return args?[key] as? [String]
+    }
     
     func intArray(key: String) -> [Int]? {
-      return args?[key] as? [Int]
+        return args?[key] as? [Int]
     }
-  
+
 }
