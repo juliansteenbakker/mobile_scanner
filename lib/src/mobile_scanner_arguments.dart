@@ -2,6 +2,14 @@ import 'package:flutter/material.dart';
 
 /// Camera args for [CameraView].
 class MobileScannerArguments {
+  /// Create a [MobileScannerArguments].
+  MobileScannerArguments({
+    this.textureId,
+    required this.size,
+    required this.hasTorch,
+    this.webId,
+  });
+
   /// The texture id.
   final int? textureId;
 
@@ -11,12 +19,4 @@ class MobileScannerArguments {
   final bool hasTorch;
 
   final String? webId;
-
-  /// Create a [MobileScannerArguments].
-  MobileScannerArguments({
-    this.textureId,
-    required this.size,
-    required this.hasTorch,
-    this.webId,
-  });
 }

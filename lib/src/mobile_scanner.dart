@@ -1,11 +1,20 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import '../mobile_scanner.dart';
 
 enum Ratio { ratio_4_3, ratio_16_9 }
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
+  /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
+  const MobileScanner({
+    super.key,
+    required this.onDetect,
+    this.controller,
+    this.fit = BoxFit.cover,
+    this.allowDuplicates = false,
+  });
+
   /// The controller of the camera.
   final MobileScannerController? controller;
 
@@ -27,21 +36,11 @@ class MobileScanner extends StatefulWidget {
   /// Set to false if you don't want duplicate scans.
   final bool allowDuplicates;
 
-  /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
-  const MobileScanner({
-    Key? key,
-    required this.onDetect,
-    this.controller,
-    this.fit = BoxFit.cover,
-    this.allowDuplicates = false,
-  }) : super(key: key);
-
   @override
   State<MobileScanner> createState() => _MobileScannerState();
 }
 
-class _MobileScannerState extends State<MobileScanner>
-    with WidgetsBindingObserver {
+class _MobileScannerState extends State<MobileScanner> with WidgetsBindingObserver {
   late MobileScannerController controller;
 
   @override
@@ -55,7 +54,9 @@ class _MobileScannerState extends State<MobileScanner>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting) controller.start();
+        if (!controller.isStarting) {
+          controller.start();
+        }
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -70,24 +71,26 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
-      builder: (context, BoxConstraints constraints) {
-        return ValueListenableBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return ValueListenableBuilder<MobileScannerArguments?>(
           valueListenable: controller.args,
-          builder: (context, value, child) {
+          builder: (BuildContext context, Object? value, Widget? child) {
             value = value as MobileScannerArguments?;
             if (value == null) {
               return Container(color: Colors.black);
             } else {
-              controller.barcodes.listen((barcode) {
-                if (!widget.allowDuplicates) {
-                  if (lastScanned != barcode.rawValue) {
-                    lastScanned = barcode.rawValue;
+              controller.barcodes.listen(
+                (Barcode barcode) {
+                  if (!widget.allowDuplicates) {
+                    if (lastScanned != barcode.rawValue) {
+                      lastScanned = barcode.rawValue;
+                      widget.onDetect(barcode, value! as MobileScannerArguments);
+                    }
+                  } else {
                     widget.onDetect(barcode, value! as MobileScannerArguments);
                   }
-                } else {
-                  widget.onDetect(barcode, value! as MobileScannerArguments);
-                }
-              });
+                },
+              );
               return ClipRect(
                 child: SizedBox(
                   width: MediaQuery.of(context).size.width,
@@ -97,9 +100,7 @@ class _MobileScannerState extends State<MobileScanner>
                     child: SizedBox(
                       width: value.size.width,
                       height: value.size.height,
-                      child: kIsWeb
-                          ? HtmlElementView(viewType: value.webId!)
-                          : Texture(textureId: value.textureId!),
+                      child: kIsWeb ? HtmlElementView(viewType: value.webId!) : Texture(textureId: value.textureId!),
                     ),
                   ),
                 ),

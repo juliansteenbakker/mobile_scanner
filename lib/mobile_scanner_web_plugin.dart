@@ -5,9 +5,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/web/jsqr.dart';
-import 'package:mobile_scanner/src/web/media.dart';
+import 'mobile_scanner.dart';
+import 'src/web/jsqr.dart';
+import 'src/web/media.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -69,7 +69,7 @@ class MobileScannerWebPlugin {
   /// Can enable or disable the flash if available
   Future<void> _torch(arguments) async {
     if (hasFlash) {
-      final track = _localStream?.getVideoTracks();
+      final List<html.MediaStreamTrack>? track = _localStream?.getVideoTracks();
       await track!.first.applyConstraints({
         'advanced': {'torch': arguments == 1}
       });
@@ -82,7 +82,7 @@ class MobileScannerWebPlugin {
   Future<Map> _start(Map arguments) async {
     vidDiv.children = [video];
 
-    var cameraFacing = CameraFacing.front;
+    CameraFacing cameraFacing = CameraFacing.front;
     if (arguments.containsKey('facing')) {
       cameraFacing = CameraFacing.values[arguments['facing'] as int];
     }
@@ -98,30 +98,22 @@ class MobileScannerWebPlugin {
 
     // Check if stream is running
     if (_localStream != null) {
-      return {
-        'ViewID': viewID,
-        'videoWidth': video.videoWidth,
-        'videoHeight': video.videoHeight
-      };
+      return {'ViewID': viewID, 'videoWidth': video.videoWidth, 'videoHeight': video.videoHeight};
     }
 
     try {
       // Check if browser supports multiple camera's and set if supported
-      final Map? capabilities =
-          html.window.navigator.mediaDevices?.getSupportedConstraints();
+      final Map? capabilities = html.window.navigator.mediaDevices?.getSupportedConstraints();
       if (capabilities != null && capabilities['facingMode'] as bool) {
-        final constraints = {
+        final Map<String, VideoOptions> constraints = {
           'video': VideoOptions(
-            facingMode:
-                cameraFacing == CameraFacing.front ? 'user' : 'environment',
+            facingMode: cameraFacing == CameraFacing.front ? 'user' : 'environment',
           )
         };
 
-        _localStream =
-            await html.window.navigator.mediaDevices?.getUserMedia(constraints);
+        _localStream = await html.window.navigator.mediaDevices?.getUserMedia(constraints);
       } else {
-        _localStream = await html.window.navigator.mediaDevices
-            ?.getUserMedia({'video': true});
+        _localStream = await html.window.navigator.mediaDevices?.getUserMedia({'video': true});
       }
 
       video.srcObject = _localStream;
@@ -139,12 +131,11 @@ class MobileScannerWebPlugin {
       await video.play();
 
       // Then capture a frame to be analyzed every 200 miliseconds
-      _frameInterval =
-          Timer.periodic(const Duration(milliseconds: 200), (timer) {
+      _frameInterval = Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
         _captureFrame();
       });
 
-      return {
+      return <String, dynamic>{
         'ViewID': viewID,
         'videoWidth': video.videoWidth,
         'videoHeight': video.videoHeight,
@@ -157,9 +148,8 @@ class MobileScannerWebPlugin {
 
   /// Check if any camera's are available
   static Future<bool> cameraAvailable() async {
-    final sources =
-        await html.window.navigator.mediaDevices!.enumerateDevices();
-    for (final e in sources) {
+    final List sources = await html.window.navigator.mediaDevices!.enumerateDevices();
+    for (final dynamic e in sources) {
       // TODO:
       // ignore: avoid_dynamic_calls
       if (e.kind == 'videoinput') {
@@ -173,7 +163,7 @@ class MobileScannerWebPlugin {
   Future<void> cancel() async {
     try {
       // Stop the camera stream
-      _localStream?.getTracks().forEach((track) {
+      _localStream?.getTracks().forEach((html.MediaStreamTrack track) {
         if (track.readyState == 'live') {
           track.stop();
         }
@@ -190,17 +180,18 @@ class MobileScannerWebPlugin {
 
   /// Captures a frame and analyzes it for QR codes
   Future<dynamic> _captureFrame() async {
-    if (_localStream == null) return null;
-    final canvas =
-        html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
-    final ctx = canvas.context2D;
+    if (_localStream == null) {
+      return null;
+    }
+    final html.CanvasElement canvas = html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
+    final html.CanvasRenderingContext2D ctx = canvas.context2D;
 
     ctx.drawImage(video, 0, 0);
-    final imgData = ctx.getImageData(0, 0, canvas.width!, canvas.height!);
+    final html.ImageData imgData = ctx.getImageData(0, 0, canvas.width!, canvas.height!);
 
-    final code = jsQR(imgData.data, canvas.width, canvas.height);
+    final Code? code = jsQR(imgData.data, canvas.width, canvas.height);
     if (code != null) {
-      controller.add({'name': 'barcodeWeb', 'data': code.data});
+      controller.add(<String, String>{'name': 'barcodeWeb', 'data': code.data});
     }
   }
 }

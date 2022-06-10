@@ -12,31 +12,28 @@ external Future<dynamic> getUserMedia(UserMediaOptions constraints);
 @JS()
 @anonymous
 class UserMediaOptions {
-  external VideoOptions get video;
-
   external factory UserMediaOptions({VideoOptions? video});
+  external VideoOptions get video;
 }
 
 @JS()
 @anonymous
 class VideoOptions {
-  external String get facingMode;
-  // external DeviceIdOptions get deviceId;
-  external Map get width;
-  external Map get height;
-
   external factory VideoOptions({
     String? facingMode,
     DeviceIdOptions? deviceId,
     Map? width,
     Map? height,
   });
+  external String get facingMode;
+  // external DeviceIdOptions get deviceId;
+  external Map get width;
+  external Map get height;
 }
 
 @JS()
 @anonymous
 class DeviceIdOptions {
-  external String get exact;
-
   external factory DeviceIdOptions({String? exact});
+  external String get exact;
 }
