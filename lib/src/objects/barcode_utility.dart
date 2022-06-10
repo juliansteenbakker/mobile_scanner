@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, strict_raw_type
+
 import 'package:flutter/material.dart';
 import '../../mobile_scanner.dart';
 
@@ -9,7 +11,7 @@ Size toSize(Map data) {
 
 List<Offset>? toCorners(List? data) {
   if (data != null) {
-    return List.unmodifiable(
+    return List<Offset>.unmodifiable(
       data.map((e) => Offset((e as Map)['x'] as double, e['y'] as double)),
     );
   } else {

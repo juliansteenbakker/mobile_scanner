@@ -1,3 +1,5 @@
+// ignore_for_file: always_specify_types, strict_raw_type
+
 import 'dart:typed_data';
 import 'dart:ui';
 

@@ -1,6 +1,8 @@
 // // This is here because dart doesn't seem to support this properly
 // // https://stackoverflow.com/questions/61161135/adding-support-for-navigator-mediadevices-getusermedia-to-dart
 
+// ignore_for_file: always_specify_types, strict_raw_type
+
 @JS('navigator.mediaDevices')
 library media_devices;
 
