@@ -1,5 +1,3 @@
-// ignore_for_file: prefer_relative_imports
-
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_without_controller.dart';
@@ -23,7 +21,8 @@ class MyHome extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const BarcodeScannerWithController(),
+                    builder: (BuildContext context) =>
+                        const BarcodeScannerWithController(),
                   ),
                 );
               },
@@ -33,7 +32,8 @@ class MyHome extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (BuildContext context) => const BarcodeScannerWithoutController(),
+                    builder: (BuildContext context) =>
+                        const BarcodeScannerWithoutController(),
                   ),
                 );
               },

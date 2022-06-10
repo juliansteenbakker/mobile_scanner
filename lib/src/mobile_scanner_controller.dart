@@ -55,11 +55,15 @@ class MobileScannerController {
     start();
 
     // Listen to events from the platform specific code
-    events = eventChannel.receiveBroadcastStream().listen((data) => handleEvent(data as Map));
+    events = eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => handleEvent(data as Map));
   }
 
-  MethodChannel methodChannel = const MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
-  EventChannel eventChannel = const EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
+  MethodChannel methodChannel =
+      const MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+  EventChannel eventChannel =
+      const EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   int? _controllerHashcode;
   StreamSubscription? events;
@@ -131,11 +135,15 @@ class MobileScannerController {
 
     // Check authorization status
     if (!kIsWeb) {
-      MobileScannerState state = MobileScannerState.values[await methodChannel.invokeMethod('state') as int];
+      MobileScannerState state = MobileScannerState
+          .values[await methodChannel.invokeMethod('state') as int];
       switch (state) {
         case MobileScannerState.undetermined:
-          final bool result = await methodChannel.invokeMethod('request') as bool;
-          state = result ? MobileScannerState.authorized : MobileScannerState.denied;
+          final bool result =
+              await methodChannel.invokeMethod('request') as bool;
+          state = result
+              ? MobileScannerState.authorized
+              : MobileScannerState.denied;
           break;
         case MobileScannerState.denied:
           isStarting = false;
@@ -159,9 +167,11 @@ class MobileScannerController {
 
     if (formats != null) {
       if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((BarcodeFormat e) => e.index).toList();
+        arguments['formats'] =
+            formats!.map((BarcodeFormat e) => e.index).toList();
       } else if (Platform.isIOS || Platform.isMacOS) {
-        arguments['formats'] = formats!.map((BarcodeFormat e) => e.rawValue).toList();
+        arguments['formats'] =
+            formats!.map((BarcodeFormat e) => e.rawValue).toList();
       }
     }
 
@@ -224,7 +234,8 @@ class MobileScannerController {
       return;
     }
 
-    final TorchState state = torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+    final TorchState state =
+        torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
     try {
       await methodChannel.invokeMethod('torch', state.index);
@@ -246,7 +257,8 @@ class MobileScannerController {
       );
       return;
     }
-    facing = facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
+    facing =
+        facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
     await start();
   }
 
@@ -256,7 +268,9 @@ class MobileScannerController {
   ///
   /// [path] The path of the image on the devices
   Future<bool> analyzeImage(String path) async {
-    return methodChannel.invokeMethod<bool>('analyzeImage', path).then<bool>((bool? value) => value ?? false);
+    return methodChannel
+        .invokeMethod<bool>('analyzeImage', path)
+        .then<bool>((bool? value) => value ?? false);
   }
 
   /// Disposes the MobileScannerController and closes all listeners.
@@ -272,7 +286,8 @@ class MobileScannerController {
 
   /// Checks if the MobileScannerController is bound to the correct MobileScanner object.
   void ensure(String name) {
-    final String message = 'MobileScannerController.$name called after MobileScannerController.dispose\n'
+    final String message =
+        'MobileScannerController.$name called after MobileScannerController.dispose\n'
         'MobileScannerController methods should not be used after calling dispose.';
     assert(hashCode == _controllerHashcode, message);
   }

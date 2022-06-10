@@ -100,22 +100,30 @@ class MobileScannerWebPlugin {
 
     // Check if stream is running
     if (_localStream != null) {
-      return {'ViewID': viewID, 'videoWidth': video.videoWidth, 'videoHeight': video.videoHeight};
+      return {
+        'ViewID': viewID,
+        'videoWidth': video.videoWidth,
+        'videoHeight': video.videoHeight
+      };
     }
 
     try {
       // Check if browser supports multiple camera's and set if supported
-      final Map? capabilities = html.window.navigator.mediaDevices?.getSupportedConstraints();
+      final Map? capabilities =
+          html.window.navigator.mediaDevices?.getSupportedConstraints();
       if (capabilities != null && capabilities['facingMode'] as bool) {
         final Map<String, VideoOptions> constraints = {
           'video': VideoOptions(
-            facingMode: cameraFacing == CameraFacing.front ? 'user' : 'environment',
+            facingMode:
+                cameraFacing == CameraFacing.front ? 'user' : 'environment',
           )
         };
 
-        _localStream = await html.window.navigator.mediaDevices?.getUserMedia(constraints);
+        _localStream =
+            await html.window.navigator.mediaDevices?.getUserMedia(constraints);
       } else {
-        _localStream = await html.window.navigator.mediaDevices?.getUserMedia({'video': true});
+        _localStream = await html.window.navigator.mediaDevices
+            ?.getUserMedia({'video': true});
       }
 
       video.srcObject = _localStream;
@@ -133,7 +141,8 @@ class MobileScannerWebPlugin {
       await video.play();
 
       // Then capture a frame to be analyzed every 200 miliseconds
-      _frameInterval = Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
+      _frameInterval =
+          Timer.periodic(const Duration(milliseconds: 200), (Timer timer) {
         _captureFrame();
       });
 
@@ -150,7 +159,8 @@ class MobileScannerWebPlugin {
 
   /// Check if any camera's are available
   static Future<bool> cameraAvailable() async {
-    final List sources = await html.window.navigator.mediaDevices!.enumerateDevices();
+    final List sources =
+        await html.window.navigator.mediaDevices!.enumerateDevices();
     for (final dynamic e in sources) {
       // TODO:
       // ignore: avoid_dynamic_calls
@@ -185,11 +195,13 @@ class MobileScannerWebPlugin {
     if (_localStream == null) {
       return null;
     }
-    final html.CanvasElement canvas = html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
+    final html.CanvasElement canvas =
+        html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
     final html.CanvasRenderingContext2D ctx = canvas.context2D;
 
     ctx.drawImage(video, 0, 0);
-    final html.ImageData imgData = ctx.getImageData(0, 0, canvas.width!, canvas.height!);
+    final html.ImageData imgData =
+        ctx.getImageData(0, 0, canvas.width!, canvas.height!);
 
     final Code? code = jsQR(imgData.data, canvas.width, canvas.height);
     if (code != null) {

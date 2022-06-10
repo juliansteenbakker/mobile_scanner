@@ -5,10 +5,12 @@ class BarcodeScannerWithoutController extends StatefulWidget {
   const BarcodeScannerWithoutController({Key? key}) : super(key: key);
 
   @override
-  State<BarcodeScannerWithoutController> createState() => _BarcodeScannerWithoutControllerState();
+  State<BarcodeScannerWithoutController> createState() =>
+      _BarcodeScannerWithoutControllerState();
 }
 
-class _BarcodeScannerWithoutControllerState extends State<BarcodeScannerWithoutController>
+class _BarcodeScannerWithoutControllerState
+    extends State<BarcodeScannerWithoutController>
     with SingleTickerProviderStateMixin {
   String? barcode;
 
@@ -46,7 +48,10 @@ class _BarcodeScannerWithoutControllerState extends State<BarcodeScannerWithoutC
                             child: Text(
                               barcode ?? 'Scan something!',
                               overflow: TextOverflow.fade,
-                              style: Theme.of(context).textTheme.headline4!.copyWith(color: Colors.white),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline4!
+                                  .copyWith(color: Colors.white),
                             ),
                           ),
                         ),

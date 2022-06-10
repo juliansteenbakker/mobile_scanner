@@ -40,7 +40,8 @@ class MobileScanner extends StatefulWidget {
   State<MobileScanner> createState() => _MobileScannerState();
 }
 
-class _MobileScannerState extends State<MobileScanner> with WidgetsBindingObserver {
+class _MobileScannerState extends State<MobileScanner>
+    with WidgetsBindingObserver {
   late MobileScannerController controller;
 
   @override
@@ -84,7 +85,8 @@ class _MobileScannerState extends State<MobileScanner> with WidgetsBindingObserv
                   if (!widget.allowDuplicates) {
                     if (lastScanned != barcode.rawValue) {
                       lastScanned = barcode.rawValue;
-                      widget.onDetect(barcode, value! as MobileScannerArguments);
+                      widget.onDetect(
+                          barcode, value! as MobileScannerArguments);
                     }
                   } else {
                     widget.onDetect(barcode, value! as MobileScannerArguments);
@@ -100,7 +102,9 @@ class _MobileScannerState extends State<MobileScanner> with WidgetsBindingObserv
                     child: SizedBox(
                       width: value.size.width,
                       height: value.size.height,
-                      child: kIsWeb ? HtmlElementView(viewType: value.webId!) : Texture(textureId: value.textureId!),
+                      child: kIsWeb
+                          ? HtmlElementView(viewType: value.webId!)
+                          : Texture(textureId: value.textureId!),
                     ),
                   ),
                 ),
