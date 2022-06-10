@@ -1,15 +1,17 @@
+// ignore_for_file: always_specify_types, strict_raw_type
+
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import '../../mobile_scanner.dart';
 
 Size toSize(Map data) {
-  final width = data['width'] as double;
-  final height = data['height'] as double;
+  final double width = data['width'] as double;
+  final double height = data['height'] as double;
   return Size(width, height);
 }
 
 List<Offset>? toCorners(List? data) {
   if (data != null) {
-    return List.unmodifiable(
+    return List<Offset>.unmodifiable(
       data.map((e) => Offset((e as Map)['x'] as double, e['y'] as double)),
     );
   } else {
@@ -62,12 +64,12 @@ CalendarEvent? toCalendarEvent(Map? data) {
 
 DateTime? toDateTime(Map<String, dynamic>? data) {
   if (data != null) {
-    final year = data['year'] as int;
-    final month = data['month'] as int;
-    final day = data['day'] as int;
-    final hour = data['hours'] as int;
-    final minute = data['minutes'] as int;
-    final second = data['seconds'] as int;
+    final int year = data['year'] as int;
+    final int month = data['month'] as int;
+    final int day = data['day'] as int;
+    final int hour = data['hours'] as int;
+    final int minute = data['minutes'] as int;
+    final int second = data['seconds'] as int;
     return data['isUtc'] as bool
         ? DateTime.utc(year, month, day, hour, minute, second)
         : DateTime(year, month, day, hour, minute, second);

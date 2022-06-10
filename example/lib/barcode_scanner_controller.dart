@@ -6,7 +6,7 @@ class BarcodeScannerWithController extends StatefulWidget {
   const BarcodeScannerWithController({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerWithControllerState createState() =>
+  State<BarcodeScannerWithController> createState() =>
       _BarcodeScannerWithControllerState();
 }
 
@@ -28,9 +28,9 @@ class _BarcodeScannerWithControllerState
     return Scaffold(
       backgroundColor: Colors.black,
       body: Builder(
-        builder: (context) {
+        builder: (BuildContext context) {
           return Stack(
-            children: [
+            children: <Widget>[
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
@@ -39,7 +39,7 @@ class _BarcodeScannerWithControllerState
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,
                 // ),
-                onDetect: (barcode, args) {
+                onDetect: (Barcode barcode, MobileScannerArguments? args) {
                   setState(() {
                     this.barcode = barcode.rawValue;
                   });
@@ -53,12 +53,13 @@ class _BarcodeScannerWithControllerState
                   color: Colors.black.withOpacity(0.4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: <Widget>[
                       IconButton(
                         color: Colors.white,
-                        icon: ValueListenableBuilder(
+                        icon: ValueListenableBuilder<TorchState>(
                           valueListenable: controller.torchState,
-                          builder: (context, state, child) {
+                          builder: (BuildContext context, Object? state,
+                              Widget? child) {
                             if (state == null) {
                               return const Icon(
                                 Icons.flash_off,
@@ -111,9 +112,10 @@ class _BarcodeScannerWithControllerState
                       ),
                       IconButton(
                         color: Colors.white,
-                        icon: ValueListenableBuilder(
+                        icon: ValueListenableBuilder<CameraFacing>(
                           valueListenable: controller.cameraFacingState,
-                          builder: (context, state, child) {
+                          builder: (BuildContext context, Object? state,
+                              Widget? child) {
                             if (state == null) {
                               return const Icon(Icons.camera_front);
                             }
@@ -133,14 +135,16 @@ class _BarcodeScannerWithControllerState
                         icon: const Icon(Icons.image),
                         iconSize: 32.0,
                         onPressed: () async {
-                          final ImagePicker _picker = ImagePicker();
+                          final ImagePicker picker = ImagePicker();
                           // Pick an image
-                          final XFile? image = await _picker.pickImage(
+                          final XFile? image = await picker.pickImage(
                             source: ImageSource.gallery,
                           );
                           if (image != null) {
                             if (await controller.analyzeImage(image.path)) {
-                              if (!mounted) return;
+                              if (!mounted) {
+                                return;
+                              }
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Barcode found!'),
@@ -148,7 +152,9 @@ class _BarcodeScannerWithControllerState
                                 ),
                               );
                             } else {
-                              if (!mounted) return;
+                              if (!mounted) {
+                                return;
+                              }
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('No barcode found!'),

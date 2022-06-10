@@ -5,7 +5,7 @@ class BarcodeScannerWithoutController extends StatefulWidget {
   const BarcodeScannerWithoutController({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerWithoutControllerState createState() =>
+  State<BarcodeScannerWithoutController> createState() =>
       _BarcodeScannerWithoutControllerState();
 }
 
@@ -19,13 +19,13 @@ class _BarcodeScannerWithoutControllerState
     return Scaffold(
       backgroundColor: Colors.black,
       body: Builder(
-        builder: (context) {
+        builder: (BuildContext context) {
           return Stack(
-            children: [
+            children: <Widget>[
               MobileScanner(
                 fit: BoxFit.contain,
                 // allowDuplicates: false,
-                onDetect: (barcode, args) {
+                onDetect: (Barcode barcode, MobileScannerArguments? args) {
                   setState(() {
                     this.barcode = barcode.rawValue;
                   });
@@ -39,7 +39,7 @@ class _BarcodeScannerWithoutControllerState
                   color: Colors.black.withOpacity(0.4),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
+                    children: <Widget>[
                       Center(
                         child: SizedBox(
                           width: MediaQuery.of(context).size.width - 120,

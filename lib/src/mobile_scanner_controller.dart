@@ -1,11 +1,13 @@
+// ignore_for_file: always_specify_types, strict_raw_type
+
 import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/objects/barcode_utility.dart';
+import '../mobile_scanner.dart';
+import 'objects/barcode_utility.dart';
 
 /// The facing of a camera.
 enum CameraFacing {
@@ -30,6 +32,34 @@ enum TorchState {
 // enum AnalyzeMode { none, barcode }
 
 class MobileScannerController {
+  MobileScannerController({
+    this.facing = CameraFacing.back,
+    this.ratio,
+    this.torchEnabled,
+    this.formats,
+  }) {
+    // In case a new instance is created before calling dispose()
+    if (_controllerHashcode != null) {
+      stop();
+    }
+    _controllerHashcode = hashCode;
+
+    cameraFacingState = ValueNotifier<CameraFacing>(facing);
+
+    // Sets analyze mode and barcode stream
+    barcodesController = StreamController<Barcode>.broadcast(
+        // onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
+        // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
+        );
+
+    start();
+
+    // Listen to events from the platform specific code
+    events = eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => handleEvent(data as Map));
+  }
+
   MethodChannel methodChannel =
       const MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
   EventChannel eventChannel =
@@ -55,44 +85,16 @@ class MobileScannerController {
 
   Stream<Barcode> get barcodes => barcodesController.stream;
 
-  MobileScannerController({
-    this.facing = CameraFacing.back,
-    this.ratio,
-    this.torchEnabled,
-    this.formats,
-  }) {
-    // In case a new instance is created before calling dispose()
-    if (_controllerHashcode != null) {
-      stop();
-    }
-    _controllerHashcode = hashCode;
-
-    cameraFacingState = ValueNotifier(facing);
-
-    // Sets analyze mode and barcode stream
-    barcodesController = StreamController.broadcast(
-        // onListen: () => setAnalyzeMode(AnalyzeMode.barcode.index),
-        // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
-        );
-
-    start();
-
-    // Listen to events from the platform specific code
-    events = eventChannel
-        .receiveBroadcastStream()
-        .listen((data) => handleEvent(data as Map));
-  }
-
   void handleEvent(Map event) {
     final name = event['name'];
     final data = event['data'];
     switch (name) {
       case 'torchState':
-        final state = TorchState.values[data as int];
+        final TorchState state = TorchState.values[data as int];
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data as Map);
+        final Barcode barcode = Barcode.fromNative(data as Map);
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
@@ -156,19 +158,25 @@ class MobileScannerController {
     // Set the starting arguments for the camera
     final Map arguments = {};
     arguments['facing'] = facing.index;
-    if (ratio != null) arguments['ratio'] = ratio;
-    if (torchEnabled != null) arguments['torch'] = torchEnabled;
+    if (ratio != null) {
+      arguments['ratio'] = ratio;
+    }
+    if (torchEnabled != null) {
+      arguments['torch'] = torchEnabled;
+    }
 
     if (formats != null) {
       if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((e) => e.index).toList();
+        arguments['formats'] =
+            formats!.map((BarcodeFormat e) => e.index).toList();
       } else if (Platform.isIOS || Platform.isMacOS) {
-        arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+        arguments['formats'] =
+            formats!.map((BarcodeFormat e) => e.rawValue).toList();
       }
     }
 
     // Start the camera with arguments
-    Map<String, dynamic>? startResult = {};
+    Map<String, dynamic>? startResult = <String, dynamic>{};
     try {
       startResult = await methodChannel.invokeMapMethod<String, dynamic>(
         'start',
@@ -278,7 +286,7 @@ class MobileScannerController {
 
   /// Checks if the MobileScannerController is bound to the correct MobileScanner object.
   void ensure(String name) {
-    final message =
+    final String message =
         'MobileScannerController.$name called after MobileScannerController.dispose\n'
         'MobileScannerController methods should not be used after calling dispose.';
     assert(hashCode == _controllerHashcode, message);
