@@ -107,8 +107,11 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             if let messageString = row.messageString {
                 let event: [String: Any?] = ["name": "barcode", "data": ["rawValue": messageString, "format": 256, "type": 0]]
                 sink?(event)
+                DispatchQueue.main.async {
+                    self.analyzing = false
+                }
+                break
             }
-            analyzing = false
         }
     }
 
@@ -220,9 +223,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
-        let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-        let width = Double(demensions.height)
-        let height = Double(demensions.width)
+        let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+        let width = Double(dimensions.height)
+        let height = Double(dimensions.width)
         let size = ["width": width, "height": height]
         let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
         result(answer)
