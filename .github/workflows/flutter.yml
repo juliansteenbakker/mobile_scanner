@@ -29,3 +29,57 @@ jobs:
       - uses: subosito/flutter-action@v2.4.0
       - name: Format
         run: flutter format -n --set-exit-if-changed .
+  integration-test:
+    # Is recommended to run job with macOS to take advantage of hardware
+    # acceleration support provided by HAXM.
+    runs-on: macos-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        api-level: [28, 31]
+        # The package requires the PlayStore on the device.
+        target: [google_atd]
+        arch: [x86_64]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - uses: subosito/flutter-action@v2.3.0
+      - name: Run integration tests
+        # We need to the fork until
+        # https://github.com/ReactiveCircus/android-emulator-runner/pull/247 is
+        # merged.
+        uses: nilsreichardt/android-emulator-runner@hot-fix-pre-emulator-launch-script
+        with:
+          api-level: ${{ matrix.api-level }}
+          target: ${{ matrix.target }}
+          arch: ${{ matrix.arch }}
+          profile: pixel_3a
+          emulator-options: -no-snapshot -no-window -no-boot-anim -camera-back virtualscene -camera-front emulated
+          working-directory: ./example
+          pre-emulator-launch-script: |
+            # Insert QR Code image from "integration_test/qr_code.jpg" into the Android
+            # camera emulator.
+            # 
+            # Source: https://stackoverflow.com/a/64922184/8358501
+            echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            echo "poster qr_code" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            echo "position 0 0.3 -1.0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+            mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+          script: |
+            # We can't use the "flutter test" command, because it will not execute the adb
+            # command to access the camera (defined in the "test_driver/integration_test.jpg")
+            flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
+      - name: Upload failure screenshots
+        uses: actions/upload-artifact@v1
+        if: ${{ failure() || cancelled() }}
+        with:
+          name: emulator_configs_${{ matrix.target }}_${{ matrix.arch }}_${{ matrix.api-level }}
+          path: ./example/test_results
+          if-no-files-found: ignore

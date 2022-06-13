@@ -1,16 +1,29 @@
-# mobile_scanner_example
+# Example for `mobile_scanner`
 
-Demonstrates how to use the mobile_scanner plugin.
+## Integration tests
+This packages contains integration tests for Android. 
 
-## Getting Started
+### Setup
+To run these tests, you need insert an image to the virtual scene of the Android emulator. You can use these commands:
+```sh
+echo "" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+echo "poster qr_code" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+echo "size 2 2" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+echo "position 0 0.3 -1.0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+echo "rotation 0 0 0" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+echo "default qr_code.jpg" >> ~/Library/Android/sdk/emulator/resources/Toren1BD.posters
+mv integration_test/qr_code.jpg ~/Library/Android/sdk/emulator/resources/
+```
+Source: [Android emulator camera custom image](https://stackoverflow.com/a/64922184/8358501)
 
-This project is a starting point for a Flutter application.
+It's also important that you run start an Android Emulator with PlayStore services and the virtual scene as back camera. Additionally, you should be able to run command with `adb` from your terminal (it's required to grant the app permissions to the camera).
 
-A few resources to get you started if this is your first Flutter project:
+### Run
+To run the integration tests, execute this command:
+```sh
+flutter drive --driver=test_driver/integration_test.dart --target=integration_test/app_test.dart -d emulator-5554
+```
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+### Demo
+Running the integration tests should look like this:
+https://user-images.githubusercontent.com/24459435/166640395-b6cdf631-3c51-454d-8158-b9adc158871f.mov
