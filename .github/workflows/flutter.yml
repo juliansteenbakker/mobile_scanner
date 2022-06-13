@@ -39,7 +39,7 @@ jobs:
       matrix:
         api-level: [28, 31]
         # The package requires the PlayStore on the device.
-        target: [playstore]
+        target: [google_atd]
         arch: [x86_64]
     steps:
       - uses: actions/checkout@v3
