@@ -145,7 +145,6 @@ class _MobileScannerState extends State<MobileScanner>
                   value.size,
                   Size(constraints.maxWidth, constraints.maxHeight),
                 );
-
                 controller.updateScanWindow(window);
               }
 

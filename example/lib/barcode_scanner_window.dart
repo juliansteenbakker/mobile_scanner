@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -37,6 +35,7 @@ class _BarcodeScannerWithScanWindowState
           return Stack(
             children: [
               MobileScanner(
+                fit: BoxFit.contain,
                 scanWindow: scanWindow,
                 controller: controller,
                 onDetect: (barcode, _) => setState(() {
