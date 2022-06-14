@@ -12,37 +12,24 @@ class BarcodeScannerWithScanWindow extends StatefulWidget {
 }
 
 class _BarcodeScannerWithScanWindowState
-    extends State<BarcodeScannerWithScanWindow>
-    with SingleTickerProviderStateMixin {
-  String? barcode;
-
-  late Rect scanWindow;
+    extends State<BarcodeScannerWithScanWindow> {
   late MobileScannerController controller;
+  String? barcode;
 
   @override
   void initState() {
     super.initState();
+    controller = MobileScannerController();
+  }
 
-    final screenWidth =
-        window.physicalSize.shortestSide / window.devicePixelRatio;
-    final screenHeight =
-        window.physicalSize.longestSide / window.devicePixelRatio;
-
-    scanWindow = Rect.fromCenter(
-      center: Offset(screenWidth / 2, screenHeight / 2),
+  @override
+  Widget build(BuildContext context) {
+    final scanWindow = Rect.fromCenter(
+      center: MediaQuery.of(context).size.center(Offset.zero),
       width: 200,
       height: 200,
     );
 
-    controller = MobileScannerController(
-      torchEnabled: false,
-    );
-  }
-
-  bool isStarted = true;
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Builder(
@@ -52,11 +39,9 @@ class _BarcodeScannerWithScanWindowState
               MobileScanner(
                 scanWindow: scanWindow,
                 controller: controller,
-                onDetect: (barcode, args) {
-                  setState(() {
-                    this.barcode = barcode.rawValue;
-                  });
-                },
+                onDetect: (barcode, _) => setState(() {
+                  this.barcode = barcode.rawValue;
+                }),
               ),
               CustomPaint(
                 painter: ScannerOverlay(scanWindow),
