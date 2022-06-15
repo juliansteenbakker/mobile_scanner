@@ -18,6 +18,12 @@ class _BarcodeScannerWithScanWindowState
   void initState() {
     super.initState();
     controller = MobileScannerController();
+    restart();
+  }
+
+  Future<void> restart() async {
+    await controller.stop();
+    await controller.start();
   }
 
   @override

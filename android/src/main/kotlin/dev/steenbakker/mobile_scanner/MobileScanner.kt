@@ -143,12 +143,20 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         val imageWidth = inputImage.getWidth();
         val imageHeight = inputImage.getHeight();
 
+        println(inputImage.getWidth())
+        println(inputImage.getHeight())
+
+        println(barcodeBoundingBox)
+
         val left = (scanWindow[0] * imageWidth).roundToInt()
         val top = (scanWindow[1] * imageHeight).roundToInt()
         val right = (scanWindow[2] * imageWidth).roundToInt()
         val bottom = (scanWindow[3] * imageHeight).roundToInt()
 
         val scaledScanWindow = Rect(left, top, right, bottom)
+                println(scaledScanWindow)
+                
+        println("-------------------------")
         return scaledScanWindow.contains(barcodeBoundingBox)
     }
 
@@ -227,6 +235,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
                 val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
                 val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
+
+                
                 Log.i("LOG", "Analyzer: $analysisSize")
                 Log.i("LOG", "Preview: $previewSize")
 

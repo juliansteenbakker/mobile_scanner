@@ -89,6 +89,7 @@ class _MobileScannerState extends State<MobileScanner>
     Size textureSize,
     Size widgetSize,
   ) {
+
     /// map the texture size to get its new size after fitted to screen
     final fittedSizes = applyBoxFit(fit, textureSize, widgetSize);
     final fittedTextureSize = fittedSizes.destination;
@@ -103,6 +104,7 @@ class _MobileScannerState extends State<MobileScanner>
     /// create a new scan window and with only the area of the rect intersecting the texture window
     final scanWindowInTexture = scanWindow.intersect(textureWindow);
 
+
     /// update the scanWindow left and top to be relative to the texture not the widget
     final newLeft = scanWindowInTexture.left - textureWindow.left;
     final newTop = scanWindowInTexture.top - textureWindow.top;
@@ -112,17 +114,26 @@ class _MobileScannerState extends State<MobileScanner>
     /// new scanWindow that is adapted to the boxfit and relative to the texture
     final windowInTexture = Rect.fromLTWH(newLeft, newTop, newWidth, newHeight);
 
+    print(windowInTexture);
+
     /// get the scanWindow as a percentage of the texture
     final percentageLeft = windowInTexture.left / fittedTextureSize.width;
     final percentageTop = windowInTexture.top / fittedTextureSize.height;
     final percentageRight = windowInTexture.right / fittedTextureSize.width;
     final percentagebottom = windowInTexture.bottom / fittedTextureSize.height;
 
+    print(Rect.fromLTRB(
+      percentageLeft,
+      percentageTop,
+      percentageRight,
+      percentagebottom,
+    ));
+
     /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
     return Rect.fromLTRB(
       percentageLeft,
-      percentageRight,
       percentageTop,
+      percentageRight,
       percentagebottom,
     );
   }
