@@ -83,7 +83,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             if (requestCode != REQUEST_CODE) {
                 false
             } else {
-                val authorized = grantResults[0] == PackageManager.PERMISSION_GRANTED
+                val authorized = grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED
                 result.success(authorized)
                 listener = null
                 true
