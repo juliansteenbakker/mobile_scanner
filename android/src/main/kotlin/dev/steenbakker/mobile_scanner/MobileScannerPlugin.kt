@@ -24,13 +24,16 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        if (flutter == null) {
+            return
+        }
         activity = binding
-        handler = MobileScanner(activity!!.activity, flutter!!.textureRegistry)
+        handler = MobileScanner(binding.activity, flutter!!.textureRegistry)
         method = MethodChannel(flutter!!.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/method")
         event = EventChannel(flutter!!.binaryMessenger, "dev.steenbakker.mobile_scanner/scanner/event")
-        method!!.setMethodCallHandler(handler)
-        event!!.setStreamHandler(handler)
-        activity!!.addRequestPermissionsResultListener(handler!!)
+        method?.setMethodCallHandler(handler)
+        event?.setStreamHandler(handler)
+        activity?.addRequestPermissionsResultListener(handler!!)
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -38,9 +41,11 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware {
     }
 
     override fun onDetachedFromActivity() {
-        activity!!.removeRequestPermissionsResultListener(handler!!)
-        event!!.setStreamHandler(null)
-        method!!.setMethodCallHandler(null)
+        handler?.let {
+            activity?.removeRequestPermissionsResultListener(it)
+        }
+        event?.setStreamHandler(null)
+        method?.setMethodCallHandler(null)
         event = null
         method = null
         handler = null
