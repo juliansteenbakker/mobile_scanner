@@ -166,7 +166,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             result.success(answer)
         } else {
             val facing: Int = call.argument<Int>("facing") ?: 0
-            val ratio: Int? = call.argument<Int>("ratio")
+            val ratio: Int = call.argument<Int>("ratio") ?: 1
             val torch: Boolean = call.argument<Boolean>("torch") ?: false
             val formats: List<Int>? = call.argument<List<Int>>("formats")
 
@@ -197,6 +197,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                     result.error("textureEntry", "textureEntry is null", null)
                     return@addListener
                 }
+                
                 // Preview
                 val surfaceProvider = Preview.SurfaceProvider { request ->
                     val texture = textureEntry!!.surfaceTexture()
@@ -207,17 +208,15 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
                 // Build the preview to be shown on the Flutter texture
                 val previewBuilder = Preview.Builder()
-                if (ratio != null) {
-                    previewBuilder.setTargetAspectRatio(ratio)
-                }
+                        .setTargetAspectRatio(ratio)
+                
                 preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
 
                 // Build the analyzer to be passed on to MLKit
                 val analysisBuilder = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .setTargetResolution(preview!!.resolutionInfo?.resolution ?: Size(640, 480))
+                        .setTargetAspectRatio(ratio) 
 
-                if (ratio != null) { analysisBuilder.setTargetAspectRatio(ratio) }
                 val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
 
                 // Select the correct camera
@@ -227,7 +226,6 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
                 val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
                 val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
-
                 
                 Log.i("LOG", "Analyzer: $analysisSize")
                 Log.i("LOG", "Preview: $previewSize")

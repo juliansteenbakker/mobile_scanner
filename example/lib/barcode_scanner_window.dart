@@ -22,8 +22,14 @@ class _BarcodeScannerWithScanWindowState
   }
 
   Future<void> restart() async {
-    await controller.stop();
+    // await controller.stop();
     await controller.start();
+  }
+
+  Future<void> onDetect(Barcode barcode, MobileScannerArguments? _) async {
+    setState(() => this.barcode = barcode.rawValue);
+    await Future.delayed(const Duration(seconds: 1));
+    setState(() => this.barcode = '');
   }
 
   @override
@@ -41,12 +47,11 @@ class _BarcodeScannerWithScanWindowState
           return Stack(
             children: [
               MobileScanner(
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 scanWindow: scanWindow,
                 controller: controller,
-                onDetect: (barcode, _) => setState(() {
-                  this.barcode = barcode.rawValue;
-                }),
+                onDetect: onDetect,
+                allowDuplicates: true,
               ),
               CustomPaint(
                 painter: ScannerOverlay(scanWindow),

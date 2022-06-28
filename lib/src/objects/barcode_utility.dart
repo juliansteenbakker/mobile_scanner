@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -146,4 +148,80 @@ WiFi? toWiFi(Map? data) {
   } else {
     return null;
   }
+}
+
+Size applyBoxFit(BoxFit fit, Size input, Size output) {
+  if (input.height <= 0.0 ||
+      input.width <= 0.0 ||
+      output.height <= 0.0 ||
+      output.width <= 0.0) {
+    return Size.zero;
+  }
+
+  Size destination;
+
+  final inputAspectRatio = input.width / input.height;
+  final outputAspectRatio = output.width / output.height;
+
+  switch (fit) {
+    case BoxFit.fill:
+      destination = output;
+      break;
+    case BoxFit.contain:
+      if (outputAspectRatio > inputAspectRatio) {
+        destination = Size(
+          input.width * output.height / input.height,
+          output.height,
+        );
+      } else {
+        destination = Size(
+          output.width,
+          input.height * output.width / input.width,
+        );
+      }
+      break;
+
+    case BoxFit.cover:
+      if (outputAspectRatio > inputAspectRatio) {
+        destination = Size(
+          output.width,
+          input.height * (output.width / input.width),
+        );
+      } else {
+        destination = Size(
+          input.width * (output.height / input.height),
+          output.height,
+        );
+      }
+      break;
+    case BoxFit.fitWidth:
+      destination = Size(
+        output.width,
+        input.height * (output.width / input.width),
+      );
+      break;
+    case BoxFit.fitHeight:
+      destination = Size(
+        input.width * (output.height / input.height),
+        output.height,
+      );
+      break;
+    case BoxFit.none:
+      destination = Size(
+        math.min(input.width, output.width),
+        math.min(input.height, output.height),
+      );
+      break;
+    case BoxFit.scaleDown:
+      destination = input;
+      if (destination.height > output.height) {
+        destination = Size(output.height * inputAspectRatio, output.height);
+      }
+      if (destination.width > output.width) {
+        destination = Size(output.width, output.width / inputAspectRatio);
+      }
+      break;
+  }
+
+  return destination;
 }
