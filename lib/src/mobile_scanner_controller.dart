@@ -35,7 +35,8 @@ class MobileScannerController {
   EventChannel eventChannel =
       const EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
-  int? _controllerHashcode;
+  //Must be static to keep the same value on new instances
+  static int? _controllerHashcode;
   StreamSubscription? events;
 
   final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
