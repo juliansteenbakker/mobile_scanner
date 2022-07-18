@@ -9,6 +9,9 @@ class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
   final MobileScannerController? controller;
 
+  /// Calls the provided [onPermissionSet] callback when the permission is set.
+  final Function(bool permissionGranted)? onPermissionSet;
+
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
@@ -34,6 +37,7 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
+    this.onPermissionSet,
   }) : super(key: key);
 
   @override
@@ -48,7 +52,7 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    controller = widget.controller ?? MobileScannerController();
+    controller = widget.controller ?? MobileScannerController(onPermissionSet: widget.onPermissionSet);
   }
 
   @override
@@ -121,7 +125,7 @@ class _MobileScannerState extends State<MobileScanner>
       }
     } else {
       if (widget.controller == null) {
-        controller = MobileScannerController();
+        controller = MobileScannerController(onPermissionSet: widget.onPermissionSet);
       } else if (oldWidget.controller != widget.controller) {
         controller = widget.controller!;
       }
