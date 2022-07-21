@@ -55,7 +55,7 @@ class _MobileScannerState extends State<MobileScanner>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting) controller.start();
+        if (!controller.isStarting && controller.autoResume) controller.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
