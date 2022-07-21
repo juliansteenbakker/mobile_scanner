@@ -1,17 +1,24 @@
 name: code analysis & formatting
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [ opened, labeled, unlabeled, synchronize ]
 
 jobs:
   analysis:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v3.0.2
+      - uses: actions/setup-java@v3.3.0
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          java-version: 11
+          distribution: temurin
       - uses: subosito/flutter-action@v2.4.0
+        with:
+          cache: true
       - name: Version
         run: flutter doctor -v
       - name: Install dependencies
@@ -21,11 +28,13 @@ jobs:
   formatting:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-java@v3
+      - uses: actions/checkout@v3.0.2
+      - uses: actions/setup-java@v3.3.0
         with:
-          distribution: 'temurin'
-          java-version: '11'
+          java-version: 11
+          distribution: temurin
       - uses: subosito/flutter-action@v2.4.0
+        with:
+          cache: true
       - name: Format
         run: flutter format -n --set-exit-if-changed .
