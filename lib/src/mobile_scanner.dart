@@ -49,6 +49,7 @@ class _MobileScannerState extends State<MobileScanner>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.controller ?? MobileScannerController();
+    if (!controller.isStarting) controller.start();
   }
 
   @override
