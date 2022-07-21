@@ -156,6 +156,14 @@ class MobileScannerController {
     // Set the starting arguments for the camera
     final Map arguments = {};
     arguments['facing'] = facing.index;
+    /*    if (scanWindow != null) {
+      arguments['scanWindow'] = [
+        scanWindow!.left,
+        scanWindow!.top,
+        scanWindow!.right,
+        scanWindow!.bottom,
+      ];
+    } */
     if (ratio != null) arguments['ratio'] = ratio;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
@@ -282,5 +290,11 @@ class MobileScannerController {
         'MobileScannerController.$name called after MobileScannerController.dispose\n'
         'MobileScannerController methods should not be used after calling dispose.';
     assert(hashCode == _controllerHashcode, message);
+  }
+
+  /// updates the native scanwindow
+  Future<void> updateScanWindow(Rect window) async {
+    final data = [window.left, window.top, window.right, window.bottom];
+    await methodChannel.invokeMethod('updateScanWindow', {'rect': data});
   }
 }

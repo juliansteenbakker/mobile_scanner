@@ -2,6 +2,7 @@ import AVFoundation
 import Flutter
 import MLKitVision
 import MLKitBarcodeScanning
+import UIKit
 
 public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
@@ -25,6 +26,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
 //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
+
+    var scanWindow: CGRect?
     
     var scanner = BarcodeScanner.barcodeScanner()
     
@@ -61,6 +64,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             stop(result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "updateScanWindow":
+            updateScanWindow(call)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -98,8 +103,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                 return
             }
             analyzing = true
-            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)
-            let image = VisionImage(image: buffer!.image)
+            let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)            
+            var image = VisionImage(image: buffer!.image)
+
             image.orientation = imageOrientation(
               deviceOrientation: UIDevice.current.orientation,
               defaultOrientation: .portrait
@@ -108,6 +114,14 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             scanner.process(image) { [self] barcodes, error in
                 if error == nil && barcodes != nil {
                     for barcode in barcodes! {
+
+                        if scanWindow != nil {
+                            let match = isbarCodeInScanWindow(scanWindow!, barcode, buffer!.image)
+                            if (!match) {
+                                continue
+                            }
+                        }
+
                         let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                         sink?(event)
                     }
@@ -155,6 +169,38 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
 
+    func updateScanWindow(_ call: FlutterMethodCall) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let scanWindowData: Array? = argReader.floatArray(key: "rect")
+
+        if (scanWindowData == nil) {
+            return 
+        }
+
+        let minX = scanWindowData![0] 
+        let minY = scanWindowData![1]
+
+        let width = scanWindowData![2]  - minX
+        let height = scanWindowData![3] - minY
+
+        scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+    }
+
+   func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: Barcode, _ inputImage: UIImage) -> Bool {
+        let barcodeBoundingBox = barcode.frame
+
+        let imageWidth = inputImage.size.width;
+        let imageHeight = inputImage.size.height;
+
+        let minX = scanWindow.minX * imageWidth
+        let minY = scanWindow.minY * imageHeight
+        let width = scanWindow.width * imageWidth
+        let height = scanWindow.height * imageHeight
+
+        let scaledScanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        return scaledScanWindow.contains(barcodeBoundingBox)
+   }
+
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil) {
             result(FlutterError(code: "MobileScanner",
@@ -172,7 +218,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
-        
+               
         let formatList: NSMutableArray = []
         for index in formats {
             formatList.add(BarcodeFormat(rawValue: index))
@@ -229,6 +275,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         videoOutput.alwaysDiscardsLateVideoFrames = true
         
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        
         captureSession.addOutput(videoOutput)
         for connection in videoOutput.connections {
             connection.videoOrientation = .portrait
@@ -238,6 +285,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
+
         let demensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let width = Double(demensions.height)
         let height = Double(demensions.width)
@@ -289,6 +337,14 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         scanner.process(image) { [self] barcodes, error in
             if error == nil && barcodes != nil {
                 for barcode in barcodes! {
+
+                    if scanWindow != nil {
+                        let match = isbarCodeInScanWindow(scanWindow!, barcode, uiImage!)
+                        if (!match) {
+                            continue
+                        }
+                    }
+
                     barcodeFound = true
                     let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                     sink?(event)
@@ -368,8 +424,12 @@ class MapArgumentReader {
     return args?[key] as? [String]
   }
     
-    func intArray(key: String) -> [Int]? {
-      return args?[key] as? [Int]
-    }
+  func intArray(key: String) -> [Int]? {
+    return args?[key] as? [Int]
+  }
+
+  func floatArray(key: String) -> [CGFloat]? {
+    return args?[key] as? [CGFloat]
+  }
   
 }

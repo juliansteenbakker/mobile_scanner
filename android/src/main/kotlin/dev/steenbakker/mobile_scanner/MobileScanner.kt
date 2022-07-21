@@ -4,9 +4,12 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Point
+import android.graphics.Rect
+import android.graphics.RectF
 import android.net.Uri
 import android.util.Log
 import android.util.Size
+import android.media.Image
 import android.view.Surface
 import androidx.annotation.NonNull
 import androidx.camera.core.*
@@ -18,12 +21,14 @@ import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.common.InputImage.IMAGE_FORMAT_NV21
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 import java.io.File
+import kotlin.math.roundToInt
 
 
 class MobileScanner(private val activity: Activity, private val textureRegistry: TextureRegistry)
@@ -40,6 +45,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
+    private var scanWindow: List<Float>? = null;
 
 //    @AnalyzeMode
 //    private var analyzeMode: Int = AnalyzeMode.NONE
@@ -54,6 +60,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
     }
@@ -99,11 +106,17 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //        when (analyzeMode) {
 //            AnalyzeMode.BARCODE -> {
                 val mediaImage = imageProxy.image ?: return@Analyzer
-                val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+                var inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
 
                 scanner.process(inputImage)
                         .addOnSuccessListener { barcodes ->
                             for (barcode in barcodes) {
+
+                                if(scanWindow != null) {
+                                    val match = isbarCodeInScanWindow(scanWindow!!, barcode, inputImage)
+                                    if(!match) continue
+                                }
+
                                 val event = mapOf("name" to "barcode", "data" to barcode.data)
                                 sink?.success(event)
                             }
@@ -115,8 +128,31 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //        }
     }
 
-
     private var scanner = BarcodeScanning.getClient()
+
+    private fun updateScanWindow(call: MethodCall) {
+        scanWindow = call.argument<List<Float>>("rect")
+    }
+
+    // scales the scanWindow to the provided inputImage and checks if that scaled
+    // scanWindow contains the barcode
+    private fun isbarCodeInScanWindow(scanWindow: List<Float>, barcode: Barcode, inputImage: InputImage): Boolean {
+        val barcodeBoundingBox = barcode.getBoundingBox()
+        if(barcodeBoundingBox == null) return false
+
+        val imageWidth = inputImage.getWidth();
+        val imageHeight = inputImage.getHeight();
+
+        val left = (scanWindow[0] * imageWidth).roundToInt()
+        val top = (scanWindow[1] * imageHeight).roundToInt()
+        val right = (scanWindow[2] * imageWidth).roundToInt()
+        val bottom = (scanWindow[3] * imageHeight).roundToInt()
+
+        val scaledScanWindow = Rect(left, top, right, bottom)                
+        return scaledScanWindow.contains(barcodeBoundingBox)
+    }
+
+
 
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
@@ -130,7 +166,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             result.success(answer)
         } else {
             val facing: Int = call.argument<Int>("facing") ?: 0
-            val ratio: Int? = call.argument<Int>("ratio")
+            val ratio: Int = call.argument<Int>("ratio") ?: 1
             val torch: Boolean = call.argument<Boolean>("torch") ?: false
             val formats: List<Int>? = call.argument<List<Int>>("formats")
 
@@ -161,6 +197,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                     result.error("textureEntry", "textureEntry is null", null)
                     return@addListener
                 }
+                
                 // Preview
                 val surfaceProvider = Preview.SurfaceProvider { request ->
                     val texture = textureEntry!!.surfaceTexture()
@@ -171,17 +208,15 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
                 // Build the preview to be shown on the Flutter texture
                 val previewBuilder = Preview.Builder()
-                if (ratio != null) {
-                    previewBuilder.setTargetAspectRatio(ratio)
-                }
+                        .setTargetAspectRatio(ratio)
+                
                 preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
 
                 // Build the analyzer to be passed on to MLKit
                 val analysisBuilder = ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                if (ratio != null) {
-                    analysisBuilder.setTargetAspectRatio(ratio)
-                }
+                        .setTargetAspectRatio(ratio) 
+
                 val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
 
                 // Select the correct camera
@@ -191,6 +226,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
                 val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
                 val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
+                
                 Log.i("LOG", "Analyzer: $analysisSize")
                 Log.i("LOG", "Preview: $previewSize")
 
@@ -241,6 +277,11 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
                 for (barcode in barcodes) {
+                    if(scanWindow != null) {
+                        val match = isbarCodeInScanWindow(scanWindow!!, barcode, inputImage)
+                        if(!match) continue
+                    }
+
                     barcodeFound = true
                     sink?.success(mapOf("name" to "barcode", "data" to barcode.data))
                 }
