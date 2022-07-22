@@ -45,9 +45,10 @@ class _BarcodeScannerWithScanWindowState
       body: Builder(
         builder: (context) {
           return Stack(
+            fit: StackFit.expand,
             children: [
               MobileScanner(
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 scanWindow: scanWindow,
                 controller: controller,
                 onDetect: onDetect,
