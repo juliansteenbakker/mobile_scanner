@@ -70,44 +70,40 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, BoxConstraints constraints) {
-        return ValueListenableBuilder(
-          valueListenable: controller.args,
-          builder: (context, value, child) {
-            value = value as MobileScannerArguments?;
-            if (value == null) {
-              return Container(color: Colors.black);
+    return ValueListenableBuilder(
+      valueListenable: controller.args,
+      builder: (context, value, child) {
+        value = value as MobileScannerArguments?;
+        if (value == null) {
+          return Container(color: Colors.black);
+        } else {
+          controller.barcodes.listen((barcode) {
+            if (!widget.allowDuplicates) {
+              if (lastScanned != barcode.rawValue) {
+                lastScanned = barcode.rawValue;
+                widget.onDetect(barcode, value! as MobileScannerArguments);
+              }
             } else {
-              controller.barcodes.listen((barcode) {
-                if (!widget.allowDuplicates) {
-                  if (lastScanned != barcode.rawValue) {
-                    lastScanned = barcode.rawValue;
-                    widget.onDetect(barcode, value! as MobileScannerArguments);
-                  }
-                } else {
-                  widget.onDetect(barcode, value! as MobileScannerArguments);
-                }
-              });
-              return ClipRect(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: FittedBox(
-                    fit: widget.fit,
-                    child: SizedBox(
-                      width: value.size.width,
-                      height: value.size.height,
-                      child: kIsWeb
-                          ? HtmlElementView(viewType: value.webId!)
-                          : Texture(textureId: value.textureId!),
-                    ),
-                  ),
-                ),
-              );
+              widget.onDetect(barcode, value! as MobileScannerArguments);
             }
-          },
-        );
+          });
+          return ClipRect(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: FittedBox(
+                fit: widget.fit,
+                child: SizedBox(
+                  width: value.size.width,
+                  height: value.size.height,
+                  child: kIsWeb
+                      ? HtmlElementView(viewType: value.webId!)
+                      : Texture(textureId: value.textureId!),
+                ),
+              ),
+            ),
+          );
+        }
       },
     );
   }
