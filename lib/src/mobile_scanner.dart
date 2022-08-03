@@ -29,12 +29,12 @@ class MobileScanner extends StatefulWidget {
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
-    Key? key,
+    super.key,
     required this.onDetect,
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
-  }) : super(key: key);
+  });
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -75,7 +75,7 @@ class _MobileScannerState extends State<MobileScanner>
       builder: (context, value, child) {
         value = value as MobileScannerArguments?;
         if (value == null) {
-          return Container(color: Colors.black);
+          return const ColoredBox(color: Colors.black);
         } else {
           controller.barcodes.listen((barcode) {
             if (!widget.allowDuplicates) {
