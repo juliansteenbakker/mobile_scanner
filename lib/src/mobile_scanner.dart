@@ -42,6 +42,7 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
+    this.scanWindow,
   });
 
   @override
