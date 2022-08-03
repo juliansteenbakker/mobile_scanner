@@ -133,9 +133,9 @@ class _BarcodeScannerWithControllerState
                         icon: const Icon(Icons.image),
                         iconSize: 32.0,
                         onPressed: () async {
-                          final ImagePicker _picker = ImagePicker();
+                          final ImagePicker picker = ImagePicker();
                           // Pick an image
-                          final XFile? image = await _picker.pickImage(
+                          final XFile? image = await picker.pickImage(
                             source: ImageSource.gallery,
                           );
                           if (image != null) {

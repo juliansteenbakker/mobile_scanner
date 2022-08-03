@@ -35,7 +35,8 @@ class MobileScannerController {
   EventChannel eventChannel =
       const EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
-  int? _controllerHashcode;
+  //Must be static to keep the same value on new instances
+  static int? _controllerHashcode;
   StreamSubscription? events;
 
   final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
@@ -53,6 +54,9 @@ class MobileScannerController {
   bool hasTorch = false;
   late StreamController<Barcode> barcodesController;
 
+  /// Whether to automatically resume the camera when the application is resumed
+  bool autoResume;
+
   Stream<Barcode> get barcodes => barcodesController.stream;
 
   MobileScannerController({
@@ -60,6 +64,7 @@ class MobileScannerController {
     this.ratio,
     this.torchEnabled,
     this.formats,
+    this.autoResume = true,
   }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
@@ -75,8 +80,6 @@ class MobileScannerController {
         // onCancel: () => setAnalyzeMode(AnalyzeMode.none.index),
         );
 
-    start();
-
     // Listen to events from the platform specific code
     events = eventChannel
         .receiveBroadcastStream()
@@ -88,22 +91,22 @@ class MobileScannerController {
     final data = event['data'];
     switch (name) {
       case 'torchState':
-        final state = TorchState.values[data as int];
+        final state = TorchState.values[data as int? ?? 0];
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data as Map);
+        final barcode = Barcode.fromNative(data as Map? ?? {});
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
         barcodesController.add(
           Barcode(
-            rawValue: (data as Map)['payload'] as String,
+            rawValue: (data as Map)['payload'] as String?,
           ),
         );
         break;
       case 'barcodeWeb':
-        barcodesController.add(Barcode(rawValue: data as String));
+        barcodesController.add(Barcode(rawValue: data as String?));
         break;
       default:
         throw UnimplementedError();
@@ -134,11 +137,11 @@ class MobileScannerController {
     // Check authorization status
     if (!kIsWeb) {
       MobileScannerState state = MobileScannerState
-          .values[await methodChannel.invokeMethod('state') as int];
+          .values[await methodChannel.invokeMethod('state') as int? ?? 0];
       switch (state) {
         case MobileScannerState.undetermined:
           final bool result =
-              await methodChannel.invokeMethod('request') as bool;
+              await methodChannel.invokeMethod('request') as bool? ?? false;
           state = result
               ? MobileScannerState.authorized
               : MobileScannerState.denied;
@@ -194,21 +197,21 @@ class MobileScannerController {
       throw PlatformException(code: 'INITIALIZATION ERROR');
     }
 
-    hasTorch = startResult['torchable'] as bool;
+    hasTorch = startResult['torchable'] as bool? ?? false;
 
     if (kIsWeb) {
       args.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
         size: Size(
-          startResult['videoWidth'] as double,
-          startResult['videoHeight'] as double,
+          startResult['videoWidth'] as double? ?? 0,
+          startResult['videoHeight'] as double? ?? 0,
         ),
         hasTorch: hasTorch,
       );
     } else {
       args.value = MobileScannerArguments(
-        textureId: startResult['textureId'] as int,
-        size: toSize(startResult['size'] as Map),
+        textureId: startResult['textureId'] as int?,
+        size: toSize(startResult['size'] as Map? ?? {}),
         hasTorch: hasTorch,
       );
     }

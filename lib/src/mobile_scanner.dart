@@ -37,13 +37,12 @@ class MobileScanner extends StatefulWidget {
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
-    Key? key,
+    super.key,
     required this.onDetect,
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
-    this.scanWindow,
-  }) : super(key: key);
+  });
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -58,13 +57,14 @@ class _MobileScannerState extends State<MobileScanner>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.controller ?? MobileScannerController();
+    if (!controller.isStarting) controller.start();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting) controller.start();
+        if (!controller.isStarting && controller.autoResume) controller.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -134,7 +134,7 @@ class _MobileScannerState extends State<MobileScanner>
           builder: (context, value, child) {
             value = value as MobileScannerArguments?;
             if (value == null) {
-              return Container(color: Colors.black);
+              return const ColoredBox(color: Colors.black);
             } else {
               if (widget.scanWindow != null) {
                 final window = calculateScanWindowRelativeToTextureInPercentage(
