@@ -169,3 +169,41 @@ import 'package:mobile_scanner/mobile_scanner.dart';
             }));
   }
 ```
+
+Example with controller and returning images
+
+```dart
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mobile Scanner')),
+      body: MobileScanner(
+        controller: MobileScannerController(
+          facing: CameraFacing.front,
+          torchEnabled: true,
+          returnImage: true,
+        ),
+        onDetect: (barcode, args) {
+          if (barcode.rawValue == null) {
+            debugPrint('Failed to scan Barcode');
+          } else {
+            final String code = barcode.rawValue!;
+            debugPrint('Barcode found! $code');
+
+            debugPrint(
+                'Image returned! length: ${barcode.image!.lengthInBytes}b');
+            showDialog(
+              context: context,
+              builder: (context) => Image(image: MemoryImage(barcode.image!)),
+            );
+            Future.delayed(const Duration(seconds: 2), () {
+              Navigator.pop(context);
+            });
+          }
+        },
+      ),
+    );
+  }
+```
