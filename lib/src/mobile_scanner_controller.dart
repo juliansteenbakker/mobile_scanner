@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -89,6 +90,7 @@ class MobileScannerController {
   void handleEvent(Map event) {
     final name = event['name'];
     final data = event['data'];
+    final binaryData = event['binaryData'];
     switch (name) {
       case 'torchState':
         final state = TorchState.values[data as int? ?? 0];
@@ -106,7 +108,11 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
-        barcodesController.add(Barcode(rawValue: data as String?));
+        final bytes = (binaryData as List).cast<int>();
+        barcodesController.add(Barcode(
+          rawValue: data as String?,
+          rawBytes: Uint8List.fromList(bytes),
+        ));
         break;
       default:
         throw UnimplementedError();
