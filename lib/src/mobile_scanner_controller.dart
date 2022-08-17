@@ -45,6 +45,8 @@ class MobileScannerController {
   late final ValueNotifier<CameraFacing> cameraFacingState;
   final Ratio? ratio;
   final bool? torchEnabled;
+  // Whether to return the image buffer with the Barcode event
+  final bool returnImage;
 
   /// If provided, the scanner will only detect those specific formats.
   ///
@@ -66,6 +68,7 @@ class MobileScannerController {
     this.torchEnabled,
     this.formats,
     this.autoResume = true,
+    this.returnImage = false,
   }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
@@ -97,7 +100,8 @@ class MobileScannerController {
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data as Map? ?? {});
+        final image = returnImage ? event['image'] as Uint8List : null;
+        final barcode = Barcode.fromNative(data as Map? ?? {}, image);
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
@@ -177,6 +181,7 @@ class MobileScannerController {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
       }
     }
+    arguments['returnImage'] = returnImage;
 
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};
