@@ -109,10 +109,12 @@ class MobileScannerController {
         break;
       case 'barcodeWeb':
         final bytes = (binaryData as List).cast<int>();
-        barcodesController.add(Barcode(
-          rawValue: data as String?,
-          rawBytes: Uint8List.fromList(bytes),
-        ));
+        barcodesController.add(
+          Barcode(
+            rawValue: data as String?,
+            rawBytes: Uint8List.fromList(bytes),
+          ),
+        );
         break;
       default:
         throw UnimplementedError();
