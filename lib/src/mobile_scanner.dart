@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-enum Ratio { ratio_4_3, ratio_16_9 }
-
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
@@ -12,13 +10,13 @@ class MobileScanner extends StatefulWidget {
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
-  /// [args] Information about the state of the MobileScanner widget
+  /// [arguments] Information about the state of the MobileScanner widget
   final Function(Barcode barcode, MobileScannerArguments? args) onDetect;
 
   /// TODO: Function that gets called when the Widget is initialized. Can be usefull
   /// to check wether the device has a torch(flash) or not.
   ///
-  /// [args] Information about the state of the MobileScanner widget
+  /// [arguments] Information about the state of the MobileScanner widget
   // final Function(MobileScannerArguments args)? onInitialize;
 
   /// Handles how the widget should fit the screen.
@@ -71,7 +69,7 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.args,
+      valueListenable: controller.arguments,
       builder: (context, value, child) {
         value = value as MobileScannerArguments?;
         if (value == null) {
@@ -109,25 +107,8 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  void didUpdateWidget(covariant MobileScanner oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller == null) {
-      if (widget.controller != null) {
-        controller.dispose();
-        controller = widget.controller!;
-      }
-    } else {
-      if (widget.controller == null) {
-        controller = MobileScannerController();
-      } else if (oldWidget.controller != widget.controller) {
-        controller = widget.controller!;
-      }
-    }
-  }
-
-  @override
   void dispose() {
-    controller.dispose();
+    controller.stop();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

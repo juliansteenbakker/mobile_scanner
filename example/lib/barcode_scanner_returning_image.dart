@@ -19,7 +19,7 @@ class _BarcodeScannerReturningImageState
 
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
-    returnImage: true,
+    // returnImage: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
   );
@@ -45,13 +45,6 @@ class _BarcodeScannerReturningImageState
                 onDetect: (barcode, args) {
                   setState(() {
                     this.barcode = barcode.rawValue;
-                    showDialog(
-                      context: context,
-                      builder: (context) => Image(
-                        image: MemoryImage(image!),
-                        fit: BoxFit.contain,
-                      ),
-                    );
                     image = barcode.image;
                   });
                 },

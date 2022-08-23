@@ -13,7 +13,8 @@ class BarcodeScannerWithController extends StatefulWidget {
 class _BarcodeScannerWithControllerState
     extends State<BarcodeScannerWithController>
     with SingleTickerProviderStateMixin {
-  String? barcode;
+
+  Barcode? barcode;
 
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
@@ -41,7 +42,7 @@ class _BarcodeScannerWithControllerState
                 // ),
                 onDetect: (barcode, args) {
                   setState(() {
-                    this.barcode = barcode.rawValue;
+                    this.barcode = barcode;
                   });
                 },
               ),
@@ -95,11 +96,11 @@ class _BarcodeScannerWithControllerState
                       ),
                       Center(
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 200,
+                          width: MediaQuery.of(context).size.width - 350,
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              barcode ?? 'Scan something!',
+                              barcode?.rawValue ?? 'Scan something!',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
@@ -159,6 +160,7 @@ class _BarcodeScannerWithControllerState
                           }
                         },
                       ),
+                      if (barcode != null && barcode!.image != null) Image.memory(barcode!.image!)
                     ],
                   ),
                 ),
