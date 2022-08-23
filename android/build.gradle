@@ -24,7 +24,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 32
+    compileSdkVersion 33
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -52,16 +52,6 @@ dependencies {
     // Use this dependency to use the dynamically downloaded model in Google Play Services
 //    implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0'
 
-    implementation "androidx.camera:camera-camera2:1.2.0-alpha04"
-    implementation 'androidx.camera:camera-lifecycle:1.2.0-alpha04'
-
-//    // The following line is optional, as the core library is included indirectly by camera-camera2
-//    implementation "androidx.camera:camera-core:1.1.0-alpha11"
-//    implementation "androidx.camera:camera-camera2:1.1.0-alpha11"
-//    // If you want to additionally use the CameraX Lifecycle library
-//    implementation "androidx.camera:camera-lifecycle:1.1.0-alpha11"
-//    // If you want to additionally use the CameraX View class
-//    implementation "androidx.camera:camera-view:1.0.0-alpha31"
-//    // If you want to additionally use the CameraX Extensions library
-//    implementation "androidx.camera:camera-extensions:1.0.0-alpha31"
+    implementation 'androidx.camera:camera-camera2:1.1.0'
+    implementation 'androidx.camera:camera-lifecycle:1.1.0'
 }
