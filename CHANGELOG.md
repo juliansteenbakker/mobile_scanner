@@ -1,3 +1,11 @@
+## 3.0.0
+Breaking changes:
+* [Android] SDK updated to SDK 33.
+
+Other changes:
+* [Android] Revert camera2 dependency to stable release
+* [iOS] Update barcode scanning library to latest version
+
 ## 2.0.0
 Breaking changes:
 This version is only compatible with flutter 3.0.0 and later.

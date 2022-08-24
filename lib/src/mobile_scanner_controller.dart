@@ -237,6 +237,41 @@ class MobileScannerController {
     barcodesController.close();
   }
 
+  void handleEvent(Map event) {
+    final name = event['name'];
+    final data = event['data'];
+    final binaryData = event['binaryData'];
+    switch (name) {
+      case 'torchState':
+        final state = TorchState.values[data as int? ?? 0];
+        torchState.value = state;
+        break;
+      case 'barcode':
+        final image = returnImage ? event['image'] as Uint8List : null;
+        final barcode = Barcode.fromNative(data as Map? ?? {}, image);
+        barcodesController.add(barcode);
+        break;
+      case 'barcodeMac':
+        barcodesController.add(
+          Barcode(
+            rawValue: (data as Map)['payload'] as String?,
+          ),
+        );
+        break;
+      case 'barcodeWeb':
+        final bytes = (binaryData as List).cast<int>();
+        barcodesController.add(
+          Barcode(
+            rawValue: data as String?,
+            rawBytes: Uint8List.fromList(bytes),
+          ),
+        );
+        break;
+      default:
+        throw UnimplementedError();
+    }
+  }
+
   /// Handles a returning event from the platform side
   void _handleEvent(Map event) {
     final name = event['name'];
