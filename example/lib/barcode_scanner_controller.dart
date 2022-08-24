@@ -34,7 +34,7 @@ class _BarcodeScannerWithControllerState
             children: [
               MobileScanner(
                 controller: controller,
-                fit: BoxFit.contain,
+                fit: BoxFit.fill,
                 // allowDuplicates: true,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
