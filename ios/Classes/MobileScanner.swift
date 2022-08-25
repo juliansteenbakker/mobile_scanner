@@ -109,7 +109,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.cameraError(error)
         }
         
-        captureSession.sessionPreset = AVCaptureSession.Preset.low;
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo;
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
         
@@ -131,7 +131,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         captureSession.startRunning()
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         
-        return MobileScannerStartParameters(width: Double(dimensions.width), height: Double(dimensions.height), hasTorch: device.hasTorch, textureId: textureId)
+        return MobileScannerStartParameters(width: Double(dimensions.height), height: Double(dimensions.width), hasTorch: device.hasTorch, textureId: textureId)
     }
     
     struct MobileScannerStartParameters {
@@ -186,12 +186,21 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         scanner.process(image, completion: callback)
     }
     
+    var i = 0
+    
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+          print("Failed to get image buffer from sample buffer.")
+          return
+        }
+        latestBuffer = imageBuffer
         registry?.textureFrameAvailable(textureId)
+        if (i > 10) {
+        i = 0
+        let ciImage = latestBuffer.image
         
-        let image = VisionImage(image: latestBuffer.image)
+        let image = VisionImage(image: ciImage)
         image.orientation = imageOrientation(
             deviceOrientation: UIDevice.current.orientation,
             defaultOrientation: .portrait,
@@ -199,7 +208,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         )
         
         scanner.process(image) { [self] barcodes, error in
-            mobileScannerCallback(barcodes, error, latestBuffer.image)
+            mobileScannerCallback(barcodes, error, ciImage)
 //            let image: CIImage = CIImage(cvPixelBuffer: latestBuffer)
 //
 //            if ((barcodes != nil && !barcodes!.isEmpty) || error != nil) {
@@ -210,6 +219,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 //                    mobileScannerCallback!(barcodes, error, nil)
 //                }
 //            }
+        }
+        } else {
+            i+=1
         }
     }
     

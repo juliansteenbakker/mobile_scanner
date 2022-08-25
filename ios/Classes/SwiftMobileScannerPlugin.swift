@@ -19,7 +19,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                 }
                 if (!barcodesMap.isEmpty) {
 //                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.pngData()!)])
-                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.1)!)])
+                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!)])
                 }
 //                for barcode in barcodes! {
 //                    barcodeHandler.publishEvent(["name": "barcode", "data": barcode.data, "image": image != nil ? FlutterStandardTypedData(bytes: image!) : nil])
