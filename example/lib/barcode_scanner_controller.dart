@@ -34,7 +34,7 @@ class _BarcodeScannerWithControllerState
             children: [
               MobileScanner(
                 controller: controller,
-                fit: BoxFit.fill,
+                fit: BoxFit.contain,
                 // allowDuplicates: true,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
@@ -96,7 +96,7 @@ class _BarcodeScannerWithControllerState
                       ),
                       Center(
                         child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 350,
+                          width: MediaQuery.of(context).size.width - 200,
                           height: 50,
                           child: FittedBox(
                             child: Text(
@@ -160,7 +160,6 @@ class _BarcodeScannerWithControllerState
                           }
                         },
                       ),
-                      if (barcode != null && barcode!.image != null) Image.memory(barcode!.image!)
                     ],
                   ),
                 ),

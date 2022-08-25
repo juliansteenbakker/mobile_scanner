@@ -18,7 +18,11 @@ class MobileScannerController {
     this.formats,
     this.autoResume = true,
     this.returnImage = false,
-  });
+  }) {
+    events = _eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => _handleEvent(data as Map));
+  }
 
   /// Select which camera should be used.
   ///
@@ -54,13 +58,11 @@ class MobileScannerController {
 
   static const MethodChannel _methodChannel =
       MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
-  static const EventChannel _eventChannel =
+  static const  EventChannel _eventChannel =
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   /// Listen to events from the platform specific code
-  late final StreamSubscription events = _eventChannel
-      .receiveBroadcastStream()
-      .listen((data) => _handleEvent(data as Map));
+  late StreamSubscription events;
 
   /// A notifier that provides several arguments about the MobileScanner
   final ValueNotifier<MobileScannerArguments?> arguments = ValueNotifier(null);
@@ -214,7 +216,7 @@ class MobileScannerController {
       return;
     }
     final CameraFacing facingToUse =
-        facing == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
+    cameraFacingState.value == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
     await start(cameraFacingOverride: facingToUse);
   }
 

@@ -107,6 +107,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
     }
     var lastScanned: List<Barcode>? = null
+    var isAnalyzing: Boolean = false
 
     @ExperimentalGetImage
     val analyzer = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
@@ -116,6 +117,13 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
+                if (isAnalyzing) {
+                    Log.d("scanner", "SKIPPING" )
+                    return@addOnSuccessListener
+                }
+                isAnalyzing = true
+                val byteArray = mediaImage.toByteArray()
+
                 for (barcode in barcodes) {
                     if (lastScanned == null) {
                         lastScanned = barcodes
@@ -126,15 +134,23 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                             "data" to barcode.data,
                         ))
                     } else {
+                        if (byteArray.isEmpty()) {
+                            Log.d("scanner", "EMPTY" )
+                            return@addOnSuccessListener
+                        }
+
+                        Log.d("scanner", "SCANNED IMAGE: $byteArray")
                         lastScanned = barcodes;
                         sink?.success(mapOf(
                             "name" to "barcode",
                             "data" to barcode.data,
-                            "image" to mediaImage.toByteArray()
+                            "image" to byteArray
                         ))
+
                     }
 
                 }
+                isAnalyzing = false
             }
             .addOnFailureListener { e -> Log.e(TAG, e.message, e) }
             .addOnCompleteListener { imageProxy.close() }

@@ -1,3 +1,4 @@
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
@@ -14,7 +15,8 @@ class BarcodeScannerReturningImage extends StatefulWidget {
 class _BarcodeScannerReturningImageState
     extends State<BarcodeScannerReturningImage>
     with SingleTickerProviderStateMixin {
-  String? barcode;
+  Barcode? barcode;
+  MobileScannerArguments? arguments;
   Uint8List? image;
 
   MobileScannerController controller = MobileScannerController(
@@ -34,18 +36,24 @@ class _BarcodeScannerReturningImageState
         builder: (context) {
           return Column(
             children: [
-              SizedBox(
+              Container(
+                color: Colors.blueGrey,
                 width: double.infinity,
                 height: 0.33 * MediaQuery.of(context).size.height,
                 child: image != null
-                    ? Image(
+                    ? Transform.rotate(
+                  angle: 90 * pi/180,
+                      child: Image(
+                          gaplessPlayback: true,
                   image: MemoryImage(image!),
                   fit: BoxFit.contain,
-                )
-                    : Container(color: Colors.white, child: Center(child: const Text('Your scanned barcode will appear here!'))),
+                ),
+                    )
+                    : Container(color: Colors.white, child: const Center(child: Text('Your scanned barcode will appear here!'))),
               ),
-              SizedBox(
-                height: 0.67 * MediaQuery.of(context).size.height,
+              Container(
+                height: 0.66 * MediaQuery.of(context).size.height,
+                color: Colors.grey,
                 child: Stack(
                   children: [
                     MobileScanner(
@@ -57,9 +65,14 @@ class _BarcodeScannerReturningImageState
                       //   facing: CameraFacing.front,
                       // ),
                       onDetect: (barcode, args) {
+                        if (barcode.image != null && barcode.image!.isNotEmpty) {
+                          setState(() {
+                            image = barcode.image;
+                          });
+                        }
                         setState(() {
-                          this.barcode = barcode.rawValue;
-                          image = barcode.image;
+                          arguments = args;
+                          this.barcode = barcode;
                         });
                       },
                     ),
@@ -72,33 +85,36 @@ class _BarcodeScannerReturningImageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            IconButton(
-                              color: Colors.white,
-                              icon: ValueListenableBuilder(
-                                valueListenable: controller.torchState,
-                                builder: (context, state, child) {
-                                  if (state == null) {
-                                    return const Icon(
-                                      Icons.flash_off,
-                                      color: Colors.grey,
-                                    );
-                                  }
-                                  switch (state as TorchState) {
-                                    case TorchState.off:
+                            Container(
+                              color: arguments != null && !arguments!.hasTorch ? Colors.red : Colors.white,
+                              child: IconButton(
+                                // color: ,
+                                icon: ValueListenableBuilder(
+                                  valueListenable: controller.torchState,
+                                  builder: (context, state, child) {
+                                    if (state == null) {
                                       return const Icon(
                                         Icons.flash_off,
                                         color: Colors.grey,
                                       );
-                                    case TorchState.on:
-                                      return const Icon(
-                                        Icons.flash_on,
-                                        color: Colors.yellow,
-                                      );
-                                  }
-                                },
+                                    }
+                                    switch (state as TorchState) {
+                                      case TorchState.off:
+                                        return const Icon(
+                                          Icons.flash_off,
+                                          color: Colors.grey,
+                                        );
+                                      case TorchState.on:
+                                        return const Icon(
+                                          Icons.flash_on,
+                                          color: Colors.yellow,
+                                        );
+                                    }
+                                  },
+                                ),
+                                iconSize: 32.0,
+                                onPressed: () => controller.toggleTorch(),
                               ),
-                              iconSize: 32.0,
-                              onPressed: () => controller.toggleTorch(),
                             ),
                             IconButton(
                               color: Colors.white,
@@ -117,7 +133,7 @@ class _BarcodeScannerReturningImageState
                                 height: 50,
                                 child: FittedBox(
                                   child: Text(
-                                    barcode ?? 'Scan something!',
+                                    barcode?.rawValue ?? 'Scan something!',
                                     overflow: TextOverflow.fade,
                                     style: Theme.of(context)
                                         .textTheme
