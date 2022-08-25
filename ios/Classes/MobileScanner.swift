@@ -11,7 +11,7 @@ import AVFoundation
 import MLKitVision
 import MLKitBarcodeScanning
 
-typealias MobileScannerCallback = ((Array<Barcode>?, Error?, Data?) -> ())
+typealias MobileScannerCallback = ((Array<Barcode>?, Error?, UIImage) -> ())
 
 public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture {
     /// Capture session of the camera
@@ -30,7 +30,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     var videoPosition: AVCaptureDevice.Position = AVCaptureDevice.Position.back
     
     /// When results are found, this callback will be called
-    var mobileScannerCallback: MobileScannerCallback?
+    let mobileScannerCallback: MobileScannerCallback
     
     /// If provided, the Flutter registry will be used to send the output of the CaptureOutput to a Flutter texture.
     private let registry: FlutterTextureRegistry?
@@ -41,8 +41,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Texture id of the camera preview for Flutter
     private var textureId: Int64!
     
-    init(registry: FlutterTextureRegistry?) {
+    init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback) {
         self.registry = registry
+        self.mobileScannerCallback = mobileScannerCallback
         super.init()
     }
     
@@ -65,7 +66,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
     
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode, scannerCallback: @escaping MobileScannerCallback) throws -> MobileScannerStartParameters {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode) throws -> MobileScannerStartParameters {
         
         if (device != nil) {
             throw MobileScannerError.alreadyStarted
@@ -108,7 +109,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.cameraError(error)
         }
         
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo;
+        captureSession.sessionPreset = AVCaptureSession.Preset.low;
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
         
@@ -116,7 +117,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         videoOutput.alwaysDiscardsLateVideoFrames = true
         
         videoPosition = cameraPosition
-        mobileScannerCallback = scannerCallback
         // calls captureOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         
@@ -188,7 +188,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
         registry?.textureFrameAvailable(textureId)
         
@@ -200,14 +199,17 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         )
         
         scanner.process(image) { [self] barcodes, error in
-            if ((barcodes != nil && !barcodes!.isEmpty) || error != nil) {
-                if (returnImage) {
-                    let image: CIImage = CIImage(cvPixelBuffer: latestBuffer)
-                    mobileScannerCallback!(barcodes, error, ciImageToJpeg(ciImage: image))
-                } else {
-                    mobileScannerCallback!(barcodes, error, nil)
-                }
-            }
+            mobileScannerCallback(barcodes, error, latestBuffer.image)
+//            let image: CIImage = CIImage(cvPixelBuffer: latestBuffer)
+//
+//            if ((barcodes != nil && !barcodes!.isEmpty) || error != nil) {
+//                if (returnImage) {
+//
+//                    mobileScannerCallback!(barcodes, error, ciImageToJpeg(ciImage: image))
+//                } else {
+//                    mobileScannerCallback!(barcodes, error, nil)
+//                }
+//            }
         }
     }
     

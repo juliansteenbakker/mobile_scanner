@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/barcode_utility.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
@@ -55,6 +56,10 @@ class MobileScannerController {
   /// Sets the barcode stream
   StreamController<Barcode> barcodesController = StreamController.broadcast();
   Stream<Barcode> get barcodes => barcodesController.stream;
+
+  /// Sets the barcode stream
+  StreamController<BarcodeCapture> barcodesListController = StreamController.broadcast();
+  Stream<BarcodeCapture> get barcodesList => barcodesListController.stream;
 
   static const MethodChannel _methodChannel =
       MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
@@ -238,6 +243,7 @@ class MobileScannerController {
     stop();
     events.cancel();
     barcodesController.close();
+    barcodesListController.close();
   }
 
   /// Handles a returning event from the platform side
@@ -252,8 +258,13 @@ class MobileScannerController {
         break;
       case 'barcode':
         final barcode = Barcode.fromNative(
-            data as Map? ?? {}, event['image'] as Uint8List?);
+            data as Map? ?? {}, image: event['image'] as Uint8List?,);
         barcodesController.add(barcode);
+        break;
+      case 'barcodeMap':
+        if (data == null) return;
+        final parsed = (data as List).map((value) => Barcode.fromNative(value as Map)).toList();
+        barcodesListController.add(BarcodeCapture(barcodes: parsed, image: event['image'] as Uint8List,));
         break;
       case 'barcodeMac':
         barcodesController.add(

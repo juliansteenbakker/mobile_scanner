@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
@@ -12,6 +13,9 @@ class MobileScanner extends StatefulWidget {
   /// [barcode] The barcode object with all information about the scanned code.
   /// [arguments] Information about the state of the MobileScanner widget
   final Function(Barcode barcode, MobileScannerArguments? args) onDetect;
+
+  /// Function that gets called when a barcode or multiple barcodes are detected.
+  final Function(BarcodeCapture barcodeCapture, MobileScannerArguments? args)? onDetectList;
 
   /// TODO: Function that gets called when the Widget is initialized. Can be usefull
   /// to check wether the device has a torch(flash) or not.
@@ -29,6 +33,7 @@ class MobileScanner extends StatefulWidget {
   const MobileScanner({
     super.key,
     required this.onDetect,
+    this.onDetectList,
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
@@ -85,6 +90,11 @@ class _MobileScannerState extends State<MobileScanner>
               widget.onDetect(barcode, value! as MobileScannerArguments);
             }
           });
+          if (widget.onDetectList != null) {
+            controller.barcodesList.listen((barcode) {
+              widget.onDetectList!(barcode, value! as MobileScannerArguments);
+            });
+          }
           return ClipRect(
             child: SizedBox(
               width: MediaQuery.of(context).size.width,

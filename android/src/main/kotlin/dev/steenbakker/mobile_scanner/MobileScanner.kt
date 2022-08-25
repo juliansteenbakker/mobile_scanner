@@ -106,8 +106,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
         val permissions = arrayOf(Manifest.permission.CAMERA)
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
     }
-    var lastScanned: List<Barcode>? = null
-    var isAnalyzing: Boolean = false
+//    var lastScanned: List<Barcode>? = null
+//    var isAnalyzing: Boolean = false
 
     @ExperimentalGetImage
     val analyzer = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
@@ -117,40 +117,43 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
-                if (isAnalyzing) {
-                    Log.d("scanner", "SKIPPING" )
-                    return@addOnSuccessListener
+//                if (isAnalyzing) {
+//                    Log.d("scanner", "SKIPPING" )
+//                    return@addOnSuccessListener
+//                }
+//                isAnalyzing = true
+                val barcodeMap = barcodes.map { barcode -> barcode.data }
+                if (barcodeMap.isNotEmpty()) {
+                    sink?.success(mapOf(
+                        "name" to "barcodeMap",
+                        "data" to barcodeMap,
+                        "image" to mediaImage.toByteArray()
+                    ))
                 }
-                isAnalyzing = true
-                val byteArray = mediaImage.toByteArray()
-
-                for (barcode in barcodes) {
-                    if (lastScanned == null) {
-                        lastScanned = barcodes
-                    } else if (lastScanned!!.contains(barcode)) {
-                        // Duplicate, don't send image
-                        sink?.success(mapOf(
-                            "name" to "barcode",
-                            "data" to barcode.data,
-                        ))
-                    } else {
-                        if (byteArray.isEmpty()) {
-                            Log.d("scanner", "EMPTY" )
-                            return@addOnSuccessListener
-                        }
-
-                        Log.d("scanner", "SCANNED IMAGE: $byteArray")
-                        lastScanned = barcodes;
-                        sink?.success(mapOf(
-                            "name" to "barcode",
-                            "data" to barcode.data,
-                            "image" to byteArray
-                        ))
-
-                    }
-
-                }
-                isAnalyzing = false
+//                for (barcode in barcodes) {
+////                    if (lastScanned?.contains(barcodes.first) == true) continue;
+//                    if (lastScanned == null) {
+//                        lastScanned = barcodes
+//                    } else if (lastScanned!!.contains(barcode)) {
+//                        // Duplicate, don't send image
+//                        sink?.success(mapOf(
+//                            "name" to "barcode",
+//                            "data" to barcode.data,
+//                        ))
+//                    } else {
+//                        if (byteArray.isEmpty()) {
+//                            Log.d("scanner", "EMPTY" )
+//                            return@addOnSuccessListener
+//                        }
+//
+//                        Log.d("scanner", "SCANNED IMAGE: $byteArray")
+//                        lastScanned = barcodes;
+//
+//
+//                    }
+//
+//                }
+//                isAnalyzing = false
             }
             .addOnFailureListener { e -> Log.e(TAG, e.message, e) }
             .addOnCompleteListener { imageProxy.close() }
