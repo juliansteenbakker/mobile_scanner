@@ -1,5 +1,6 @@
 ## 3.0.0
 Breaking changes:
+* onDetect now returns a BarcodeCapture objects, which can contain multiple barcodes, and a return image.
 * [Android] SDK updated to SDK 33.
 
 Other changes:

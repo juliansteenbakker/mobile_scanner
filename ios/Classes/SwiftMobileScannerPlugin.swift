@@ -19,7 +19,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                 }
                 if (!barcodesMap.isEmpty) {
 //                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.pngData()!)])
-                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!)])
+                    barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!)])
                 }
 //                for barcode in barcodes! {
 //                    barcodeHandler.publishEvent(["name": "barcode", "data": barcode.data, "image": image != nil ? FlutterStandardTypedData(bytes: image!) : nil])
@@ -69,12 +69,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         let barcodeOptions = formatList.count != 0 ? BarcodeScannerOptions(formats: formatList.first!) : nil
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
-        
-        
-//        let callback: MobileScannerCallback =
+        let speed: DetectionSpeed = DetectionSpeed(rawValue: (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0)!
         
         do {
-            let parameters = try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off)
+            let parameters = try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: speed)
             result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",
@@ -157,4 +155,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             break
         }
     }
+}
+
+enum DetectionSpeed: Int {
+    case noDuplicates = 0
+    case normal = 1
+    case unrestricted = 2
 }

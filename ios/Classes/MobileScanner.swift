@@ -41,6 +41,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Texture id of the camera preview for Flutter
     private var textureId: Int64!
     
+    var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
+    
     init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback) {
         self.registry = registry
         self.mobileScannerCallback = mobileScannerCallback
@@ -66,8 +68,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
     
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode) throws -> MobileScannerStartParameters {
-        
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode, detectionSpeed: DetectionSpeed) throws -> MobileScannerStartParameters {
+        self.detectionSpeed = detectionSpeed
         if (device != nil) {
             throw MobileScannerError.alreadyStarted
         }
@@ -188,38 +190,41 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     var i = 0
     
+    var barcodesString: Array<String?>?
+    
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-          print("Failed to get image buffer from sample buffer.")
-          return
+            print("Failed to get image buffer from sample buffer.")
+            return
         }
         latestBuffer = imageBuffer
         registry?.textureFrameAvailable(textureId)
-        if (i > 10) {
-        i = 0
-        let ciImage = latestBuffer.image
-        
-        let image = VisionImage(image: ciImage)
-        image.orientation = imageOrientation(
-            deviceOrientation: UIDevice.current.orientation,
-            defaultOrientation: .portrait,
-            position: videoPosition
-        )
-        
-        scanner.process(image) { [self] barcodes, error in
-            mobileScannerCallback(barcodes, error, ciImage)
-//            let image: CIImage = CIImage(cvPixelBuffer: latestBuffer)
-//
-//            if ((barcodes != nil && !barcodes!.isEmpty) || error != nil) {
-//                if (returnImage) {
-//
-//                    mobileScannerCallback!(barcodes, error, ciImageToJpeg(ciImage: image))
-//                } else {
-//                    mobileScannerCallback!(barcodes, error, nil)
-//                }
-//            }
-        }
+        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && i > 10 || detectionSpeed == DetectionSpeed.unrestricted) {
+            i = 0
+            let ciImage = latestBuffer.image
+            
+            let image = VisionImage(image: ciImage)
+            image.orientation = imageOrientation(
+                deviceOrientation: UIDevice.current.orientation,
+                defaultOrientation: .portrait,
+                position: videoPosition
+            )
+            
+            scanner.process(image) { [self] barcodes, error in
+                if (detectionSpeed == DetectionSpeed.noDuplicates) {
+                    let newScannedBarcodes = barcodes?.map { barcode in
+                        return barcode.rawValue
+                    }
+                    if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
+                        return
+                    } else {
+                        barcodesString = newScannedBarcodes
+                    }
+                }
+                
+                mobileScannerCallback(barcodes, error, ciImage)
+            }
         } else {
             i+=1
         }

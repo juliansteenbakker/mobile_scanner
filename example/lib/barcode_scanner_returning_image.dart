@@ -15,9 +15,8 @@ class BarcodeScannerReturningImage extends StatefulWidget {
 class _BarcodeScannerReturningImageState
     extends State<BarcodeScannerReturningImage>
     with SingleTickerProviderStateMixin {
-  Barcode? barcode;
+  BarcodeCapture? barcode;
   MobileScannerArguments? arguments;
-  Uint8List? image;
 
   MobileScannerController controller = MobileScannerController(
     // torchEnabled: true,
@@ -40,12 +39,12 @@ class _BarcodeScannerReturningImageState
                 color: Colors.blueGrey,
                 width: double.infinity,
                 height: 0.33 * MediaQuery.of(context).size.height,
-                child: image != null
+                child: barcode?.image != null
                     ? Transform.rotate(
                   angle: 90 * pi/180,
                       child: Image(
                           gaplessPlayback: true,
-                  image: MemoryImage(image!),
+                  image: MemoryImage(barcode!.image!),
                   fit: BoxFit.contain,
                 ),
                     )
@@ -64,14 +63,9 @@ class _BarcodeScannerReturningImageState
                       //   torchEnabled: true,
                       //   facing: CameraFacing.front,
                       // ),
-                      onDetect: (barcode, args) {
-                        if (barcode.image != null && barcode.image!.isNotEmpty) {
-                          setState(() {
-                            image = barcode.image;
-                          });
-                        }
+                      onDetect: (barcode, arguments) {
                         setState(() {
-                          arguments = args;
+                          this.arguments = arguments;
                           this.barcode = barcode;
                         });
                       },
@@ -133,7 +127,7 @@ class _BarcodeScannerReturningImageState
                                 height: 50,
                                 child: FittedBox(
                                   child: Text(
-                                    barcode?.rawValue ?? 'Scan something!',
+                                    barcode?.barcodes.first.rawValue ?? 'Scan something!',
                                     overflow: TextOverflow.fade,
                                     style: Theme.of(context)
                                         .textTheme

@@ -6,18 +6,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/objects/barcode_capture.dart';
-import 'package:mobile_scanner/src/objects/barcode_utility.dart';
+import 'package:mobile_scanner/src/barcode_utility.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/detection_speed.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_state.dart';
+import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
 /// where as the [MobileScanner] class is the frontend of this plugin.
 class MobileScannerController {
   MobileScannerController({
     this.facing = CameraFacing.back,
-    this.ratio,
+    this.detectionSpeed = DetectionSpeed.noDuplicates,
+    // this.ratio,
     this.torchEnabled = false,
     this.formats,
-    this.autoResume = true,
+    // this.autoResume = true,
     this.returnImage = false,
   }) {
     events = _eventChannel
@@ -30,12 +35,12 @@ class MobileScannerController {
   /// Default: CameraFacing.back
   final CameraFacing facing;
 
-  /// Analyze the image in 4:3 or 16:9
-  ///
-  /// Only on Android
-  final Ratio? ratio;
+  // /// Analyze the image in 4:3 or 16:9
+  // ///
+  // /// Only on Android
+  // final Ratio? ratio;
 
-  /// Enable or disable the torch (Flash)
+  /// Enable or disable the torch (Flash) on start
   ///
   /// Default: disabled
   final bool torchEnabled;
@@ -50,27 +55,26 @@ class MobileScannerController {
   /// WARNING: On iOS, only 1 format is supported
   final List<BarcodeFormat>? formats;
 
-  /// Whether to automatically resume the camera when the application is resumed
-  bool autoResume;
+  /// Sets the speed of detections.
+  ///
+  /// WARNING: DetectionSpeed.unrestricted can cause memory issues on some devices
+  final DetectionSpeed detectionSpeed;
 
   /// Sets the barcode stream
-  StreamController<Barcode> barcodesController = StreamController.broadcast();
-  Stream<Barcode> get barcodes => barcodesController.stream;
-
-  /// Sets the barcode stream
-  StreamController<BarcodeCapture> barcodesListController = StreamController.broadcast();
-  Stream<BarcodeCapture> get barcodesList => barcodesListController.stream;
+  final StreamController<BarcodeCapture> _barcodesController =
+      StreamController.broadcast();
+  Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   static const MethodChannel _methodChannel =
       MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
-  static const  EventChannel _eventChannel =
+  static const EventChannel _eventChannel =
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   /// Listen to events from the platform specific code
   late StreamSubscription events;
 
   /// A notifier that provides several arguments about the MobileScanner
-  final ValueNotifier<MobileScannerArguments?> arguments = ValueNotifier(null);
+  final ValueNotifier<MobileScannerArguments?> startArguments = ValueNotifier(null);
 
   /// A notifier that provides the state of the Torch (Flash)
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
@@ -80,148 +84,130 @@ class MobileScannerController {
       ValueNotifier(facing);
 
   bool isStarting = false;
-  bool _hasTorch = false;
+  bool? _hasTorch;
+
+  /// Set the starting arguments for the camera
+  Map<String, dynamic> _argumentsToMap({CameraFacing? cameraFacingOverride}) {
+    final Map<String, dynamic> arguments = {};
+
+    cameraFacingState.value = cameraFacingOverride ?? facing;
+    arguments['facing'] = cameraFacingState.value.index;
+
+    // if (ratio != null) arguments['ratio'] = ratio;
+    arguments['torch'] = torchEnabled;
+    arguments['speed'] = detectionSpeed.index;
+
+    if (formats != null) {
+      if (Platform.isAndroid) {
+        arguments['formats'] = formats!.map((e) => e.index).toList();
+      } else if (Platform.isIOS || Platform.isMacOS) {
+        arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+      }
+    }
+    arguments['returnImage'] = true;
+    return arguments;
+  }
 
   /// Start barcode scanning. This will first check if the required permissions
   /// are set.
-  Future<void> start({CameraFacing? cameraFacingOverride}) async {
+  Future<MobileScannerArguments> start({
+    CameraFacing? cameraFacingOverride,
+  }) async {
     debugPrint('Hashcode controller: $hashCode');
     if (isStarting) {
-      throw Exception('mobile_scanner: Called start() while already starting.');
+      debugPrint("Called start() while already starting.");
     }
     isStarting = true;
 
     // Check authorization status
     if (!kIsWeb) {
-      MobileScannerState state = MobileScannerState
+      final MobileScannerState state = MobileScannerState
           .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
       switch (state) {
         case MobileScannerState.undetermined:
           final bool result =
               await _methodChannel.invokeMethod('request') as bool? ?? false;
-          state = result
-              ? MobileScannerState.authorized
-              : MobileScannerState.denied;
+          if (!result) {
+            isStarting = false;
+            throw MobileScannerException('User declined camera permission.');
+          }
           break;
         case MobileScannerState.denied:
           isStarting = false;
-          throw PlatformException(code: 'NO ACCESS');
+          throw MobileScannerException('User declined camera permission.');
         case MobileScannerState.authorized:
           break;
       }
     }
 
-    CameraFacing facingToUse = CameraFacing.back;
-
-    if (cameraFacingOverride != null) {
-      facingToUse = cameraFacingOverride;
-    } else {
-      facingToUse = facing;
-    }
-
-    cameraFacingState.value = facingToUse;
-
-    // Set the starting arguments for the camera
-    final Map startArguments = {};
-    startArguments['facing'] = facingToUse.index;
-    if (ratio != null) startArguments['ratio'] = ratio;
-    startArguments['torch'] = torchEnabled;
-
-    if (formats != null) {
-      if (Platform.isAndroid) {
-        startArguments['formats'] = formats!.map((e) => e.index).toList();
-      } else if (Platform.isIOS || Platform.isMacOS) {
-        startArguments['formats'] = formats!.map((e) => e.rawValue).toList();
-      }
-    }
-    startArguments['returnImage'] = true;
-
     // Start the camera with arguments
-    Map<String, dynamic>? startResult = {};
-    try {
-      startResult = await _methodChannel.invokeMapMethod<String, dynamic>(
-        'start',
-        startArguments,
-      );
-    } on PlatformException catch (error) {
-      debugPrint('${error.code}: ${error.message}');
-      isStarting = false;
-      return;
-    }
-
+    final Map<String, dynamic>? startResult =
+        await _methodChannel.invokeMapMethod<String, dynamic>(
+      'start',
+      _argumentsToMap(cameraFacingOverride: cameraFacingOverride),
+    );
     if (startResult == null) {
       isStarting = false;
-      throw PlatformException(code: 'INITIALIZATION ERROR');
+      throw MobileScannerException(
+          'Failed to start mobileScanner, no response from platform side');
     }
 
     _hasTorch = startResult['torchable'] as bool? ?? false;
-    if (_hasTorch && torchEnabled) {
+    if (_hasTorch! && torchEnabled) {
       torchState.value = TorchState.on;
     }
 
     if (kIsWeb) {
-      arguments.value = MobileScannerArguments(
+      startArguments.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
         size: Size(
           startResult['videoWidth'] as double? ?? 0,
           startResult['videoHeight'] as double? ?? 0,
         ),
-        hasTorch: _hasTorch,
+        hasTorch: _hasTorch!,
       );
     } else {
-      arguments.value = MobileScannerArguments(
+      startArguments.value = MobileScannerArguments(
         textureId: startResult['textureId'] as int?,
         size: toSize(startResult['size'] as Map? ?? {}),
-        hasTorch: _hasTorch,
+        hasTorch: _hasTorch!,
       );
     }
-
     isStarting = false;
+    return startArguments.value!;
   }
 
   /// Stops the camera, but does not dispose this controller.
   Future<void> stop() async {
-    try {
-      await _methodChannel.invokeMethod('stop');
-    } on PlatformException catch (error) {
-      debugPrint('${error.code}: ${error.message}');
-    }
+    await _methodChannel.invokeMethod('stop');
   }
 
   /// Switches the torch on or off.
   ///
   /// Only works if torch is available.
   Future<void> toggleTorch() async {
-    if (!_hasTorch) {
-      debugPrint('Device has no torch/flash.');
-      return;
+    if (_hasTorch == null) {
+      throw MobileScannerException(
+          'Cannot toggle torch if start() has never been called');
+    } else if (!_hasTorch!) {
+      throw MobileScannerException('Device has no torch');
     }
 
-    final TorchState state =
+    torchState.value =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
-    try {
-      await _methodChannel.invokeMethod('torch', state.index);
-      torchState.value = state;
-    } on PlatformException catch (error) {
-      debugPrint('${error.code}: ${error.message}');
-    }
+    await _methodChannel.invokeMethod('torch', torchState.value.index);
   }
 
   /// Switches the torch on or off.
   ///
   /// Only works if torch is available.
   Future<void> switchCamera() async {
-    try {
-      await _methodChannel.invokeMethod('stop');
-    } on PlatformException catch (error) {
-      debugPrint(
-        '${error.code}: camera is stopped! Please start before switching camera.',
-      );
-      return;
-    }
+    await _methodChannel.invokeMethod('stop');
     final CameraFacing facingToUse =
-    cameraFacingState.value == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
+        cameraFacingState.value == CameraFacing.back
+            ? CameraFacing.front
+            : CameraFacing.back;
     await start(cameraFacingOverride: facingToUse);
   }
 
@@ -242,8 +228,8 @@ class MobileScannerController {
   void dispose() {
     stop();
     events.cancel();
-    barcodesController.close();
-    barcodesListController.close();
+    _barcodesController.close();
+    _barcodesController.close();
   }
 
   /// Handles a returning event from the platform side
@@ -257,49 +243,35 @@ class MobileScannerController {
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(
-            data as Map? ?? {}, image: event['image'] as Uint8List?,);
-        barcodesController.add(barcode);
-        break;
-      case 'barcodeMap':
         if (data == null) return;
-        final parsed = (data as List).map((value) => Barcode.fromNative(value as Map)).toList();
-        barcodesListController.add(BarcodeCapture(barcodes: parsed, image: event['image'] as Uint8List,));
+        final parsed = (data as List)
+            .map((value) => Barcode.fromNative(value as Map))
+            .toList();
+        _barcodesController.add(BarcodeCapture(
+          barcodes: parsed,
+          image: event['image'] as Uint8List,
+        ));
         break;
       case 'barcodeMac':
-        barcodesController.add(
-          Barcode(
-            rawValue: (data as Map)['payload'] as String?,
+        _barcodesController.add(
+          BarcodeCapture(
+            barcodes: [
+              Barcode(
+                rawValue: (data as Map)['payload'] as String?,
+              )
+            ],
           ),
         );
         break;
       case 'barcodeWeb':
-        barcodesController.add(Barcode(rawValue: data as String?));
+        _barcodesController.add(BarcodeCapture(barcodes: [
+          Barcode(
+            rawValue: data as String?,
+          )
+        ]));
         break;
       default:
         throw UnimplementedError();
     }
   }
-}
-
-enum Ratio { ratio_4_3, ratio_16_9 }
-
-/// The facing of a camera.
-enum CameraFacing {
-  /// Front facing camera.
-  front,
-
-  /// Back facing camera.
-  back,
-}
-
-enum MobileScannerState { undetermined, authorized, denied }
-
-/// The state of torch.
-enum TorchState {
-  /// Torch is off.
-  off,
-
-  /// Torch is on.
-  on,
 }

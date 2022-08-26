@@ -40,8 +40,7 @@ class _BarcodeListScannerWithControllerState
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,
                 // ),
-                onDetect: (a, b) {},
-                onDetectList: (barcodeCapture, args) {
+                onDetect: (barcodeCapture, arguments) {
                   setState(() {
                     this.barcodeCapture = barcodeCapture;
                   });
