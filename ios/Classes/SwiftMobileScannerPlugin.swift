@@ -195,13 +195,13 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
         
-        let formatList: NSMutableArray = []
-        for index in formats {
-            formatList.add(BarcodeFormat(rawValue: index))
-        }
-        
-        if (formatList.count != 0) {
-            let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
+        if (formats.count != 0) {
+            var barcodeFormats: BarcodeFormat = []
+            for index in formats {
+                barcodeFormats.insert(BarcodeFormat(rawValue: index))
+            }
+
+            let barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
             scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
         }
         
