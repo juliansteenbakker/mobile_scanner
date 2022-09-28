@@ -29,7 +29,11 @@ import java.io.File
 class MobileScanner(private val activity: Activity, private val textureRegistry: TextureRegistry)
     : MethodChannel.MethodCallHandler, EventChannel.StreamHandler, PluginRegistry.RequestPermissionsResultListener {
     companion object {
-        private const val REQUEST_CODE = 22022022
+        /**
+         * When the application's activity is [androidx.fragment.app.FragmentActivity], requestCode can only use the lower 16 bits.
+         * @see androidx.fragment.app.FragmentActivity.validateRequestPermissionsRequestCode
+         */
+        private const val REQUEST_CODE = 0x0786
         private val TAG = MobileScanner::class.java.simpleName
     }
 
