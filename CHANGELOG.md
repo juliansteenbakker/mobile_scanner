@@ -6,6 +6,13 @@ Other changes:
 * [Android] Revert camera2 dependency to stable release
 * [iOS] Update barcode scanning library to latest version
 
+## [2.0.1](https://github.com/juliansteenbakker/mobile_scanner/compare/v2.0.0...v2.0.1) (2022-09-28)
+
+
+### Bug Fixes
+
+* should check for the raw bytes instead of string, in case of a malformed utf8 string ([a563906](https://github.com/juliansteenbakker/mobile_scanner/commit/a5639060a387f9bcaa0710b0acd0e4abff36ef97))
+
 ## 2.0.0
 Breaking changes:
 This version is only compatible with flutter 3.0.0 and later.
