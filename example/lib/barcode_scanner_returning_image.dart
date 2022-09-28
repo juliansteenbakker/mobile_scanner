@@ -1,22 +1,25 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class BarcodeScannerWithController extends StatefulWidget {
-  const BarcodeScannerWithController({Key? key}) : super(key: key);
+class BarcodeScannerReturningImage extends StatefulWidget {
+  const BarcodeScannerReturningImage({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerWithControllerState createState() =>
-      _BarcodeScannerWithControllerState();
+  _BarcodeScannerReturningImageState createState() =>
+      _BarcodeScannerReturningImageState();
 }
 
-class _BarcodeScannerWithControllerState
-    extends State<BarcodeScannerWithController>
+class _BarcodeScannerReturningImageState
+    extends State<BarcodeScannerReturningImage>
     with SingleTickerProviderStateMixin {
   String? barcode;
+  Uint8List? image;
 
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
+    returnImage: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
   );
@@ -42,6 +45,14 @@ class _BarcodeScannerWithControllerState
                 onDetect: (barcode, args) {
                   setState(() {
                     this.barcode = barcode.rawValue;
+                    showDialog(
+                      context: context,
+                      builder: (context) => Image(
+                        image: MemoryImage(image!),
+                        fit: BoxFit.contain,
+                      ),
+                    );
+                    image = barcode.image;
                   });
                 },
               ),
@@ -128,36 +139,15 @@ class _BarcodeScannerWithControllerState
                         iconSize: 32.0,
                         onPressed: () => controller.switchCamera(),
                       ),
-                      IconButton(
-                        color: Colors.white,
-                        icon: const Icon(Icons.image),
-                        iconSize: 32.0,
-                        onPressed: () async {
-                          final ImagePicker picker = ImagePicker();
-                          // Pick an image
-                          final XFile? image = await picker.pickImage(
-                            source: ImageSource.gallery,
-                          );
-                          if (image != null) {
-                            if (await controller.analyzeImage(image.path)) {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Barcode found!'),
-                                  backgroundColor: Colors.green,
-                                ),
-                              );
-                            } else {
-                              if (!mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('No barcode found!'),
-                                  backgroundColor: Colors.red,
-                                ),
-                              );
-                            }
-                          }
-                        },
+                      SizedBox(
+                        width: 50,
+                        height: 50,
+                        child: image != null
+                            ? Image(
+                                image: MemoryImage(image!),
+                                fit: BoxFit.contain,
+                              )
+                            : Container(),
                       ),
                     ],
                   ),

@@ -200,7 +200,11 @@ class MobileScannerWebPlugin {
 
     final code = jsQR(imgData.data, canvas.width, canvas.height);
     if (code != null) {
-      controller.add({'name': 'barcodeWeb', 'data': code.data});
+      controller.add({
+        'name': 'barcodeWeb',
+        'data': code.data,
+        'binaryData': code.binaryData,
+      });
     }
   }
 }

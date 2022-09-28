@@ -32,13 +32,13 @@ class MobileScanner extends StatefulWidget {
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
-    Key? key,
+    super.key,
     required this.onDetect,
     this.controller,
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
     this.onPermissionSet,
-  }) : super(key: key);
+  });
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -53,13 +53,14 @@ class _MobileScannerState extends State<MobileScanner>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.controller ?? MobileScannerController(onPermissionSet: widget.onPermissionSet);
+    if (!controller.isStarting) controller.start();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting) controller.start();
+        if (!controller.isStarting && controller.autoResume) controller.start();
         break;
       case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
@@ -73,44 +74,40 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, BoxConstraints constraints) {
-        return ValueListenableBuilder(
-          valueListenable: controller.args,
-          builder: (context, value, child) {
-            value = value as MobileScannerArguments?;
-            if (value == null) {
-              return Container(color: Colors.black);
+    return ValueListenableBuilder(
+      valueListenable: controller.args,
+      builder: (context, value, child) {
+        value = value as MobileScannerArguments?;
+        if (value == null) {
+          return const ColoredBox(color: Colors.black);
+        } else {
+          controller.barcodes.listen((barcode) {
+            if (!widget.allowDuplicates) {
+              if (lastScanned != barcode.rawValue) {
+                lastScanned = barcode.rawValue;
+                widget.onDetect(barcode, value! as MobileScannerArguments);
+              }
             } else {
-              controller.barcodes.listen((barcode) {
-                if (!widget.allowDuplicates) {
-                  if (lastScanned != barcode.rawValue) {
-                    lastScanned = barcode.rawValue;
-                    widget.onDetect(barcode, value! as MobileScannerArguments);
-                  }
-                } else {
-                  widget.onDetect(barcode, value! as MobileScannerArguments);
-                }
-              });
-              return ClipRect(
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  height: MediaQuery.of(context).size.height,
-                  child: FittedBox(
-                    fit: widget.fit,
-                    child: SizedBox(
-                      width: value.size.width,
-                      height: value.size.height,
-                      child: kIsWeb
-                          ? HtmlElementView(viewType: value.webId!)
-                          : Texture(textureId: value.textureId!),
-                    ),
-                  ),
-                ),
-              );
+              widget.onDetect(barcode, value! as MobileScannerArguments);
             }
-          },
-        );
+          });
+          return ClipRect(
+            child: SizedBox(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.height,
+              child: FittedBox(
+                fit: widget.fit,
+                child: SizedBox(
+                  width: value.size.width,
+                  height: value.size.height,
+                  child: kIsWeb
+                      ? HtmlElementView(viewType: value.webId!)
+                      : Texture(textureId: value.textureId!),
+                ),
+              ),
+            ),
+          );
+        }
       },
     );
   }
