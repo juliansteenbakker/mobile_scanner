@@ -207,3 +207,26 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     );
   }
 ```
+
+### Scan result
+
+You can use the following properties of the Barcode, which gets
+passed to the `onDetect` function.
+
+| Property name | Type           | Description
+|---------------|----------------|--------------------
+| image         | Uint8List?     | only if returnImage was set to true
+| format        | BarcodeFormat  |
+| rawBytes      | Uint8List?     | binary scan result
+| rawValue      | String?        | Value if barcode is in UTF-8 format
+| displayValue  | String?        |
+| type          | BarcodeType    |
+| calendarEvent | CalendarEvent? |
+| contactInfo   | ContactInfo?   |
+| driverLicense | DriverLicense? |
+| email         | Email?         |
+| geoPoint      | GeoPoint?      |
+| phone         | Phone?         |
+| sms           | SMS?           |
+| url           | UrlBookmark?   |
+| wifi          | WiFi?          | WiFi Access-Point details
