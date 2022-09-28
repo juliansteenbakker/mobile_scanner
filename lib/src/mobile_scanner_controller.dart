@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -24,7 +23,13 @@ class MobileScannerController {
     this.formats,
     // this.autoResume = true,
     this.returnImage = false,
+    this.onPermissionSet,
   }) {
+      // In case a new instance is created before calling dispose()
+    if (_controllerHashcode != null) {
+      stop();
+    }
+    _controllerHashcode = hashCode;
     events = _eventChannel
         .receiveBroadcastStream()
         .listen((data) => _handleEvent(data as Map));
@@ -69,6 +74,8 @@ class MobileScannerController {
       MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
   static const EventChannel _eventChannel =
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
+
+  Function(bool permissionGranted)? onPermissionSet;
 
   /// Listen to events from the platform specific code
   late StreamSubscription events;
@@ -129,23 +136,37 @@ class MobileScannerController {
               await _methodChannel.invokeMethod('request') as bool? ?? false;
           if (!result) {
             isStarting = false;
+            onPermissionSet?.call(result);
             throw MobileScannerException('User declined camera permission.');
           }
           break;
         case MobileScannerState.denied:
           isStarting = false;
+          onPermissionSet?.call(false);
           throw MobileScannerException('User declined camera permission.');
         case MobileScannerState.authorized:
+          onPermissionSet?.call(true);
           break;
       }
     }
 
     // Start the camera with arguments
-    final Map<String, dynamic>? startResult =
-        await _methodChannel.invokeMapMethod<String, dynamic>(
-      'start',
-      _argumentsToMap(cameraFacingOverride: cameraFacingOverride),
-    );
+    Map<String, dynamic>? startResult = {};
+    try {
+      startResult = await methodChannel.invokeMapMethod<String, dynamic>(
+        'start',
+        _argumentsToMap(cameraFacingOverride: cameraFacingOverride),
+      );
+    } on PlatformException catch (error) {
+      debugPrint('${error.code}: ${error.message}');
+      isStarting = false;
+      if (error.code == "MobileScannerWeb") {
+        onPermissionSet?.call(false);
+      }
+      // setAnalyzeMode(AnalyzeMode.none.index);
+      return;
+    }
+
     if (startResult == null) {
       isStarting = false;
       throw MobileScannerException(
@@ -158,6 +179,10 @@ class MobileScannerController {
     }
 
     if (kIsWeb) {
+      onPermissionSet?.call(
+        true,
+      ); // If we reach this line, it means camera permission has been granted
+
       startArguments.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
         size: Size(
@@ -229,7 +254,13 @@ class MobileScannerController {
     stop();
     events.cancel();
     _barcodesController.close();
-    _barcodesController.close();
+    if (hashCode == _controllerHashcode) {
+      stop();
+      events?.cancel();
+      events = null;
+      _controllerHashcode = null;
+      onPermissionSet = null;
+    }
   }
 
   /// Handles a returning event from the platform side
