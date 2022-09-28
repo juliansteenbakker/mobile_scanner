@@ -52,7 +52,8 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    controller = widget.controller ?? MobileScannerController(onPermissionSet: widget.onPermissionSet);
+    controller = widget.controller ??
+        MobileScannerController(onPermissionSet: widget.onPermissionSet);
     if (!controller.isStarting) controller.start();
   }
 
@@ -122,7 +123,8 @@ class _MobileScannerState extends State<MobileScanner>
       }
     } else {
       if (widget.controller == null) {
-        controller = MobileScannerController(onPermissionSet: widget.onPermissionSet);
+        controller =
+            MobileScannerController(onPermissionSet: widget.onPermissionSet);
       } else if (oldWidget.controller != widget.controller) {
         controller = widget.controller!;
       }

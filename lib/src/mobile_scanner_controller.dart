@@ -212,7 +212,8 @@ class MobileScannerController {
     hasTorch = startResult['torchable'] as bool? ?? false;
 
     if (kIsWeb) {
-      onPermissionSet?.call(true);  // If we reach this line, it means camera permission has been granted
+      onPermissionSet?.call(
+          true); // If we reach this line, it means camera permission has been granted
 
       args.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
