@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -40,6 +39,7 @@ class MobileScannerController {
   static int? _controllerHashcode;
   StreamSubscription? events;
 
+  Function(bool permissionGranted)? onPermissionSet;
   final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
   late final ValueNotifier<CameraFacing> cameraFacingState;
@@ -65,6 +65,7 @@ class MobileScannerController {
     this.ratio,
     this.torchEnabled,
     this.formats,
+    this.onPermissionSet,
     this.autoResume = true,
     this.returnImage = false,
   }) {
@@ -155,11 +156,14 @@ class MobileScannerController {
           state = result
               ? MobileScannerState.authorized
               : MobileScannerState.denied;
+          onPermissionSet?.call(result);
           break;
         case MobileScannerState.denied:
           isStarting = false;
+          onPermissionSet?.call(false);
           throw PlatformException(code: 'NO ACCESS');
         case MobileScannerState.authorized:
+          onPermissionSet?.call(true);
           break;
       }
     }
@@ -191,6 +195,9 @@ class MobileScannerController {
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
       isStarting = false;
+      if (error.code == "MobileScannerWeb") {
+        onPermissionSet?.call(false);
+      }
       // setAnalyzeMode(AnalyzeMode.none.index);
       return;
     }
@@ -203,6 +210,10 @@ class MobileScannerController {
     hasTorch = startResult['torchable'] as bool? ?? false;
 
     if (kIsWeb) {
+      onPermissionSet?.call(
+        true,
+      ); // If we reach this line, it means camera permission has been granted
+
       args.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
         size: Size(
@@ -286,6 +297,7 @@ class MobileScannerController {
       events?.cancel();
       events = null;
       _controllerHashcode = null;
+      onPermissionSet = null;
     }
     barcodesController.close();
   }
