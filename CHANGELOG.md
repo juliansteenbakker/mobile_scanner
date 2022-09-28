@@ -1,10 +1,18 @@
-## 3.0.0
+## 3.0.0-beta.1
 Breaking changes:
 * [Android] SDK updated to SDK 33.
+
+Features:
+* [Web] Add binaryData for raw value.
+* [iOS] Captures the last scanned barcode with Barcode.image.
+* [iOS] Add support for multiple formats on iOS with BarcodeScannerOptions.
+* Add displayValue which returns barcode value in a user-friendly format.
+* Add autoResume option to MobileScannerController which automatically resumes the camera when the application is resumed
 
 Other changes:
 * [Android] Revert camera2 dependency to stable release
 * [iOS] Update barcode scanning library to latest version
+* Several minor code improvements
 
 ## 2.0.0
 Breaking changes:
