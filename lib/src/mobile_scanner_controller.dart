@@ -173,7 +173,7 @@ class MobileScannerController {
     // Set the starting arguments for the camera
     final Map arguments = {};
     arguments['facing'] = facing.index;
-    if (ratio != null) arguments['ratio'] = ratio;
+    if (ratio != null) arguments['ratio'] = ratio.index;
     if (torchEnabled != null) arguments['torch'] = torchEnabled;
 
     if (formats != null) {
