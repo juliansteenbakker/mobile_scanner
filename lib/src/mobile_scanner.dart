@@ -10,6 +10,9 @@ class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
   final MobileScannerController? controller;
 
+  /// Calls the provided [onPermissionSet] callback when the permission is set.
+  final Function(bool permissionGranted)? onPermissionSet;
+
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
@@ -43,6 +46,7 @@ class MobileScanner extends StatefulWidget {
     this.fit = BoxFit.cover,
     this.allowDuplicates = false,
     this.scanWindow,
+    this.onPermissionSet,
   });
 
   @override
@@ -57,7 +61,8 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    controller = widget.controller ?? MobileScannerController();
+    controller = widget.controller ??
+        MobileScannerController(onPermissionSet: widget.onPermissionSet);
     if (!controller.isStarting) controller.start();
   }
 
@@ -75,7 +80,7 @@ class _MobileScannerState extends State<MobileScanner>
     }
   }
 
-  String? lastScanned;
+  Uint8List? lastScanned;
 
   /// the [scanWindow] rect will be relative and scaled to the [widgetSize] not the texture. so it is possible,
   /// depending on the [fit], for the [scanWindow] to partially or not at all overlap the [textureSize]
@@ -146,12 +151,12 @@ class _MobileScannerState extends State<MobileScanner>
                 );
                 controller.updateScanWindow(window);
               }
-
               controller.barcodes.listen((barcode) {
                 if (!widget.allowDuplicates) {
-                  if (lastScanned == barcode.rawValue) return;
-                  lastScanned = barcode.rawValue;
-                  widget.onDetect(barcode, value! as MobileScannerArguments);
+                  if (lastScanned != barcode.rawBytes) {
+                    lastScanned = barcode.rawBytes;
+                    widget.onDetect(barcode, value! as MobileScannerArguments);
+                  }
                 } else {
                   widget.onDetect(barcode, value! as MobileScannerArguments);
                 }
@@ -189,7 +194,8 @@ class _MobileScannerState extends State<MobileScanner>
       }
     } else {
       if (widget.controller == null) {
-        controller = MobileScannerController();
+        controller =
+            MobileScannerController(onPermissionSet: widget.onPermissionSet);
       } else if (oldWidget.controller != widget.controller) {
         controller = widget.controller!;
       }

@@ -12,6 +12,11 @@ class Barcode {
   /// Returns null if the corner points can not be determined.
   final List<Offset>? corners;
 
+  /// Returns raw bytes of the image buffer
+  ///
+  /// Returns null if the image was not returned
+  final Uint8List? image;
+
   /// Returns barcode format
   final BarcodeFormat format;
 
@@ -74,6 +79,7 @@ class Barcode {
 
   Barcode({
     this.corners,
+    this.image,
     this.format = BarcodeFormat.ean13,
     this.rawBytes,
     this.type = BarcodeType.text,
@@ -91,7 +97,7 @@ class Barcode {
   });
 
   /// Create a [Barcode] from native data.
-  Barcode.fromNative(Map data)
+  Barcode.fromNative(Map data, this.image)
       : corners = toCorners(data['corners'] as List?),
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,

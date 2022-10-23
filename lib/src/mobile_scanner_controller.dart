@@ -39,15 +39,16 @@ class MobileScannerController {
   static int? _controllerHashcode;
   StreamSubscription? events;
 
+  Function(bool permissionGranted)? onPermissionSet;
   final ValueNotifier<MobileScannerArguments?> args = ValueNotifier(null);
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
   late final ValueNotifier<CameraFacing> cameraFacingState;
   final Ratio? ratio;
   final bool? torchEnabled;
+  // Whether to return the image buffer with the Barcode event
+  final bool returnImage;
 
   /// If provided, the scanner will only detect those specific formats.
-  ///
-  /// WARNING: On iOS, only 1 format is supported.
   final List<BarcodeFormat>? formats;
 
   CameraFacing facing;
@@ -64,7 +65,9 @@ class MobileScannerController {
     this.ratio,
     this.torchEnabled,
     this.formats,
+    this.onPermissionSet,
     this.autoResume = true,
+    this.returnImage = false,
   }) {
     // In case a new instance is created before calling dispose()
     if (_controllerHashcode != null) {
@@ -89,13 +92,15 @@ class MobileScannerController {
   void handleEvent(Map event) {
     final name = event['name'];
     final data = event['data'];
+    final binaryData = event['binaryData'];
     switch (name) {
       case 'torchState':
         final state = TorchState.values[data as int? ?? 0];
         torchState.value = state;
         break;
       case 'barcode':
-        final barcode = Barcode.fromNative(data as Map? ?? {});
+        final image = returnImage ? event['image'] as Uint8List : null;
+        final barcode = Barcode.fromNative(data as Map? ?? {}, image);
         barcodesController.add(barcode);
         break;
       case 'barcodeMac':
@@ -106,7 +111,13 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
-        barcodesController.add(Barcode(rawValue: data as String?));
+        final bytes = (binaryData as List).cast<int>();
+        barcodesController.add(
+          Barcode(
+            rawValue: data as String?,
+            rawBytes: Uint8List.fromList(bytes),
+          ),
+        );
         break;
       default:
         throw UnimplementedError();
@@ -145,11 +156,14 @@ class MobileScannerController {
           state = result
               ? MobileScannerState.authorized
               : MobileScannerState.denied;
+          onPermissionSet?.call(result);
           break;
         case MobileScannerState.denied:
           isStarting = false;
+          onPermissionSet?.call(false);
           throw PlatformException(code: 'NO ACCESS');
         case MobileScannerState.authorized:
+          onPermissionSet?.call(true);
           break;
       }
     }
@@ -177,6 +191,7 @@ class MobileScannerController {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
       }
     }
+    arguments['returnImage'] = returnImage;
 
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};
@@ -188,6 +203,9 @@ class MobileScannerController {
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
       isStarting = false;
+      if (error.code == "MobileScannerWeb") {
+        onPermissionSet?.call(false);
+      }
       // setAnalyzeMode(AnalyzeMode.none.index);
       return;
     }
@@ -200,6 +218,10 @@ class MobileScannerController {
     hasTorch = startResult['torchable'] as bool? ?? false;
 
     if (kIsWeb) {
+      onPermissionSet?.call(
+        true,
+      ); // If we reach this line, it means camera permission has been granted
+
       args.value = MobileScannerArguments(
         webId: startResult['ViewID'] as String?,
         size: Size(
@@ -283,6 +305,7 @@ class MobileScannerController {
       events?.cancel();
       events = null;
       _controllerHashcode = null;
+      onPermissionSet = null;
     }
     barcodesController.close();
   }

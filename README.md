@@ -36,6 +36,10 @@ NSPhotoLibraryUsageDescription - describe why your app needs permission for the 
   
 ### macOS
 macOS 10.13 or newer. Reason: Apple Vision library.
+  
+Ensure that you granted camera permission in XCode -> Signing & Capabilities:
+
+<img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
 
 ### Web
 Add this to `web/index.html`:
@@ -169,3 +173,64 @@ import 'package:mobile_scanner/mobile_scanner.dart';
             }));
   }
 ```
+
+Example with controller and returning images
+
+```dart
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Mobile Scanner')),
+      body: MobileScanner(
+        controller: MobileScannerController(
+          facing: CameraFacing.front,
+          torchEnabled: true,
+          returnImage: true,
+        ),
+        onDetect: (barcode, args) {
+          if (barcode.rawValue == null) {
+            debugPrint('Failed to scan Barcode');
+          } else {
+            final String code = barcode.rawValue!;
+            debugPrint('Barcode found! $code');
+
+            debugPrint(
+                'Image returned! length: ${barcode.image!.lengthInBytes}b');
+            showDialog(
+              context: context,
+              builder: (context) => Image(image: MemoryImage(barcode.image!)),
+            );
+            Future.delayed(const Duration(seconds: 2), () {
+              Navigator.pop(context);
+            });
+          }
+        },
+      ),
+    );
+  }
+```
+
+### Scan result
+
+You can use the following properties of the Barcode, which gets
+passed to the `onDetect` function.
+
+| Property name | Type           | Description
+|---------------|----------------|--------------------
+| image         | Uint8List?     | only if returnImage was set to true
+| format        | BarcodeFormat  |
+| rawBytes      | Uint8List?     | binary scan result
+| rawValue      | String?        | Value if barcode is in UTF-8 format
+| displayValue  | String?        |
+| type          | BarcodeType    |
+| calendarEvent | CalendarEvent? |
+| contactInfo   | ContactInfo?   |
+| driverLicense | DriverLicense? |
+| email         | Email?         |
+| geoPoint      | GeoPoint?      |
+| phone         | Phone?         |
+| sms           | SMS?           |
+| url           | UrlBookmark?   |
+| wifi          | WiFi?          | WiFi Access-Point details

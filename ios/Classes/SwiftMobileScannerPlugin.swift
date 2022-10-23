@@ -22,6 +22,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
     
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
+
+    // Return image buffer with the Barcode event
+    var returnImage: Bool = false
     
 //    var analyzeMode: Int = 0
     var analyzing: Bool = false
@@ -90,7 +93,17 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         }
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
-    
+
+    private func ciImageToJpeg(ciImage: CIImage) -> Data {
+
+        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
+        let context:CIContext = CIContext.init(options: nil)
+        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
+        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
+
+        return uiImage.jpegData(compressionQuality: 0.8)!;
+    }
+
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
 
@@ -104,7 +117,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
             }
             analyzing = true
             let buffer = CMSampleBufferGetImageBuffer(sampleBuffer)            
-            var image = VisionImage(image: buffer!.image)
+            let image = VisionImage(image: buffer!.image)
 
             image.orientation = imageOrientation(
               deviceOrientation: UIDevice.current.orientation,
@@ -122,7 +135,12 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
                             }
                         }
 
-                        let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
+                         var event: [String: Any?] = ["name": "barcode", "data": barcode.data]
+                         if (returnImage && latestBuffer != nil) {
+                             let image: CIImage = CIImage(cvPixelBuffer: latestBuffer)
+
+                             event["image"] = FlutterStandardTypedData(bytes: ciImageToJpeg(ciImage: image))
+                         }
                         sink?(event)
                     }
                 }
@@ -213,21 +231,24 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHan
         captureSession = AVCaptureSession()
         
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
+
+        returnImage = argReader.bool(key: "returnImage") ?? false
         
 //        let ratio: Int = argReader.int(key: "ratio")
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let formats: Array = argReader.intArray(key: "formats") ?? []
-               
-        let formatList: NSMutableArray = []
-        for index in formats {
-            formatList.add(BarcodeFormat(rawValue: index))
-        }
-        
-        if (formatList.count != 0) {
-            let barcodeOptions = BarcodeScannerOptions(formats: formatList.firstObject as! BarcodeFormat)
+        if (formats.count != 0) {
+            var barcodeFormats: BarcodeFormat = []
+            for index in formats {
+                barcodeFormats.insert(BarcodeFormat(rawValue: index))
+            }
+
+            let barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
             scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
         }
+        
+
         
         // Set the camera to use
         position = facing == 0 ? AVCaptureDevice.Position.front : .back

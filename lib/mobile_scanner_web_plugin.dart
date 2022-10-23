@@ -24,7 +24,6 @@ class MobileScannerWebPlugin {
       registrar,
     );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
-    WidgetsFlutterBinding.ensureInitialized();
 
     channel.setMethodCallHandler(instance.handleMethodCall);
     event.setController(instance.controller);
@@ -200,7 +199,11 @@ class MobileScannerWebPlugin {
 
     final code = jsQR(imgData.data, canvas.width, canvas.height);
     if (code != null) {
-      controller.add({'name': 'barcodeWeb', 'data': code.data});
+      controller.add({
+        'name': 'barcodeWeb',
+        'data': code.data,
+        'binaryData': code.binaryData,
+      });
     }
   }
 }
