@@ -6,10 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
-import 'package:mobile_scanner/src/enums/detection_speed.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_state.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
@@ -26,14 +22,17 @@ class MobileScannerController {
     this.onPermissionSet,
   }) {
       // In case a new instance is created before calling dispose()
-    if (_controllerHashcode != null) {
+    if (controllerHashcode != null) {
       stop();
     }
-    _controllerHashcode = hashCode;
+    controllerHashcode = hashCode;
     events = _eventChannel
         .receiveBroadcastStream()
         .listen((data) => _handleEvent(data as Map));
   }
+
+  //Must be static to keep the same value on new instances
+  static int? controllerHashcode;
 
   /// Select which camera should be used.
   ///
@@ -115,12 +114,12 @@ class MobileScannerController {
 
   /// Start barcode scanning. This will first check if the required permissions
   /// are set.
-  Future<MobileScannerArguments> start({
+  Future<MobileScannerArguments?> start({
     CameraFacing? cameraFacingOverride,
   }) async {
     debugPrint('Hashcode controller: $hashCode');
     if (isStarting) {
-      debugPrint("Called start() while already starting.");
+      debugPrint("Called start() while starting.");
     }
     isStarting = true;
 
@@ -151,7 +150,7 @@ class MobileScannerController {
     // Start the camera with arguments
     Map<String, dynamic>? startResult = {};
     try {
-      startResult = await methodChannel.invokeMapMethod<String, dynamic>(
+      startResult = await _methodChannel.invokeMapMethod<String, dynamic>(
         'start',
         _argumentsToMap(cameraFacingOverride: cameraFacingOverride),
       );
@@ -161,8 +160,7 @@ class MobileScannerController {
       if (error.code == "MobileScannerWeb") {
         onPermissionSet?.call(false);
       }
-      // setAnalyzeMode(AnalyzeMode.none.index);
-      return;
+      return null;
     }
 
     if (startResult == null) {
@@ -252,11 +250,8 @@ class MobileScannerController {
     stop();
     events.cancel();
     _barcodesController.close();
-    if (hashCode == _controllerHashcode) {
-      stop();
-      events?.cancel();
-      events = null;
-      _controllerHashcode = null;
+    if (hashCode == controllerHashcode) {
+      controllerHashcode = null;
       onPermissionSet = null;
     }
   }
@@ -299,8 +294,10 @@ class MobileScannerController {
           )
         ]));
         break;
+      case 'error':
+        throw MobileScannerException(data as String);
       default:
-        throw UnimplementedError();
+        throw UnimplementedError(name as String?);
     }
   }
 }

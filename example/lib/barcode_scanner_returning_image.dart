@@ -27,6 +27,7 @@ class _BarcodeScannerReturningImageState
 
   bool isStarted = true;
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

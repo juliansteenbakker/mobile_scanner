@@ -129,7 +129,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 val barcodeMap = barcodes.map { barcode -> barcode.data }
                 if (barcodeMap.isNotEmpty()) {
                     sink?.success(mapOf(
-                        "name" to "barcodeMap",
+                        "name" to "barcode",
                         "data" to barcodeMap,
                         "image" to mediaImage.toByteArray()
                     ))
@@ -159,7 +159,10 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //                }
 //                isAnalyzing = false
             }
-            .addOnFailureListener { e -> Log.e(TAG, e.message, e) }
+            .addOnFailureListener { e -> sink?.error(mapOf(
+                "name" to "error",
+                "data" to e.localizedMessage
+            )) }
             .addOnCompleteListener { imageProxy.close() }
     }
 

@@ -33,7 +33,6 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.autoResume = true,
     this.fit = BoxFit.cover,
-    this.allowDuplicates = false,
     this.onPermissionSet,
   });
 
@@ -54,18 +53,22 @@ class _MobileScannerState extends State<MobileScanner>
     if (!controller.isStarting) controller.start();
   }
 
+  AppLifecycleState? _lastState;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting && widget.autoResume) controller.start();
+        if (!controller.isStarting && widget.autoResume && _lastState != AppLifecycleState.inactive) controller.start();
         break;
-      case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
         controller.stop();
         break;
+      default:
+        break;
     }
+    _lastState = state;
   }
 
   @override
@@ -121,7 +124,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
-    controller.stop();
+    controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

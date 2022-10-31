@@ -18,14 +18,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                     return barcode.data
                 }
                 if (!barcodesMap.isEmpty) {
-//                    barcodeHandler.publishEvent(["name": "barcodeMap", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.pngData()!)])
                     barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!)])
                 }
-//                for barcode in barcodes! {
-//                    barcodeHandler.publishEvent(["name": "barcode", "data": barcode.data, "image": image != nil ? FlutterStandardTypedData(bytes: image!) : nil])
-//                }
             } else if (error != nil){
-                // TODO: Handle error
+                barcodeHandler.publishEvent(["name": "error", "data": error!.localizedDescription])
             }
         })
         self.barcodeHandler = barcodeHandler
@@ -66,18 +62,18 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
 
-//         if (formatList.count != 0) {
-//             var barcodeFormats: BarcodeFormat = []
-//             for index in formats {
-//                 barcodeFormats.insert(BarcodeFormat(rawValue: index))
-//             }
-//
-//             let barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
-//             scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
-//         }
-
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
-        let barcodeOptions = formatList.count != 0 ? BarcodeScannerOptions(formats: formatList.first!) : nil
+        var barcodeOptions: BarcodeScannerOptions? = nil
+        
+         if (formatList.count != 0) {
+             var barcodeFormats: BarcodeFormat = []
+             for index in formats {
+                 barcodeFormats.insert(BarcodeFormat(rawValue: index))
+             }
+             barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
+         }
+
+
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
         let speed: DetectionSpeed = DetectionSpeed(rawValue: (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0)!
 
