@@ -31,7 +31,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         self.barcodeHandler = barcodeHandler
         super.init()
     }
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = SwiftMobileScannerPlugin(barcodeHandler: BarcodeHandler(registrar: registrar), registry: registrar.textures())
         let methodChannel = FlutterMethodChannel(name:
@@ -65,12 +65,22 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
-        
+
+//         if (formatList.count != 0) {
+//             var barcodeFormats: BarcodeFormat = []
+//             for index in formats {
+//                 barcodeFormats.insert(BarcodeFormat(rawValue: index))
+//             }
+//
+//             let barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
+//             scanner = BarcodeScanner.barcodeScanner(options: barcodeOptions)
+//         }
+
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         let barcodeOptions = formatList.count != 0 ? BarcodeScannerOptions(formats: formatList.first!) : nil
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
         let speed: DetectionSpeed = DetectionSpeed(rawValue: (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0)!
-        
+
         do {
             let parameters = try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: speed)
             result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
@@ -96,7 +106,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: nil))
         }
     }
-    
+
     /// Stops the mobileScanner and closes the texture
     private func stop(_ result: @escaping FlutterResult) {
         do {
@@ -108,7 +118,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         }
         result(nil)
     }
-    
+
     /// Toggles the torch
     private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {

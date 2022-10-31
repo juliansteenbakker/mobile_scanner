@@ -56,8 +56,6 @@ class MobileScannerController {
   final bool returnImage;
 
   /// If provided, the scanner will only detect those specific formats
-  ///
-  /// WARNING: On iOS, only 1 format is supported
   final List<BarcodeFormat>? formats;
 
   /// Sets the speed of detections.
