@@ -47,9 +47,9 @@ class _BarcodeScannerReturningImageState
                           fit: BoxFit.contain,
                         ),
                       )
-                    : Container(
+                    : const ColoredBox(
                         color: Colors.white,
-                        child: const Center(
+                        child: Center(
                           child: Text(
                             'Your scanned barcode will appear here!',
                           ),
@@ -85,7 +85,7 @@ class _BarcodeScannerReturningImageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            Container(
+                            ColoredBox(
                               color: arguments != null && !arguments!.hasTorch
                                   ? Colors.red
                                   : Colors.white,
