@@ -207,8 +207,8 @@ class ContactInfo {
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map data)
       : addresses = List.unmodifiable(
-    (data['addresses'] as List).map((e) => Address.fromNative(e as Map)),
-  ),
+          (data['addresses'] as List).map((e) => Address.fromNative(e as Map)),
+        ),
         emails = List.unmodifiable(
           (data['emails'] as List).map((e) => Email.fromNative(e as Map)),
         ),

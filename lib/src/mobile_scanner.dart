@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/src/barcode_capture.dart';
 import 'package:mobile_scanner/src/mobile_scanner_arguments.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
-import 'package:mobile_scanner/src/barcode_capture.dart';
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
@@ -16,9 +16,8 @@ class MobileScanner extends StatefulWidget {
   ///
   /// [barcode] The barcode object with all information about the scanned code.
   /// [startArguments] Information about the state of the MobileScanner widget
-  final Function(
-      BarcodeCapture capture, MobileScannerArguments? arguments)
-  onDetect;
+  final Function(BarcodeCapture capture, MobileScannerArguments? arguments)
+      onDetect;
 
   /// Handles how the widget should fit the screen.
   final BoxFit fit;
@@ -59,7 +58,9 @@ class _MobileScannerState extends State<MobileScanner>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting && widget.autoResume && _lastState != AppLifecycleState.inactive) controller.start();
+        if (!controller.isStarting &&
+            widget.autoResume &&
+            _lastState != AppLifecycleState.inactive) controller.start();
         break;
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:

@@ -1,5 +1,4 @@
 import 'dart:math';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -27,7 +26,6 @@ class _BarcodeScannerReturningImageState
 
   bool isStarted = true;
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -42,14 +40,21 @@ class _BarcodeScannerReturningImageState
                 height: 0.33 * MediaQuery.of(context).size.height,
                 child: barcode?.image != null
                     ? Transform.rotate(
-                  angle: 90 * pi/180,
-                  child: Image(
-                    gaplessPlayback: true,
-                    image: MemoryImage(barcode!.image!),
-                    fit: BoxFit.contain,
-                  ),
-                )
-                    : Container(color: Colors.white, child: const Center(child: Text('Your scanned barcode will appear here!'))),
+                        angle: 90 * pi / 180,
+                        child: Image(
+                          gaplessPlayback: true,
+                          image: MemoryImage(barcode!.image!),
+                          fit: BoxFit.contain,
+                        ),
+                      )
+                    : Container(
+                        color: Colors.white,
+                        child: const Center(
+                          child: Text(
+                            'Your scanned barcode will appear here!',
+                          ),
+                        ),
+                      ),
               ),
               Container(
                 height: 0.66 * MediaQuery.of(context).size.height,
@@ -81,7 +86,9 @@ class _BarcodeScannerReturningImageState
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
                             Container(
-                              color: arguments != null && !arguments!.hasTorch ? Colors.red : Colors.white,
+                              color: arguments != null && !arguments!.hasTorch
+                                  ? Colors.red
+                                  : Colors.white,
                               child: IconButton(
                                 // color: ,
                                 icon: ValueListenableBuilder(
@@ -118,7 +125,9 @@ class _BarcodeScannerReturningImageState
                                   : const Icon(Icons.play_arrow),
                               iconSize: 32.0,
                               onPressed: () => setState(() {
-                                isStarted ? controller.stop() : controller.start();
+                                isStarted
+                                    ? controller.stop()
+                                    : controller.start();
                                 isStarted = !isStarted;
                               }),
                             ),
@@ -128,7 +137,8 @@ class _BarcodeScannerReturningImageState
                                 height: 50,
                                 child: FittedBox(
                                   child: Text(
-                                    barcode?.barcodes.first.rawValue ?? 'Scan something!',
+                                    barcode?.barcodes.first.rawValue ??
+                                        'Scan something!',
                                     overflow: TextOverflow.fade,
                                     style: Theme.of(context)
                                         .textTheme

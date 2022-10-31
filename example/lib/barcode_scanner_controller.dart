@@ -13,12 +13,10 @@ class BarcodeScannerWithController extends StatefulWidget {
 class _BarcodeScannerWithControllerState
     extends State<BarcodeScannerWithController>
     with SingleTickerProviderStateMixin {
-
   BarcodeCapture? barcode;
 
   MobileScannerController controller = MobileScannerController(
-      torchEnabled: true,
-      detectionSpeed: DetectionSpeed.unrestricted
+    torchEnabled: true, detectionSpeed: DetectionSpeed.unrestricted,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
   );
@@ -101,7 +99,8 @@ class _BarcodeScannerWithControllerState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              barcode?.barcodes.first.rawValue ?? 'Scan something!',
+                              barcode?.barcodes.first.rawValue ??
+                                  'Scan something!',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme

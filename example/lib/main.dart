@@ -23,7 +23,8 @@ class MyHome extends StatelessWidget {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => const BarcodeListScannerWithController(),
+                    builder: (context) =>
+                        const BarcodeListScannerWithController(),
                   ),
                 );
               },
@@ -48,14 +49,14 @@ class MyHome extends StatelessWidget {
                 );
               },
               child:
-              const Text('MobileScanner with Controller (returning image)'),
+                  const Text('MobileScanner with Controller (returning image)'),
             ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (context) =>
-                    const BarcodeScannerWithoutController(),
+                        const BarcodeScannerWithoutController(),
                   ),
                 );
               },

@@ -5,7 +5,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/barcode_capture.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
@@ -65,13 +64,13 @@ class MobileScannerController {
 
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
-  StreamController.broadcast();
+      StreamController.broadcast();
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   static const MethodChannel _methodChannel =
-  MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+      MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
   static const EventChannel _eventChannel =
-  EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
+      EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   Function(bool permissionGranted)? onPermissionSet;
 
@@ -79,14 +78,15 @@ class MobileScannerController {
   late StreamSubscription events;
 
   /// A notifier that provides several arguments about the MobileScanner
-  final ValueNotifier<MobileScannerArguments?> startArguments = ValueNotifier(null);
+  final ValueNotifier<MobileScannerArguments?> startArguments =
+      ValueNotifier(null);
 
   /// A notifier that provides the state of the Torch (Flash)
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
 
   /// A notifier that provides the state of which camera is being used
   late final ValueNotifier<CameraFacing> cameraFacingState =
-  ValueNotifier(facing);
+      ValueNotifier(facing);
 
   bool isStarting = false;
   bool? _hasTorch;
@@ -167,7 +167,8 @@ class MobileScannerController {
     if (startResult == null) {
       isStarting = false;
       throw MobileScannerException(
-          'Failed to start mobileScanner, no response from platform side');
+        'Failed to start mobileScanner, no response from platform side',
+      );
     }
 
     _hasTorch = startResult['torchable'] as bool? ?? false;
@@ -210,13 +211,14 @@ class MobileScannerController {
   Future<void> toggleTorch() async {
     if (_hasTorch == null) {
       throw MobileScannerException(
-          'Cannot toggle torch if start() has never been called');
+        'Cannot toggle torch if start() has never been called',
+      );
     } else if (!_hasTorch!) {
       throw MobileScannerException('Device has no torch');
     }
 
     torchState.value =
-    torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+        torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
     await _methodChannel.invokeMethod('torch', torchState.value.index);
   }
@@ -227,9 +229,9 @@ class MobileScannerController {
   Future<void> switchCamera() async {
     await _methodChannel.invokeMethod('stop');
     final CameraFacing facingToUse =
-    cameraFacingState.value == CameraFacing.back
-        ? CameraFacing.front
-        : CameraFacing.back;
+        cameraFacingState.value == CameraFacing.back
+            ? CameraFacing.front
+            : CameraFacing.back;
     await start(cameraFacingOverride: facingToUse);
   }
 
@@ -272,10 +274,12 @@ class MobileScannerController {
         final parsed = (data as List)
             .map((value) => Barcode.fromNative(value as Map))
             .toList();
-        _barcodesController.add(BarcodeCapture(
-          barcodes: parsed,
-          image: event['image'] as Uint8List,
-        ));
+        _barcodesController.add(
+          BarcodeCapture(
+            barcodes: parsed,
+            image: event['image'] as Uint8List,
+          ),
+        );
         break;
       case 'barcodeMac':
         _barcodesController.add(
@@ -289,11 +293,15 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
-        _barcodesController.add(BarcodeCapture(barcodes: [
-          Barcode(
-            rawValue: data as String?,
-          )
-        ]));
+        _barcodesController.add(
+          BarcodeCapture(
+            barcodes: [
+              Barcode(
+                rawValue: data as String?,
+              )
+            ],
+          ),
+        );
         break;
       case 'error':
         throw MobileScannerException(data as String);
