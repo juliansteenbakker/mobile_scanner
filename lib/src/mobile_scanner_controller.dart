@@ -7,28 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/objects/barcode_utility.dart';
 
-/// The facing of a camera.
-enum CameraFacing {
-  /// Front facing camera.
-  front,
-
-  /// Back facing camera.
-  back,
-}
-
-enum MobileScannerState { undetermined, authorized, denied }
-
-/// The state of torch.
-enum TorchState {
-  /// Torch is off.
-  off,
-
-  /// Torch is on.
-  on,
-}
-
-// enum AnalyzeMode { none, barcode }
-
 class MobileScannerController {
   MethodChannel methodChannel =
       const MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');

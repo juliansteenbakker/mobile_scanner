@@ -2,8 +2,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-enum Ratio { ratio_4_3, ratio_16_9 }
-
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
