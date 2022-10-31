@@ -1,3 +1,8 @@
+## NEXT
+Breaking changes:
+* [iOS] The minimum deployment target is now 11.0 or higher.
+* [iOS] Updated POD dependencies
+
 ## 3.0.0-beta.1
 Breaking changes:
 * [Android] SDK updated to SDK 33.
