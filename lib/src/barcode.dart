@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 import 'dart:ui';
 
-import 'package:mobile_scanner/src/objects/barcode_utility.dart';
+import 'package:mobile_scanner/src/barcode_utility.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
@@ -97,7 +97,7 @@ class Barcode {
   });
 
   /// Create a [Barcode] from native data.
-  Barcode.fromNative(Map data, this.image)
+  Barcode.fromNative(Map data, {this.image})
       : corners = toCorners(data['corners'] as List?),
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
@@ -207,8 +207,8 @@ class ContactInfo {
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map data)
       : addresses = List.unmodifiable(
-          (data['addresses'] as List).map((e) => Address.fromNative(e as Map)),
-        ),
+    (data['addresses'] as List).map((e) => Address.fromNative(e as Map)),
+  ),
         emails = List.unmodifiable(
           (data['emails'] as List).map((e) => Email.fromNative(e as Map)),
         ),
