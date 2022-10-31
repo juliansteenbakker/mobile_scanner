@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/barcode_capture.dart';
+import 'package:mobile_scanner/src/mobile_scanner_arguments.dart';
+import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
@@ -13,28 +15,23 @@ class MobileScanner extends StatefulWidget {
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
-  /// [args] Information about the state of the MobileScanner widget
-  final Function(Barcode barcode, MobileScannerArguments? args) onDetect;
-
-  /// TODO: Function that gets called when the Widget is initialized. Can be usefull
-  /// to check wether the device has a torch(flash) or not.
-  ///
-  /// [args] Information about the state of the MobileScanner widget
-  // final Function(MobileScannerArguments args)? onInitialize;
+  /// [startArguments] Information about the state of the MobileScanner widget
+  final Function(BarcodeCapture capture, MobileScannerArguments? arguments)
+      onDetect;
 
   /// Handles how the widget should fit the screen.
   final BoxFit fit;
 
-  /// Set to false if you don't want duplicate scans.
-  final bool allowDuplicates;
+  /// Whether to automatically resume the camera when the application is resumed
+  final bool autoResume;
 
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
     super.key,
     required this.onDetect,
     this.controller,
+    this.autoResume = true,
     this.fit = BoxFit.cover,
-    this.allowDuplicates = false,
     this.onPermissionSet,
   });
 
@@ -55,40 +52,37 @@ class _MobileScannerState extends State<MobileScanner>
     if (!controller.isStarting) controller.start();
   }
 
+  AppLifecycleState? _lastState;
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting && controller.autoResume) controller.start();
+        if (!controller.isStarting &&
+            widget.autoResume &&
+            _lastState != AppLifecycleState.inactive) controller.start();
         break;
-      case AppLifecycleState.inactive:
       case AppLifecycleState.paused:
       case AppLifecycleState.detached:
         controller.stop();
         break;
+      default:
+        break;
     }
+    _lastState = state;
   }
-
-  Uint8List? lastScanned;
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller.args,
+      valueListenable: controller.startArguments,
       builder: (context, value, child) {
         value = value as MobileScannerArguments?;
         if (value == null) {
           return const ColoredBox(color: Colors.black);
         } else {
           controller.barcodes.listen((barcode) {
-            if (!widget.allowDuplicates) {
-              if (lastScanned != barcode.rawBytes) {
-                lastScanned = barcode.rawBytes;
-                widget.onDetect(barcode, value! as MobileScannerArguments);
-              }
-            } else {
-              widget.onDetect(barcode, value! as MobileScannerArguments);
-            }
+            widget.onDetect(barcode, value! as MobileScannerArguments);
           });
           return ClipRect(
             child: SizedBox(
