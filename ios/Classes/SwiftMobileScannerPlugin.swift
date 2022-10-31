@@ -395,3 +395,9 @@ class MapArgumentReader {
     }
   
 }
+
+enum DetectionSpeed: Int {
+    case noDuplicates = 0
+    case normal = 1
+    case unrestricted = 2
+}
