@@ -209,6 +209,8 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             val ratio: Int? = call.argument<Int>("ratio")
             val torch: Boolean = call.argument<Boolean>("torch") ?: false
             val formats: List<Int>? = call.argument<List<Int>>("formats")
+//            val analyzerWidth = call.argument<Int>("ratio")
+//            val analyzeRHEIG = call.argument<Int>("ratio")
 
             if (formats != null) {
                 val formatsList: MutableList<Int> = mutableListOf()
@@ -269,6 +271,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
                 if (ratio != null) {
                     analysisBuilder.setTargetAspectRatio(ratio)
                 }
+//                analysisBuilder.setTargetResolution(Size(1440, 1920))
                 val analysis = analysisBuilder.build().apply { setAnalyzer(executor, analyzer) }
 
                 // Select the correct camera
