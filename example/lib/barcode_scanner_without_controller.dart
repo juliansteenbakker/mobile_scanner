@@ -46,7 +46,8 @@ class _BarcodeScannerWithoutControllerState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              capture?.barcodes.first.rawValue ?? 'Scan something!',
+                              capture?.barcodes.first.rawValue ??
+                                  'Scan something!',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
