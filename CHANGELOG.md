@@ -3,6 +3,13 @@ Breaking changes:
 * [iOS] The minimum deployment target is now 11.0 or higher.
 * [iOS] Updated POD dependencies
 
+## [3.1.0-beta.1](https://github.com/juliansteenbakker/mobile_scanner/compare/v3.0.0-beta.1...v3.1.0-beta.1) (2022-11-02)
+
+
+### Features
+
+* add return image and refactor existing functions ([aa8298a](https://github.com/juliansteenbakker/mobile_scanner/commit/aa8298a78b88bfd46ebc02b5bdab680eb75a7f1a))
+
 ## 3.0.0-beta.1
 Breaking changes:
 * [Android] SDK updated to SDK 33.
