@@ -99,7 +99,7 @@ class _BarcodeListScannerWithControllerState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              '${barcodeCapture?.barcodes.map((e) => e.rawValue)}',
+                              '${barcodeCapture?.barcodes.map((e) => e.rawValue) ?? 'Scan something!'}',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
