@@ -85,38 +85,33 @@ class _BarcodeScannerReturningImageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            ColoredBox(
-                              color: arguments != null && !arguments!.hasTorch
-                                  ? Colors.red
-                                  : Colors.white,
-                              child: IconButton(
-                                // color: ,
-                                icon: ValueListenableBuilder(
-                                  valueListenable: controller.torchState,
-                                  builder: (context, state, child) {
-                                    if (state == null) {
+                            IconButton(
+                              color: Colors.white,
+                              icon: ValueListenableBuilder(
+                                valueListenable: controller.torchState,
+                                builder: (context, state, child) {
+                                  if (state == null) {
+                                    return const Icon(
+                                      Icons.flash_off,
+                                      color: Colors.grey,
+                                    );
+                                  }
+                                  switch (state as TorchState) {
+                                    case TorchState.off:
                                       return const Icon(
                                         Icons.flash_off,
                                         color: Colors.grey,
                                       );
-                                    }
-                                    switch (state as TorchState) {
-                                      case TorchState.off:
-                                        return const Icon(
-                                          Icons.flash_off,
-                                          color: Colors.grey,
-                                        );
-                                      case TorchState.on:
-                                        return const Icon(
-                                          Icons.flash_on,
-                                          color: Colors.yellow,
-                                        );
-                                    }
-                                  },
-                                ),
-                                iconSize: 32.0,
-                                onPressed: () => controller.toggleTorch(),
+                                    case TorchState.on:
+                                      return const Icon(
+                                        Icons.flash_on,
+                                        color: Colors.yellow,
+                                      );
+                                  }
+                                },
                               ),
+                              iconSize: 32.0,
+                              onPressed: () => controller.toggleTorch(),
                             ),
                             IconButton(
                               color: Colors.white,

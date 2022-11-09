@@ -202,7 +202,11 @@ class MobileScannerController {
 
   /// Stops the camera, but does not dispose this controller.
   Future<void> stop() async {
-    await _methodChannel.invokeMethod('stop');
+    try {
+      await _methodChannel.invokeMethod('stop');
+    } catch (e) {
+      debugPrint('$e');
+    }
   }
 
   /// Switches the torch on or off.

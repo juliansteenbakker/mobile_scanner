@@ -52,24 +52,30 @@ class _MobileScannerState extends State<MobileScanner>
     if (!controller.isStarting) controller.start();
   }
 
-  AppLifecycleState? _lastState;
+  bool resumeFromBackground = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+
+    // App state changed before it is initialized.
+    if (controller.isStarting) {
+      return;
+    }
+
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting &&
-            widget.autoResume &&
-            _lastState != AppLifecycleState.inactive) controller.start();
+        resumeFromBackground = false;
+        controller.start();
         break;
       case AppLifecycleState.paused:
-      case AppLifecycleState.detached:
-        controller.stop();
+        resumeFromBackground = true;
+        break;
+      case AppLifecycleState.inactive:
+        if (!resumeFromBackground) controller.stop();
         break;
       default:
         break;
     }
-    _lastState = state;
   }
 
   @override

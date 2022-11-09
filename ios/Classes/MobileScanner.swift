@@ -230,16 +230,16 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
 
-    /// Convert image buffer to jpeg
-    private func ciImageToJpeg(ciImage: CIImage) -> Data {
-
-        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
-        let context:CIContext = CIContext.init(options: nil)
-        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
-        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
-
-        return uiImage.jpegData(compressionQuality: 0.8)!;
-    }
+//    /// Convert image buffer to jpeg
+//    private func ciImageToJpeg(ciImage: CIImage) -> Data {
+//
+//        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
+//        let context:CIContext = CIContext.init(options: nil)
+//        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
+//        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
+//
+//        return uiImage.jpegData(compressionQuality: 0.8)!;
+//    }
 
     /// Rotates images accordingly
     func imageOrientation(
