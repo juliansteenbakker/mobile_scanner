@@ -13,11 +13,10 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 class MobileScannerController {
   MobileScannerController({
     this.facing = CameraFacing.back,
-    this.detectionSpeed = DetectionSpeed.noDuplicates,
-    // this.ratio,
+    this.detectionSpeed = DetectionSpeed.normal,
+    this.detectionTimeoutMs = 250,
     this.torchEnabled = false,
     this.formats,
-    // this.autoResume = true,
     this.returnImage = false,
     this.onPermissionSet,
   }) {
@@ -39,11 +38,6 @@ class MobileScannerController {
   /// Default: CameraFacing.back
   final CameraFacing facing;
 
-  // /// Analyze the image in 4:3 or 16:9
-  // ///
-  // /// Only on Android
-  // final Ratio? ratio;
-
   /// Enable or disable the torch (Flash) on start
   ///
   /// Default: disabled
@@ -61,6 +55,8 @@ class MobileScannerController {
   ///
   /// WARNING: DetectionSpeed.unrestricted can cause memory issues on some devices
   final DetectionSpeed detectionSpeed;
+
+  final int detectionTimeoutMs;
 
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
@@ -97,10 +93,9 @@ class MobileScannerController {
 
     cameraFacingState.value = cameraFacingOverride ?? facing;
     arguments['facing'] = cameraFacingState.value.index;
-
-    // if (ratio != null) arguments['ratio'] = ratio;
     arguments['torch'] = torchEnabled;
     arguments['speed'] = detectionSpeed.index;
+    arguments['timeout'] = detectionTimeoutMs;
 
     if (formats != null) {
       if (Platform.isAndroid) {
@@ -281,7 +276,7 @@ class MobileScannerController {
         _barcodesController.add(
           BarcodeCapture(
             barcodes: parsed,
-            image: event['image'] as Uint8List,
+            image: event['image'] as Uint8List?,
           ),
         );
         break;

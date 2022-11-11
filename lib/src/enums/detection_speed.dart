@@ -4,7 +4,7 @@ enum DetectionSpeed {
   /// barcode has been scanned.
   noDuplicates,
 
-  /// Front facing camera.
+  /// The barcode scanner will wait
   normal,
 
   /// Back facing camera.
