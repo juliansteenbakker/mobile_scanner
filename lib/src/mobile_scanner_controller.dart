@@ -223,6 +223,10 @@ class MobileScannerController {
     await _methodChannel.invokeMethod('torch', torchState.value.index);
   }
 
+  Future<void> setScale(double scale) async {
+    await _methodChannel.invokeMethod('setScale', scale);
+  }
+
   /// Switches the torch on or off.
   ///
   /// Only works if torch is available.

@@ -176,6 +176,21 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
 
+    func setScale(_ scale: CGFloat) {
+        if (device != nil) {
+            do {
+                try device.lockForConfiguration()
+                var maxZoomFactor = device.activeFormat.videoMaxZoomFactor
+                var actualScale = maxZoomFactor * Float(scale)
+                if (actualScale < 1) actualScale = 1
+                device.ramp(toVideoZoomFactor: actualScale, withRate: 1)
+                device.unlockForConfiguration()
+            } catch {
+                print("Error setting scale: \(error)")
+            }
+        }
+    }
+
     /// Analyze a single image
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position, callback: @escaping BarcodeScanningCallback) {
         let image = VisionImage(image: image)

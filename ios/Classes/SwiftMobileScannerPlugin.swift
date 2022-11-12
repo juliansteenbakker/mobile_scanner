@@ -49,6 +49,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             toggleTorch(call, result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "setScale":
+            setScale(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -127,6 +129,17 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
     
+
+    private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        do {
+            try mobileScanner.setScale(call.arguments as? CGFloat ?? 1.0)
+        } catch {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Called setScale() while stopped!",
+                                details: nil))
+        }
+        result(nil)
+    }
     /// Analyzes a single image
     private func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let uiImage = UIImage(contentsOfFile: call.arguments as? String ?? "")

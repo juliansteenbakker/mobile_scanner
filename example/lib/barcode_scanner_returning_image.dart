@@ -93,7 +93,6 @@ class _BarcodeScannerReturningImageState
                                 onChanged: (value) {
                                   setState(() {
                                     _zoomFactor = value;
-                                    print(value);
                                     controller.setScale(value);
                                   });
                                 }),

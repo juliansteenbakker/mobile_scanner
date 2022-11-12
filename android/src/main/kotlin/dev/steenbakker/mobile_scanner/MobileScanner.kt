@@ -64,6 +64,7 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
 //            "analyze" -> switchAnalyzeMode(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "setScale" -> setScale(call, result)
             else -> result.notImplemented()
         }
     }
@@ -328,6 +329,20 @@ class MobileScanner(private val activity: Activity, private val textureRegistry:
             return
         }
         camera!!.cameraControl.enableTorch(call.arguments == 1)
+        result.success(null)
+    }
+
+    private fun setScale(call: MethodCall, result: MethodChannel.Result) {
+        if (camera == null) {
+            result.error(TAG, "Called setScale() while stopped!", null)
+            return
+        }
+        val scale = call.arguments as Double
+        if (scale > 1.0 || scale < 0) {
+            result.error(TAG, "Scale should be within 0 and 1", null)
+            return
+        }
+        camera!!.cameraControl.setLinearZoom(scale.toFloat())
         result.success(null)
     }
 
