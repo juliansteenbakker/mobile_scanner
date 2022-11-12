@@ -25,6 +25,7 @@ class _BarcodeScannerReturningImageState
   );
 
   bool isStarted = true;
+  double _zoomFactor = 0.0;
 
   @override
   Widget build(BuildContext context) {
@@ -85,6 +86,17 @@ class _BarcodeScannerReturningImageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
+                            Slider(
+                                min: 0,
+                                max: 1,
+                                value: _zoomFactor,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _zoomFactor = value;
+                                    print(value);
+                                    controller.setScale(value);
+                                  });
+                                }),
                             ColoredBox(
                               color: arguments != null && !arguments!.hasTorch
                                   ? Colors.red
