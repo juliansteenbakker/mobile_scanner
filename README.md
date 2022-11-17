@@ -76,7 +76,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
           allowDuplicates: false,
-          onDetect: (barcode, args) {
+          onDetect: (barcode) {
             if (barcode.rawValue == null) {
               debugPrint('Failed to scan Barcode');
             } else {
@@ -101,7 +101,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
           allowDuplicates: false,
           controller: MobileScannerController(
             facing: CameraFacing.front, torchEnabled: true),
-          onDetect: (barcode, args) {
+          onDetect: (barcode) {
             if (barcode.rawValue == null) {
               debugPrint('Failed to scan Barcode');
             } else {
@@ -163,7 +163,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
         body: MobileScanner(
             allowDuplicates: false,
             controller: cameraController,
-            onDetect: (barcode, args) {
+            onDetect: (barcode) {
               if (barcode.rawValue == null) {
                 debugPrint('Failed to scan Barcode');
               } else {
@@ -189,7 +189,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
           torchEnabled: true,
           returnImage: true,
         ),
-        onDetect: (barcode, args) {
+        onDetect: (barcode) {
           if (barcode.rawValue == null) {
             debugPrint('Failed to scan Barcode');
           } else {
