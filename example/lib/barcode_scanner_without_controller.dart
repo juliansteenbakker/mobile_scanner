@@ -24,8 +24,7 @@ class _BarcodeScannerWithoutControllerState
             children: [
               MobileScanner(
                 fit: BoxFit.contain,
-                // allowDuplicates: false,
-                onDetect: (capture, arguments) {
+                onDetect: (capture) {
                   setState(() {
                     this.capture = capture;
                   });
