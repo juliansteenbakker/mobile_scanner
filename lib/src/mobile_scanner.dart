@@ -56,7 +56,6 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-
     // App state changed before it is initialized.
     if (controller.isStarting) {
       return;
