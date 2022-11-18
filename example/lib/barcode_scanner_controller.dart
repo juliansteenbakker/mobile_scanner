@@ -16,9 +16,15 @@ class _BarcodeScannerWithControllerState
   BarcodeCapture? barcode;
 
   MobileScannerController controller = MobileScannerController(
-    torchEnabled: true, detectionSpeed: DetectionSpeed.unrestricted,
+    torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
+    onPermissionSet: (hasPermission) {
+      // Do something with permission callback
+    },
+    // detectionSpeed: DetectionSpeed.normal
+    // detectionTimeoutMs: 1000,
+    // returnImage: false,
   );
 
   bool isStarted = true;
@@ -34,12 +40,11 @@ class _BarcodeScannerWithControllerState
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                // allowDuplicates: true,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,
                 // ),
-                onDetect: (barcode, args) {
+                onDetect: (barcode) {
                   setState(() {
                     this.barcode = barcode;
                   });
