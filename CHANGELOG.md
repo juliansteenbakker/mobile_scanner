@@ -2,6 +2,7 @@
 Breaking changes:
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
 in the MobileScanner widget.
+* onDetect now returns the object BarcodeCapture, which contains a List of barcodes and, if enabled, an image.
 * allowDuplicates is removed and replaced by MobileScannerSpeed enum.
 * onPermissionSet in MobileScanner widget is deprecated and will be removed. Use the onPermissionSet
 onPermissionSet callback in MobileScannerController instead.
