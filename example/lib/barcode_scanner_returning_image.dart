@@ -18,10 +18,15 @@ class _BarcodeScannerReturningImageState
   MobileScannerArguments? arguments;
 
   MobileScannerController controller = MobileScannerController(
-    // torchEnabled: true,
-    returnImage: true,
+    torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
+    onPermissionSet: (hasPermission) {
+      // Do something with permission callback
+    },
+    // detectionSpeed: DetectionSpeed.normal
+    // detectionTimeoutMs: 1000,
+    returnImage: true,
   );
 
   bool isStarted = true;
@@ -29,49 +34,40 @@ class _BarcodeScannerReturningImageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      body: Builder(
-        builder: (context) {
-          return Column(
-            children: [
-              Container(
-                color: Colors.blueGrey,
-                width: double.infinity,
-                height: 0.33 * MediaQuery.of(context).size.height,
-                child: barcode?.image != null
-                    ? Transform.rotate(
-                        angle: 90 * pi / 180,
-                        child: Image(
-                          gaplessPlayback: true,
-                          image: MemoryImage(barcode!.image!),
-                          fit: BoxFit.contain,
-                        ),
-                      )
-                    : const ColoredBox(
-                        color: Colors.white,
-                        child: Center(
-                          child: Text(
-                            'Your scanned barcode will appear here!',
-                          ),
-                        ),
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: barcode?.image != null
+                  ? Transform.rotate(
+                      angle: 90 * pi / 180,
+                      child: Image(
+                        gaplessPlayback: true,
+                        image: MemoryImage(barcode!.image!),
+                        fit: BoxFit.contain,
                       ),
-              ),
-              Container(
-                height: 0.66 * MediaQuery.of(context).size.height,
+                    )
+                  : const Center(
+                      child: Text(
+                        'Your scanned barcode will appear here!',
+                      ),
+                    ),
+            ),
+            Expanded(
+              flex: 2,
+              child: ColoredBox(
                 color: Colors.grey,
                 child: Stack(
                   children: [
                     MobileScanner(
                       controller: controller,
                       fit: BoxFit.contain,
-                      // allowDuplicates: true,
                       // controller: MobileScannerController(
                       //   torchEnabled: true,
                       //   facing: CameraFacing.front,
                       // ),
-                      onDetect: (barcode, arguments) {
+                      onDetect: (barcode) {
                         setState(() {
-                          this.arguments = arguments;
                           this.barcode = barcode;
                         });
                       },
@@ -85,38 +81,33 @@ class _BarcodeScannerReturningImageState
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
-                            ColoredBox(
-                              color: arguments != null && !arguments!.hasTorch
-                                  ? Colors.red
-                                  : Colors.white,
-                              child: IconButton(
-                                // color: ,
-                                icon: ValueListenableBuilder(
-                                  valueListenable: controller.torchState,
-                                  builder: (context, state, child) {
-                                    if (state == null) {
+                            IconButton(
+                              color: Colors.white,
+                              icon: ValueListenableBuilder(
+                                valueListenable: controller.torchState,
+                                builder: (context, state, child) {
+                                  if (state == null) {
+                                    return const Icon(
+                                      Icons.flash_off,
+                                      color: Colors.grey,
+                                    );
+                                  }
+                                  switch (state as TorchState) {
+                                    case TorchState.off:
                                       return const Icon(
                                         Icons.flash_off,
                                         color: Colors.grey,
                                       );
-                                    }
-                                    switch (state as TorchState) {
-                                      case TorchState.off:
-                                        return const Icon(
-                                          Icons.flash_off,
-                                          color: Colors.grey,
-                                        );
-                                      case TorchState.on:
-                                        return const Icon(
-                                          Icons.flash_on,
-                                          color: Colors.yellow,
-                                        );
-                                    }
-                                  },
-                                ),
-                                iconSize: 32.0,
-                                onPressed: () => controller.toggleTorch(),
+                                    case TorchState.on:
+                                      return const Icon(
+                                        Icons.flash_on,
+                                        color: Colors.yellow,
+                                      );
+                                  }
+                                },
                               ),
+                              iconSize: 32.0,
+                              onPressed: () => controller.toggleTorch(),
                             ),
                             IconButton(
                               color: Colors.white,
@@ -174,9 +165,9 @@ class _BarcodeScannerReturningImageState
                   ],
                 ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
+        ),
       ),
     );
   }

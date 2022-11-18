@@ -21,7 +21,7 @@ extension CVBuffer {
     var image: UIImage {
         let ciImage = CIImage(cvPixelBuffer: self)
         let cgImage = CIContext().createCGImage(ciImage, from: ciImage.extent)
-        return UIImage(cgImage: cgImage!)
+        return UIImage(cgImage: cgImage!, scale: 1.0, orientation: UIImage.Orientation.left)
     }
     
     var image1: UIImage {

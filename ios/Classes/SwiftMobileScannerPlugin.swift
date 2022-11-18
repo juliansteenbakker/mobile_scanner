@@ -56,11 +56,11 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// Parses all parameters and starts the mobileScanner
     private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        //        let ratio: Int = (call.arguments as! Dictionary<String, Any?>)["ratio"] as! Int
         let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
+        let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
 
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         var barcodeOptions: BarcodeScannerOptions? = nil
@@ -75,10 +75,10 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
 
 
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
-        let speed: DetectionSpeed = DetectionSpeed(rawValue: (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0)!
+        let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            let parameters = try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: speed)
+            let parameters = try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed)
             result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",
@@ -90,7 +90,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: nil))
         } catch MobileScannerError.torchError(let error) {
             result(FlutterError(code: "MobileScanner",
-                                message: "Error occured when setting toch!",
+                                message: "Error occured when setting torch!",
                                 details: error))
         } catch MobileScannerError.cameraError(let error) {
             result(FlutterError(code: "MobileScanner",
@@ -161,10 +161,4 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             break
         }
     }
-}
-
-enum DetectionSpeed: Int {
-    case noDuplicates = 0
-    case normal = 1
-    case unrestricted = 2
 }

@@ -1,8 +1,13 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/src/barcode_capture.dart';
-import 'package:mobile_scanner/src/mobile_scanner_arguments.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
+import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
+
+typedef MobileScannerCallback = void Function(BarcodeCapture barcodes);
+typedef MobileScannerArgumentsCallback = void Function(
+  MobileScannerArguments? arguments,
+);
 
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
@@ -10,14 +15,21 @@ class MobileScanner extends StatefulWidget {
   final MobileScannerController? controller;
 
   /// Calls the provided [onPermissionSet] callback when the permission is set.
+  // @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
+  // ignore: deprecated_consistency
   final Function(bool permissionGranted)? onPermissionSet;
 
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
-  /// [startArguments] Information about the state of the MobileScanner widget
-  final Function(BarcodeCapture capture, MobileScannerArguments? arguments)
-      onDetect;
+  /// [startInternalArguments] Information about the state of the MobileScanner widget
+  final MobileScannerCallback onDetect;
+
+  /// Function that gets called when the scanner is started.
+  ///
+  /// [arguments] The start arguments of the scanner. This contains the size of
+  /// the scanner which can be used to draw a box over the scanner.
+  final MobileScannerArgumentsCallback? onStart;
 
   /// Handles how the widget should fit the screen.
   final BoxFit fit;
@@ -29,10 +41,12 @@ class MobileScanner extends StatefulWidget {
   const MobileScanner({
     super.key,
     required this.onDetect,
+    this.onStart,
     this.controller,
     this.autoResume = true,
     this.fit = BoxFit.cover,
-    this.onPermissionSet,
+    @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
+        this.onPermissionSet,
   });
 
   @override
@@ -49,27 +63,39 @@ class _MobileScannerState extends State<MobileScanner>
     WidgetsBinding.instance.addObserver(this);
     controller = widget.controller ??
         MobileScannerController(onPermissionSet: widget.onPermissionSet);
-    if (!controller.isStarting) controller.start();
+    if (!controller.isStarting) {
+      _startScanner();
+    }
   }
 
-  AppLifecycleState? _lastState;
+  Future<void> _startScanner() async {
+    final arguments = await controller.start();
+    widget.onStart?.call(arguments);
+  }
+
+  bool resumeFromBackground = false;
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    // App state changed before it is initialized.
+    if (controller.isStarting) {
+      return;
+    }
+
     switch (state) {
       case AppLifecycleState.resumed:
-        if (!controller.isStarting &&
-            widget.autoResume &&
-            _lastState != AppLifecycleState.inactive) controller.start();
+        resumeFromBackground = false;
+        _startScanner();
         break;
       case AppLifecycleState.paused:
-      case AppLifecycleState.detached:
-        controller.stop();
+        resumeFromBackground = true;
+        break;
+      case AppLifecycleState.inactive:
+        if (!resumeFromBackground) controller.stop();
         break;
       default:
         break;
     }
-    _lastState = state;
   }
 
   @override
@@ -82,7 +108,7 @@ class _MobileScannerState extends State<MobileScanner>
           return const ColoredBox(color: Colors.black);
         } else {
           controller.barcodes.listen((barcode) {
-            widget.onDetect(barcode, value! as MobileScannerArguments);
+            widget.onDetect(barcode);
           });
           return ClipRect(
             child: SizedBox(

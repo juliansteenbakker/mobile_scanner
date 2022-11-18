@@ -49,7 +49,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         super.init()
     }
 
-    /// Check permissions for video
+    /// Check if we already have camera permission.
     func checkPermission() -> Int {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
         switch status {
@@ -65,6 +65,44 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Request permissions for video
     func requestPermission(_ result: @escaping FlutterResult) {
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
+    }
+    
+    /// Gets called when a new image is added to the buffer
+    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
+            print("Failed to get image buffer from sample buffer.")
+            return
+        }
+        latestBuffer = imageBuffer
+        registry?.textureFrameAvailable(textureId)
+        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && i > 10 || detectionSpeed == DetectionSpeed.unrestricted) {
+            i = 0
+            let ciImage = latestBuffer.image
+
+            let image = VisionImage(image: ciImage)
+            image.orientation = imageOrientation(
+                deviceOrientation: UIDevice.current.orientation,
+                defaultOrientation: .portrait,
+                position: videoPosition
+            )
+
+            scanner.process(image) { [self] barcodes, error in
+                if (detectionSpeed == DetectionSpeed.noDuplicates) {
+                    let newScannedBarcodes = barcodes?.map { barcode in
+                        return barcode.rawValue
+                    }
+                    if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
+                        return
+                    } else {
+                        barcodesString = newScannedBarcodes
+                    }
+                }
+
+                mobileScannerCallback(barcodes, error, ciImage)
+            }
+        } else {
+            i+=1
+        }
     }
 
     /// Start scanning for barcodes
@@ -136,13 +174,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         return MobileScannerStartParameters(width: Double(dimensions.height), height: Double(dimensions.width), hasTorch: device.hasTorch, textureId: textureId)
     }
 
-    struct MobileScannerStartParameters {
-        var width: Double = 0.0
-        var height: Double = 0.0
-        var hasTorch = false
-        var textureId: Int64 = 0
-    }
-
     /// Stop scanning for barcodes
     func stop() throws {
         if (device == nil) {
@@ -192,54 +223,18 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var barcodesString: Array<String?>?
 
-    /// Gets called when a new image is added to the buffer
-    public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
-            return
-        }
-        latestBuffer = imageBuffer
-        registry?.textureFrameAvailable(textureId)
-        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && i > 10 || detectionSpeed == DetectionSpeed.unrestricted) {
-            i = 0
-            let ciImage = latestBuffer.image
 
-            let image = VisionImage(image: ciImage)
-            image.orientation = imageOrientation(
-                deviceOrientation: UIDevice.current.orientation,
-                defaultOrientation: .portrait,
-                position: videoPosition
-            )
 
-            scanner.process(image) { [self] barcodes, error in
-                if (detectionSpeed == DetectionSpeed.noDuplicates) {
-                    let newScannedBarcodes = barcodes?.map { barcode in
-                        return barcode.rawValue
-                    }
-                    if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
-                        return
-                    } else {
-                        barcodesString = newScannedBarcodes
-                    }
-                }
-
-                mobileScannerCallback(barcodes, error, ciImage)
-            }
-        } else {
-            i+=1
-        }
-    }
-
-    /// Convert image buffer to jpeg
-    private func ciImageToJpeg(ciImage: CIImage) -> Data {
-
-        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
-        let context:CIContext = CIContext.init(options: nil)
-        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
-        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
-
-        return uiImage.jpegData(compressionQuality: 0.8)!;
-    }
+//    /// Convert image buffer to jpeg
+//    private func ciImageToJpeg(ciImage: CIImage) -> Data {
+//
+//        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
+//        let context:CIContext = CIContext.init(options: nil)
+//        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
+//        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
+//
+//        return uiImage.jpegData(compressionQuality: 0.8)!;
+//    }
 
     /// Rotates images accordingly
     func imageOrientation(
@@ -270,6 +265,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
-
+    
+    struct MobileScannerStartParameters {
+        var width: Double = 0.0
+        var height: Double = 0.0
+        var hasTorch = false
+        var textureId: Int64 = 0
+    }
 }
 

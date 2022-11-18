@@ -13,11 +13,10 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 class MobileScannerController {
   MobileScannerController({
     this.facing = CameraFacing.back,
-    this.detectionSpeed = DetectionSpeed.noDuplicates,
-    // this.ratio,
+    this.detectionSpeed = DetectionSpeed.normal,
+    this.detectionTimeoutMs = 250,
     this.torchEnabled = false,
     this.formats,
-    // this.autoResume = true,
     this.returnImage = false,
     this.onPermissionSet,
   }) {
@@ -31,18 +30,14 @@ class MobileScannerController {
         .listen((data) => _handleEvent(data as Map));
   }
 
-  //Must be static to keep the same value on new instances
+  /// The hashcode of the controller to check if the correct object is mounted.
+  /// Must be static to keep the same value on new instances
   static int? controllerHashcode;
 
   /// Select which camera should be used.
   ///
   /// Default: CameraFacing.back
   final CameraFacing facing;
-
-  // /// Analyze the image in 4:3 or 16:9
-  // ///
-  // /// Only on Android
-  // final Ratio? ratio;
 
   /// Enable or disable the torch (Flash) on start
   ///
@@ -61,6 +56,13 @@ class MobileScannerController {
   ///
   /// WARNING: DetectionSpeed.unrestricted can cause memory issues on some devices
   final DetectionSpeed detectionSpeed;
+
+  /// Sets the timeout of scanner.
+  /// The timeout is set in miliseconds.
+  ///
+  /// NOTE: The timeout only works if the [detectionSpeed] is set to
+  /// [DetectionSpeed.normal] (which is the default value).
+  final int detectionTimeoutMs;
 
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
@@ -89,6 +91,7 @@ class MobileScannerController {
       ValueNotifier(facing);
 
   bool isStarting = false;
+
   bool? _hasTorch;
 
   /// Set the starting arguments for the camera
@@ -97,10 +100,9 @@ class MobileScannerController {
 
     cameraFacingState.value = cameraFacingOverride ?? facing;
     arguments['facing'] = cameraFacingState.value.index;
-
-    // if (ratio != null) arguments['ratio'] = ratio;
     arguments['torch'] = torchEnabled;
     arguments['speed'] = detectionSpeed.index;
+    arguments['timeout'] = detectionTimeoutMs;
 
     if (formats != null) {
       if (Platform.isAndroid) {
@@ -118,9 +120,9 @@ class MobileScannerController {
   Future<MobileScannerArguments?> start({
     CameraFacing? cameraFacingOverride,
   }) async {
-    debugPrint('Hashcode controller: $hashCode');
     if (isStarting) {
       debugPrint("Called start() while starting.");
+      return null;
     }
     isStarting = true;
 
@@ -157,10 +159,10 @@ class MobileScannerController {
       );
     } on PlatformException catch (error) {
       debugPrint('${error.code}: ${error.message}');
-      isStarting = false;
       if (error.code == "MobileScannerWeb") {
         onPermissionSet?.call(false);
       }
+      isStarting = false;
       return null;
     }
 
@@ -177,32 +179,33 @@ class MobileScannerController {
     }
 
     if (kIsWeb) {
+      // If we reach this line, it means camera permission has been granted
       onPermissionSet?.call(
         true,
-      ); // If we reach this line, it means camera permission has been granted
-
-      startArguments.value = MobileScannerArguments(
-        webId: startResult['ViewID'] as String?,
-        size: Size(
-          startResult['videoWidth'] as double? ?? 0,
-          startResult['videoHeight'] as double? ?? 0,
-        ),
-        hasTorch: _hasTorch!,
-      );
-    } else {
-      startArguments.value = MobileScannerArguments(
-        textureId: startResult['textureId'] as int?,
-        size: toSize(startResult['size'] as Map? ?? {}),
-        hasTorch: _hasTorch!,
       );
     }
+
     isStarting = false;
-    return startArguments.value!;
+    return startArguments.value = MobileScannerArguments(
+      size: kIsWeb
+          ? Size(
+              startResult['videoWidth'] as double? ?? 0,
+              startResult['videoHeight'] as double? ?? 0,
+            )
+          : toSize(startResult['size'] as Map? ?? {}),
+      hasTorch: _hasTorch!,
+      textureId: kIsWeb ? null : startResult['textureId'] as int?,
+      webId: kIsWeb ? startResult['ViewID'] as String? : null,
+    );
   }
 
   /// Stops the camera, but does not dispose this controller.
   Future<void> stop() async {
-    await _methodChannel.invokeMethod('stop');
+    try {
+      await _methodChannel.invokeMethod('stop');
+    } catch (e) {
+      debugPrint('$e');
+    }
   }
 
   /// Switches the torch on or off.
@@ -277,7 +280,7 @@ class MobileScannerController {
         _barcodesController.add(
           BarcodeCapture(
             barcodes: parsed,
-            image: event['image'] as Uint8List,
+            image: event['image'] as Uint8List?,
           ),
         );
         break;
