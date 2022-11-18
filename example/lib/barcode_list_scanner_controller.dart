@@ -19,6 +19,12 @@ class _BarcodeListScannerWithControllerState
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
+    onPermissionSet: (hasPermission) {
+      // Do something with permission callback
+    },
+    // detectionSpeed: DetectionSpeed.normal
+    // detectionTimeoutMs: 1000,
+    // returnImage: false,
   );
 
   bool isStarted = true;
@@ -34,15 +40,17 @@ class _BarcodeListScannerWithControllerState
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                // allowDuplicates: true,
                 // controller: MobileScannerController(
                 //   torchEnabled: true,
                 //   facing: CameraFacing.front,
                 // ),
-                onDetect: (barcodeCapture, arguments) {
+                onDetect: (barcodeCapture) {
                   setState(() {
                     this.barcodeCapture = barcodeCapture;
                   });
+                },
+                onStart: (arguments) {
+                  // Do something with start arguments
                 },
               ),
               Align(
@@ -99,7 +107,7 @@ class _BarcodeListScannerWithControllerState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              '${barcodeCapture?.barcodes.map((e) => e.rawValue)}',
+                              '${barcodeCapture?.barcodes.map((e) => e.rawValue) ?? 'Scan something!'}',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
