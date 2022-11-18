@@ -55,7 +55,7 @@ Do you have experience with Flutter Web development? [Help me with migrating fro
 
 | Features               | Android            | iOS                | macOS | Web |
 |------------------------|--------------------|--------------------|-------|-----|
-| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: |   :x:    |  :x:   |
+| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
 
 ## Usage
 
@@ -75,15 +75,15 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
-          allowDuplicates: false,
-          onDetect: (barcode, args) {
-            if (barcode.rawValue == null) {
-              debugPrint('Failed to scan Barcode');
-            } else {
-              final String code = barcode.rawValue!;
-              debugPrint('Barcode found! $code');
-            }
-          }),
+        // fit: BoxFit.contain,
+        onDetect: (capture) {
+          final List<Barcode> barcodes = capture.barcodes;
+          final Uint8List? image = capture.image;
+          for (final barcode in barcodes) {
+            debugPrint('Barcode found! ${barcode.rawValue}');
+          }
+        },
+      ),
     );
   }
 ```
@@ -98,17 +98,18 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
-          allowDuplicates: false,
-          controller: MobileScannerController(
-            facing: CameraFacing.front, torchEnabled: true),
-          onDetect: (barcode, args) {
-            if (barcode.rawValue == null) {
-              debugPrint('Failed to scan Barcode');
-            } else {
-              final String code = barcode.rawValue!;
-              debugPrint('Barcode found! $code');
-            }
-          }),
+        // fit: BoxFit.contain,
+        controller: MobileScannerController(
+          facing: CameraFacing.front, torchEnabled: true,
+        ),
+        onDetect: (capture) {
+          final List<Barcode> barcodes = capture.barcodes;
+          final Uint8List? image = capture.image;
+          for (final barcode in barcodes) {
+            debugPrint('Barcode found! ${barcode.rawValue}');
+          }
+        },
+      ),
     );
   }
 ```
@@ -161,16 +162,17 @@ import 'package:mobile_scanner/mobile_scanner.dart';
           ],
         ),
         body: MobileScanner(
-            allowDuplicates: false,
-            controller: cameraController,
-            onDetect: (barcode, args) {
-              if (barcode.rawValue == null) {
-                debugPrint('Failed to scan Barcode');
-              } else {
-                final String code = barcode.rawValue!;
-                debugPrint('Barcode found! $code');
-              }
-            }));
+          // fit: BoxFit.contain,
+          controller: cameraController,
+          onDetect: (capture) {
+            final List<Barcode> barcodes = capture.barcodes;
+            final Uint8List? image = capture.image;
+            for (final barcode in barcodes) {
+              debugPrint('Barcode found! ${barcode.rawValue}');
+            }
+          },
+        ),
+    );
   }
 ```
 
@@ -184,25 +186,25 @@ import 'package:mobile_scanner/mobile_scanner.dart';
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner')),
       body: MobileScanner(
+        fit: BoxFit.contain,
         controller: MobileScannerController(
-          facing: CameraFacing.front,
-          torchEnabled: true,
+          // facing: CameraFacing.back,
+          // torchEnabled: false,
           returnImage: true,
         ),
-        onDetect: (barcode, args) {
-          if (barcode.rawValue == null) {
-            debugPrint('Failed to scan Barcode');
-          } else {
-            final String code = barcode.rawValue!;
-            debugPrint('Barcode found! $code');
-
-            debugPrint(
-                'Image returned! length: ${barcode.image!.lengthInBytes}b');
+        onDetect: (capture) {
+          final List<Barcode> barcodes = capture.barcodes;
+          final Uint8List? image = capture.image;
+          for (final barcode in barcodes) {
+            debugPrint('Barcode found! ${barcode.rawValue}');
+          }
+          if (image != null) {
             showDialog(
               context: context,
-              builder: (context) => Image(image: MemoryImage(barcode.image!)),
+              builder: (context) =>
+                  Image(image: MemoryImage(image)),
             );
-            Future.delayed(const Duration(seconds: 2), () {
+            Future.delayed(const Duration(seconds: 5), () {
               Navigator.pop(context);
             });
           }
@@ -212,25 +214,30 @@ import 'package:mobile_scanner/mobile_scanner.dart';
   }
 ```
 
-### Scan result
+### BarcodeCapture
 
-You can use the following properties of the Barcode, which gets
-passed to the `onDetect` function.
+The onDetect function returns a BarcodeCapture objects which contains the following items.
 
-| Property name | Type           | Description
-|---------------|----------------|--------------------
-| image         | Uint8List?     | only if returnImage was set to true
-| format        | BarcodeFormat  |
-| rawBytes      | Uint8List?     | binary scan result
-| rawValue      | String?        | Value if barcode is in UTF-8 format
-| displayValue  | String?        |
-| type          | BarcodeType    |
-| calendarEvent | CalendarEvent? |
-| contactInfo   | ContactInfo?   |
-| driverLicense | DriverLicense? |
-| email         | Email?         |
-| geoPoint      | GeoPoint?      |
-| phone         | Phone?         |
-| sms           | SMS?           |
-| url           | UrlBookmark?   |
-| wifi          | WiFi?          | WiFi Access-Point details
+| Property name | Type          | Description                       |
+|---------------|---------------|-----------------------------------|
+| barcodes      | List<Barcode> | A list with scanned barcodes.     |
+| image         | Uint8List?    | If enabled, an image of the scan. |
+
+You can use the following properties of the Barcode object.
+
+| Property name | Type           | Description                         |
+|---------------|----------------|-------------------------------------|
+| format        | BarcodeFormat  |                                     |
+| rawBytes      | Uint8List?     | binary scan result                  |
+| rawValue      | String?        | Value if barcode is in UTF-8 format |
+| displayValue  | String?        |                                     |
+| type          | BarcodeType    |                                     |
+| calendarEvent | CalendarEvent? |                                     |
+| contactInfo   | ContactInfo?   |                                     |
+| driverLicense | DriverLicense? |                                     |
+| email         | Email?         |                                     |
+| geoPoint      | GeoPoint?      |                                     |
+| phone         | Phone?         |                                     |
+| sms           | SMS?           |                                     |
+| url           | UrlBookmark?   |                                     |
+| wifi          | WiFi?          | WiFi Access-Point details           |

@@ -1,6 +1,21 @@
-## NEXT
+## 3.0.0-beta.2
 Breaking changes:
+* The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
+in the MobileScanner widget.
+* onDetect now returns the object BarcodeCapture, which contains a List of barcodes and, if enabled, an image.
+* allowDuplicates is removed and replaced by MobileScannerSpeed enum.
+* onPermissionSet in MobileScanner widget is deprecated and will be removed. Use the onPermissionSet
+onPermissionSet callback in MobileScannerController instead.
 * [iOS] The minimum deployment target is now 11.0 or higher.
+
+Features:
+* The returnImage is working for both iOS and Android. You can enable it in the MobileScannerController.
+The image will be returned in the BarcodeCapture object provided by onDetect.
+* You can now control the DetectionSpeed, as well as the timeout of the DetectionSpeed. For more
+info see the DetectionSpeed documentation. This replaces the allowDuplicates function.
+
+Other improvements:
+* Both the [iOS] and [Android] codebases have been refactored completely.
 * [iOS] Updated POD dependencies
 
 ## 3.0.0-beta.1
