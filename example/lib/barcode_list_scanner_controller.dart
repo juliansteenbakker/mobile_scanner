@@ -19,9 +19,6 @@ class _BarcodeListScannerWithControllerState
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
-    onPermissionSet: (hasPermission) {
-      // Do something with permission callback
-    },
     // detectionSpeed: DetectionSpeed.normal
     // detectionTimeoutMs: 1000,
     // returnImage: false,
