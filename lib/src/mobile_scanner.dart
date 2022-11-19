@@ -14,11 +14,6 @@ class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
   final MobileScannerController? controller;
 
-  /// Calls the provided [onPermissionSet] callback when the permission is set.
-  // @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
-  // ignore: deprecated_consistency
-  final Function(bool permissionGranted)? onPermissionSet;
-
   /// Function that gets called when a Barcode is detected.
   ///
   /// [barcode] The barcode object with all information about the scanned code.
@@ -37,7 +32,8 @@ class MobileScanner extends StatefulWidget {
   /// Whether to automatically resume the camera when the application is resumed
   final bool autoResume;
 
-  /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
+  /// Create a [MobileScanner] with a [controller].
+  /// The [controller] must have been initialized, using [MobileScannerController.start].
   const MobileScanner({
     super.key,
     required this.onDetect,
@@ -45,8 +41,6 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.autoResume = true,
     this.fit = BoxFit.cover,
-    @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
-        this.onPermissionSet,
   });
 
   @override
@@ -61,8 +55,7 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    controller = widget.controller ??
-        MobileScannerController(onPermissionSet: widget.onPermissionSet);
+    controller = widget.controller ?? MobileScannerController();
     if (!controller.isStarting) {
       _startScanner();
     }
@@ -141,8 +134,7 @@ class _MobileScannerState extends State<MobileScanner>
       }
     } else {
       if (widget.controller == null) {
-        controller =
-            MobileScannerController(onPermissionSet: widget.onPermissionSet);
+        controller = MobileScannerController();
       } else if (oldWidget.controller != widget.controller) {
         controller = widget.controller!;
       }
