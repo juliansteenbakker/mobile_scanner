@@ -1,6 +1,6 @@
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 
-/// This class represents an exception throzn by the mobile scanner.
+/// This class represents an exception thrown by the mobile scanner.
 class MobileScannerException implements Exception {
   const MobileScannerException({
     required this.errorCode,

@@ -17,9 +17,7 @@ class MobileScannerController {
     this.torchEnabled = false,
     this.formats,
     this.returnImage = false,
-    @Deprecated(
-      'Instead, handle permission errors using the result of the `start()` method.',
-    )
+    @Deprecated('Instead, use the result of calling `start()` to determine if permissions were granted.')
         this.onPermissionSet,
   }) {
     // In case a new instance is created before calling dispose()
@@ -77,7 +75,7 @@ class MobileScannerController {
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   @Deprecated(
-    'Instead, handle permission errors using the result of the `start()` method.',
+    'Instead, use the result of calling `start()` to determine if permissions were granted.',
   )
   Function(bool permissionGranted)? onPermissionSet;
 
