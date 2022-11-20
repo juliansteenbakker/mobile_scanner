@@ -6,8 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
 /// where as the [MobileScanner] class is the frontend of this plugin.
@@ -235,7 +233,7 @@ class MobileScannerController {
 
     if (hasTorch == null) {
       throw const MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerUnititialized,
+        errorCode: MobileScannerErrorCode.controllerUninitialized,
       );
     } else if (!hasTorch) {
       return;

@@ -2,7 +2,7 @@
 enum MobileScannerErrorCode {
   /// The controller was used
   /// while it was not yet initialized using [MobileScannerController.start].
-  controllerUnititialized,
+  controllerUninitialized,
 
   /// A generic error occurred.
   ///
