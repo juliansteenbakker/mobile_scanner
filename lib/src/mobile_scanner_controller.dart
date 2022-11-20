@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
@@ -18,7 +19,10 @@ class MobileScannerController {
     this.torchEnabled = false,
     this.formats,
     this.returnImage = false,
-    this.onPermissionSet,
+    @Deprecated(
+      'Instead, handle permission errors using the result of the `start()` method.',
+    )
+        this.onPermissionSet,
   }) {
     // In case a new instance is created before calling dispose()
     if (controllerHashcode != null) {
@@ -74,6 +78,9 @@ class MobileScannerController {
   static const EventChannel _eventChannel =
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
+  @Deprecated(
+    'Instead, handle permission errors using the result of the `start()` method.',
+  )
   Function(bool permissionGranted)? onPermissionSet;
 
   /// Listen to events from the platform specific code
@@ -115,8 +122,14 @@ class MobileScannerController {
     return arguments;
   }
 
-  /// Start barcode scanning. This will first check if the required permissions
-  /// are set.
+  /// Start scanning for barcodes.
+  /// Upon calling this method, the necessary camera permission will be requested.
+  ///
+  /// Returns an instance of [MobileScannerArguments]
+  /// when the scanner was successfully started.
+  /// Returns null if the scanner is currently starting.
+  ///
+  /// Throws a [MobileScannerException] if starting the scanner failed.
   Future<MobileScannerArguments?> start({
     CameraFacing? cameraFacingOverride,
   }) async {
@@ -124,6 +137,7 @@ class MobileScannerController {
       debugPrint("Called start() while starting.");
       return null;
     }
+
     isStarting = true;
 
     // Check authorization status
@@ -136,16 +150,17 @@ class MobileScannerController {
               await _methodChannel.invokeMethod('request') as bool? ?? false;
           if (!result) {
             isStarting = false;
-            onPermissionSet?.call(result);
-            throw MobileScannerException('User declined camera permission.');
+            throw const MobileScannerException(
+              errorCode: MobileScannerErrorCode.permissionDenied,
+            );
           }
           break;
         case MobileScannerState.denied:
           isStarting = false;
-          onPermissionSet?.call(false);
-          throw MobileScannerException('User declined camera permission.');
+          throw const MobileScannerException(
+            errorCode: MobileScannerErrorCode.permissionDenied,
+          );
         case MobileScannerState.authorized:
-          onPermissionSet?.call(true);
           break;
       }
     }
@@ -158,31 +173,33 @@ class MobileScannerController {
         _argumentsToMap(cameraFacingOverride: cameraFacingOverride),
       );
     } on PlatformException catch (error) {
-      debugPrint('${error.code}: ${error.message}');
+      MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
+
       if (error.code == "MobileScannerWeb") {
-        onPermissionSet?.call(false);
+        errorCode = MobileScannerErrorCode.permissionDenied;
       }
       isStarting = false;
-      return null;
+
+      throw MobileScannerException(
+        errorCode: errorCode,
+        errorDetails: MobileScannerErrorDetails(
+          code: error.code,
+          details: error.details as Object?,
+          message: error.message,
+        ),
+      );
     }
 
     if (startResult == null) {
       isStarting = false;
-      throw MobileScannerException(
-        'Failed to start mobileScanner, no response from platform side',
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
       );
     }
 
     _hasTorch = startResult['torchable'] as bool? ?? false;
     if (_hasTorch! && torchEnabled) {
       torchState.value = TorchState.on;
-    }
-
-    if (kIsWeb) {
-      // If we reach this line, it means camera permission has been granted
-      onPermissionSet?.call(
-        true,
-      );
     }
 
     isStarting = false;
@@ -210,14 +227,18 @@ class MobileScannerController {
 
   /// Switches the torch on or off.
   ///
-  /// Only works if torch is available.
+  /// Does nothing if the device has no torch.
+  ///
+  /// Throws if the controller was not initialized.
   Future<void> toggleTorch() async {
-    if (_hasTorch == null) {
-      throw MobileScannerException(
-        'Cannot toggle torch if start() has never been called',
+    final hasTorch = _hasTorch;
+
+    if (hasTorch == null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerUnititialized,
       );
-    } else if (!_hasTorch!) {
-      throw MobileScannerException('Device has no torch');
+    } else if (!hasTorch) {
+      return;
     }
 
     torchState.value =
@@ -258,7 +279,6 @@ class MobileScannerController {
     _barcodesController.close();
     if (hashCode == controllerHashcode) {
       controllerHashcode = null;
-      onPermissionSet = null;
     }
   }
 
@@ -307,7 +327,10 @@ class MobileScannerController {
         );
         break;
       case 'error':
-        throw MobileScannerException(data as String);
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(message: data as String?),
+        );
       default:
         throw UnimplementedError(name as String?);
     }
