@@ -15,7 +15,7 @@ class _BarcodeScannerWithControllerState
     with SingleTickerProviderStateMixin {
   BarcodeCapture? barcode;
 
-  MobileScannerController controller = MobileScannerController(
+  final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
@@ -171,5 +171,11 @@ class _BarcodeScannerWithControllerState
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }

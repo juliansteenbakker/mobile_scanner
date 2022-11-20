@@ -17,7 +17,7 @@ class _BarcodeScannerReturningImageState
   BarcodeCapture? barcode;
   MobileScannerArguments? arguments;
 
-  MobileScannerController controller = MobileScannerController(
+  final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
@@ -167,5 +167,11 @@ class _BarcodeScannerReturningImageState
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }
