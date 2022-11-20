@@ -84,11 +84,7 @@ class _BarcodeScannerReturningImageState
                     MobileScanner(
                       controller: controller,
                       fit: BoxFit.contain,
-                      // controller: MobileScannerController(
-                      //   torchEnabled: true,
-                      //   facing: CameraFacing.front,
-                      // ),
-                      onDetect: (barcode) {
+                      onBarcodeDetected: (barcode) {
                         setState(() {
                           this.barcode = barcode;
                         });
