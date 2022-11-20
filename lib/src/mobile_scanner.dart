@@ -6,39 +6,38 @@ import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
 
-typedef MobileScannerCallback = void Function(BarcodeCapture barcodes);
-typedef MobileScannerArgumentsCallback = void Function(
-  MobileScannerArguments? arguments,
-);
-
-/// A widget showing a live camera preview.
+/// The [MobileScanner] widget displays a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller that manages the barcode scanner.
   final MobileScannerController controller;
 
-  /// Function that gets called when a Barcode is detected.
+  /// The [BoxFit] for the camera preview.
   ///
-  /// [barcode] The barcode object with all information about the scanned code.
-  /// [startInternalArguments] Information about the state of the MobileScanner widget
-  final MobileScannerCallback onDetect;
-
-  /// Function that gets called when the scanner is started.
-  ///
-  /// [arguments] The start arguments of the scanner. This contains the size of
-  /// the scanner which can be used to draw a box over the scanner.
-  final MobileScannerArgumentsCallback? onStart;
-
-  /// Handles how the widget should fit the screen.
+  /// Defaults to [BoxFit.cover].
   final BoxFit fit;
 
-  /// Whether to automatically resume the camera when the application is resumed
-  final bool autoResume;
+  /// The function that signals when new barcodes were detected by the [controller].
+  final void Function(BarcodeCapture barcodes) onBarcodeDetected;
 
-  /// Create a [MobileScanner] with a [controller].
-  /// The [controller] must have been initialized, using [MobileScannerController.start].
+  /// The function that signals when the barcode scanner is restarted,
+  /// due to coming back to the foreground.
+  final void Function(MobileScannerArguments? arguments)? onScannerRestarted;
+
+  /// The function that builds a placeholder widget when the scanner
+  /// is not yet displaying its camera preview.
+  ///
+  /// If this is null, a black [ColoredBox] is used as placeholder.
+  final Widget Function(BuildContext, Widget?)? placeholderBuilder;
+
+  /// Create a new [MobileScanner] using the provided [controller]
+  /// and [onBarcodeDetected] callback.
   const MobileScanner({
     required this.controller,
     this.fit = BoxFit.cover,
+    required this.onBarcodeDetected,
+    this.onScannerRestarted,
+    this.placeholderBuilder,
+    super.key,
   });
 
   @override
@@ -100,33 +99,33 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: controller.startArguments,
+    return ValueListenableBuilder<MobileScannerArguments?>(
+      valueListenable: widget.controller.startArguments,
       builder: (context, value, child) {
-        value = value as MobileScannerArguments?;
         if (value == null) {
-          return const ColoredBox(color: Colors.black);
-        } else {
-          controller.barcodes.listen((barcode) {
-            widget.onDetect(barcode);
-          });
-          return ClipRect(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: FittedBox(
-                fit: widget.fit,
-                child: SizedBox(
-                  width: value.size.width,
-                  height: value.size.height,
-                  child: kIsWeb
-                      ? HtmlElementView(viewType: value.webId!)
-                      : Texture(textureId: value.textureId!),
-                ),
-              ),
-            ),
-          );
+          return widget.placeholderBuilder?.call(context, child) ??
+              const ColoredBox(color: Colors.black);
         }
+
+        return ClipRect(
+          child: LayoutBuilder(
+            builder: (_, constraints) {
+              return SizedBox.fromSize(
+                size: constraints.biggest,
+                child: FittedBox(
+                  fit: widget.fit,
+                  child: SizedBox(
+                    width: value.size.width,
+                    height: value.size.height,
+                    child: kIsWeb
+                        ? HtmlElementView(viewType: value.webId!)
+                        : Texture(textureId: value.textureId!),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
       },
     );
   }
