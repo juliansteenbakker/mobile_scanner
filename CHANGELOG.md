@@ -5,6 +5,7 @@ Breaking changes:
 * Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
   with consistent error codes, rather than string messages.
 * The previously deprecated `onPermissionSet` is now removed from the `MobileScanner` widget.
+* The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
   To handle permission errors, consider catching the result of `MobileScannerController.start()`.
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
 * The `controller` of the `MobileScanner` widget is now required.
