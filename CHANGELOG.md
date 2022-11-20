@@ -1,3 +1,13 @@
+## 3.0.0-beta.3
+Breaking changes:
+* `MobileScannerException` now uses an `errorCode` instead of a `message`.
+* `MobileScannerException` now contains additional details from the original error.
+* Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
+  with consistent error codes, rather than string messages.
+* The previously deprecated `onPermissionSet` is now removed from the `MobileScanner` widget.
+  To handle permission errors, consider catching the result of `MobileScannerController.start()`.
+* Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+  
 ## 3.0.0-beta.2
 Breaking changes:
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
