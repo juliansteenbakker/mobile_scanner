@@ -7,6 +7,29 @@ Breaking changes:
 * The previously deprecated `onPermissionSet` is now removed from the `MobileScanner` widget.
   To handle permission errors, consider catching the result of `MobileScannerController.start()`.
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+* The `controller` of the `MobileScanner` widget is now required.
+* The `onDetect` method of `MobileScanner` has been renamed to `onBarcodeDetected`.
+* The `MobileScanner` widget no longer starts its `controller`.
+  Clients of the widget should call `controller.start()` when appropriate.
+* The `onStart` method has been removed.
+  To retrieve the start arguments of the controller, await the `start()` method:
+```dart
+final arguments = await controller.start();
+```
+  To retrieve the updated preview size when the application resumes from the background,
+  use the new `onScannerRestarted` method.
+* The `autoResume` attribute has been removed from the `MobileScanner` widget.
+  The controller already automatically resumes, so it had no effect.
+* Removed `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedef.
+  
+Fixed:
+* Fixed a memory leak where the `MobileScanner` widget would never close its subscription to the barcode events.
+* Fixed a dependency on all properties of `MediaQueryData` to build the preview widget. Now the preview only depends on its layout constraints.
+* Fixed a potential crash when the scanner is restarted due to the app being resumed.
+* Various documentation improvements.
+
+Features:
+* Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
   
 ## 3.0.0-beta.2
 Breaking changes:
