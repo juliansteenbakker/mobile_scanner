@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/web/base.dart';
 import 'package:mobile_scanner/src/web/jsqr.dart';
 import 'package:mobile_scanner/src/web/media.dart';
 
@@ -42,8 +43,8 @@ class MobileScannerWebPlugin {
   // Determine wether device has flas
   bool hasFlash = false;
 
-  // Timer used to capture frames to be analyzed
-  Timer? _frameInterval;
+  final WebBarcodeReaderBase _barCodeReader = JsQrCodeReader();
+  StreamSubscription? _barCodeStreamSubscription;
 
   html.DivElement vidDiv = html.DivElement();
 
@@ -135,13 +136,14 @@ class MobileScannerWebPlugin {
       // required to tell iOS safari we don't want fullscreen
       video.setAttribute('playsinline', 'true');
 
-      await video.play();
-
-      // Then capture a frame to be analyzed every 200 miliseconds
-      _frameInterval =
-          Timer.periodic(const Duration(milliseconds: 200), (timer) {
-        _captureFrame();
+      _barCodeStreamSubscription =
+          _barCodeReader.detectBarcodeContinuously(video).listen((code) {
+        if (_localStream == null) return;
+        if (code != null) {
+          controller.add({'name': 'barcodeWeb', 'data': code});
+        }
       });
+      await video.play();
 
       return {
         'ViewID': viewID,
@@ -183,27 +185,7 @@ class MobileScannerWebPlugin {
 
     video.srcObject = null;
     _localStream = null;
-    _frameInterval?.cancel();
-    _frameInterval = null;
-  }
-
-  /// Captures a frame and analyzes it for QR codes
-  Future<dynamic> _captureFrame() async {
-    if (_localStream == null) return null;
-    final canvas =
-        html.CanvasElement(width: video.videoWidth, height: video.videoHeight);
-    final ctx = canvas.context2D;
-
-    ctx.drawImage(video, 0, 0);
-    final imgData = ctx.getImageData(0, 0, canvas.width!, canvas.height!);
-
-    final code = jsQR(imgData.data, canvas.width, canvas.height);
-    if (code != null) {
-      controller.add({
-        'name': 'barcodeWeb',
-        'data': code.data,
-        'binaryData': code.binaryData,
-      });
-    }
+    await _barCodeStreamSubscription?.cancel();
+    _barCodeStreamSubscription = null;
   }
 }
