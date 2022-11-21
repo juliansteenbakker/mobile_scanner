@@ -18,8 +18,8 @@ class MobileScanner extends StatefulWidget {
   /// Defaults to [BoxFit.cover].
   final BoxFit fit;
 
-  /// The function that signals when new barcodes were detected by the [controller].
-  final void Function(BarcodeCapture barcodes) onBarcodeDetected;
+  /// The function that signals when new codes were detected by the [controller].
+  final void Function(BarcodeCapture barcodes) onDetect;
 
   /// The function that signals when the barcode scanner is started.
   final void Function(MobileScannerArguments? arguments)? onScannerStarted;
@@ -35,7 +35,7 @@ class MobileScanner extends StatefulWidget {
   const MobileScanner({
     this.controller,
     this.fit = BoxFit.cover,
-    required this.onBarcodeDetected,
+    required this.onDetect,
     this.onScannerStarted,
     this.placeholderBuilder,
     super.key,
@@ -86,7 +86,7 @@ class _MobileScannerState extends State<MobileScanner>
     }
 
     _barcodesSubscription = _effectiveController.barcodes.listen(
-      widget.onBarcodeDetected,
+      widget.onDetect,
     );
 
     final internalController = _controller;
