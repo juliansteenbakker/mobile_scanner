@@ -36,9 +36,9 @@ class JsQrCodeReader extends WebBarcodeReaderBase {
   bool get isStarted => _localStream != null;
 
   @override
-  int get videoWidth => video.width;
+  int get videoWidth => video.videoWidth;
   @override
-  int get videoHeight => video.height;
+  int get videoHeight => video.videoHeight;
 
   @override
   Future<void> start({
