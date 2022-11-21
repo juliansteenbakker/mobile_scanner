@@ -33,10 +33,6 @@ class MobileScannerWebPlugin {
   // Controller to send events back to the framework
   StreamController controller = StreamController.broadcast();
 
-  // The video stream. Will be initialized later to see which camera needs to be used.
-  html.MediaStream? _localStream;
-  html.VideoElement video = html.VideoElement();
-
   // ID of the video feed
   String viewID = 'WebScanner-${DateTime.now().millisecondsSinceEpoch}';
 
@@ -45,8 +41,6 @@ class MobileScannerWebPlugin {
 
   final WebBarcodeReaderBase _barCodeReader = JsQrCodeReader();
   StreamSubscription? _barCodeStreamSubscription;
-
-  html.DivElement vidDiv = html.DivElement();
 
   /// Handle incomming messages
   Future<dynamic> handleMethodCall(MethodCall call) async {
@@ -68,87 +62,48 @@ class MobileScannerWebPlugin {
 
   /// Can enable or disable the flash if available
   Future<void> _torch(arguments) async {
-    if (hasFlash) {
-      final track = _localStream?.getVideoTracks();
-      await track!.first.applyConstraints({
-        'advanced': {'torch': arguments == 1}
-      });
-    } else {
-      controller.addError('Device has no flash');
-    }
+    // if (hasFlash) {
+    //   final track = _localStream?.getVideoTracks();
+    //   await track!.first.applyConstraints({
+    //     'advanced': {'torch': arguments == 1}
+    //   });
+    // } else {
+    //   controller.addError('Device has no flash');
+    // }
+    controller.addError('Device has no flash');
   }
 
   /// Starts the video stream and the scanner
   Future<Map> _start(Map arguments) async {
-    vidDiv.children = [video];
-
     var cameraFacing = CameraFacing.front;
     if (arguments.containsKey('facing')) {
       cameraFacing = CameraFacing.values[arguments['facing'] as int];
     }
 
-    // See https://github.com/flutter/flutter/issues/41563
-    // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
-    ui.platformViewRegistry.registerViewFactory(
-      viewID,
-      (int id) => vidDiv
-        ..style.width = '100%'
-        ..style.height = '100%',
-    );
-
     // Check if stream is running
-    if (_localStream != null) {
+    if (_barCodeReader.isStarted) {
       return {
         'ViewID': viewID,
-        'videoWidth': video.videoWidth,
-        'videoHeight': video.videoHeight
+        'videoWidth': _barCodeReader.videoWidth,
+        'videoHeight': _barCodeReader.videoHeight
       };
     }
-
     try {
-      // Check if browser supports multiple camera's and set if supported
-      final Map? capabilities =
-          html.window.navigator.mediaDevices?.getSupportedConstraints();
-      if (capabilities != null && capabilities['facingMode'] as bool) {
-        final constraints = {
-          'video': VideoOptions(
-            facingMode:
-                cameraFacing == CameraFacing.front ? 'user' : 'environment',
-          )
-        };
+      await _barCodeReader.start(
+        viewID: viewID,
+        cameraFacing: cameraFacing,
+      );
 
-        _localStream =
-            await html.window.navigator.mediaDevices?.getUserMedia(constraints);
-      } else {
-        _localStream = await html.window.navigator.mediaDevices
-            ?.getUserMedia({'video': true});
-      }
-
-      video.srcObject = _localStream;
-
-      // TODO: fix flash light. See https://github.com/dart-lang/sdk/issues/48533
-      // final track = _localStream?.getVideoTracks();
-      // if (track != null) {
-      //   final imageCapture = html.ImageCapture(track.first);
-      //   final photoCapabilities = await imageCapture.getPhotoCapabilities();
-      // }
-
-      // required to tell iOS safari we don't want fullscreen
-      video.setAttribute('playsinline', 'true');
-
-      _barCodeStreamSubscription =
-          _barCodeReader.detectBarcodeContinuously(video).listen((code) {
-        if (_localStream == null) return;
+      _barCodeStreamSubscription = _barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
           controller.add({'name': 'barcodeWeb', 'data': code});
         }
       });
-      await video.play();
 
       return {
         'ViewID': viewID,
-        'videoWidth': video.videoWidth,
-        'videoHeight': video.videoHeight,
+        'videoWidth': _barCodeReader.videoWidth,
+        'videoHeight': _barCodeReader.videoHeight,
         'torchable': hasFlash
       };
     } catch (e) {
@@ -172,19 +127,7 @@ class MobileScannerWebPlugin {
 
   /// Stops the video feed and analyzer
   Future<void> cancel() async {
-    try {
-      // Stop the camera stream
-      _localStream?.getTracks().forEach((track) {
-        if (track.readyState == 'live') {
-          track.stop();
-        }
-      });
-    } catch (e) {
-      debugPrint('Failed to stop stream: $e');
-    }
-
-    video.srcObject = null;
-    _localStream = null;
+    _barCodeReader.stop();
     await _barCodeStreamSubscription?.cancel();
     _barCodeStreamSubscription = null;
   }
