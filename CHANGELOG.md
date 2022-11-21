@@ -8,15 +8,9 @@ Breaking changes:
 * The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
   To handle permission errors, consider catching the result of `MobileScannerController.start()`.
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
-* The `MobileScanner` widget no longer starts its `controller`.
-  Clients of the widget should call `controller.start()` when appropriate.
+* The `MobileScanner` now only starts its internal `controller`.
+  If providing your own controller, consider calling `start()` on it.
 * The `onStart` method has been renamed to `onScannerStarted`.
-  To retrieve the start arguments of the controller, await the `start()` method:
-```dart
-final arguments = await controller.start();
-```
-  To retrieve the updated preview size when the application resumes from the background,
-  use the new `onScannerRestarted` method.
 * The `autoResume` attribute has been removed from the `MobileScanner` widget.
   The controller already automatically resumes, so it had no effect.
 * Removed `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedef.
