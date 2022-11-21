@@ -208,7 +208,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
             handler!!.stop()
             result.success(null)
         } catch (e: AlreadyStopped) {
-            result.error("MobileScanner", "Called stop() while already stopped!", null)
+            result.success(null)
         }
     }
 
