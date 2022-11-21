@@ -62,12 +62,12 @@ class _BarcodeListScannerWithControllerState
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                onBarcodeDetected: (barcodeCapture) {
+                onDetect: (barcodeCapture) {
                   setState(() {
                     this.barcodeCapture = barcodeCapture;
                   });
                 },
-                onScannerRestarted: (arguments) {
+                onScannerStarted: (arguments) {
                   // Do something with arguments.
                 },
               ),
