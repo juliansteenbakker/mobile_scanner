@@ -94,6 +94,20 @@ class MobileScannerController {
 
   bool? _hasTorch;
 
+  /// Returns whether the device has a torch.
+  ///
+  /// Throws an error if the controller is not initialized.
+  bool get hasTorch {
+    if (_hasTorch == null) {
+      throw MobileScannerException(
+        'Cannot check torch state if controller is not initialized. '
+        'Did you forget to call `start()`?',
+      );
+    }
+
+    return _hasTorch!;
+  }
+
   /// Set the starting arguments for the camera
   Map<String, dynamic> _argumentsToMap({CameraFacing? cameraFacingOverride}) {
     final Map<String, dynamic> arguments = {};
@@ -212,12 +226,16 @@ class MobileScannerController {
   ///
   /// Only works if torch is available.
   Future<void> toggleTorch() async {
-    if (_hasTorch == null) {
+    final hasTorch = _hasTorch;
+
+    if (hasTorch == null) {
       throw MobileScannerException(
         'Cannot toggle torch if start() has never been called',
       );
-    } else if (!_hasTorch!) {
-      throw MobileScannerException('Device has no torch');
+    }
+
+    if (!hasTorch) {
+      return;
     }
 
     torchState.value =
