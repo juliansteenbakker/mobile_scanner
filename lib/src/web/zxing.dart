@@ -83,15 +83,9 @@ extension ResultExt on Result {
   }
 }
 
-@JS()
-@anonymous
-abstract class Exception {
-  external String get message;
-}
-
 typedef BarcodeDetectionCallback = void Function(
   Result? result,
-  Exception? error,
+  dynamic error,
 );
 
 extension JsZXingBrowserMultiFormatReaderExt
