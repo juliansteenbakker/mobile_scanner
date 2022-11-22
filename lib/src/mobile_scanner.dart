@@ -9,6 +9,9 @@ class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
   final MobileScannerController? controller;
 
+  /// The [BoxFit] for the camera preview.
+  final BoxFit fit;
+
   /// Calls the provided [onPermissionSet] callback when the permission is set.
   // @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
   // ignore: deprecated_consistency
@@ -23,8 +26,11 @@ class MobileScanner extends StatefulWidget {
   /// the scanner which can be used to draw a box over the scanner.
   final void Function(MobileScannerArguments? arguments)? onStart;
 
-  /// Handles how the widget should fit the screen.
-  final BoxFit fit;
+  /// The function that builds a placeholder widget when the scanner
+  /// is not yet displaying its camera preview.
+  ///
+  /// If this is null, a black [ColoredBox] is used as placeholder.
+  final Widget Function(BuildContext, Widget?)? placeholderBuilder;
 
   /// Whether to automatically resume the camera when the application is resumed
   final bool autoResume;
@@ -39,6 +45,7 @@ class MobileScanner extends StatefulWidget {
     this.fit = BoxFit.cover,
     @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
         this.onPermissionSet,
+    this.placeholderBuilder,
   });
 
   @override
@@ -97,7 +104,8 @@ class _MobileScannerState extends State<MobileScanner>
       builder: (context, value, child) {
         value = value as MobileScannerArguments?;
         if (value == null) {
-          return const ColoredBox(color: Colors.black);
+          return widget.placeholderBuilder?.call(context, child) ??
+              const ColoredBox(color: Colors.black);
         } else {
           controller.barcodes.listen((barcode) {
             widget.onDetect(barcode);
