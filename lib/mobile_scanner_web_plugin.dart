@@ -73,7 +73,7 @@ class MobileScannerWebPlugin {
     // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
     ui.platformViewRegistry.registerViewFactory(
       viewID,
-          (int id) {
+      (int id) {
         return vidDiv
           ..style.width = '100%'
           ..style.height = '100%';
@@ -94,7 +94,8 @@ class MobileScannerWebPlugin {
         cameraFacing: cameraFacing,
       );
 
-      _barCodeStreamSubscription = barCodeReader.detectBarcodeContinuously().listen((code) {
+      _barCodeStreamSubscription =
+          barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
           controller.add({
             'name': 'barcodeWeb',

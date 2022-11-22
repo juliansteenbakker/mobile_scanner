@@ -26,8 +26,10 @@ class JsZXingBrowserMultiFormatReader {
 abstract class Result {
   /// raw text encoded by the barcode
   external String get text;
+
   /// Returns raw bytes encoded by the barcode, if applicable, otherwise null
   external Uint8ClampedList? get rawBytes;
+
   /// Representing the format of the barcode that was decoded
   external int? format;
 }
@@ -87,7 +89,10 @@ abstract class Exception {
   external String get message;
 }
 
-typedef BarcodeDetectionCallback = void Function(Result? result, Exception? error);
+typedef BarcodeDetectionCallback = void Function(
+  Result? result,
+  Exception? error,
+);
 
 extension JsZXingBrowserMultiFormatReaderExt
     on JsZXingBrowserMultiFormatReader {

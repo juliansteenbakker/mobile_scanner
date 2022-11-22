@@ -119,4 +119,3 @@ mixin InternalTorchDetection on InternalStreamCreation {
     }
   }
 }
-

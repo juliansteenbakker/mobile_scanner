@@ -20,7 +20,6 @@ class Code {
   external Uint8ClampedList get binaryData;
 }
 
-
 class JsQrCodeReader extends WebBarcodeReaderBase
     with InternalStreamCreation, InternalTorchDetection {
   JsQrCodeReader({required super.videoContainer});
@@ -78,7 +77,8 @@ class JsQrCodeReader extends WebBarcodeReaderBase
   /// Captures a frame and analyzes it for QR codes
   Future<Code?> _captureFrame(VideoElement video) async {
     if (localMediaStream == null) return null;
-    final canvas = CanvasElement(width: video.videoWidth, height: video.videoHeight);
+    final canvas =
+        CanvasElement(width: video.videoWidth, height: video.videoHeight);
     final ctx = canvas.context2D;
 
     ctx.drawImage(video, 0, 0);
