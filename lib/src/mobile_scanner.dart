@@ -95,34 +95,33 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
+    return ValueListenableBuilder<MobileScannerArguments?>(
       valueListenable: controller.startArguments,
       builder: (context, value, child) {
-        value = value as MobileScannerArguments?;
         if (value == null) {
           return widget.placeholderBuilder?.call(context, child) ??
               const ColoredBox(color: Colors.black);
-        } else {
-          controller.barcodes.listen((barcode) {
-            widget.onDetect(barcode);
-          });
-          return ClipRect(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: FittedBox(
-                fit: widget.fit,
-                child: SizedBox(
-                  width: value.size.width,
-                  height: value.size.height,
-                  child: kIsWeb
-                      ? HtmlElementView(viewType: value.webId!)
-                      : Texture(textureId: value.textureId!),
-                ),
+        }
+
+        controller.barcodes.listen((barcode) {
+          widget.onDetect(barcode);
+        });
+        return ClipRect(
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            height: MediaQuery.of(context).size.height,
+            child: FittedBox(
+              fit: widget.fit,
+              child: SizedBox(
+                width: value.size.width,
+                height: value.size.height,
+                child: kIsWeb
+                    ? HtmlElementView(viewType: value.webId!)
+                    : Texture(textureId: value.textureId!),
               ),
             ),
-          );
-        }
+          ),
+        );
       },
     );
   }
