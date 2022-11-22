@@ -1,6 +1,8 @@
-import 'dart:html';
+import 'dart:html' as html;
 
 import 'package:flutter/material.dart';
+import 'package:js/js.dart';
+import 'package:js/js_util.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/media.dart';
@@ -8,7 +10,7 @@ import 'package:mobile_scanner/src/web/media.dart';
 abstract class WebBarcodeReaderBase {
   /// Timer used to capture frames to be analyzed
   final Duration frameInterval;
-  final DivElement videoContainer;
+  final html.DivElement videoContainer;
 
   const WebBarcodeReaderBase({
     required this.videoContainer,
@@ -35,24 +37,24 @@ abstract class WebBarcodeReaderBase {
   Future<void> toggleTorch({required bool enabled});
 
   /// Determine whether device has flash
-  bool get hasTorch;
+  Future<bool> hasTorch();
 }
 
 mixin InternalStreamCreation on WebBarcodeReaderBase {
   /// The video stream.
   /// Will be initialized later to see which camera needs to be used.
-  MediaStream? localMediaStream;
-  final VideoElement video = VideoElement();
+  html.MediaStream? localMediaStream;
+  final html.VideoElement video = html.VideoElement();
 
   @override
   int get videoWidth => video.videoWidth;
   @override
   int get videoHeight => video.videoHeight;
 
-  Future<MediaStream?> initMediaStream(CameraFacing cameraFacing) async {
+  Future<html.MediaStream?> initMediaStream(CameraFacing cameraFacing) async {
     // Check if browser supports multiple camera's and set if supported
     final Map? capabilities =
-        window.navigator.mediaDevices?.getSupportedConstraints();
+        html.window.navigator.mediaDevices?.getSupportedConstraints();
     final Map<String, dynamic> constraints;
     if (capabilities != null && capabilities['facingMode'] as bool) {
       constraints = {
@@ -65,15 +67,15 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
       constraints = {'video': true};
     }
     final stream =
-        await window.navigator.mediaDevices?.getUserMedia(constraints);
+        await html.window.navigator.mediaDevices?.getUserMedia(constraints);
     return stream;
   }
 
-  void prepareVideoElement(VideoElement videoSource);
+  void prepareVideoElement(html.VideoElement videoSource);
 
   Future<void> attachStreamToVideo(
-    MediaStream stream,
-    VideoElement videoSource,
+    html.MediaStream stream,
+    html.VideoElement videoSource,
   );
 
   @override
@@ -97,18 +99,26 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
 /// Mixin for libraries that don't have built-in torch support
 mixin InternalTorchDetection on InternalStreamCreation {
   @override
-  bool get hasTorch {
-    // TODO: fix flash light. See https://github.com/dart-lang/sdk/issues/48533
-    // final track = _localStream?.getVideoTracks();
-    // if (track != null) {
-    //   final imageCapture = html.ImageCapture(track.first);
-    //   final photoCapabilities = await imageCapture.getPhotoCapabilities();
-    // }
+  Future<bool> hasTorch() async {
+    try {
+      final track = localMediaStream?.getVideoTracks();
+      if (track != null) {
+        final imageCapture = ImageCapture(track.first);
+        final photoCapabilities = await promiseToFuture<PhotoCapabilities>(
+          imageCapture.getPhotoCapabilities(),
+        );
+        return photoCapabilities.fillLightMode != null;
+      }
+    } catch (e) {
+      // ImageCapture is not supported by some browsers:
+      // https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility
+    }
     return false;
   }
 
   @override
   Future<void> toggleTorch({required bool enabled}) async {
+    final hasTorch = await this.hasTorch();
     if (hasTorch) {
       final track = localMediaStream?.getVideoTracks();
       await track?.first.applyConstraints({
@@ -118,4 +128,26 @@ mixin InternalTorchDetection on InternalStreamCreation {
       });
     }
   }
+}
+
+@JS('Promise')
+@staticInterop
+class Promise<T> {}
+
+@JS()
+@anonymous
+class PhotoCapabilities {
+  /// Returns an array of available fill light options. Options include auto, off, or flash.
+  external List<String>? get fillLightMode;
+}
+
+@JS('ImageCapture')
+@staticInterop
+class ImageCapture {
+  /// MediaStreamTrack
+  external factory ImageCapture(dynamic track);
+}
+
+extension ImageCaptureExt on ImageCapture {
+  external Promise<PhotoCapabilities> getPhotoCapabilities();
 }
