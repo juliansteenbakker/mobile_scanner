@@ -4,9 +4,8 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:mobile_scanner/mobile_scanner_web.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
-import 'package:mobile_scanner/src/web/base.dart';
-import 'package:mobile_scanner/src/web/jsqr.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -34,10 +33,10 @@ class MobileScannerWebPlugin {
   // ID of the video feed
   String viewID = 'WebScanner-${DateTime.now().millisecondsSinceEpoch}';
 
-  final html.DivElement vidDiv = html.DivElement();
+  static final html.DivElement vidDiv = html.DivElement();
 
-  late final WebBarcodeReaderBase _barCodeReader =
-      JsQrCodeReader(videoContainer: vidDiv);
+  static WebBarcodeReaderBase barCodeReader =
+      ZXingBarcodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;
 
   /// Handle incomming messages
@@ -60,7 +59,7 @@ class MobileScannerWebPlugin {
 
   /// Can enable or disable the flash if available
   Future<void> _torch(arguments) async {
-    _barCodeReader.toggleTorch(enabled: arguments == 1);
+    barCodeReader.toggleTorch(enabled: arguments == 1);
   }
 
   /// Starts the video stream and the scanner
@@ -82,20 +81,20 @@ class MobileScannerWebPlugin {
     );
 
     // Check if stream is running
-    if (_barCodeReader.isStarted) {
+    if (barCodeReader.isStarted) {
       return {
         'ViewID': viewID,
-        'videoWidth': _barCodeReader.videoWidth,
-        'videoHeight': _barCodeReader.videoHeight,
-        'torchable': _barCodeReader.hasTorch,
+        'videoWidth': barCodeReader.videoWidth,
+        'videoHeight': barCodeReader.videoHeight,
+        'torchable': barCodeReader.hasTorch,
       };
     }
     try {
-      await _barCodeReader.start(
+      await barCodeReader.start(
         cameraFacing: cameraFacing,
       );
 
-      _barCodeStreamSubscription = _barCodeReader.detectBarcodeContinuously().listen((code) {
+      _barCodeStreamSubscription = barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
           controller.add({
             'name': 'barcodeWeb',
@@ -109,9 +108,9 @@ class MobileScannerWebPlugin {
 
       return {
         'ViewID': viewID,
-        'videoWidth': _barCodeReader.videoWidth,
-        'videoHeight': _barCodeReader.videoHeight,
-        'torchable': _barCodeReader.hasTorch,
+        'videoWidth': barCodeReader.videoWidth,
+        'videoHeight': barCodeReader.videoHeight,
+        'torchable': barCodeReader.hasTorch,
       };
     } catch (e) {
       throw PlatformException(code: 'MobileScannerWeb', message: '$e');
@@ -134,7 +133,7 @@ class MobileScannerWebPlugin {
 
   /// Stops the video feed and analyzer
   Future<void> cancel() async {
-    _barCodeReader.stop();
+    barCodeReader.stop();
     await _barCodeStreamSubscription?.cancel();
     _barCodeStreamSubscription = null;
   }
