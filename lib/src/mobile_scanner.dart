@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
@@ -52,12 +54,17 @@ class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
   late MobileScannerController controller;
 
+  StreamSubscription<BarcodeCapture>? _subscription;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     controller = widget.controller ??
         MobileScannerController(onPermissionSet: widget.onPermissionSet);
+
+    _subscription = controller.barcodes.listen(widget.onDetect);
+
     if (!controller.isStarting) {
       _startScanner();
     }
@@ -103,9 +110,6 @@ class _MobileScannerState extends State<MobileScanner>
               const ColoredBox(color: Colors.black);
         }
 
-        controller.barcodes.listen((barcode) {
-          widget.onDetect(barcode);
-        });
         return ClipRect(
           child: SizedBox(
             width: MediaQuery.of(context).size.width,
@@ -146,6 +150,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
+    _subscription?.cancel();
     controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
