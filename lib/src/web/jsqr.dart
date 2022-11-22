@@ -7,6 +7,7 @@ import 'dart:typed_data';
 
 import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/base.dart';
 
 @JS('jsQR')
@@ -58,10 +59,20 @@ class JsQrCodeReader extends WebBarcodeReaderBase
   }
 
   @override
-  Stream<String?> detectBarcodeContinuously() async* {
+  Stream<Barcode?> detectBarcodeContinuously() async* {
     yield* Stream.periodic(frameInterval, (_) {
       return _captureFrame(video);
-    }).asyncMap((e) => e).map((event) => event?.data);
+    }).asyncMap((event) async {
+      final code = await event;
+      if (code == null) {
+        return null;
+      }
+      return Barcode(
+        rawValue: code.data,
+        rawBytes: Uint8List.fromList(code.binaryData),
+        format: BarcodeFormat.qrCode,
+      );
+    });
   }
 
   /// Captures a frame and analyzes it for QR codes

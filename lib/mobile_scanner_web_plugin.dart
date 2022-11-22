@@ -97,7 +97,13 @@ class MobileScannerWebPlugin {
 
       _barCodeStreamSubscription = _barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
-          controller.add({'name': 'barcodeWeb', 'data': code});
+          controller.add({
+            'name': 'barcodeWeb',
+            'data': {
+              'rawValue': code.rawValue,
+              'rawBytes': code.rawBytes,
+            },
+          });
         }
       });
 

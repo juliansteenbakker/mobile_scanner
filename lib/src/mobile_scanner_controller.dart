@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -296,11 +297,13 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
+        final barcode = data as Map?;
         _barcodesController.add(
           BarcodeCapture(
             barcodes: [
               Barcode(
-                rawValue: data as String?,
+                rawValue: barcode?['rawValue'] as String?,
+                rawBytes: barcode?['rawBytes'] as Uint8List?,
               )
             ],
           ),

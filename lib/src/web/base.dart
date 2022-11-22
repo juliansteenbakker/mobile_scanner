@@ -2,6 +2,7 @@ import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/media.dart';
 
 abstract class WebBarcodeReaderBase {
@@ -25,7 +26,7 @@ abstract class WebBarcodeReaderBase {
   });
 
   /// Starts scanning QR codes or barcodes
-  Stream<String?> detectBarcodeContinuously();
+  Stream<Barcode?> detectBarcodeContinuously();
 
   /// Stops streaming video
   Future<void> stop();
