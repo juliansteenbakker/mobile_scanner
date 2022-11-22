@@ -4,11 +4,6 @@ import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
 
-typedef MobileScannerCallback = void Function(BarcodeCapture barcodes);
-typedef MobileScannerArgumentsCallback = void Function(
-  MobileScannerArguments? arguments,
-);
-
 /// A widget showing a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller of the camera.
@@ -19,17 +14,14 @@ class MobileScanner extends StatefulWidget {
   // ignore: deprecated_consistency
   final Function(bool permissionGranted)? onPermissionSet;
 
-  /// Function that gets called when a Barcode is detected.
-  ///
-  /// [barcode] The barcode object with all information about the scanned code.
-  /// [startInternalArguments] Information about the state of the MobileScanner widget
-  final MobileScannerCallback onDetect;
+  /// The function that signals when a new code is detected.
+  final void Function(BarcodeCapture barcodes) onDetect;
 
   /// Function that gets called when the scanner is started.
   ///
   /// [arguments] The start arguments of the scanner. This contains the size of
   /// the scanner which can be used to draw a box over the scanner.
-  final MobileScannerArgumentsCallback? onStart;
+  final void Function(MobileScannerArguments? arguments)? onStart;
 
   /// Handles how the widget should fit the screen.
   final BoxFit fit;
