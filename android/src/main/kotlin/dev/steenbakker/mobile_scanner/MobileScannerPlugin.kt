@@ -23,13 +23,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
 
     private lateinit var barcodeHandler: BarcodeHandler
 
-    private var permissionResult: MethodChannel.Result? = null
     private var analyzerResult: MethodChannel.Result? = null
-
-    private val permissionCallback: PermissionCallback = {hasPermission: Boolean ->
-        permissionResult?.success(hasPermission)
-        permissionResult = null
-    }
 
     private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray? ->
         if (image != null) {
@@ -78,7 +72,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
         }
         when (call.method) {
             "state" -> result.success(handler!!.hasCameraPermission())
-            "request" -> requestPermission(result)
+            "request" -> handler!!.requestPermission(result)
             "start" -> start(call, result)
             "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
@@ -122,11 +116,6 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
 
     override fun onDetachedFromActivityForConfigChanges() {
         onDetachedFromActivity()
-    }
-
-    private fun requestPermission(result: MethodChannel.Result) {
-        permissionResult = result
-        handler!!.requestPermission(permissionCallback)
     }
 
     @ExperimentalGetImage
