@@ -85,6 +85,12 @@ class MobileScanner(
      * Request camera permissions.
      */
     fun requestPermission(result: MethodChannel.Result) {
+        if(pendingPermissionResult != null) {
+            return
+        }
+
+        pendingPermissionResult = result
+
         val permissions = arrayOf(Manifest.permission.CAMERA)
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
     }
