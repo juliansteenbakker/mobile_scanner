@@ -32,16 +32,12 @@ class MobileScanner extends StatefulWidget {
   /// If this is null, a black [ColoredBox] is used as placeholder.
   final Widget Function(BuildContext, Widget?)? placeholderBuilder;
 
-  /// Whether to automatically resume the camera when the application is resumed
-  final bool autoResume;
-
   /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
   const MobileScanner({
     super.key,
     required this.onDetect,
     this.onStart,
     this.controller,
-    this.autoResume = true,
     this.fit = BoxFit.cover,
     @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
         this.onPermissionSet,
