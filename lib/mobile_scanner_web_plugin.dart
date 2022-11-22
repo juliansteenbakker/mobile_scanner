@@ -2,13 +2,11 @@ import 'dart:async';
 import 'dart:html' as html;
 import 'dart:ui' as ui;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/web/base.dart';
 import 'package:mobile_scanner/src/web/jsqr.dart';
-import 'package:mobile_scanner/src/web/media.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -39,7 +37,10 @@ class MobileScannerWebPlugin {
   // Determine wether device has flas
   bool hasFlash = false;
 
-  final WebBarcodeReaderBase _barCodeReader = JsQrCodeReader();
+  final html.DivElement vidDiv = html.DivElement();
+
+  late final WebBarcodeReaderBase _barCodeReader =
+      JsQrCodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;
 
   /// Handle incomming messages
@@ -80,6 +81,17 @@ class MobileScannerWebPlugin {
       cameraFacing = CameraFacing.values[arguments['facing'] as int];
     }
 
+    // See https://github.com/flutter/flutter/issues/41563
+    // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
+    ui.platformViewRegistry.registerViewFactory(
+      viewID,
+          (int id) {
+        return vidDiv
+          ..style.width = '100%'
+          ..style.height = '100%';
+      },
+    );
+
     // Check if stream is running
     if (_barCodeReader.isStarted) {
       return {
@@ -90,7 +102,6 @@ class MobileScannerWebPlugin {
     }
     try {
       await _barCodeReader.start(
-        viewID: viewID,
         cameraFacing: cameraFacing,
       );
 
