@@ -1,3 +1,23 @@
+## 3.0.0-beta.3
+Breaking changes:
+* Removed the `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedefs.
+  They were only used once and could be inlined.
+* Removed the unused `autoresume` flag from the `MobileScanner` widget.
+  The controller always resumed regardless of this flag.
+
+Features:
+* Added a new `hasTorch` getter.
+* Added a new `placeholderBuilder` to the `MobileScanner` widget, which allows customizing the placeholder.
+
+Fixes:
+* Fixes the missing gradle setup for the Android project, which prevented gradle sync from working.
+* Fixes `MobileScannerController.stop()` throwing when already stopped.
+* Fixes `MobileScannerController.toggleTorch()` throwing if the device has no torch.
+  Now it does nothing if the torch is not available.
+* Fixes a memory leak where the `MobileScanner` would keep listening to the barcode events.
+* Fixes the `MobileScanner` preview depending on all attributes of `MediaQueryData`.
+  Now it only depends on its layout constraints.
+
 ## 3.0.0-beta.2
 Breaking changes:
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
