@@ -20,7 +20,8 @@ class Code {
 }
 
 
-class JsQrCodeReader extends WebBarcodeReaderBase with InternalStreamCreation {
+class JsQrCodeReader extends WebBarcodeReaderBase
+    with InternalStreamCreation, InternalTorchDetection {
   JsQrCodeReader({required super.videoContainer});
 
   @override
@@ -33,13 +34,6 @@ class JsQrCodeReader extends WebBarcodeReaderBase with InternalStreamCreation {
     videoContainer.children = [video];
 
     final stream = await initMediaStream(cameraFacing);
-
-    // TODO: fix flash light. See https://github.com/dart-lang/sdk/issues/48533
-    // final track = _localStream?.getVideoTracks();
-    // if (track != null) {
-    //   final imageCapture = html.ImageCapture(track.first);
-    //   final photoCapabilities = await imageCapture.getPhotoCapabilities();
-    // }
 
     prepareVideoElement(video);
     if (stream != null) {

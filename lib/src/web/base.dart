@@ -29,6 +29,12 @@ abstract class WebBarcodeReaderBase {
 
   /// Stops streaming video
   Future<void> stop();
+
+  /// Can enable or disable the flash if available
+  Future<void> toggleTorch({required bool enabled});
+
+  /// Determine whether device has flash
+  bool get hasTorch;
 }
 
 mixin InternalStreamCreation on WebBarcodeReaderBase {
@@ -86,3 +92,30 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
     videoContainer.children = [];
   }
 }
+
+/// Mixin for libraries that don't have built-in torch support
+mixin InternalTorchDetection on InternalStreamCreation {
+  @override
+  bool get hasTorch {
+    // TODO: fix flash light. See https://github.com/dart-lang/sdk/issues/48533
+    // final track = _localStream?.getVideoTracks();
+    // if (track != null) {
+    //   final imageCapture = html.ImageCapture(track.first);
+    //   final photoCapabilities = await imageCapture.getPhotoCapabilities();
+    // }
+    return false;
+  }
+
+  @override
+  Future<void> toggleTorch({required bool enabled}) async {
+    if (hasTorch) {
+      final track = localMediaStream?.getVideoTracks();
+      await track?.first.applyConstraints({
+        'advanced': [
+          {'torch': enabled}
+        ]
+      });
+    }
+  }
+}
+

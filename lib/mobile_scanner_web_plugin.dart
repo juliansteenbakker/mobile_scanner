@@ -34,9 +34,6 @@ class MobileScannerWebPlugin {
   // ID of the video feed
   String viewID = 'WebScanner-${DateTime.now().millisecondsSinceEpoch}';
 
-  // Determine wether device has flas
-  bool hasFlash = false;
-
   final html.DivElement vidDiv = html.DivElement();
 
   late final WebBarcodeReaderBase _barCodeReader =
@@ -63,15 +60,7 @@ class MobileScannerWebPlugin {
 
   /// Can enable or disable the flash if available
   Future<void> _torch(arguments) async {
-    // if (hasFlash) {
-    //   final track = _localStream?.getVideoTracks();
-    //   await track!.first.applyConstraints({
-    //     'advanced': {'torch': arguments == 1}
-    //   });
-    // } else {
-    //   controller.addError('Device has no flash');
-    // }
-    controller.addError('Device has no flash');
+    _barCodeReader.toggleTorch(enabled: arguments == 1);
   }
 
   /// Starts the video stream and the scanner
@@ -97,7 +86,8 @@ class MobileScannerWebPlugin {
       return {
         'ViewID': viewID,
         'videoWidth': _barCodeReader.videoWidth,
-        'videoHeight': _barCodeReader.videoHeight
+        'videoHeight': _barCodeReader.videoHeight,
+        'torchable': _barCodeReader.hasTorch,
       };
     }
     try {
@@ -115,7 +105,7 @@ class MobileScannerWebPlugin {
         'ViewID': viewID,
         'videoWidth': _barCodeReader.videoWidth,
         'videoHeight': _barCodeReader.videoHeight,
-        'torchable': hasFlash
+        'torchable': _barCodeReader.hasTorch,
       };
     } catch (e) {
       throw PlatformException(code: 'MobileScannerWeb', message: '$e');
