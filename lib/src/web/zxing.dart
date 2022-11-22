@@ -15,7 +15,7 @@ class Promise<T> {}
 @staticInterop
 class JsZXingBrowserMultiFormatReader {
   /// https://github.com/zxing-js/library/blob/1e9ccb3b6b28d75b9eef866dba196d8937eb4449/src/browser/BrowserMultiFormatReader.ts#L11
-  external JsZXingBrowserMultiFormatReader(
+  external factory JsZXingBrowserMultiFormatReader(
     dynamic hints,
     int timeBetweenScansMillis,
   );
