@@ -98,8 +98,7 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
 
 /// Mixin for libraries that don't have built-in torch support
 mixin InternalTorchDetection on InternalStreamCreation {
-  @override
-  Future<bool> hasTorch() async {
+  Future<List<String>> getSupportedTorchStates() async {
     try {
       final track = localMediaStream?.getVideoTracks();
       if (track != null) {
@@ -107,13 +106,21 @@ mixin InternalTorchDetection on InternalStreamCreation {
         final photoCapabilities = await promiseToFuture<PhotoCapabilities>(
           imageCapture.getPhotoCapabilities(),
         );
-        return photoCapabilities.fillLightMode != null;
+        final fillLightMode = photoCapabilities.fillLightMode;
+        if (fillLightMode != null) {
+          return fillLightMode;
+        }
       }
     } catch (e) {
       // ImageCapture is not supported by some browsers:
       // https://developer.mozilla.org/en-US/docs/Web/API/ImageCapture#browser_compatibility
     }
-    return false;
+    return [];
+  }
+
+  @override
+  Future<bool> hasTorch() async {
+    return (await getSupportedTorchStates()).isNotEmpty;
   }
 
   @override
