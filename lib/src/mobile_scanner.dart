@@ -151,7 +151,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
-    controller.dispose();
+    if (widget.controller == null) controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
