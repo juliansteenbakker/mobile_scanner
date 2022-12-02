@@ -38,7 +38,8 @@ class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
-    private val mobileScannerErrorCallback: MobileScannerErrorCallback
+    private val mobileScannerErrorCallback: MobileScannerErrorCallback,
+    private val permissionCallback: PermissionCallback
 ) :
     PluginRegistry.RequestPermissionsResultListener {
     companion object {
@@ -86,16 +87,10 @@ class MobileScanner(
     /**
      * Request camera permissions.
      */
-    fun requestPermission(permissionCallback: PermissionCallback) {
+    fun requestPermission() {
         listener
             ?: PluginRegistry.RequestPermissionsResultListener { requestCode, _, grantResults ->
-                if (requestCode != REQUEST_CODE) {
-                    false
-                } else {
-                    val authorized = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    permissionCallback(authorized)
-                    true
-                }
+                requestCode == REQUEST_CODE
             }
         val permissions = arrayOf(Manifest.permission.CAMERA)
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
@@ -109,6 +104,8 @@ class MobileScanner(
         permissions: Array<out String>,
         grantResults: IntArray
     ): Boolean {
+        val authorized = grantResults[0] == PackageManager.PERMISSION_GRANTED
+        permissionCallback(authorized)
         return listener?.onRequestPermissionsResult(requestCode, permissions, grantResults) ?: false
     }
 

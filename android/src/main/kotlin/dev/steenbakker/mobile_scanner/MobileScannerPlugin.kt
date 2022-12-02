@@ -101,7 +101,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
     }
 
     override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
-        handler = MobileScanner(activityPluginBinding.activity, flutterPluginBinding!!.textureRegistry, callback, errorCallback
+        handler = MobileScanner(activityPluginBinding.activity, flutterPluginBinding!!.textureRegistry, callback, errorCallback,permissionCallback
         )
         activityPluginBinding.addRequestPermissionsResultListener(handler!!)
 
@@ -126,7 +126,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
 
     private fun requestPermission(result: MethodChannel.Result) {
         permissionResult = result
-        handler!!.requestPermission(permissionCallback)
+        handler!!.requestPermission()
     }
 
     @ExperimentalGetImage
