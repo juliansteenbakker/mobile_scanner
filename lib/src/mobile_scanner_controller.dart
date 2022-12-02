@@ -25,9 +25,7 @@ class MobileScannerController {
       stop();
     }
     controllerHashcode = hashCode;
-    events = _eventChannel
-        .receiveBroadcastStream()
-        .listen((data) => _handleEvent(data as Map));
+    events = _eventChannel.receiveBroadcastStream().listen((data) => _handleEvent(data as Map));
   }
 
   /// The hashcode of the controller to check if the correct object is mounted.
@@ -65,14 +63,11 @@ class MobileScannerController {
   final int detectionTimeoutMs;
 
   /// Sets the barcode stream
-  final StreamController<BarcodeCapture> _barcodesController =
-      StreamController.broadcast();
+  final StreamController<BarcodeCapture> _barcodesController = StreamController.broadcast();
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
-  static const MethodChannel _methodChannel =
-      MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
-  static const EventChannel _eventChannel =
-      EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
+  static const MethodChannel _methodChannel = MethodChannel('dev.steenbakker.mobile_scanner/scanner/method');
+  static const EventChannel _eventChannel = EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
   Function(bool permissionGranted)? onPermissionSet;
 
@@ -80,15 +75,13 @@ class MobileScannerController {
   late StreamSubscription events;
 
   /// A notifier that provides several arguments about the MobileScanner
-  final ValueNotifier<MobileScannerArguments?> startArguments =
-      ValueNotifier(null);
+  final ValueNotifier<MobileScannerArguments?> startArguments = ValueNotifier(null);
 
   /// A notifier that provides the state of the Torch (Flash)
   final ValueNotifier<TorchState> torchState = ValueNotifier(TorchState.off);
 
   /// A notifier that provides the state of which camera is being used
-  late final ValueNotifier<CameraFacing> cameraFacingState =
-      ValueNotifier(facing);
+  late final ValueNotifier<CameraFacing> cameraFacingState = ValueNotifier(facing);
 
   bool isStarting = false;
 
@@ -128,12 +121,10 @@ class MobileScannerController {
 
     // Check authorization status
     if (!kIsWeb) {
-      final MobileScannerState state = MobileScannerState
-          .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
+      final MobileScannerState state = MobileScannerState.values[await _methodChannel.invokeMethod('state') as int? ?? 0];
       switch (state) {
         case MobileScannerState.undetermined:
-          final bool result =
-              await _methodChannel.invokeMethod('request') as bool? ?? false;
+          final bool result = await _methodChannel.invokeMethod('request') as bool? ?? false;
           if (!result) {
             isStarting = false;
             onPermissionSet?.call(result);
@@ -220,8 +211,7 @@ class MobileScannerController {
       throw MobileScannerException('Device has no torch');
     }
 
-    torchState.value =
-        torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+    torchState.value = torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
     await _methodChannel.invokeMethod('torch', torchState.value.index);
   }
@@ -231,10 +221,7 @@ class MobileScannerController {
   /// Only works if torch is available.
   Future<void> switchCamera() async {
     await _methodChannel.invokeMethod('stop');
-    final CameraFacing facingToUse =
-        cameraFacingState.value == CameraFacing.back
-            ? CameraFacing.front
-            : CameraFacing.back;
+    final CameraFacing facingToUse = cameraFacingState.value == CameraFacing.back ? CameraFacing.front : CameraFacing.back;
     await start(cameraFacingOverride: facingToUse);
   }
 
@@ -244,9 +231,7 @@ class MobileScannerController {
   ///
   /// [path] The path of the image on the devices
   Future<bool> analyzeImage(String path) async {
-    return _methodChannel
-        .invokeMethod<bool>('analyzeImage', path)
-        .then<bool>((bool? value) => value ?? false);
+    return _methodChannel.invokeMethod<bool>('analyzeImage', path).then<bool>((bool? value) => value ?? false);
   }
 
   /// Disposes the MobileScannerController and closes all listeners.
@@ -274,9 +259,7 @@ class MobileScannerController {
         break;
       case 'barcode':
         if (data == null) return;
-        final parsed = (data as List)
-            .map((value) => Barcode.fromNative(value as Map))
-            .toList();
+        final parsed = (data as List).map((value) => Barcode.fromNative(value as Map)).toList();
         _barcodesController.add(
           BarcodeCapture(
             barcodes: parsed,
