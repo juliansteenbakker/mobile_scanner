@@ -120,6 +120,7 @@ class MobileScannerController {
     isStarting = true;
 
     // Check authorization status
+
     if (!kIsWeb) {
       final MobileScannerState state = MobileScannerState.values[await _methodChannel.invokeMethod('state') as int? ?? 0];
       switch (state) {
