@@ -238,9 +238,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                    message: "Called toggleTorch() while stopped!",
-                                    details: nil))
+            result(nil)
             return
         }
         do {

@@ -15,6 +15,7 @@ Breaking changes:
 
 Improvements:
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+* Removed `called stop while already stopped` messages.
 
 Features:
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
