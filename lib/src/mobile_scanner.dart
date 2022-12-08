@@ -51,16 +51,7 @@ class _MobileScannerState extends State<MobileScanner>
   StreamSubscription<BarcodeCapture>? _barcodesSubscription;
 
   /// The internally managed controller.
-  MobileScannerController? _controller;
-
-  /// Get the effective controller.
-  MobileScannerController get _effectiveController {
-    if (widget.controller != null) {
-      return widget.controller!;
-    }
-
-    return _controller!;
-  }
+  late MobileScannerController _controller;
 
   /// Whether the controller should resume
   /// when the application comes back to the foreground.
@@ -80,40 +71,35 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    if (widget.controller == null) {
-      _controller = MobileScannerController();
-    }
-
-    _barcodesSubscription = _effectiveController.barcodes.listen(
+    _controller = widget.controller ?? MobileScannerController();
+    
+    _barcodesSubscription = _controller.barcodes.listen(
       widget.onDetect,
     );
 
-    final internalController = _controller;
-
-    if (internalController != null && !internalController.isStarting) {
-      _startScanner(internalController);
+    if (!_controller.isStarting) {
+      _startScanner(_controller);
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // App state changed before the controller was initialized.
-    if (_effectiveController.isStarting) {
+    if (_controller.isStarting) {
       return;
     }
 
     switch (state) {
       case AppLifecycleState.resumed:
         _resumeFromBackground = false;
-        _startScanner(_effectiveController);
+        _startScanner(_controller);
         break;
       case AppLifecycleState.paused:
         _resumeFromBackground = true;
         break;
       case AppLifecycleState.inactive:
         if (!_resumeFromBackground) {
-          _effectiveController.stop();
+          _controller.stop();
         }
         break;
       case AppLifecycleState.detached:
@@ -122,27 +108,9 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  void didUpdateWidget(covariant MobileScanner oldWidget) {
-    super.didUpdateWidget(oldWidget);
-
-    if (oldWidget.controller == null) {
-      if (widget.controller != null) {
-        _controller?.dispose();
-        _controller = widget.controller;
-      }
-    } else {
-      if (widget.controller == null) {
-        _controller = MobileScannerController();
-      } else if (oldWidget.controller != widget.controller) {
-        _controller = widget.controller;
-      }
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<MobileScannerArguments?>(
-      valueListenable: _effectiveController.startArguments,
+      valueListenable: _controller.startArguments,
       builder: (context, value, child) {
         if (value == null) {
           return widget.placeholderBuilder?.call(context, child) ??
@@ -176,7 +144,7 @@ class _MobileScannerState extends State<MobileScanner>
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _barcodesSubscription?.cancel();
-    _controller?.dispose();
+    _controller.dispose();
     super.dispose();
   }
 }
