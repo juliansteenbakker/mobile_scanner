@@ -107,11 +107,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     private func stop(_ result: @escaping FlutterResult) {
         do {
             try mobileScanner.stop()
-        } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called stop() while already stopped!",
-                                details: nil))
-        }
+        } catch {}
         result(nil)
     }
 
