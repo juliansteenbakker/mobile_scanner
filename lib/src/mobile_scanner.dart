@@ -64,6 +64,12 @@ class _MobileScannerState extends State<MobileScanner>
 
   /// Start the given [scanner].
   void _startScanner(MobileScannerController scanner) {
+    if (!_controller.autoStart) {
+      debugPrint(
+        'mobile_scanner: not starting automatically because autoStart is set to false in the controller.',
+      );
+      return;
+    }
     scanner.start().then((arguments) {
       // ignore: deprecated_member_use_from_same_package
       widget.onStart?.call(arguments);

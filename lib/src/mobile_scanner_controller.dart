@@ -19,6 +19,7 @@ class MobileScannerController {
     this.returnImage = false,
     @Deprecated('Instead, use the result of calling `start()` to determine if permissions were granted.')
         this.onPermissionSet,
+    this.autoStart = true,
   }) {
     // In case a new instance is created before calling dispose()
     if (controllerHashcode != null) {
@@ -63,6 +64,9 @@ class MobileScannerController {
   /// NOTE: The timeout only works if the [detectionSpeed] is set to
   /// [DetectionSpeed.normal] (which is the default value).
   final int detectionTimeoutMs;
+
+  /// Automatically start the mobileScanner on initialization.
+  final bool autoStart;
 
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
