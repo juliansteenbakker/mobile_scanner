@@ -12,7 +12,7 @@ class MobileScannerException implements Exception {
 
   /// The additional error details that came with the [errorCode].
   final MobileScannerErrorDetails? errorDetails;
-  
+
   @override
   String toString() {
     if (errorDetails != null && errorDetails?.message != null) {
