@@ -15,7 +15,7 @@ class MobileScannerException implements Exception {
   
   @override
   String toString() {
-    if(errorDetails != null && errorDetails?.message != null) {
+    if (errorDetails != null && errorDetails?.message != null) {
       return "MobileScannerException: code ${errorCode.name}, message: ${errorDetails?.message}";
     }
     return "MobileScannerException: ${errorCode.name}";
