@@ -45,11 +45,8 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 Add this to `web/index.html`:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
 ```
-
-Web only supports QR codes for now. 
-Do you have experience with Flutter Web development? [Help me with migrating from jsQR to qr-scanner for full barcode support!](https://github.com/juliansteenbakker/mobile_scanner/issues/54)
 
 ## Features Supported
 

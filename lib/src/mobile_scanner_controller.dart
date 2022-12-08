@@ -329,11 +329,13 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
+        final barcode = data as Map?;
         _barcodesController.add(
           BarcodeCapture(
             barcodes: [
               Barcode(
-                rawValue: data as String?,
+                rawValue: barcode?['rawValue'] as String?,
+                rawBytes: barcode?['rawBytes'] as Uint8List?,
               )
             ],
           ),
