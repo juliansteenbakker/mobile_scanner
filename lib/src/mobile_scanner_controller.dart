@@ -101,6 +101,19 @@ class MobileScannerController {
 
   bool? _hasTorch;
 
+  /// Returns whether the device has a torch.
+  ///
+  /// Throws an error if the controller is not initialized.
+  bool get hasTorch {
+    if (_hasTorch == null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerUninitialized,
+      );
+    }
+
+    return _hasTorch!;
+  }
+
   /// Set the starting arguments for the camera
   Map<String, dynamic> _argumentsToMap({CameraFacing? cameraFacingOverride}) {
     final Map<String, dynamic> arguments = {};

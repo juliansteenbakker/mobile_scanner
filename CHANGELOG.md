@@ -19,6 +19,7 @@ Improvements:
 Features:
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
 * Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
+* Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
 
 Fixed:
 * Fixed a memory leak where the `MobileScanner` widget would never close its subscription to the barcode events.
