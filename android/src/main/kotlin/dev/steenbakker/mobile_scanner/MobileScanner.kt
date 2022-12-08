@@ -90,7 +90,6 @@ class MobileScanner(
         }
 
         pendingPermissionResult = result
-
         val permissions = arrayOf(Manifest.permission.CAMERA)
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
     }
