@@ -15,16 +15,22 @@ Breaking changes:
 
 Improvements:
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+* Removed `called stop while already stopped` messages.
 
 Features:
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
 * Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
+* Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
 
-Fixed:
-* Fixed a memory leak where the `MobileScanner` widget would never close its subscription to the barcode events.
-* Fixed a dependency on all properties of `MediaQueryData` to build the preview widget. Now the preview only depends on its layout constraints.
+Fixes:
+* Fixes the missing gradle setup for the Android project, which prevented gradle sync from working.
+* Fixes `MobileScannerController.stop()` throwing when already stopped.
+* Fixes `MobileScannerController.toggleTorch()` throwing if the device has no torch.
+  Now it does nothing if the torch is not available.
+* Fixes a memory leak where the `MobileScanner` would keep listening to the barcode events.
+* Fixes the `MobileScanner` preview depending on all attributes of `MediaQueryData`.
+  Now it only depends on its layout constraints.
 * Fixed a potential crash when the scanner is restarted due to the app being resumed.
-* Various documentation improvements.
   
 ## 3.0.0-beta.2
 Breaking changes:
