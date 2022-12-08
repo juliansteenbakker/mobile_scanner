@@ -206,6 +206,33 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.torchError(error)
         }
     }
+    
+    /// Set the zoom factor of the camera
+    func setScale(_ scale: CGFloat) throws {
+        if (device == nil) {
+            throw MobileScannerError.torchWhenStopped
+        }
+        
+        do {
+            try device.lockForConfiguration()
+            var maxZoomFactor = device.activeFormat.videoMaxZoomFactor
+            
+            var actualScale = (scale * 4) + 1
+            
+            // Set maximum zoomrate of 5x
+            actualScale = min(5.0, actualScale)
+            
+            // Limit to max rate of camera
+            actualScale = min(maxZoomFactor, actualScale)
+            
+            // Limit to 1.0 scale
+            device.ramp(toVideoZoomFactor: actualScale, withRate: 5)
+            device.unlockForConfiguration()
+        } catch {
+            throw MobileScannerError.zoomError(error)
+        }
+        
+    }
 
     /// Analyze a single image
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position, callback: @escaping BarcodeScanningCallback) {

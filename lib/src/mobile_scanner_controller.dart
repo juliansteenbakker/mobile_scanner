@@ -249,6 +249,19 @@ class MobileScannerController {
         .then<bool>((bool? value) => value ?? false);
   }
 
+  /// Set the zoomScale of the camera.
+  ///
+  /// [zoomScale] must be within 0.0 and 1.0, where 1.0 is the max zoom, and 0.0
+  /// is zoomed out.
+  Future<void> setZoomScale(double zoomScale) async {
+    if (zoomScale < 0 || zoomScale > 1) {
+      throw MobileScannerException(
+        'The zoomScale must be between 0 and 1.',
+      );
+    }
+    await _methodChannel.invokeMethod('setScale', zoomScale);
+  }
+
   /// Disposes the MobileScannerController and closes all listeners.
   ///
   /// If you call this, you cannot use this controller object anymore.

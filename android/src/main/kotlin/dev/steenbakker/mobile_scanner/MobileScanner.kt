@@ -33,6 +33,8 @@ class AlreadyStopped : Exception()
 class TorchError : Exception()
 class CameraError : Exception()
 class TorchWhenStopped : Exception()
+class ZoomWhenStopped : Exception()
+class ZoomNotInRange : Exception()
 
 class MobileScanner(
     private val activity: Activity,
@@ -310,6 +312,15 @@ class MobileScanner(
                     e.localizedMessage ?: e.toString()
                 )
             }
+    }
+
+    /**
+     * Set the zoom rate of the camera.
+     */
+    fun setScale(scale: Double) {
+        if (camera == null) throw ZoomWhenStopped()
+        if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
+        camera!!.cameraControl.setLinearZoom(scale.toFloat())
     }
 
 }

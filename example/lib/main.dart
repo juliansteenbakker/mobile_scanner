@@ -3,6 +3,7 @@ import 'package:mobile_scanner_example/barcode_list_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_without_controller.dart';
+import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 
 void main() => runApp(const MaterialApp(home: MyHome()));
 
@@ -61,6 +62,16 @@ class MyHome extends StatelessWidget {
                 );
               },
               child: const Text('MobileScanner without Controller'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BarcodeScannerWithZoom(),
+                  ),
+                );
+              },
+              child: const Text('MobileScanner with zoom slider'),
             ),
           ],
         ),
