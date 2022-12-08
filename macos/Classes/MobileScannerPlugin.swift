@@ -283,9 +283,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                    message: "Called toggleTorch() while stopped!",
-                                    details: nil))
+            result(nil)
             return
         }
         do {
@@ -305,9 +303,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     func stop(_ result: FlutterResult) {
         if (device == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                    message: "Called stop() while already stopped!",
-                                    details: nil))
+            result(nil)
+
             return
         }
         captureSession.stopRunning()

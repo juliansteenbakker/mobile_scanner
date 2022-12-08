@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class BarcodeScannerWithController extends StatefulWidget {
-  const BarcodeScannerWithController({Key? key}) : super(key: key);
+class BarcodeListScannerWithController extends StatefulWidget {
+  const BarcodeListScannerWithController({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerWithControllerState createState() =>
-      _BarcodeScannerWithControllerState();
+  _BarcodeListScannerWithControllerState createState() =>
+      _BarcodeListScannerWithControllerState();
 }
 
-class _BarcodeScannerWithControllerState
-    extends State<BarcodeScannerWithController>
+class _BarcodeListScannerWithControllerState
+    extends State<BarcodeListScannerWithController>
     with SingleTickerProviderStateMixin {
-  BarcodeCapture? barcode;
+  BarcodeCapture? barcodeCapture;
 
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
@@ -62,10 +62,13 @@ class _BarcodeScannerWithControllerState
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                onDetect: (barcode) {
+                onDetect: (barcodeCapture) {
                   setState(() {
-                    this.barcode = barcode;
+                    this.barcodeCapture = barcodeCapture;
                   });
+                },
+                onScannerStarted: (arguments) {
+                  // Do something with arguments.
                 },
               ),
               Align(
@@ -119,8 +122,7 @@ class _BarcodeScannerWithControllerState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              barcode?.barcodes.first.rawValue ??
-                                  'Scan something!',
+                              '${barcodeCapture?.barcodes.map((e) => e.rawValue) ?? 'Scan something!'}',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
