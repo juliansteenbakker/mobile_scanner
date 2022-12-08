@@ -15,19 +15,41 @@ class _BarcodeListScannerWithControllerState
     with SingleTickerProviderStateMixin {
   BarcodeCapture? barcodeCapture;
 
-  MobileScannerController controller = MobileScannerController(
+  final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
-    onPermissionSet: (hasPermission) {
-      // Do something with permission callback
-    },
     // detectionSpeed: DetectionSpeed.normal
     // detectionTimeoutMs: 1000,
     // returnImage: false,
   );
 
   bool isStarted = true;
+
+  void _startOrStop() {
+    if (isStarted) {
+      controller.stop();
+    } else {
+      controller.start().catchError((error) {
+        final exception = error as MobileScannerException;
+
+        switch (exception.errorCode) {
+          case MobileScannerErrorCode.controllerUninitialized:
+            break; // This error code is not used by `start()`.
+          case MobileScannerErrorCode.genericError:
+            debugPrint('Scanner failed to start');
+            break;
+          case MobileScannerErrorCode.permissionDenied:
+            debugPrint('Camera permission denied');
+            break;
+        }
+      });
+    }
+
+    setState(() {
+      isStarted = !isStarted;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,17 +62,13 @@ class _BarcodeListScannerWithControllerState
               MobileScanner(
                 controller: controller,
                 fit: BoxFit.contain,
-                // controller: MobileScannerController(
-                //   torchEnabled: true,
-                //   facing: CameraFacing.front,
-                // ),
                 onDetect: (barcodeCapture) {
                   setState(() {
                     this.barcodeCapture = barcodeCapture;
                   });
                 },
-                onStart: (arguments) {
-                  // Do something with start arguments
+                onScannerStarted: (arguments) {
+                  // Do something with arguments.
                 },
               ),
               Align(
@@ -96,10 +114,7 @@ class _BarcodeListScannerWithControllerState
                             ? const Icon(Icons.stop)
                             : const Icon(Icons.play_arrow),
                         iconSize: 32.0,
-                        onPressed: () => setState(() {
-                          isStarted ? controller.stop() : controller.start();
-                          isStarted = !isStarted;
-                        }),
+                        onPressed: _startOrStop,
                       ),
                       Center(
                         child: SizedBox(
@@ -176,5 +191,11 @@ class _BarcodeListScannerWithControllerState
         },
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 }
