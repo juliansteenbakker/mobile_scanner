@@ -1,3 +1,37 @@
+## 3.0.0-beta.3
+Deprecated:
+* The `onStart` method has been renamed to `onScannerStarted`.
+* The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
+
+Breaking changes:
+* `MobileScannerException` now uses an `errorCode` instead of a `message`.
+* `MobileScannerException` now contains additional details from the original error.
+* Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
+  with consistent error codes, rather than string messages.
+  To handle permission errors, consider catching the result of `MobileScannerController.start()`.
+* The `autoResume` attribute has been removed from the `MobileScanner` widget.
+  The controller already automatically resumes, so it had no effect.
+* Removed `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedef.
+
+Improvements:
+* Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+* Removed `called stop while already stopped` messages.
+
+Features:
+* Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
+* Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
+* Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
+
+Fixes:
+* Fixes the missing gradle setup for the Android project, which prevented gradle sync from working.
+* Fixes `MobileScannerController.stop()` throwing when already stopped.
+* Fixes `MobileScannerController.toggleTorch()` throwing if the device has no torch.
+  Now it does nothing if the torch is not available.
+* Fixes a memory leak where the `MobileScanner` would keep listening to the barcode events.
+* Fixes the `MobileScanner` preview depending on all attributes of `MediaQueryData`.
+  Now it only depends on its layout constraints.
+* Fixed a potential crash when the scanner is restarted due to the app being resumed.
+  
 ## 3.0.0-beta.2
 Breaking changes:
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
