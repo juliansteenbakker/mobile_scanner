@@ -61,9 +61,6 @@ class _MobileScannerState extends State<MobileScanner>
   void _startScanner(MobileScannerController scanner) {
     scanner.start().then((arguments) {
       widget.onScannerStarted?.call(arguments);
-    }).catchError((error) {
-      // The scanner somehow failed to start.
-      // There is no way to recover from this, so do nothing.
     });
   }
 
