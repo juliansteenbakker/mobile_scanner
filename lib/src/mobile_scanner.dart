@@ -1,52 +1,49 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
 
-typedef MobileScannerCallback = void Function(BarcodeCapture barcodes);
-typedef MobileScannerArgumentsCallback = void Function(
-  MobileScannerArguments? arguments,
-);
-
-/// A widget showing a live camera preview.
+/// The [MobileScanner] widget displays a live camera preview.
 class MobileScanner extends StatefulWidget {
-  /// The controller of the camera.
+  /// The controller that manages the barcode scanner.
+  ///
+  /// If this is null, the scanner will manage its own controller.
   final MobileScannerController? controller;
 
-  /// Calls the provided [onPermissionSet] callback when the permission is set.
-  // @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
-  // ignore: deprecated_consistency
-  final Function(bool permissionGranted)? onPermissionSet;
-
-  /// Function that gets called when a Barcode is detected.
+  /// The [BoxFit] for the camera preview.
   ///
-  /// [barcode] The barcode object with all information about the scanned code.
-  /// [startInternalArguments] Information about the state of the MobileScanner widget
-  final MobileScannerCallback onDetect;
-
-  /// Function that gets called when the scanner is started.
-  ///
-  /// [arguments] The start arguments of the scanner. This contains the size of
-  /// the scanner which can be used to draw a box over the scanner.
-  final MobileScannerArgumentsCallback? onStart;
-
-  /// Handles how the widget should fit the screen.
+  /// Defaults to [BoxFit.cover].
   final BoxFit fit;
 
-  /// Whether to automatically resume the camera when the application is resumed
-  final bool autoResume;
+  /// The function that signals when new codes were detected by the [controller].
+  final void Function(BarcodeCapture barcodes) onDetect;
 
-  /// Create a [MobileScanner] with a [controller], the [controller] must has been initialized.
+  /// The function that signals when the barcode scanner is started.
+  @Deprecated('Use onScannerStarted() instead.')
+  final void Function(MobileScannerArguments? arguments)? onStart;
+
+  /// The function that signals when the barcode scanner is started.
+  final void Function(MobileScannerArguments? arguments)? onScannerStarted;
+
+  /// The function that builds a placeholder widget when the scanner
+  /// is not yet displaying its camera preview.
+  ///
+  /// If this is null, a black [ColoredBox] is used as placeholder.
+  final Widget Function(BuildContext, Widget?)? placeholderBuilder;
+
+  /// Create a new [MobileScanner] using the provided [controller]
+  /// and [onBarcodeDetected] callback.
   const MobileScanner({
-    super.key,
-    required this.onDetect,
-    this.onStart,
     this.controller,
-    this.autoResume = true,
     this.fit = BoxFit.cover,
-    @Deprecated('Use the [onPermissionSet] paremeter in the [MobileScannerController] instead.')
-        this.onPermissionSet,
+    required this.onDetect,
+    @Deprecated('Use onScannerStarted() instead.') this.onStart,
+    this.onScannerStarted,
+    this.placeholderBuilder,
+    super.key,
   });
 
   @override
@@ -55,104 +52,109 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
-  late MobileScannerController controller;
+  /// The subscription that listens to barcode detection.
+  StreamSubscription<BarcodeCapture>? _barcodesSubscription;
+
+  /// The internally managed controller.
+  late MobileScannerController _controller;
+
+  /// Whether the controller should resume
+  /// when the application comes back to the foreground.
+  bool _resumeFromBackground = false;
+
+  /// Start the given [scanner].
+  void _startScanner(MobileScannerController scanner) {
+    if (!_controller.autoStart) {
+      debugPrint(
+        'mobile_scanner: not starting automatically because autoStart is set to false in the controller.',
+      );
+      return;
+    }
+    scanner.start().then((arguments) {
+      // ignore: deprecated_member_use_from_same_package
+      widget.onStart?.call(arguments);
+      widget.onScannerStarted?.call(arguments);
+    });
+  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    controller = widget.controller ??
-        MobileScannerController(onPermissionSet: widget.onPermissionSet);
-    if (!controller.isStarting) {
-      _startScanner();
+    _controller = widget.controller ?? MobileScannerController();
+
+    _barcodesSubscription = _controller.barcodes.listen(
+      widget.onDetect,
+    );
+
+    if (!_controller.isStarting) {
+      _startScanner(_controller);
     }
   }
 
-  Future<void> _startScanner() async {
-    final arguments = await controller.start();
-    widget.onStart?.call(arguments);
-  }
-
-  bool resumeFromBackground = false;
-
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed before it is initialized.
-    if (controller.isStarting) {
+    // App state changed before the controller was initialized.
+    if (_controller.isStarting) {
       return;
     }
 
     switch (state) {
       case AppLifecycleState.resumed:
-        resumeFromBackground = false;
-        _startScanner();
+        _resumeFromBackground = false;
+        _startScanner(_controller);
         break;
       case AppLifecycleState.paused:
-        resumeFromBackground = true;
+        _resumeFromBackground = true;
         break;
       case AppLifecycleState.inactive:
-        if (!resumeFromBackground) controller.stop();
+        if (!_resumeFromBackground) {
+          _controller.stop();
+        }
         break;
-      default:
+      case AppLifecycleState.detached:
         break;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: controller.startArguments,
+    return ValueListenableBuilder<MobileScannerArguments?>(
+      valueListenable: _controller.startArguments,
       builder: (context, value, child) {
-        value = value as MobileScannerArguments?;
         if (value == null) {
-          return const ColoredBox(color: Colors.black);
-        } else {
-          controller.barcodes.listen((barcode) {
-            widget.onDetect(barcode);
-          });
-          return ClipRect(
-            child: SizedBox(
-              width: MediaQuery.of(context).size.width,
-              height: MediaQuery.of(context).size.height,
-              child: FittedBox(
-                fit: widget.fit,
-                child: SizedBox(
-                  width: value.size.width,
-                  height: value.size.height,
-                  child: kIsWeb
-                      ? HtmlElementView(viewType: value.webId!)
-                      : Texture(textureId: value.textureId!),
-                ),
-              ),
-            ),
-          );
+          return widget.placeholderBuilder?.call(context, child) ??
+              const ColoredBox(color: Colors.black);
         }
+
+        return ClipRect(
+          child: LayoutBuilder(
+            builder: (_, constraints) {
+              return SizedBox.fromSize(
+                size: constraints.biggest,
+                child: FittedBox(
+                  fit: widget.fit,
+                  child: SizedBox(
+                    width: value.size.width,
+                    height: value.size.height,
+                    child: kIsWeb
+                        ? HtmlElementView(viewType: value.webId!)
+                        : Texture(textureId: value.textureId!),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
       },
     );
   }
 
   @override
-  void didUpdateWidget(covariant MobileScanner oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller == null) {
-      if (widget.controller != null) {
-        controller.dispose();
-        controller = widget.controller!;
-      }
-    } else {
-      if (widget.controller == null) {
-        controller =
-            MobileScannerController(onPermissionSet: widget.onPermissionSet);
-      } else if (oldWidget.controller != widget.controller) {
-        controller = widget.controller!;
-      }
-    }
-  }
-
-  @override
   void dispose() {
-    controller.dispose();
     WidgetsBinding.instance.removeObserver(this);
+    _barcodesSubscription?.cancel();
+    _controller.dispose();
     super.dispose();
   }
 }

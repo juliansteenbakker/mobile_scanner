@@ -260,9 +260,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     func stop(_ result: FlutterResult) {
         if (device == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                    message: "Called stop() while already stopped!",
-                                    details: nil))
+            result(nil)
+
             return
         }
         captureSession.stopRunning()

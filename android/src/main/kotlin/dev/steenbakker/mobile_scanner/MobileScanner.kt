@@ -17,10 +17,9 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
-
-typealias PermissionCallback = (permissionGranted: Boolean) -> Unit
 typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?) -> Unit
 typealias AnalyzerCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
 typealias MobileScannerErrorCallback = (error: String) -> Unit
@@ -49,10 +48,9 @@ class MobileScanner(
         private const val REQUEST_CODE = 0x0786
     }
 
-    private var listener: PluginRegistry.RequestPermissionsResultListener? = null
-
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var pendingPermissionResult: MethodChannel.Result? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
 
@@ -86,16 +84,12 @@ class MobileScanner(
     /**
      * Request camera permissions.
      */
-    fun requestPermission(permissionCallback: PermissionCallback) {
-        listener = PluginRegistry.RequestPermissionsResultListener { requestCode, _, grantResults ->
-                if (requestCode != REQUEST_CODE) {
-                    false
-                } else {
-                    val authorized = grantResults[0] == PackageManager.PERMISSION_GRANTED
-                    permissionCallback(authorized)
-                    true
-                }
-            }
+    fun requestPermission(result: MethodChannel.Result) {
+        if(pendingPermissionResult != null) {
+            return
+        }
+
+        pendingPermissionResult = result
         val permissions = arrayOf(Manifest.permission.CAMERA)
         ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
     }
@@ -108,7 +102,14 @@ class MobileScanner(
         permissions: Array<out String>,
         grantResults: IntArray
     ): Boolean {
-        return listener?.onRequestPermissionsResult(requestCode, permissions, grantResults) ?: false
+        if (requestCode != REQUEST_CODE) {
+            return false
+        }
+
+        pendingPermissionResult?.success(grantResults[0] == PackageManager.PERMISSION_GRANTED)
+        pendingPermissionResult = null
+
+        return true
     }
 
     /**

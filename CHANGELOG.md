@@ -1,3 +1,31 @@
+## 3.0.0-beta.3
+Deprecated:
+* The `onStart` method has been renamed to `onScannerStarted`.
+* The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
+
+Breaking changes:
+* `MobileScannerException` now uses an `errorCode` instead of a `message`.
+* `MobileScannerException` now contains additional details from the original error.
+* Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
+  with consistent error codes, rather than string messages.
+  To handle permission errors, consider catching the result of `MobileScannerController.start()`.
+* The `autoResume` attribute has been removed from the `MobileScanner` widget.
+  The controller already automatically resumes, so it had no effect.
+* Removed `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedef.
+
+Improvements:
+* Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
+
+Features:
+* Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
+* Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
+
+Fixed:
+* Fixed a memory leak where the `MobileScanner` widget would never close its subscription to the barcode events.
+* Fixed a dependency on all properties of `MediaQueryData` to build the preview widget. Now the preview only depends on its layout constraints.
+* Fixed a potential crash when the scanner is restarted due to the app being resumed.
+* Various documentation improvements.
+  
 ## 3.0.0-beta.2
 Breaking changes:
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
