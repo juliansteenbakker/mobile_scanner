@@ -106,13 +106,14 @@ class MobileScannerController {
   ///
   /// Throws an error if the controller is not initialized.
   bool get hasTorch {
-    if (_hasTorch == null) {
+    final hasTorch = hasTorchState.value;
+    if (hasTorch == null) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
       );
     }
 
-    return _hasTorch!;
+    return hasTorch;
   }
 
   /// Set the starting arguments for the camera
