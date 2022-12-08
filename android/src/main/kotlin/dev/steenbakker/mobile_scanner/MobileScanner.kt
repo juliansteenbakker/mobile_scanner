@@ -87,8 +87,7 @@ class MobileScanner(
      * Request camera permissions.
      */
     fun requestPermission(permissionCallback: PermissionCallback) {
-        listener
-            ?: PluginRegistry.RequestPermissionsResultListener { requestCode, _, grantResults ->
+        listener = PluginRegistry.RequestPermissionsResultListener { requestCode, _, grantResults ->
                 if (requestCode != REQUEST_CODE) {
                     false
                 } else {
