@@ -22,6 +22,10 @@ class MobileScanner extends StatefulWidget {
   final void Function(BarcodeCapture barcodes) onDetect;
 
   /// The function that signals when the barcode scanner is started.
+  @Deprecated('Use onScannerStarted() instead.')
+  final void Function(MobileScannerArguments? arguments)? onStart;
+
+  /// The function that signals when the barcode scanner is started.
   final void Function(MobileScannerArguments? arguments)? onScannerStarted;
 
   /// The function that builds a placeholder widget when the scanner
@@ -36,6 +40,7 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.fit = BoxFit.cover,
     required this.onDetect,
+    @Deprecated('Use onScannerStarted() instead.') this.onStart,
     this.onScannerStarted,
     this.placeholderBuilder,
     super.key,
@@ -60,6 +65,8 @@ class _MobileScannerState extends State<MobileScanner>
   /// Start the given [scanner].
   void _startScanner(MobileScannerController scanner) {
     scanner.start().then((arguments) {
+      // ignore: deprecated_member_use_from_same_package
+      widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     });
   }
@@ -69,7 +76,7 @@ class _MobileScannerState extends State<MobileScanner>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = widget.controller ?? MobileScannerController();
-    
+
     _barcodesSubscription = _controller.barcodes.listen(
       widget.onDetect,
     );
