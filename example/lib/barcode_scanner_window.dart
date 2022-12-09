@@ -11,35 +11,23 @@ class BarcodeScannerWithScanWindow extends StatefulWidget {
 
 class _BarcodeScannerWithScanWindowState
     extends State<BarcodeScannerWithScanWindow> {
-  late MobileScannerController controller;
-  String? barcode;
+  late MobileScannerController controller = MobileScannerController();
+  Barcode? barcode;
 
-  @override
-  void initState() {
-    super.initState();
-    controller = MobileScannerController();
-    restart();
+  Future<void> onDetect(BarcodeCapture barcode) async {
+    setState(() => this.barcode = barcode.barcodes.first);
   }
 
-  Future<void> restart() async {
-    // await controller.stop();
-    await controller.start();
-  }
-
-  Future<void> onDetect(Barcode barcode, MobileScannerArguments? _) async {
-    setState(() => this.barcode = barcode.rawValue);
-    await Future.delayed(const Duration(seconds: 1));
-    setState(() => this.barcode = '');
-  }
+  MobileScannerArguments? arguments;
 
   @override
   Widget build(BuildContext context) {
+    final query = MediaQuery.of(context);
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.of(context).size.center(Offset.zero),
       width: 200,
       height: 200,
     );
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Builder(
@@ -51,9 +39,19 @@ class _BarcodeScannerWithScanWindowState
                 fit: BoxFit.contain,
                 scanWindow: scanWindow,
                 controller: controller,
+                onScannerStarted: (arguments) {
+                  setState(() {
+                    this.arguments = arguments;
+                  });
+                },
                 onDetect: onDetect,
-                allowDuplicates: true,
               ),
+              if (barcode != null &&
+                  barcode?.corners != null &&
+                  arguments != null)
+                CustomPaint(
+                  painter: BarcodeOverlay(barcode!, arguments!, BoxFit.contain, MediaQuery.of(context).devicePixelRatio),
+                ),
               CustomPaint(
                 painter: ScannerOverlay(scanWindow),
               ),
@@ -72,7 +70,7 @@ class _BarcodeScannerWithScanWindowState
                           height: 50,
                           child: FittedBox(
                             child: Text(
-                              barcode ?? 'Scan something!',
+                              barcode?.displayValue ?? 'Scan something!',
                               overflow: TextOverflow.fade,
                               style: Theme.of(context)
                                   .textTheme
@@ -115,6 +113,60 @@ class ScannerOverlay extends CustomPainter {
       cutoutPath,
     );
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
+  }
+}
+
+class BarcodeOverlay extends CustomPainter {
+  BarcodeOverlay(this.barcode, this.arguments, this.boxFit, this.devicePixelRatio);
+
+  final Barcode barcode;
+  final MobileScannerArguments arguments;
+  final BoxFit boxFit;
+  final double devicePixelRatio;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (barcode.corners == null) return;
+
+    // final realsize = Size(arguments.size.width * devicePixelRatio, arguments.size.height * devicePixelRatio);
+
+    final adjustedSize = applyBoxFit(boxFit, arguments.size, size);
+
+    double verticalPadding = size.height - adjustedSize.destination.height;
+    double horizontalPadding = size.width - adjustedSize.destination.width;
+    if (verticalPadding > 0) {
+      verticalPadding = verticalPadding / 2;
+    } else {
+      verticalPadding = 0;
+    }
+
+    if (horizontalPadding > 0) {
+      horizontalPadding = horizontalPadding / 2;
+    } else {
+      horizontalPadding = 0;
+    }
+
+    final ratioWidth = arguments.size.width / adjustedSize.destination.width;
+    final ratioHeight = arguments.size.height / adjustedSize.destination.height;
+
+    final List<Offset> adjustedOffset = [];
+    for (final offset in barcode.corners!) {
+      adjustedOffset.add(Offset(offset.dx / ratioWidth + horizontalPadding,
+          offset.dy / ratioHeight + verticalPadding));
+    }
+    final cutoutPath = Path()..addPolygon(adjustedOffset, true);
+
+    final backgroundPaint = Paint()
+      ..color = Colors.red.withOpacity(0.3)
+      ..style = PaintingStyle.fill
+      ..blendMode = BlendMode.dstOut;
+
+    canvas.drawPath(cutoutPath, backgroundPaint);
   }
 
   @override

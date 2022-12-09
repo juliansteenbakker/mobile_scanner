@@ -77,6 +77,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
             "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
     }
@@ -214,5 +215,9 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
         } catch (e: AlreadyStopped) {
             result.error("MobileScanner", "Called toggleTorch() while stopped!", null)
         }
+    }
+
+    private fun updateScanWindow(call: MethodCall) {
+        handler!!.scanWindow = call.argument<List<Float>>("rect")
     }
 }

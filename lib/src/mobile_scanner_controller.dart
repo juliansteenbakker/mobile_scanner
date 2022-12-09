@@ -363,6 +363,6 @@ class MobileScannerController {
   /// updates the native scanwindow
   Future<void> updateScanWindow(Rect window) async {
     final data = [window.left, window.top, window.right, window.bottom];
-    await methodChannel.invokeMethod('updateScanWindow', {'rect': data});
+    await _methodChannel.invokeMethod('updateScanWindow', {'rect': data});
   }
 }

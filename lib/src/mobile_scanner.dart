@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' hide applyBoxFit;
+import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
@@ -143,9 +144,9 @@ class _MobileScannerState extends State<MobileScanner>
     final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
 
     /// create a new rectangle that represents the texture on the screen
-    final minX = widgetSize.width / 2 - fittedTextureSize.width / 2;
-    final minY = widgetSize.height / 2 - fittedTextureSize.height / 2;
-    final textureWindow = Offset(minX, minY) & fittedTextureSize;
+    final minX = widgetSize.width / 2 - fittedTextureSize.destination.width / 2;
+    final minY = widgetSize.height / 2 - fittedTextureSize.destination.height / 2;
+    final textureWindow = Offset(minX, minY) & fittedTextureSize.destination;
 
     /// create a new scan window and with only the area of the rect intersecting the texture window
     final scanWindowInTexture = scanWindow.intersect(textureWindow);
@@ -160,10 +161,10 @@ class _MobileScannerState extends State<MobileScanner>
     final windowInTexture = Rect.fromLTWH(newLeft, newTop, newWidth, newHeight);
 
     /// get the scanWindow as a percentage of the texture
-    final percentageLeft = windowInTexture.left / fittedTextureSize.width;
-    final percentageTop = windowInTexture.top / fittedTextureSize.height;
-    final percentageRight = windowInTexture.right / fittedTextureSize.width;
-    final percentagebottom = windowInTexture.bottom / fittedTextureSize.height;
+    final percentageLeft = windowInTexture.left / fittedTextureSize.destination.width;
+    final percentageTop = windowInTexture.top / fittedTextureSize.destination.height;
+    final percentageRight = windowInTexture.right / fittedTextureSize.destination.width;
+    final percentagebottom = windowInTexture.bottom / fittedTextureSize.destination.height;
 
     /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
     return Rect.fromLTRB(
@@ -176,45 +177,49 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<MobileScannerArguments?>(
-      valueListenable: _controller.startArguments,
-      builder: (context, value, child) {
-        if (value == null) {
-          return widget.placeholderBuilder?.call(context, child) ??
-              const ColoredBox(color: Colors.black);
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ValueListenableBuilder<MobileScannerArguments?>(
+          valueListenable: _controller.startArguments,
+          builder: (context, value, child) {
+            if (value == null) {
+              return widget.placeholderBuilder?.call(context, child) ??
+                  const ColoredBox(color: Colors.black);
+            }
 
-        if (widget.scanWindow != null) {
-          final window = calculateScanWindowRelativeToTextureInPercentage(
-            widget.fit,
-            widget.scanWindow!,
-            value.size,
-            Size(constraints.maxWidth, constraints.maxHeight),
-          );
-          controller.updateScanWindow(window);
-        }
-
-
-        return ClipRect(
-          child: LayoutBuilder(
-            builder: (_, constraints) {
-              return SizedBox.fromSize(
-                size: constraints.biggest,
-                child: FittedBox(
-                  fit: widget.fit,
-                  child: SizedBox(
-                    width: value.size.width,
-                    height: value.size.height,
-                    child: kIsWeb
-                        ? HtmlElementView(viewType: value.webId!)
-                        : Texture(textureId: value.textureId!),
-                  ),
-                ),
+            if (widget.scanWindow != null) {
+              final window = calculateScanWindowRelativeToTextureInPercentage(
+                widget.fit,
+                widget.scanWindow!,
+                value.size,
+                Size(constraints.maxWidth, constraints.maxHeight),
               );
-            },
-          ),
+              _controller.updateScanWindow(window);
+            }
+
+
+            return ClipRect(
+              child: LayoutBuilder(
+                builder: (_, constraints) {
+                  return SizedBox.fromSize(
+                    size: constraints.biggest,
+                    child: FittedBox(
+                      fit: widget.fit,
+                      child: SizedBox(
+                        width: value.size.width,
+                        height: value.size.height,
+                        child: kIsWeb
+                            ? HtmlElementView(viewType: value.webId!)
+                            : Texture(textureId: value.textureId!),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         );
-      },
+      }
     );
   }
 
