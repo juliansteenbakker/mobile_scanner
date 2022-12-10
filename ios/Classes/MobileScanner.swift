@@ -132,17 +132,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.noCamera
         }
 
-        // Enable the torch if parameter is set and torch is available
-        if (device.hasTorch && device.isTorchAvailable) {
-            do {
-                try device.lockForConfiguration()
-                device.torchMode = torch
-                device.unlockForConfiguration()
-            } catch {
-                throw MobileScannerError.torchError(error)
-            }
-        }
-
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         captureSession.beginConfiguration()
 
@@ -174,6 +163,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
+        // Enable the torch if parameter is set and torch is available
+        // torch should be set after 'startRunning' is called
+        do {
+            try toggleTorch(torch)
+        } catch {
+            print("Failed to set initial torch state.")
+        }
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
 
         return MobileScannerStartParameters(width: Double(dimensions.height), height: Double(dimensions.width), hasTorch: device.hasTorch, textureId: textureId)
@@ -203,12 +199,14 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         if (device == nil) {
             throw MobileScannerError.torchWhenStopped
         }
-        do {
-            try device.lockForConfiguration()
-            device.torchMode = torch
-            device.unlockForConfiguration()
-        } catch {
-            throw MobileScannerError.torchError(error)
+        if (device.hasTorch && device.isTorchAvailable) {
+            do {
+                try device.lockForConfiguration()
+                device.torchMode = torch
+                device.unlockForConfiguration()
+            } catch {
+                throw MobileScannerError.torchError(error)
+            }
         }
     }
 
