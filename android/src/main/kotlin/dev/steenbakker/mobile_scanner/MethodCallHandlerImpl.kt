@@ -101,12 +101,11 @@ class MethodCallHandlerImpl(
                 addPermissionListener,
                 object: MobileScannerPermissions.ResultCallback {
                     override fun onResult(errorCode: String?, errorDescription: String?) {
-                        if(errorCode == null) {
-                            result.success(true)
-                            return
+                        when(errorCode) {
+                            null -> result.success(true)
+                            MobileScannerPermissions.CAMERA_ACCESS_DENIED -> result.success(false)
+                            else -> result.error(errorCode, errorDescription, null)
                         }
-
-                        result.error(errorCode, errorDescription, null)
                     }
                 })
             "start" -> start(call, result)
