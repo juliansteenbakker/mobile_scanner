@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerReturningImage extends StatefulWidget {
   const BarcodeScannerReturningImage({Key? key}) : super(key: key);
@@ -27,7 +28,6 @@ class _BarcodeScannerReturningImageState
   );
 
   bool isStarted = true;
-  MobileScannerException? exception;
 
   void _startOrStop() {
     if (isStarted) {
@@ -35,9 +35,7 @@ class _BarcodeScannerReturningImageState
     } else {
       controller.start().catchError((error) {
         if (mounted) {
-          setState(() {
-            exception = error as MobileScannerException;
-          });
+          setState(() {});
         }
       });
     }
@@ -77,6 +75,9 @@ class _BarcodeScannerReturningImageState
                   children: [
                     MobileScanner(
                       controller: controller,
+                      errorBuilder: (context, error, child) {
+                        return ScannerErrorWidget(error: error);
+                      },
                       fit: BoxFit.contain,
                       onDetect: (barcode) {
                         setState(() {
