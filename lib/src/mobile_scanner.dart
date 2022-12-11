@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
 
@@ -12,6 +13,13 @@ class MobileScanner extends StatefulWidget {
   ///
   /// If this is null, the scanner will manage its own controller.
   final MobileScannerController? controller;
+
+  /// The function that builds an error widget when the scanner
+  /// could not be started.
+  ///
+  /// If this is null, defaults to a black [ColoredBox]
+  /// with a centered white [Icons.error] icon.
+  final Widget Function(BuildContext, Object, Widget?)? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
   ///
@@ -38,6 +46,7 @@ class MobileScanner extends StatefulWidget {
   /// and [onBarcodeDetected] callback.
   const MobileScanner({
     this.controller,
+    this.errorBuilder,
     this.fit = BoxFit.cover,
     required this.onDetect,
     @Deprecated('Use onScannerStarted() instead.') this.onStart,
@@ -62,6 +71,23 @@ class _MobileScannerState extends State<MobileScanner>
   /// when the application comes back to the foreground.
   bool _resumeFromBackground = false;
 
+  MobileScannerException? _startException;
+
+  Widget __buildPlaceholderOrError(BuildContext context, Widget? child) {
+    final error = _startException;
+
+    if (error != null) {
+      return widget.errorBuilder?.call(context, error, child) ??
+          const ColoredBox(
+            color: Colors.black,
+            child: Center(child: Icon(Icons.error, color: Colors.white)),
+          );
+    }
+
+    return widget.placeholderBuilder?.call(context, child) ??
+        const ColoredBox(color: Colors.black);
+  }
+
   /// Start the given [scanner].
   void _startScanner(MobileScannerController scanner) {
     if (!_controller.autoStart) {
@@ -74,6 +100,12 @@ class _MobileScannerState extends State<MobileScanner>
       // ignore: deprecated_member_use_from_same_package
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
+    }).catchError((error) {
+      if (mounted) {
+        setState(() {
+          _startException = error as MobileScannerException;
+        });
+      }
     });
   }
 
@@ -123,8 +155,7 @@ class _MobileScannerState extends State<MobileScanner>
       valueListenable: _controller.startArguments,
       builder: (context, value, child) {
         if (value == null) {
-          return widget.placeholderBuilder?.call(context, child) ??
-              const ColoredBox(color: Colors.black);
+          return __buildPlaceholderOrError(context, child);
         }
 
         return ClipRect(
