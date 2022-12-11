@@ -20,7 +20,7 @@ class MethodCallHandlerImpl(
     private val barcodeHandler: BarcodeHandler,
     binaryMessenger: BinaryMessenger,
     private val permissions: MobileScannerPermissions,
-    private val permissionsRegistry: MobileScannerPermissions.PermissionsRegistry,
+    private val addPermissionListener: (RequestPermissionsResultListener) -> Unit,
     textureRegistry: TextureRegistry): MethodChannel.MethodCallHandler {
 
     private val analyzerCallback: AnalyzerCallback = { barcodes: List<Map<String, Any?>>?->
@@ -98,7 +98,7 @@ class MethodCallHandlerImpl(
             "state" -> result.success(permissions.hasCameraPermission(activity))
             "request" -> permissions.requestPermission(
                 activity,
-                permissionsRegistry,
+                addPermissionListener,
                 object: MobileScannerPermissions.ResultCallback {
                     override fun onResult(errorCode: String?, errorDescription: String?) {
                         if(errorCode == null) {

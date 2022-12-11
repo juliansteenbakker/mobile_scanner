@@ -24,11 +24,6 @@ class MobileScannerPermissions {
         const val REQUEST_CODE = 0x0786
     }
 
-    interface PermissionsRegistry {
-        @SuppressWarnings("deprecation")
-        fun addListener(handler: RequestPermissionsResultListener)
-    }
-
     interface ResultCallback {
         fun onResult(errorCode: String?, errorDescription: String?)
     }
@@ -55,7 +50,7 @@ class MobileScannerPermissions {
     }
 
     fun requestPermission(activity: Activity,
-                          permissionsRegistry: PermissionsRegistry,
+                          addPermissionListener: (RequestPermissionsResultListener) -> Unit,
                           callback: ResultCallback) {
         if (ongoing) {
             callback.onResult(
@@ -79,7 +74,7 @@ class MobileScannerPermissions {
                     }
                 }
             )
-            permissionsRegistry.addListener(listener)
+            listener?.let { listener -> addPermissionListener(listener) }
         }
 
         ongoing = true
