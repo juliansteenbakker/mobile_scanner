@@ -134,6 +134,10 @@ extension JsZXingBrowserMultiFormatReaderExt
   external MediaStream? stream;
 }
 
+/// Barcode reader that uses zxing-js library.
+///
+/// Include zxing-js to your index.html file:
+/// <script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
 class ZXingBarcodeReader extends WebBarcodeReaderBase
     with InternalStreamCreation, InternalTorchDetection {
   late final JsZXingBrowserMultiFormatReader _reader =
