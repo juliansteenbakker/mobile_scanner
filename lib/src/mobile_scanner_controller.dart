@@ -159,21 +159,23 @@ class MobileScannerController {
           .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
       switch (state) {
         case MobileScannerState.undetermined:
-          try {
-            final bool result =
-                await _methodChannel.invokeMethod('request') as bool? ?? false;
+          bool result = false;
 
-            if (!result) {
-              throw const MobileScannerException(
-                errorCode: MobileScannerErrorCode.permissionDenied,
-              );
-            }
+          try {
+            result =
+                await _methodChannel.invokeMethod('request') as bool? ?? false;
           } catch (error) {
+            isStarting = false;
             throw const MobileScannerException(
               errorCode: MobileScannerErrorCode.genericError,
             );
-          } finally {
+          }
+
+          if (!result) {
             isStarting = false;
+            throw const MobileScannerException(
+              errorCode: MobileScannerErrorCode.permissionDenied,
+            );
           }
 
           break;
