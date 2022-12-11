@@ -1,3 +1,12 @@
+## 3.0.0-beta.4
+Fixes:
+* Fixes a permission bug on Android where denying the permission would cause an infinite loop of permission requests.
+* Updates the example app to handle permission errors with the new builder parameter.
+  Now it no longer throws uncaught exceptions when the permission is denied.
+
+Features:
+* Added a new `errorBuilder` to the `MobileScanner` widget that can be used to customize the error state of the preview.
+
 ## 3.0.0-beta.3
 Deprecated:
 * The `onStart` method has been renamed to `onScannerStarted`.
