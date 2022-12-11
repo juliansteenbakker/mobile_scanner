@@ -25,23 +25,17 @@ class _BarcodeScannerWithControllerState
   );
 
   bool isStarted = true;
+  MobileScannerException? exception;
 
   void _startOrStop() {
     if (isStarted) {
       controller.stop();
     } else {
       controller.start().catchError((error) {
-        final exception = error as MobileScannerException;
-
-        switch (exception.errorCode) {
-          case MobileScannerErrorCode.controllerUninitialized:
-            break; // This error code is not used by `start()`.
-          case MobileScannerErrorCode.genericError:
-            debugPrint('Scanner failed to start');
-            break;
-          case MobileScannerErrorCode.permissionDenied:
-            debugPrint('Camera permission denied');
-            break;
+        if (mounted) {
+          setState(() {
+            exception = error as MobileScannerException;
+          });
         }
       });
     }
