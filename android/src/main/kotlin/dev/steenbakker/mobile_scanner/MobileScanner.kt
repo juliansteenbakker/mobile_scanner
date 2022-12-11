@@ -1,15 +1,12 @@
 package dev.steenbakker.mobile_scanner
 
-import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -17,8 +14,6 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
-import io.flutter.plugin.common.MethodChannel
-import io.flutter.plugin.common.PluginRegistry
 import io.flutter.view.TextureRegistry
 typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?) -> Unit
 typealias AnalyzerCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
@@ -38,19 +33,10 @@ class MobileScanner(
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback
-) :
-    PluginRegistry.RequestPermissionsResultListener {
-    companion object {
-        /**
-         * When the application's activity is [androidx.fragment.app.FragmentActivity], requestCode can only use the lower 16 bits.
-         * @see androidx.fragment.app.FragmentActivity.validateRequestPermissionsRequestCode
-         */
-        private const val REQUEST_CODE = 0x0786
-    }
+) {
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
-    private var pendingPermissionResult: MethodChannel.Result? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
 
@@ -63,54 +49,6 @@ class MobileScanner(
     private var returnImage = false
 
     private var scanner = BarcodeScanning.getClient()
-
-    /**
-     * Check if we already have camera permission.
-     */
-    fun hasCameraPermission(): Int {
-        // Can't get exact denied or not_determined state without request. Just return not_determined when state isn't authorized
-        val hasPermission = ContextCompat.checkSelfPermission(
-            activity,
-            Manifest.permission.CAMERA
-        ) == PackageManager.PERMISSION_GRANTED
-
-        return if (hasPermission) {
-            1
-        } else {
-            0
-        }
-    }
-
-    /**
-     * Request camera permissions.
-     */
-    fun requestPermission(result: MethodChannel.Result) {
-        if(pendingPermissionResult != null) {
-            return
-        }
-
-        pendingPermissionResult = result
-        val permissions = arrayOf(Manifest.permission.CAMERA)
-        ActivityCompat.requestPermissions(activity, permissions, REQUEST_CODE)
-    }
-
-    /**
-     * Calls the callback after permissions are requested.
-     */
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ): Boolean {
-        if (requestCode != REQUEST_CODE) {
-            return false
-        }
-
-        pendingPermissionResult?.success(grantResults[0] == PackageManager.PERMISSION_GRANTED)
-        pendingPermissionResult = null
-
-        return true
-    }
 
     /**
      * callback for the camera. Every frame is passed through this function.
