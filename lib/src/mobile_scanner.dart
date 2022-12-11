@@ -7,6 +7,13 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
 
+/// The function signature for the error builder.
+typedef MobileScannerErrorBuilder = Widget Function(
+  BuildContext,
+  MobileScannerException,
+  Widget?,
+);
+
 /// The [MobileScanner] widget displays a live camera preview.
 class MobileScanner extends StatefulWidget {
   /// The controller that manages the barcode scanner.
@@ -19,7 +26,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// If this is null, defaults to a black [ColoredBox]
   /// with a centered white [Icons.error] icon.
-  final Widget Function(BuildContext, Object, Widget?)? errorBuilder;
+  final MobileScannerErrorBuilder? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
   ///
