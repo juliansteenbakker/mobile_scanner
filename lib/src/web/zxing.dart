@@ -43,12 +43,14 @@ extension ResultExt on Result {
   /// https://github.com/zxing-js/library/blob/1e9ccb3b6b28d75b9eef866dba196d8937eb4449/src/core/BarcodeFormat.ts#L28
   BarcodeFormat get barcodeFormat {
     switch (format) {
-      case 1:
+      case 0:
         return BarcodeFormat.aztec;
-      case 2:
+      case 1:
         return BarcodeFormat.codebar;
-      case 3:
+      case 2:
         return BarcodeFormat.code39;
+      case 3:
+        return BarcodeFormat.code93;
       case 4:
         return BarcodeFormat.code128;
       case 5:
@@ -75,6 +77,42 @@ extension ResultExt on Result {
         return BarcodeFormat.upcE;
       default:
         return BarcodeFormat.unknown;
+    }
+  }
+}
+
+extension ZXingBarcodeFormat on BarcodeFormat {
+  int get zxingBarcodeFormat {
+    switch (this) {
+      case BarcodeFormat.aztec:
+        return 0;
+      case BarcodeFormat.codebar:
+        return 1;
+      case BarcodeFormat.code39:
+        return 2;
+      case BarcodeFormat.code93:
+        return 3;
+      case BarcodeFormat.code128:
+        return 4;
+      case BarcodeFormat.dataMatrix:
+        return 5;
+      case BarcodeFormat.ean8:
+        return 6;
+      case BarcodeFormat.ean13:
+        return 7;
+      case BarcodeFormat.itf:
+        return 8;
+      case BarcodeFormat.pdf417:
+        return 10;
+      case BarcodeFormat.qrCode:
+        return 11;
+      case BarcodeFormat.upcA:
+        return 14;
+      case BarcodeFormat.upcE:
+        return 15;
+      case BarcodeFormat.unknown:
+      case BarcodeFormat.all:
+        return -1;
     }
   }
 }
@@ -136,11 +174,7 @@ extension JsZXingBrowserMultiFormatReaderExt
 /// <script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
 class ZXingBarcodeReader extends WebBarcodeReaderBase
     with InternalStreamCreation, InternalTorchDetection {
-  late final JsZXingBrowserMultiFormatReader _reader =
-      JsZXingBrowserMultiFormatReader(
-    null,
-    frameInterval.inMilliseconds,
-  );
+  JsZXingBrowserMultiFormatReader? _reader;
 
   ZXingBarcodeReader({required super.videoContainer});
 
@@ -150,7 +184,27 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
   @override
   Future<void> start({
     required CameraFacing cameraFacing,
+    List<BarcodeFormat>? formats,
+    Duration? detectionTimeout,
   }) async {
+    final JsMap? hints;
+    if (formats != null && !formats.contains(BarcodeFormat.all)) {
+      hints = JsMap();
+      final zxingFormats =
+          formats.map((e) => e.zxingBarcodeFormat).where((e) => e > 0).toList();
+      // set hint DecodeHintType.POSSIBLE_FORMATS
+      // https://github.com/zxing-js/library/blob/1e9ccb3b6b28d75b9eef866dba196d8937eb4449/src/core/DecodeHintType.ts#L28
+      hints.set(2, zxingFormats);
+    } else {
+      hints = null;
+    }
+    if (detectionTimeout != null) {
+      frameInterval = detectionTimeout;
+    }
+    _reader = JsZXingBrowserMultiFormatReader(
+      hints,
+      frameInterval.inMilliseconds,
+    );
     videoContainer.children = [video];
 
     final stream = await initMediaStream(cameraFacing);
@@ -163,7 +217,7 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
 
   @override
   void prepareVideoElement(VideoElement videoSource) {
-    _reader.prepareVideoElement(videoSource);
+    _reader?.prepareVideoElement(videoSource);
   }
 
   @override
@@ -171,9 +225,9 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
     MediaStream stream,
     VideoElement videoSource,
   ) async {
-    _reader.addVideoSource(videoSource, stream);
-    _reader.videoElement = videoSource;
-    _reader.stream = stream;
+    _reader?.addVideoSource(videoSource, stream);
+    _reader?.videoElement = videoSource;
+    _reader?.stream = stream;
     localMediaStream = stream;
     await videoSource.play();
   }
@@ -182,7 +236,7 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
   Stream<Barcode?> detectBarcodeContinuously() {
     final controller = StreamController<Barcode?>();
     controller.onListen = () async {
-      _reader.decodeContinuously(
+      _reader?.decodeContinuously(
         video,
         allowInterop((result, error) {
           if (result != null) {
@@ -192,14 +246,14 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
       );
     };
     controller.onCancel = () {
-      _reader.stopContinuousDecode();
+      _reader?.stopContinuousDecode();
     };
     return controller.stream;
   }
 
   @override
   Future<void> stop() async {
-    _reader.reset();
+    _reader?.reset();
     super.stop();
   }
 }

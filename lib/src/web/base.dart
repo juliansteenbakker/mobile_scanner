@@ -9,12 +9,11 @@ import 'package:mobile_scanner/src/web/media.dart';
 
 abstract class WebBarcodeReaderBase {
   /// Timer used to capture frames to be analyzed
-  final Duration frameInterval;
+  Duration frameInterval = const Duration(milliseconds: 200);
   final html.DivElement videoContainer;
 
-  const WebBarcodeReaderBase({
+  WebBarcodeReaderBase({
     required this.videoContainer,
-    this.frameInterval = const Duration(milliseconds: 200),
   });
 
   bool get isStarted;
@@ -25,6 +24,8 @@ abstract class WebBarcodeReaderBase {
   /// Starts streaming video
   Future<void> start({
     required CameraFacing cameraFacing,
+    List<BarcodeFormat>? formats,
+    Duration? detectionTimeout,
   });
 
   /// Starts scanning QR codes or barcodes
@@ -157,4 +158,15 @@ class ImageCapture {
 
 extension ImageCaptureExt on ImageCapture {
   external Promise<PhotoCapabilities> getPhotoCapabilities();
+}
+
+@JS('Map')
+@staticInterop
+class JsMap {
+  external factory JsMap();
+}
+
+extension JsMapExt on JsMap {
+  external void set(dynamic key, dynamic value);
+  external dynamic get(dynamic key);
 }

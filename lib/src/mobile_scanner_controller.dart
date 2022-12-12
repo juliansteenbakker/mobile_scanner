@@ -136,10 +136,10 @@ class MobileScannerController {
     } */
 
     if (formats != null) {
-      if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((e) => e.index).toList();
-      } else if (Platform.isIOS || Platform.isMacOS) {
+      if (kIsWeb || Platform.isIOS || Platform.isMacOS) {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+      } else if (Platform.isAndroid) {
+        arguments['formats'] = formats!.map((e) => e.index).toList();
       }
     }
     arguments['returnImage'] = true;
@@ -363,10 +363,12 @@ class MobileScannerController {
         _barcodesController.add(
           BarcodeCapture(
             barcodes: [
-              Barcode(
-                rawValue: barcode?['rawValue'] as String?,
-                rawBytes: barcode?['rawBytes'] as Uint8List?,
-              )
+              if (barcode != null)
+                Barcode(
+                  rawValue: barcode['rawValue'] as String?,
+                  rawBytes: barcode['rawBytes'] as Uint8List?,
+                  format: toFormat(barcode['format'] as int),
+                ),
             ],
           ),
         );
