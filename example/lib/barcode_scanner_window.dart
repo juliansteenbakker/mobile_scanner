@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -13,8 +15,10 @@ class _BarcodeScannerWithScanWindowState
     extends State<BarcodeScannerWithScanWindow> {
   late MobileScannerController controller = MobileScannerController();
   Barcode? barcode;
+  BarcodeCapture? capture;
 
   Future<void> onDetect(BarcodeCapture barcode) async {
+    capture = barcode;
     setState(() => this.barcode = barcode.barcodes.first);
   }
 
@@ -50,7 +54,7 @@ class _BarcodeScannerWithScanWindowState
                   barcode?.corners != null &&
                   arguments != null)
                 CustomPaint(
-                  painter: BarcodeOverlay(barcode!, arguments!, BoxFit.contain, MediaQuery.of(context).devicePixelRatio),
+                  painter: BarcodeOverlay(barcode!, arguments!, BoxFit.contain, MediaQuery.of(context).devicePixelRatio, capture!),
                 ),
               CustomPaint(
                 painter: ScannerOverlay(scanWindow),
@@ -122,8 +126,9 @@ class ScannerOverlay extends CustomPainter {
 }
 
 class BarcodeOverlay extends CustomPainter {
-  BarcodeOverlay(this.barcode, this.arguments, this.boxFit, this.devicePixelRatio);
+  BarcodeOverlay(this.barcode, this.arguments, this.boxFit, this.devicePixelRatio, this.capture);
 
+  final BarcodeCapture capture;
   final Barcode barcode;
   final MobileScannerArguments arguments;
   final BoxFit boxFit;
@@ -132,9 +137,6 @@ class BarcodeOverlay extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     if (barcode.corners == null) return;
-
-    // final realsize = Size(arguments.size.width * devicePixelRatio, arguments.size.height * devicePixelRatio);
-
     final adjustedSize = applyBoxFit(boxFit, arguments.size, size);
 
     double verticalPadding = size.height - adjustedSize.destination.height;
@@ -151,8 +153,8 @@ class BarcodeOverlay extends CustomPainter {
       horizontalPadding = 0;
     }
 
-    final ratioWidth = arguments.size.width / adjustedSize.destination.width;
-    final ratioHeight = arguments.size.height / adjustedSize.destination.height;
+    final ratioWidth = (Platform.isIOS ? capture.width! : arguments.size.width)/ adjustedSize.destination.width;
+    final ratioHeight = (Platform.isIOS ? capture.height! : arguments.size.height) / adjustedSize.destination.height;
 
     final List<Offset> adjustedOffset = [];
     for (final offset in barcode.corners!) {

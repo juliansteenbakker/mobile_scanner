@@ -323,6 +323,8 @@ class MobileScannerController {
           BarcodeCapture(
             barcodes: parsed,
             image: event['image'] as Uint8List?,
+            width: event['width'] as double?,
+            height: event['height'] as double?,
           ),
         );
         break;

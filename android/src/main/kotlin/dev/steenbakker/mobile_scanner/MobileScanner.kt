@@ -26,7 +26,7 @@ import io.flutter.view.TextureRegistry
 import kotlin.math.roundToInt
 
 
-typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?) -> Unit
+typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int?) -> Unit
 typealias AnalyzerCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
 typealias MobileScannerErrorCallback = (error: String) -> Unit
 typealias TorchStateCallback = (state: Int) -> Unit
@@ -151,17 +151,22 @@ class MobileScanner(
                 for ( barcode in barcodes) {
                     if(scanWindow != null) {
                         val match = isbarCodeInScanWindow(scanWindow!!, barcode, imageProxy)
-                        if(!match) continue
+                        if(!match) {
+                            continue
+                        } else {
+                            barcodeMap.add(barcode.data)
+                        }
+                    } else {
+                        barcodeMap.add(barcode.data)
                     }
-                    Log.d("mobile_scanner: ", "width: ${inputImage.width}, height: ${inputImage.height}")
-                    barcodeMap.add(barcode.data)
                 }
 
                 if (barcodeMap.isNotEmpty()) {
-
                     mobileScannerCallback(
                         barcodeMap,
-                        if (returnImage) mediaImage.toByteArray() else null
+                        if (returnImage) mediaImage.toByteArray() else null,
+                        if (returnImage) mediaImage.width else null,
+                        if (returnImage) mediaImage.height else null
                     )
                 }
             }
@@ -194,12 +199,7 @@ class MobileScanner(
         val bottom = (scanWindow[3] * imageHeight).roundToInt()
 
         val scaledScanWindow = Rect(left, top, right, bottom)
-
-//        Log.d("mobile_scanner: ", "scanWindow: $scaledScanWindow")
-//        Log.d("mobile_scanner: ", "bounding box: $barcodeBoundingBox")
-//        Log.d("mobile_scanner: ", "contains: ${scaledScanWindow.contains(barcodeBoundingBox)}")
-        return true
-//        return scaledScanWindow.contains(barcodeBoundingBox)
+        return scaledScanWindow.contains(barcodeBoundingBox)
     }
 
     /**
