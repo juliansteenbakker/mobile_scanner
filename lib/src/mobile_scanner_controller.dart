@@ -301,8 +301,11 @@ class MobileScannerController {
   /// is zoomed out.
   Future<void> setZoomScale(double zoomScale) async {
     if (zoomScale < 0 || zoomScale > 1) {
-      throw MobileScannerException(
-        'The zoomScale must be between 0 and 1.',
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+            message: 'The zoomScale must be between 0 and 1.',
+        ),
       );
     }
     await _methodChannel.invokeMethod('setScale', zoomScale);
