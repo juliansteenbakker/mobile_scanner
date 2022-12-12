@@ -35,6 +35,17 @@ class MobileScannerWebPlugin {
 
   static final html.DivElement vidDiv = html.DivElement();
 
+  /// Represents barcode reader library.
+  /// Change this property if you want to use a custom implementation.
+  ///
+  /// Example of using the jsQR library:
+  /// void main() {
+  ///   if (kIsWeb) {
+  ///     MobileScannerWebPlugin.barCodeReader =
+  ///         JsQrCodeReader(videoContainer: MobileScannerWebPlugin.vidDiv);
+  ///   }
+  ///   runApp(const MaterialApp(home: MyHome()));
+  /// }
   static WebBarcodeReaderBase barCodeReader =
       ZXingBarcodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;
@@ -82,11 +93,12 @@ class MobileScannerWebPlugin {
 
     // Check if stream is running
     if (barCodeReader.isStarted) {
+      final hasTorch = await barCodeReader.hasTorch();
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     }
     try {
@@ -106,12 +118,17 @@ class MobileScannerWebPlugin {
           });
         }
       });
+      final hasTorch = await barCodeReader.hasTorch();
+
+      if (hasTorch && arguments.containsKey('torch')) {
+        barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+      }
 
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     } catch (e) {
       throw PlatformException(code: 'MobileScannerWeb', message: '$e');

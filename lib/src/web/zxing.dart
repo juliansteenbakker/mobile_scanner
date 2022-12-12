@@ -7,10 +7,6 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/base.dart';
 
-@JS('Promise')
-@staticInterop
-class Promise<T> {}
-
 @JS('ZXing.BrowserMultiFormatReader')
 @staticInterop
 class JsZXingBrowserMultiFormatReader {
@@ -134,6 +130,10 @@ extension JsZXingBrowserMultiFormatReaderExt
   external MediaStream? stream;
 }
 
+/// Barcode reader that uses zxing-js library.
+///
+/// Include zxing-js to your index.html file:
+/// <script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
 class ZXingBarcodeReader extends WebBarcodeReaderBase
     with InternalStreamCreation, InternalTorchDetection {
   late final JsZXingBrowserMultiFormatReader _reader =
