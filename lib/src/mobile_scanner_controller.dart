@@ -99,19 +99,21 @@ class MobileScannerController {
 
   bool isStarting = false;
 
-  bool? _hasTorch;
+  /// A notifier that provides availability of the Torch (Flash)
+  final ValueNotifier<bool?> hasTorchState = ValueNotifier(false);
 
   /// Returns whether the device has a torch.
   ///
   /// Throws an error if the controller is not initialized.
   bool get hasTorch {
-    if (_hasTorch == null) {
+    final hasTorch = hasTorchState.value;
+    if (hasTorch == null) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
       );
     }
 
-    return _hasTorch!;
+    return hasTorch;
   }
 
   /// Set the starting arguments for the camera
@@ -210,8 +212,9 @@ class MobileScannerController {
       );
     }
 
-    _hasTorch = startResult['torchable'] as bool? ?? false;
-    if (_hasTorch! && torchEnabled) {
+    final hasTorch = startResult['torchable'] as bool? ?? false;
+    hasTorchState.value = hasTorch;
+    if (hasTorch && torchEnabled) {
       torchState.value = TorchState.on;
     }
 
@@ -223,7 +226,7 @@ class MobileScannerController {
               startResult['videoHeight'] as double? ?? 0,
             )
           : toSize(startResult['size'] as Map? ?? {}),
-      hasTorch: _hasTorch!,
+      hasTorch: hasTorch,
       textureId: kIsWeb ? null : startResult['textureId'] as int?,
       webId: kIsWeb ? startResult['ViewID'] as String? : null,
     );
@@ -244,7 +247,7 @@ class MobileScannerController {
   ///
   /// Throws if the controller was not initialized.
   Future<void> toggleTorch() async {
-    final hasTorch = _hasTorch;
+    final hasTorch = hasTorchState.value;
 
     if (hasTorch == null) {
       throw const MobileScannerException(
@@ -342,11 +345,13 @@ class MobileScannerController {
         );
         break;
       case 'barcodeWeb':
+        final barcode = data as Map?;
         _barcodesController.add(
           BarcodeCapture(
             barcodes: [
               Barcode(
-                rawValue: data as String?,
+                rawValue: barcode?['rawValue'] as String?,
+                rawBytes: barcode?['rawBytes'] as Uint8List?,
               )
             ],
           ),
