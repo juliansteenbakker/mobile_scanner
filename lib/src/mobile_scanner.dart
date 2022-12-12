@@ -179,6 +179,8 @@ class _MobileScannerState extends State<MobileScanner>
     );
   }
 
+  Rect? scanWindow;
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -191,14 +193,14 @@ class _MobileScannerState extends State<MobileScanner>
                   const ColoredBox(color: Colors.black);
             }
 
-            if (widget.scanWindow != null) {
-              final window = calculateScanWindowRelativeToTextureInPercentage(
+            if (widget.scanWindow != null && scanWindow == null) {
+              scanWindow = calculateScanWindowRelativeToTextureInPercentage(
                 widget.fit,
                 widget.scanWindow!,
                 value.size,
                 Size(constraints.maxWidth, constraints.maxHeight),
               );
-              _controller.updateScanWindow(window);
+              _controller.updateScanWindow(scanWindow!);
             }
 
             return ClipRect(
