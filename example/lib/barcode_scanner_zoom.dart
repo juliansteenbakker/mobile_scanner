@@ -15,9 +15,6 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom>
 
   MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
-    onPermissionSet: (hasPermission) {
-      // Do something with permission callback
-    },
   );
 
   bool isStarted = true;
