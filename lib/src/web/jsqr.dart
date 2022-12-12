@@ -20,6 +20,11 @@ class Code {
   external Uint8ClampedList get binaryData;
 }
 
+/// Barcode reader that uses jsQR library.
+/// jsQR supports only QR codes format.
+///
+/// Include jsQR to your index.html file:
+/// <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
 class JsQrCodeReader extends WebBarcodeReaderBase
     with InternalStreamCreation, InternalTorchDetection {
   JsQrCodeReader({required super.videoContainer});
@@ -30,8 +35,14 @@ class JsQrCodeReader extends WebBarcodeReaderBase
   @override
   Future<void> start({
     required CameraFacing cameraFacing,
+    List<BarcodeFormat>? formats,
+    Duration? detectionTimeout,
   }) async {
     videoContainer.children = [video];
+
+    if (detectionTimeout != null) {
+      frameInterval = detectionTimeout;
+    }
 
     final stream = await initMediaStream(cameraFacing);
 

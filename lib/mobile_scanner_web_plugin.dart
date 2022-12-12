@@ -5,7 +5,9 @@ import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/mobile_scanner_web.dart';
+import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -35,6 +37,17 @@ class MobileScannerWebPlugin {
 
   static final html.DivElement vidDiv = html.DivElement();
 
+  /// Represents barcode reader library.
+  /// Change this property if you want to use a custom implementation.
+  ///
+  /// Example of using the jsQR library:
+  /// void main() {
+  ///   if (kIsWeb) {
+  ///     MobileScannerWebPlugin.barCodeReader =
+  ///         JsQrCodeReader(videoContainer: MobileScannerWebPlugin.vidDiv);
+  ///   }
+  ///   runApp(const MaterialApp(home: MyHome()));
+  /// }
   static WebBarcodeReaderBase barCodeReader =
       ZXingBarcodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;
@@ -82,16 +95,32 @@ class MobileScannerWebPlugin {
 
     // Check if stream is running
     if (barCodeReader.isStarted) {
+      final hasTorch = await barCodeReader.hasTorch();
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     }
     try {
+      List<BarcodeFormat>? formats;
+      if (arguments.containsKey('formats')) {
+        formats = (arguments['formats'] as List)
+            .cast<int>()
+            .map((e) => toFormat(e))
+            .toList();
+      }
+      final Duration? detectionTimeout;
+      if (arguments.containsKey('timeout')) {
+        detectionTimeout = Duration(milliseconds: arguments['timeout'] as int);
+      } else {
+        detectionTimeout = null;
+      }
       await barCodeReader.start(
         cameraFacing: cameraFacing,
+        formats: formats,
+        detectionTimeout: detectionTimeout,
       );
 
       _barCodeStreamSubscription =
@@ -102,16 +131,22 @@ class MobileScannerWebPlugin {
             'data': {
               'rawValue': code.rawValue,
               'rawBytes': code.rawBytes,
+              'format': code.format.rawValue,
             },
           });
         }
       });
+      final hasTorch = await barCodeReader.hasTorch();
+
+      if (hasTorch && arguments.containsKey('torch')) {
+        barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+      }
 
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     } catch (e) {
       throw PlatformException(code: 'MobileScannerWeb', message: '$e');

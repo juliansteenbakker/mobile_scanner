@@ -12,6 +12,7 @@ import MLKitVision
 import MLKitBarcodeScanning
 
 typealias MobileScannerCallback = ((Array<Barcode>?, Error?, UIImage) -> ())
+typealias TorchModeChangeCallback = ((Int?) -> ())
 
 public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture {
     /// Capture session of the camera
@@ -32,6 +33,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// When results are found, this callback will be called
     let mobileScannerCallback: MobileScannerCallback
 
+    /// When torch mode is changes, this callback will be called
+    let torchModeChangeCallback: TorchModeChangeCallback
+
     /// If provided, the Flutter registry will be used to send the output of the CaptureOutput to a Flutter texture.
     private let registry: FlutterTextureRegistry?
 
@@ -43,9 +47,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
-    init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback) {
+    init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback) {
         self.registry = registry
         self.mobileScannerCallback = mobileScannerCallback
+        self.torchModeChangeCallback = torchModeChangeCallback
         super.init()
     }
 
@@ -127,17 +132,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.noCamera
         }
 
-        // Enable the torch if parameter is set and torch is available
-        if (device.hasTorch && device.isTorchAvailable) {
-            do {
-                try device.lockForConfiguration()
-                device.torchMode = torch
-                device.unlockForConfiguration()
-            } catch {
-                throw MobileScannerError.torchError(error)
-            }
-        }
-
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         captureSession.beginConfiguration()
 
@@ -169,6 +163,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession.commitConfiguration()
         captureSession.startRunning()
+        // Enable the torch if parameter is set and torch is available
+        // torch should be set after 'startRunning' is called
+        do {
+            try toggleTorch(torch)
+        } catch {
+            print("Failed to set initial torch state.")
+        }
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
 
         return MobileScannerStartParameters(width: Double(dimensions.height), height: Double(dimensions.width), hasTorch: device.hasTorch, textureId: textureId)
@@ -198,13 +199,54 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         if (device == nil) {
             throw MobileScannerError.torchWhenStopped
         }
+        if (device.hasTorch && device.isTorchAvailable) {
+            do {
+                try device.lockForConfiguration()
+                device.torchMode = torch
+                device.unlockForConfiguration()
+            } catch {
+                throw MobileScannerError.torchError(error)
+            }
+        }
+    }
+
+    // Observer for torch state
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        switch keyPath {
+        case "torchMode":
+            // off = 0; on = 1; auto = 2;
+            let state = change?[.newKey] as? Int
+            torchModeChangeCallback(state)
+        default:
+            break
+        }
+    }
+    
+    /// Set the zoom factor of the camera
+    func setScale(_ scale: CGFloat) throws {
+        if (device == nil) {
+            throw MobileScannerError.torchWhenStopped
+        }
+        
         do {
             try device.lockForConfiguration()
-            device.torchMode = torch
+            var maxZoomFactor = device.activeFormat.videoMaxZoomFactor
+            
+            var actualScale = (scale * 4) + 1
+            
+            // Set maximum zoomrate of 5x
+            actualScale = min(5.0, actualScale)
+            
+            // Limit to max rate of camera
+            actualScale = min(maxZoomFactor, actualScale)
+            
+            // Limit to 1.0 scale
+            device.ramp(toVideoZoomFactor: actualScale, withRate: 5)
             device.unlockForConfiguration()
         } catch {
-            throw MobileScannerError.torchError(error)
+            throw MobileScannerError.zoomError(error)
         }
+        
     }
 
     /// Analyze a single image

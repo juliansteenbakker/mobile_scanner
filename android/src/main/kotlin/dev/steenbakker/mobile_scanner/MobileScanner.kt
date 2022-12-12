@@ -1,9 +1,12 @@
 package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.graphics.Rect
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -11,15 +14,20 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
+import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import io.flutter.view.TextureRegistry
-typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?) -> Unit
+import kotlin.math.roundToInt
+
+
+typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int?) -> Unit
 typealias AnalyzerCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
 typealias MobileScannerErrorCallback = (error: String) -> Unit
 typealias TorchStateCallback = (state: Int) -> Unit
 typealias MobileScannerStartedCallback = (parameters: MobileScannerStartParameters) -> Unit
+
 
 class NoCamera : Exception()
 class AlreadyStarted : Exception()
@@ -27,6 +35,8 @@ class AlreadyStopped : Exception()
 class TorchError : Exception()
 class CameraError : Exception()
 class TorchWhenStopped : Exception()
+class ZoomWhenStopped : Exception()
+class ZoomNotInRange : Exception()
 
 class MobileScanner(
     private val activity: Activity,
@@ -39,6 +49,7 @@ class MobileScanner(
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
+    var scanWindow: List<Float>? = null
 
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
@@ -76,12 +87,27 @@ class MobileScanner(
                     lastScanned = newScannedBarcodes
                 }
 
-                val barcodeMap = barcodes.map { barcode -> barcode.data }
+                val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
+
+                for ( barcode in barcodes) {
+                    if(scanWindow != null) {
+                        val match = isbarCodeInScanWindow(scanWindow!!, barcode, imageProxy)
+                        if(!match) {
+                            continue
+                        } else {
+                            barcodeMap.add(barcode.data)
+                        }
+                    } else {
+                        barcodeMap.add(barcode.data)
+                    }
+                }
 
                 if (barcodeMap.isNotEmpty()) {
                     mobileScannerCallback(
                         barcodeMap,
-                        if (returnImage) mediaImage.toByteArray() else null
+                        if (returnImage) mediaImage.toByteArray() else null,
+                        if (returnImage) mediaImage.width else null,
+                        if (returnImage) mediaImage.height else null
                     )
                 }
             }
@@ -98,6 +124,23 @@ class MobileScanner(
                 scannerTimeout = false
             }, detectionTimeout)
         }
+    }
+
+    // scales the scanWindow to the provided inputImage and checks if that scaled
+    // scanWindow contains the barcode
+    private fun isbarCodeInScanWindow(scanWindow: List<Float>, barcode: Barcode, inputImage: ImageProxy): Boolean {
+        val barcodeBoundingBox = barcode.boundingBox ?: return false
+
+        val imageWidth = inputImage.height
+        val imageHeight = inputImage.width
+
+        val left = (scanWindow[0] * imageWidth).roundToInt()
+        val top = (scanWindow[1] * imageHeight).roundToInt()
+        val right = (scanWindow[2] * imageWidth).roundToInt()
+        val bottom = (scanWindow[3] * imageHeight).roundToInt()
+
+        val scaledScanWindow = Rect(left, top, right, bottom)
+        return scaledScanWindow.contains(barcodeBoundingBox)
     }
 
     /**
@@ -182,7 +225,7 @@ class MobileScanner(
             // Enable torch if provided
             camera!!.cameraControl.enableTorch(torch)
 
-            val resolution = preview!!.resolutionInfo!!.resolution
+            val resolution = analysis.resolutionInfo!!.resolution
             val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
@@ -249,6 +292,15 @@ class MobileScanner(
                     e.localizedMessage ?: e.toString()
                 )
             }
+    }
+
+    /**
+     * Set the zoom rate of the camera.
+     */
+    fun setScale(scale: Double) {
+        if (camera == null) throw ZoomWhenStopped()
+        if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
+        camera!!.cameraControl.setLinearZoom(scale.toFloat())
     }
 
 }
