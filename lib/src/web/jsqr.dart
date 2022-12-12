@@ -30,8 +30,14 @@ class JsQrCodeReader extends WebBarcodeReaderBase
   @override
   Future<void> start({
     required CameraFacing cameraFacing,
+    List<BarcodeFormat>? formats,
+    Duration? detectionTimeout,
   }) async {
     videoContainer.children = [video];
+
+    if (detectionTimeout != null) {
+      frameInterval = detectionTimeout;
+    }
 
     final stream = await initMediaStream(cameraFacing);
 

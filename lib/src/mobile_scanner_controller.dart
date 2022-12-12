@@ -125,10 +125,10 @@ class MobileScannerController {
     arguments['timeout'] = detectionTimeoutMs;
 
     if (formats != null) {
-      if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((e) => e.index).toList();
-      } else if (Platform.isIOS || Platform.isMacOS) {
+      if (kIsWeb || Platform.isIOS || Platform.isMacOS) {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
+      } else if (Platform.isAndroid) {
+        arguments['formats'] = formats!.map((e) => e.index).toList();
       }
     }
     arguments['returnImage'] = true;

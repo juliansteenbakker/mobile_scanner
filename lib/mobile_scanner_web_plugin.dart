@@ -5,6 +5,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/mobile_scanner_web.dart';
+import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 
@@ -91,8 +92,23 @@ class MobileScannerWebPlugin {
       };
     }
     try {
+      List<BarcodeFormat>? formats;
+      if (arguments.containsKey('formats')) {
+        formats = (arguments['formats'] as List)
+            .cast<int>()
+            .map((e) => toFormat(e))
+            .toList();
+      }
+      final Duration? detectionTimeout;
+      if (arguments.containsKey('timeout')) {
+        detectionTimeout = Duration(milliseconds: arguments['timeout'] as int);
+      } else {
+        detectionTimeout = null;
+      }
       await barCodeReader.start(
         cameraFacing: cameraFacing,
+        formats: formats,
+        detectionTimeout: detectionTimeout,
       );
 
       _barCodeStreamSubscription =
