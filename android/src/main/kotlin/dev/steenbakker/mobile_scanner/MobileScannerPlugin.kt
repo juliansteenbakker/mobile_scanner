@@ -79,6 +79,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
             "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "setScale" -> setScale(call, result)
             "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
@@ -219,6 +220,17 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
         }
     }
 
+    private fun setScale(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            handler!!.setScale(call.arguments as Double)
+            result.success(null)
+        } catch (e: ZoomWhenStopped) {
+            result.error("MobileScanner", "Called setScale() while stopped!", null)
+        } catch (e: ZoomNotInRange) {
+            result.error("MobileScanner", "Scale should be within 0 and 1", null)
+        }
+    }
+    
     private fun updateScanWindow(call: MethodCall) {
         handler!!.scanWindow = call.argument<List<Float>>("rect")
     }
