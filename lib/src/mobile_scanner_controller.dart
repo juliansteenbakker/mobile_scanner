@@ -304,7 +304,7 @@ class MobileScannerController {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.genericError,
         errorDetails: MobileScannerErrorDetails(
-            message: 'The zoomScale must be between 0 and 1.',
+          message: 'The zoomScale must be between 0 and 1.',
         ),
       );
     }
