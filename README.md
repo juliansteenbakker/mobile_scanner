@@ -3,40 +3,42 @@
 [![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
 [![style: lint](https://img.shields.io/badge/style-lint-4BC0F5.svg)](https://pub.dev/packages/lint)
 [![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=sponsor%20me)](https://github.com/sponsors/juliansteenbakker)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=like%20my%20work?%20sponsor%20me!)](https://github.com/sponsors/juliansteenbakker)
 
-A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX on Android, AVFoundation on iOS and Apple Vision & AVFoundation on macOS. 
+An universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX on Android, AVFoundation on iOS and Apple Vision & AVFoundation on macOS. 
+
+## Features Supported
+
+See the example app for detailed implementation information.
+
+| Features               | Android            | iOS                | macOS | Web |
+|------------------------|--------------------|--------------------|-------|-----|
+| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
+| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
+| scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
+| barcodeOverlay         | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
 
 ## Platform Support
 
-| Android | iOS | MacOS | Web | Linux | Windows |
-| :-----: | :-: | :---: | :-: | :---: | :-----: |
-|   ✔️    | ✔️   |  ✔️  | ✔️  |     |      |
+| Android | iOS | macOS | Web | Linux | Windows |
+|---------|-----|-------|-----|-------|---------|
+| ✔       | ✔   | ✔     | ✔   | :x:   | :x:     |
 
+## Platform specific setup
 ### Android
-SDK 21 and newer. Reason: CameraX requires at least SDK 21.
-Also, make sure you upgrade kotlin to the latest version in your project.
-
-This packages uses the **bundled version** of MLKit Barcode-scanning for Android. This version is more accurate and immediately available to devices. However, this version will increas the size of the app with approximately 3 to 10 MB. The alternative for this is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is older than the bundled version however this only increases the size by around 600KB. 
-
+This packages uses the **bundled version** of MLKit Barcode-scanning for Android. This version is more accurate and immediately available to devices. However, this version will increase the size of the app with approximately 3 to 10 MB. The alternative for this is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is older than the bundled version however this only increases the size by around 600KB.
 To use this version you must alter the mobile_scanner gradle file to replace `com.google.mlkit:barcode-scanning:17.0.2` with `com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0`. Keep in mind that if you alter the gradle files directly in your project it can be overriden when you update your pubspec.yaml. I am still searching for a way to properly replace the module in gradle but have yet to find one.
 
 [You can read more about the difference between the two versions here.](https://developers.google.com/ml-kit/vision/barcode-scanning/android)
 
 ### iOS
-iOS 11 and newer. Reason: MLKit for iOS requires at least iOS 10 and a [64bit device](https://developers.google.com/ml-kit/migration/ios).
-
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
-
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
 
 **If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)**
-  
 NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
   
 ### macOS
-macOS 10.13 or newer. Reason: Apple Vision library.
-  
 Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 <img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
@@ -47,12 +49,6 @@ Add this to `web/index.html`:
 ```html
 <script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
 ```
-
-## Features Supported
-
-| Features               | Android            | iOS                | macOS | Web |
-|------------------------|--------------------|--------------------|-------|-----|
-| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
 
 ## Usage
 
