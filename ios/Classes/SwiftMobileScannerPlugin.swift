@@ -83,6 +83,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             toggleTorch(call, result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "setScale":
+            setScale(call, result)
         case "updateScanWindow":
             updateScanWindow(call, result)
         default:
@@ -154,6 +156,33 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         } catch {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called toggleTorch() while stopped!",
+                                details: nil))
+        }
+        result(nil)
+    }
+    
+    /// Toggles the zoomScale
+    private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        var scale = call.arguments as? CGFloat
+        if (scale == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                              message: "You must provide a scale when calling setScale!",
+                                              details: nil))
+            return
+        }
+        do {
+            try mobileScanner.setScale(scale!)
+        } catch MobileScannerError.zoomWhenStopped {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Called setScale() while stopped!",
+                                details: nil))
+        } catch MobileScannerError.zoomError(let error) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error while zooming.",
+                                details: error))
+        } catch {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error while zooming.",
                                 details: nil))
         }
         result(nil)
