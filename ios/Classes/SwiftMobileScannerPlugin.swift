@@ -55,6 +55,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             } else if (error != nil){
                 barcodeHandler.publishEvent(["name": "error", "data": error!.localizedDescription])
             }
+        }, torchModeChangeCallback: { torchState in
+            barcodeHandler.publishEvent(["name": "torchState", "data": torchState])
         })
         self.barcodeHandler = barcodeHandler
         super.init()
@@ -229,17 +231,5 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             }
         })
         result(nil)
-    }
-    
-    /// Observer for torch state
-    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
-        switch keyPath {
-        case "torchMode":
-            // off = 0; on = 1; auto = 2;
-            let state = change?[.newKey] as? Int
-            barcodeHandler.publishEvent(["name": "torchState", "data": state])
-        default:
-            break
-        }
     }
 }

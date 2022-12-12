@@ -22,9 +22,9 @@ Features:
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
 * Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
 * Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
+* [iOS] Support `torchEnabled` parameter from MobileScannerController() on iOS
 * [Web] Added ability to use custom barcode scanning js libraries 
   by extending `WebBarcodeReaderBase` class and changing `barCodeReader` property in `MobileScannerWebPlugin`
-
 
 Fixes:
 * Fixes the missing gradle setup for the Android project, which prevented gradle sync from working.
@@ -35,6 +35,7 @@ Fixes:
 * Fixes the `MobileScanner` preview depending on all attributes of `MediaQueryData`.
   Now it only depends on its layout constraints.
 * Fixed a potential crash when the scanner is restarted due to the app being resumed.
+* [iOS] Fix crash when changing torch state
   
 ## 3.0.0-beta.2
 Breaking changes:
