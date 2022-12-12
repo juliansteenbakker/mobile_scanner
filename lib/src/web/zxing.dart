@@ -7,10 +7,6 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/base.dart';
 
-@JS('Promise')
-@staticInterop
-class Promise<T> {}
-
 @JS('ZXing.BrowserMultiFormatReader')
 @staticInterop
 class JsZXingBrowserMultiFormatReader {
