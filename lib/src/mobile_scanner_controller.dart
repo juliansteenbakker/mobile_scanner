@@ -333,10 +333,12 @@ class MobileScannerController {
         _barcodesController.add(
           BarcodeCapture(
             barcodes: [
-              Barcode(
-                rawValue: barcode?['rawValue'] as String?,
-                rawBytes: barcode?['rawBytes'] as Uint8List?,
-              )
+              if (barcode != null)
+                Barcode(
+                  rawValue: barcode['rawValue'] as String?,
+                  rawBytes: barcode['rawBytes'] as Uint8List?,
+                  format: toFormat(barcode['format'] as int),
+                ),
             ],
           ),
         );

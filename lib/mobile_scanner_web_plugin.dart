@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
 import 'package:mobile_scanner/mobile_scanner_web.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -102,6 +103,7 @@ class MobileScannerWebPlugin {
             'data': {
               'rawValue': code.rawValue,
               'rawBytes': code.rawBytes,
+              'format': code.format.rawValue,
             },
           });
         }
