@@ -12,6 +12,7 @@ Breaking changes:
 * The `autoResume` attribute has been removed from the `MobileScanner` widget.
   The controller already automatically resumes, so it had no effect.
 * Removed `MobileScannerCallback` and `MobileScannerArgumentsCallback` typedef.
+* [Web] Replaced `jsqr` library with `zxing-js` for full barcode support.
 
 Improvements:
 * Toggling the device torch now does nothing if the device has no torch, rather than throwing an error.
@@ -21,6 +22,9 @@ Features:
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
 * Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
 * Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
+* [Web] Added ability to use custom barcode scanning js libraries 
+  by extending `WebBarcodeReaderBase` class and changing `barCodeReader` property in `MobileScannerWebPlugin`
+
 
 Fixes:
 * Fixes the missing gradle setup for the Android project, which prevented gradle sync from working.

@@ -126,6 +126,15 @@ class MobileScannerController {
     arguments['speed'] = detectionSpeed.index;
     arguments['timeout'] = detectionTimeoutMs;
 
+    /*    if (scanWindow != null) {
+      arguments['scanWindow'] = [
+        scanWindow!.left,
+        scanWindow!.top,
+        scanWindow!.right,
+        scanWindow!.bottom,
+      ];
+    } */
+
     if (formats != null) {
       if (Platform.isAndroid) {
         arguments['formats'] = formats!.map((e) => e.index).toList();
@@ -330,6 +339,8 @@ class MobileScannerController {
           BarcodeCapture(
             barcodes: parsed,
             image: event['image'] as Uint8List?,
+            width: event['width'] as double?,
+            height: event['height'] as double?,
           ),
         );
         break;
@@ -365,5 +376,11 @@ class MobileScannerController {
       default:
         throw UnimplementedError(name as String?);
     }
+  }
+
+  /// updates the native scanwindow
+  Future<void> updateScanWindow(Rect window) async {
+    final data = [window.left, window.top, window.right, window.bottom];
+    await _methodChannel.invokeMethod('updateScanWindow', {'rect': data});
   }
 }

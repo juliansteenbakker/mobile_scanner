@@ -35,6 +35,17 @@ class MobileScannerWebPlugin {
 
   static final html.DivElement vidDiv = html.DivElement();
 
+  /// Represents barcode reader library.
+  /// Change this property if you want to use a custom implementation.
+  ///
+  /// Example of using the jsQR library:
+  /// void main() {
+  ///   if (kIsWeb) {
+  ///     MobileScannerWebPlugin.barCodeReader =
+  ///         JsQrCodeReader(videoContainer: MobileScannerWebPlugin.vidDiv);
+  ///   }
+  ///   runApp(const MaterialApp(home: MyHome()));
+  /// }
   static WebBarcodeReaderBase barCodeReader =
       ZXingBarcodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;

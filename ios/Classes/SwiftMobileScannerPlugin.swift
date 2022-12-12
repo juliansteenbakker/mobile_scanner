@@ -2,6 +2,7 @@ import Flutter
 import MLKitVision
 import MLKitBarcodeScanning
 import AVFoundation
+import UIKit
 
 public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     
@@ -10,15 +11,46 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// The handler sends all information via an event channel back to Flutter
     private let barcodeHandler: BarcodeHandler
+
+    static var scanWindow: [CGFloat]?
+    
+    private static func isBarcodeInScanWindow(barcode: Barcode, imageSize: CGSize) -> Bool {
+        let scanwindow = SwiftMobileScannerPlugin.scanWindow!
+        let barcodeminX = barcode.cornerPoints![0].cgPointValue.x
+        let barcodeminY = barcode.cornerPoints![1].cgPointValue.y
+        
+        let barcodewidth = barcode.cornerPoints![2].cgPointValue.x - barcodeminX
+        let barcodeheight = barcode.cornerPoints![3].cgPointValue.y - barcodeminY
+        let barcodeBox = CGRect(x: barcodeminX, y: barcodeminY, width: barcodewidth, height: barcodeheight)
+
+        
+        let minX = scanwindow[0] * imageSize.width
+        let minY = scanwindow[1] * imageSize.height
+
+        let width = (scanwindow[2] * imageSize.width)  - minX
+        let height = (scanwindow[3] * imageSize.height) - minY
+
+        let scaledWindow =  CGRect(x: minX, y: minY, width: width, height: height)
+        
+        return scaledWindow.contains(barcodeBox)
+    }
     
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
             if barcodes != nil {
-                let barcodesMap = barcodes!.map { barcode in
-                    return barcode.data
+                let barcodesMap = barcodes!.compactMap { barcode in
+                    if (SwiftMobileScannerPlugin.scanWindow != nil) {
+                        if (SwiftMobileScannerPlugin.isBarcodeInScanWindow(barcode: barcode, imageSize: image.size)) {
+                            return barcode.data
+                        } else {
+                            return nil
+                        }
+                    } else {
+                        return barcode.data
+                    }
                 }
                 if (!barcodesMap.isEmpty) {
-                    barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!)])
+                    barcodeHandler.publishEvent(["name": "barcode", "data": barcodesMap, "image": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!), "width": image.size.width, "height": image.size.height])
                 }
             } else if (error != nil){
                 barcodeHandler.publishEvent(["name": "error", "data": error!.localizedDescription])
@@ -51,6 +83,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             analyzeImage(call, result)
         case "setScale":
             setScale(call, result)
+        case "updateScanWindow":
+            updateScanWindow(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -66,7 +100,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
 
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         var barcodeOptions: BarcodeScannerOptions? = nil
-        
+
          if (formatList.count != 0) {
              var barcodeFormats: BarcodeFormat = []
              for index in formats {
@@ -150,6 +184,28 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: nil))
         }
         result(nil)
+    }
+    
+    /// Toggles the torch
+    func updateScanWindow(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let scanWindowData: Array? = (call.arguments as? [String: Any])?["rect"] as? [CGFloat]
+        SwiftMobileScannerPlugin.scanWindow = scanWindowData
+
+        result(nil)
+    }
+    
+    static func arrayToRect(scanWindowData: [CGFloat]?) -> CGRect? {
+        if (scanWindowData == nil) {
+            return nil
+        }
+
+        let minX = scanWindowData![0]
+        let minY = scanWindowData![1]
+
+        let width = scanWindowData![2]  - minX
+        let height = scanWindowData![3] - minY
+
+        return CGRect(x: minX, y: minY, width: width, height: height)
     }
     
     /// Analyzes a single image

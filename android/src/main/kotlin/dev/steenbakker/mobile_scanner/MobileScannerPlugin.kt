@@ -25,12 +25,14 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
 
     private var analyzerResult: MethodChannel.Result? = null
 
-    private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray? ->
+    private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
         if (image != null) {
             barcodeHandler.publishEvent(mapOf(
                 "name" to "barcode",
                 "data" to barcodes,
-                "image" to image
+                "image" to image,
+                "width" to width!!.toDouble(),
+                "height" to height!!.toDouble()
             ))
         } else {
             barcodeHandler.publishEvent(mapOf(
@@ -78,6 +80,7 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
+            "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
     }
@@ -226,5 +229,9 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware, MethodChannel.MethodCa
         } catch (e: ZoomNotInRange) {
             result.error("MobileScanner", "Scale should be within 0 and 1", null)
         }
+    }
+    
+    private fun updateScanWindow(call: MethodCall) {
+        handler!!.scanWindow = call.argument<List<Float>>("rect")
     }
 }

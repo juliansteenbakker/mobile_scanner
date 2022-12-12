@@ -34,6 +34,13 @@ class MobileScanner extends StatefulWidget {
   /// If this is null, a black [ColoredBox] is used as placeholder.
   final Widget Function(BuildContext, Widget?)? placeholderBuilder;
 
+  /// if set barcodes will only be scanned if they fall within this [Rect]
+  /// useful for having a cut-out overlay for example. these [Rect]
+  /// coordinates are relative to the widget size, so by how much your
+  /// rectangle overlays the actual image can depend on things like the
+  /// [BoxFit]
+  final Rect? scanWindow;
+
   /// Create a new [MobileScanner] using the provided [controller]
   /// and [onBarcodeDetected] callback.
   const MobileScanner({
@@ -43,6 +50,7 @@ class MobileScanner extends StatefulWidget {
     @Deprecated('Use onScannerStarted() instead.') this.onStart,
     this.onScannerStarted,
     this.placeholderBuilder,
+    this.scanWindow,
     super.key,
   });
 
@@ -117,34 +125,102 @@ class _MobileScannerState extends State<MobileScanner>
     }
   }
 
+  /// the [scanWindow] rect will be relative and scaled to the [widgetSize] not the texture. so it is possible,
+  /// depending on the [fit], for the [scanWindow] to partially or not at all overlap the [textureSize]
+  ///
+  /// since when using a [BoxFit] the content will always be centered on its parent. we can convert the rect
+  /// to be relative to the texture.
+  ///
+  /// since the textures size and the actuall image (on the texture size) might not be the same, we also need to
+  /// calculate the scanWindow in terms of percentages of the texture, not pixels.
+  Rect calculateScanWindowRelativeToTextureInPercentage(
+    BoxFit fit,
+    Rect scanWindow,
+    Size textureSize,
+    Size widgetSize,
+  ) {
+    /// map the texture size to get its new size after fitted to screen
+    final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
+
+    /// create a new rectangle that represents the texture on the screen
+    final minX = widgetSize.width / 2 - fittedTextureSize.destination.width / 2;
+    final minY =
+        widgetSize.height / 2 - fittedTextureSize.destination.height / 2;
+    final textureWindow = Offset(minX, minY) & fittedTextureSize.destination;
+
+    /// create a new scan window and with only the area of the rect intersecting the texture window
+    final scanWindowInTexture = scanWindow.intersect(textureWindow);
+
+    /// update the scanWindow left and top to be relative to the texture not the widget
+    final newLeft = scanWindowInTexture.left - textureWindow.left;
+    final newTop = scanWindowInTexture.top - textureWindow.top;
+    final newWidth = scanWindowInTexture.width;
+    final newHeight = scanWindowInTexture.height;
+
+    /// new scanWindow that is adapted to the boxfit and relative to the texture
+    final windowInTexture = Rect.fromLTWH(newLeft, newTop, newWidth, newHeight);
+
+    /// get the scanWindow as a percentage of the texture
+    final percentageLeft =
+        windowInTexture.left / fittedTextureSize.destination.width;
+    final percentageTop =
+        windowInTexture.top / fittedTextureSize.destination.height;
+    final percentageRight =
+        windowInTexture.right / fittedTextureSize.destination.width;
+    final percentagebottom =
+        windowInTexture.bottom / fittedTextureSize.destination.height;
+
+    /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
+    return Rect.fromLTRB(
+      percentageLeft,
+      percentageTop,
+      percentageRight,
+      percentagebottom,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<MobileScannerArguments?>(
-      valueListenable: _controller.startArguments,
-      builder: (context, value, child) {
-        if (value == null) {
-          return widget.placeholderBuilder?.call(context, child) ??
-              const ColoredBox(color: Colors.black);
-        }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ValueListenableBuilder<MobileScannerArguments?>(
+          valueListenable: _controller.startArguments,
+          builder: (context, value, child) {
+            if (value == null) {
+              return widget.placeholderBuilder?.call(context, child) ??
+                  const ColoredBox(color: Colors.black);
+            }
 
-        return ClipRect(
-          child: LayoutBuilder(
-            builder: (_, constraints) {
-              return SizedBox.fromSize(
-                size: constraints.biggest,
-                child: FittedBox(
-                  fit: widget.fit,
-                  child: SizedBox(
-                    width: value.size.width,
-                    height: value.size.height,
-                    child: kIsWeb
-                        ? HtmlElementView(viewType: value.webId!)
-                        : Texture(textureId: value.textureId!),
-                  ),
-                ),
+            if (widget.scanWindow != null) {
+              final window = calculateScanWindowRelativeToTextureInPercentage(
+                widget.fit,
+                widget.scanWindow!,
+                value.size,
+                Size(constraints.maxWidth, constraints.maxHeight),
               );
-            },
-          ),
+              _controller.updateScanWindow(window);
+            }
+
+            return ClipRect(
+              child: LayoutBuilder(
+                builder: (_, constraints) {
+                  return SizedBox.fromSize(
+                    size: constraints.biggest,
+                    child: FittedBox(
+                      fit: widget.fit,
+                      child: SizedBox(
+                        width: value.size.width,
+                        height: value.size.height,
+                        child: kIsWeb
+                            ? HtmlElementView(viewType: value.webId!)
+                            : Texture(textureId: value.textureId!),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            );
+          },
         );
       },
     );
