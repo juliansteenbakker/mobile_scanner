@@ -93,11 +93,12 @@ class MobileScannerWebPlugin {
 
     // Check if stream is running
     if (barCodeReader.isStarted) {
+      final hasTorch = await barCodeReader.hasTorch();
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     }
     try {
@@ -117,12 +118,17 @@ class MobileScannerWebPlugin {
           });
         }
       });
+      final hasTorch = await barCodeReader.hasTorch();
+
+      if (hasTorch && arguments.containsKey('torch')) {
+        barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+      }
 
       return {
         'ViewID': viewID,
         'videoWidth': barCodeReader.videoWidth,
         'videoHeight': barCodeReader.videoHeight,
-        'torchable': barCodeReader.hasTorch,
+        'torchable': hasTorch,
       };
     } catch (e) {
       throw PlatformException(code: 'MobileScannerWeb', message: '$e');
