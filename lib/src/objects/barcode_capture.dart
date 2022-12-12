@@ -20,6 +20,6 @@ class BarcodeCapture {
     required this.barcodes,
     this.image,
     this.width,
-    this.height
+    this.height,
   });
 }

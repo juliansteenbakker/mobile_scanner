@@ -26,7 +26,6 @@ class _BarcodeScannerWithScanWindowState
 
   @override
   Widget build(BuildContext context) {
-    final query = MediaQuery.of(context);
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.of(context).size.center(Offset.zero),
       width: 200,
@@ -54,7 +53,13 @@ class _BarcodeScannerWithScanWindowState
                   barcode?.corners != null &&
                   arguments != null)
                 CustomPaint(
-                  painter: BarcodeOverlay(barcode!, arguments!, BoxFit.contain, MediaQuery.of(context).devicePixelRatio, capture!),
+                  painter: BarcodeOverlay(
+                    barcode!,
+                    arguments!,
+                    BoxFit.contain,
+                    MediaQuery.of(context).devicePixelRatio,
+                    capture!,
+                  ),
                 ),
               CustomPaint(
                 painter: ScannerOverlay(scanWindow),
@@ -126,7 +131,13 @@ class ScannerOverlay extends CustomPainter {
 }
 
 class BarcodeOverlay extends CustomPainter {
-  BarcodeOverlay(this.barcode, this.arguments, this.boxFit, this.devicePixelRatio, this.capture);
+  BarcodeOverlay(
+    this.barcode,
+    this.arguments,
+    this.boxFit,
+    this.devicePixelRatio,
+    this.capture,
+  );
 
   final BarcodeCapture capture;
   final Barcode barcode;
@@ -153,13 +164,21 @@ class BarcodeOverlay extends CustomPainter {
       horizontalPadding = 0;
     }
 
-    final ratioWidth = (Platform.isIOS ? capture.width! : arguments.size.width)/ adjustedSize.destination.width;
-    final ratioHeight = (Platform.isIOS ? capture.height! : arguments.size.height) / adjustedSize.destination.height;
+    final ratioWidth =
+        (Platform.isIOS ? capture.width! : arguments.size.width) /
+            adjustedSize.destination.width;
+    final ratioHeight =
+        (Platform.isIOS ? capture.height! : arguments.size.height) /
+            adjustedSize.destination.height;
 
     final List<Offset> adjustedOffset = [];
     for (final offset in barcode.corners!) {
-      adjustedOffset.add(Offset(offset.dx / ratioWidth + horizontalPadding,
-          offset.dy / ratioHeight + verticalPadding));
+      adjustedOffset.add(
+        Offset(
+          offset.dx / ratioWidth + horizontalPadding,
+          offset.dy / ratioHeight + verticalPadding,
+        ),
+      );
     }
     final cutoutPath = Path()..addPolygon(adjustedOffset, true);
 

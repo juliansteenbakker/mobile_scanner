@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' hide applyBoxFit;
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
@@ -135,17 +134,18 @@ class _MobileScannerState extends State<MobileScanner>
   /// since the textures size and the actuall image (on the texture size) might not be the same, we also need to
   /// calculate the scanWindow in terms of percentages of the texture, not pixels.
   Rect calculateScanWindowRelativeToTextureInPercentage(
-      BoxFit fit,
-      Rect scanWindow,
-      Size textureSize,
-      Size widgetSize,
-      ) {
+    BoxFit fit,
+    Rect scanWindow,
+    Size textureSize,
+    Size widgetSize,
+  ) {
     /// map the texture size to get its new size after fitted to screen
     final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
 
     /// create a new rectangle that represents the texture on the screen
     final minX = widgetSize.width / 2 - fittedTextureSize.destination.width / 2;
-    final minY = widgetSize.height / 2 - fittedTextureSize.destination.height / 2;
+    final minY =
+        widgetSize.height / 2 - fittedTextureSize.destination.height / 2;
     final textureWindow = Offset(minX, minY) & fittedTextureSize.destination;
 
     /// create a new scan window and with only the area of the rect intersecting the texture window
@@ -161,10 +161,14 @@ class _MobileScannerState extends State<MobileScanner>
     final windowInTexture = Rect.fromLTWH(newLeft, newTop, newWidth, newHeight);
 
     /// get the scanWindow as a percentage of the texture
-    final percentageLeft = windowInTexture.left / fittedTextureSize.destination.width;
-    final percentageTop = windowInTexture.top / fittedTextureSize.destination.height;
-    final percentageRight = windowInTexture.right / fittedTextureSize.destination.width;
-    final percentagebottom = windowInTexture.bottom / fittedTextureSize.destination.height;
+    final percentageLeft =
+        windowInTexture.left / fittedTextureSize.destination.width;
+    final percentageTop =
+        windowInTexture.top / fittedTextureSize.destination.height;
+    final percentageRight =
+        windowInTexture.right / fittedTextureSize.destination.width;
+    final percentagebottom =
+        windowInTexture.bottom / fittedTextureSize.destination.height;
 
     /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
     return Rect.fromLTRB(
@@ -197,7 +201,6 @@ class _MobileScannerState extends State<MobileScanner>
               _controller.updateScanWindow(window);
             }
 
-
             return ClipRect(
               child: LayoutBuilder(
                 builder: (_, constraints) {
@@ -219,7 +222,7 @@ class _MobileScannerState extends State<MobileScanner>
             );
           },
         );
-      }
+      },
     );
   }
 
