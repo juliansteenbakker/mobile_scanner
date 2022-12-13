@@ -28,6 +28,8 @@ Improvements:
 * Removed `called stop while already stopped` messages.
 
 Features:
+* You can now provide a `scanWindow` to the `MobileScanner()` widget.
+* You can now draw an overlay over the scanned barcode. See the barcode scanner window in the example app for more information.
 * Added a new `placeholderBuilder` function to the `MobileScanner` widget to customize the preview placeholder.
 * Added `autoStart` parameter to MobileScannerController(). If set to false, controller won't start automatically.
 * Added `hasTorch` function on MobileScannerController(). After starting the controller, you can check if the device has a torch.
