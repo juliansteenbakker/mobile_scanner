@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerReturningImage extends StatefulWidget {
   const BarcodeScannerReturningImage({Key? key}) : super(key: key);
@@ -33,17 +34,8 @@ class _BarcodeScannerReturningImageState
       controller.stop();
     } else {
       controller.start().catchError((error) {
-        final exception = error as MobileScannerException;
-
-        switch (exception.errorCode) {
-          case MobileScannerErrorCode.controllerUninitialized:
-            break; // This error code is not used by `start()`.
-          case MobileScannerErrorCode.genericError:
-            debugPrint('Scanner failed to start');
-            break;
-          case MobileScannerErrorCode.permissionDenied:
-            debugPrint('Camera permission denied');
-            break;
+        if (mounted) {
+          setState(() {});
         }
       });
     }
@@ -83,6 +75,9 @@ class _BarcodeScannerReturningImageState
                   children: [
                     MobileScanner(
                       controller: controller,
+                      errorBuilder: (context, error, child) {
+                        return ScannerErrorWidget(error: error);
+                      },
                       fit: BoxFit.contain,
                       onDetect: (barcode) {
                         setState(() {
