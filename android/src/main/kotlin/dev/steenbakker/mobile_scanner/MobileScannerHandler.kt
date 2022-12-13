@@ -15,7 +15,7 @@ import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.view.TextureRegistry
 import java.io.File
 
-class MethodCallHandlerImpl(
+class MobileScannerHandler(
     private val activity: Activity,
     private val barcodeHandler: BarcodeHandler,
     binaryMessenger: BinaryMessenger,
@@ -38,12 +38,14 @@ class MethodCallHandlerImpl(
 
     private var analyzerResult: MethodChannel.Result? = null
 
-    private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray? ->
+    private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
         if (image != null) {
             barcodeHandler.publishEvent(mapOf(
                 "name" to "barcode",
                 "data" to barcodes,
-                "image" to image
+                "image" to image,
+                "width" to width!!.toDouble(),
+                "height" to height!!.toDouble()
             ))
         } else {
             barcodeHandler.publishEvent(mapOf(
@@ -112,6 +114,8 @@ class MethodCallHandlerImpl(
             "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "setScale" -> setScale(call, result)
+            "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
     }
@@ -212,5 +216,20 @@ class MethodCallHandlerImpl(
         } catch (e: AlreadyStopped) {
             result.error("MobileScanner", "Called toggleTorch() while stopped!", null)
         }
+    }
+
+    private fun setScale(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            mobileScanner!!.setScale(call.arguments as Double)
+            result.success(null)
+        } catch (e: ZoomWhenStopped) {
+            result.error("MobileScanner", "Called setScale() while stopped!", null)
+        } catch (e: ZoomNotInRange) {
+            result.error("MobileScanner", "Scale should be within 0 and 1", null)
+        }
+    }
+
+    private fun updateScanWindow(call: MethodCall) {
+        mobileScanner!!.scanWindow = call.argument<List<Float>>("rect")
     }
 }

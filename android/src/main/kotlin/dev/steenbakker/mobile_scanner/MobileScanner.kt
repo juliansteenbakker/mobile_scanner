@@ -1,12 +1,10 @@
 package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
-import android.content.pm.PackageManager
 import android.graphics.Rect
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -217,10 +215,6 @@ class MobileScanner(
                 torchStateCallback(state)
             }
 
-//            val analysisSize = analysis.resolutionInfo?.resolution ?: Size(0, 0)
-//            val previewSize = preview!!.resolutionInfo?.resolution ?: Size(0, 0)
-//            Log.i("LOG", "Analyzer: $analysisSize")
-//            Log.i("LOG", "Preview: $previewSize")
 
             // Enable torch if provided
             camera!!.cameraControl.enableTorch(torch)
