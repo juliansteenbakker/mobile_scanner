@@ -54,11 +54,10 @@ class _BarcodeScannerWithScanWindowState
                   arguments != null)
                 CustomPaint(
                   painter: BarcodeOverlay(
-                    barcode!,
-                    arguments!,
-                    BoxFit.contain,
-                    MediaQuery.of(context).devicePixelRatio,
-                    capture!,
+                    barcode: barcode!,
+                    arguments: arguments!,
+                    boxFit: BoxFit.contain,
+                    capture: capture!,
                   ),
                 ),
               CustomPaint(
@@ -131,19 +130,17 @@ class ScannerOverlay extends CustomPainter {
 }
 
 class BarcodeOverlay extends CustomPainter {
-  BarcodeOverlay(
-    this.barcode,
-    this.arguments,
-    this.boxFit,
-    this.devicePixelRatio,
-    this.capture,
-  );
+  BarcodeOverlay({
+    required this.barcode,
+    required this.arguments,
+    required this.boxFit,
+    required this.capture,
+  });
 
   final BarcodeCapture capture;
   final Barcode barcode;
   final MobileScannerArguments arguments;
   final BoxFit boxFit;
-  final double devicePixelRatio;
 
   @override
   void paint(Canvas canvas, Size size) {
