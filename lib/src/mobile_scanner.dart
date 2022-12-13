@@ -226,7 +226,7 @@ class _MobileScannerState extends State<MobileScanner>
           valueListenable: _controller.startArguments,
           builder: (context, value, child) {
             if (value == null) {
-                return __buildPlaceholderOrError(context, child);
+              return __buildPlaceholderOrError(context, child);
             }
 
             if (widget.scanWindow != null) {
