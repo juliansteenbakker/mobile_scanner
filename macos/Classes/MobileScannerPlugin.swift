@@ -90,9 +90,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     var i = 0
     
-    
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        // Ignore invalid textureId
+        if textureId == nil {
+            return
+        }
+
         i = i + 1;
         
         latestBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)
@@ -107,9 +111,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             } else {
                 return
             }
-                let imageRequestHandler = VNImageRequestHandler(
-                    cvPixelBuffer: latestBuffer,
-                    orientation: .right)
+
+            let imageRequestHandler = VNImageRequestHandler(
+                cvPixelBuffer: latestBuffer,
+                orientation: .right)
 
             do {
               try imageRequestHandler.perform([VNDetectBarcodesRequest { (request, error) in
