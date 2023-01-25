@@ -283,9 +283,9 @@ class MobileScannerController {
     await _methodChannel.invokeMethod('torch', torchState.value.index);
   }
 
-  /// Switches the torch on or off.
+  /// Changes the state of the camera (front or back).
   ///
-  /// Only works if torch is available.
+  /// Does nothing if the device has no front camera.
   Future<void> switchCamera() async {
     await _methodChannel.invokeMethod('stop');
     final CameraFacing facingToUse =
