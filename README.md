@@ -34,9 +34,19 @@ To use this version you must alter the mobile_scanner gradle file to replace `co
 ### iOS
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
-
+  
 **If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)**
 NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
+  
+  Example,
+  ```
+  <key>NSCameraUsageDescription</key>
+  <string>This app needs camera access to scan QR codes</string>
+  
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>This app needs photos access to get QR code from photo library</string>
+  ```
+  
   
 ### macOS
 Ensure that you granted camera permission in XCode -> Signing & Capabilities:
