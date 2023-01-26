@@ -7,6 +7,24 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/media.dart';
 
+class JsLibrary {
+  /// The name of global variable where library is stored.
+  /// Used to properly import the library if [usesRequireJs] flag is true
+  final String contextName;
+  final String url;
+
+  /// If js code checks for 'define' variable.
+  /// E.g. if at the beginning you see code like
+  /// if (typeof define === "function" && define.amd)
+  final bool usesRequireJs;
+
+  const JsLibrary({
+    required this.contextName,
+    required this.url,
+    required this.usesRequireJs,
+  });
+}
+
 abstract class WebBarcodeReaderBase {
   /// Timer used to capture frames to be analyzed
   Duration frameInterval = const Duration(milliseconds: 200);
@@ -20,6 +38,9 @@ abstract class WebBarcodeReaderBase {
 
   int get videoWidth;
   int get videoHeight;
+
+  /// JS libraries to be injected into html page.
+  List<JsLibrary> get jsLibraries;
 
   /// Starts streaming video
   Future<void> start({
