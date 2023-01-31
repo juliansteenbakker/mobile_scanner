@@ -8,6 +8,7 @@ import 'package:mobile_scanner/mobile_scanner_web.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
+import 'package:mobile_scanner/src/web/utils.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -24,6 +25,8 @@ class MobileScannerWebPlugin {
       registrar,
     );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
+
+    injectJSLibraries(barCodeReader.jsLibraries);
 
     channel.setMethodCallHandler(instance.handleMethodCall);
     event.setController(instance.controller);
