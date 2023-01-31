@@ -30,19 +30,23 @@ class _BarcodeScannerReturningImageState
   bool isStarted = true;
 
   void _startOrStop() {
-    if (isStarted) {
-      controller.stop();
-    } else {
-      controller.start().catchError((error) {
-        if (mounted) {
-          setState(() {});
-        }
+    try {
+      if (isStarted) {
+        controller.stop();
+      } else {
+        controller.start();
+      }
+      setState(() {
+        isStarted = !isStarted;
       });
+    } on Exception catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Something went wrong! $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
-
-    setState(() {
-      isStarted = !isStarted;
-    });
   }
 
   @override
@@ -141,7 +145,7 @@ class _BarcodeScannerReturningImageState
                                     overflow: TextOverflow.fade,
                                     style: Theme.of(context)
                                         .textTheme
-                                        .headline4!
+                                        .headlineMedium!
                                         .copyWith(color: Colors.white),
                                   ),
                                 ),
