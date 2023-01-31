@@ -53,13 +53,6 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 <img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
 
-### Web
-Add this to `web/index.html`:
-
-```html
-<script type="text/javascript" src="https://unpkg.com/@zxing/library@0.19.1"></script>
-```
-
 ## Usage
 
 Import `package:mobile_scanner/mobile_scanner.dart`, and use the widget with or without the controller.

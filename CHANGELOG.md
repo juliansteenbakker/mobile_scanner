@@ -1,3 +1,8 @@
+## Next
+
+Improvements:
+* [Web] Automatically inject js libraries
+
 ## 3.0.0-beta.4
 Fixes:
 * Fixes a permission bug on Android where denying the permission would cause an infinite loop of permission requests.
