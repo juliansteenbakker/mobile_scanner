@@ -1,17 +1,30 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:js' show context;
+import 'dart:js' show context, JsObject;
 
-import 'package:js/js.dart';
 import 'package:mobile_scanner/src/web/base.dart';
 
 Future<void> loadScript(JsLibrary library) async {
+  dynamic amd;
+  dynamic define;
   // ignore: avoid_dynamic_calls
   if (library.usesRequireJs && context['define']?['amd'] != null) {
+    // In dev, requireJs is loaded in. Disable it here.
     // see https://github.com/dart-lang/sdk/issues/33979
-    return loadScriptUsingRequireJS(library.contextName, library.url);
-  } else {
-    return loadScriptUsingScriptTag(library.url);
+    define = JsObject.fromBrowserObject(context['define'] as Object);
+    // ignore: avoid_dynamic_calls
+    amd = define['amd'];
+    // ignore: avoid_dynamic_calls
+    define['amd'] = false;
+  }
+  try {
+    await loadScriptUsingScriptTag(library.url);
+  } finally {
+    if (amd != null) {
+      // Re-enable requireJs
+      // ignore: avoid_dynamic_calls
+      define['amd'] = amd;
+    }
   }
 }
 
@@ -27,32 +40,6 @@ Future<void> loadScriptUsingScriptTag(String url) {
   html.document.head!.append(script);
 
   return script.onLoad.first;
-}
-
-Future<void> loadScriptUsingRequireJS(String packageName, String url) {
-  final Completer completer = Completer();
-  final String eventName = '_${packageName}Loaded';
-
-  context.callMethod(
-    'addEventListener',
-    [eventName, allowInterop((_) => completer.complete())],
-  );
-
-  final script = html.ScriptElement()
-    ..type = 'text/javascript'
-    ..async = false
-    ..defer = false
-    ..text = '''
-        require(["$url"], (package) => {
-          window.$packageName = package;
-          const event = new Event("$eventName");
-          dispatchEvent(event);
-        })
-        ''';
-
-  html.document.head!.append(script);
-
-  return completer.future;
 }
 
 /// Injects JS [libraries]
