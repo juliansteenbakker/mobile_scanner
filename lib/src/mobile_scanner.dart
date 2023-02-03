@@ -249,7 +249,7 @@ class _MobileScannerState extends State<MobileScanner>
                 Size(constraints.maxWidth, constraints.maxHeight),
               );
 
-              _controller.updateScanWindow(scanWindow!);
+              _controller.updateScanWindow(scanWindow);
             }
 
             return ClipRect(
