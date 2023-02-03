@@ -19,23 +19,6 @@ import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import io.flutter.view.TextureRegistry
 import kotlin.math.roundToInt
 
-
-typealias MobileScannerCallback = (barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int?) -> Unit
-typealias AnalyzerCallback = (barcodes: List<Map<String, Any?>>?) -> Unit
-typealias MobileScannerErrorCallback = (error: String) -> Unit
-typealias TorchStateCallback = (state: Int) -> Unit
-typealias MobileScannerStartedCallback = (parameters: MobileScannerStartParameters) -> Unit
-
-
-class NoCamera : Exception()
-class AlreadyStarted : Exception()
-class AlreadyStopped : Exception()
-class TorchError : Exception()
-class CameraError : Exception()
-class TorchWhenStopped : Exception()
-class ZoomWhenStopped : Exception()
-class ZoomNotInRange : Exception()
-
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
@@ -43,21 +26,20 @@ class MobileScanner(
     private val mobileScannerErrorCallback: MobileScannerErrorCallback
 ) {
 
+    /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
-    var scanWindow: List<Float>? = null
-
-    private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
-    private var detectionTimeout: Long = 250
+    private var scanner = BarcodeScanning.getClient()
     private var lastScanned: List<String?>? = null
-
     private var scannerTimeout = false
 
+    /// Configurable variables
+    var scanWindow: List<Float>? = null
+    private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
+    private var detectionTimeout: Long = 250
     private var returnImage = false
-
-    private var scanner = BarcodeScanning.getClient()
 
     /**
      * callback for the camera. Every frame is passed through this function.
@@ -87,10 +69,10 @@ class MobileScanner(
 
                 val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
 
-                for ( barcode in barcodes) {
-                    if(scanWindow != null) {
-                        val match = isbarCodeInScanWindow(scanWindow!!, barcode, imageProxy)
-                        if(!match) {
+                for (barcode in barcodes) {
+                    if (scanWindow != null) {
+                        val match = isBarcodeInScanWindow(scanWindow!!, barcode, imageProxy)
+                        if (!match) {
                             continue
                         } else {
                             barcodeMap.add(barcode.data)
@@ -126,7 +108,11 @@ class MobileScanner(
 
     // scales the scanWindow to the provided inputImage and checks if that scaled
     // scanWindow contains the barcode
-    private fun isbarCodeInScanWindow(scanWindow: List<Float>, barcode: Barcode, inputImage: ImageProxy): Boolean {
+    private fun isBarcodeInScanWindow(
+        scanWindow: List<Float>,
+        barcode: Barcode,
+        inputImage: ImageProxy
+    ): Boolean {
         val barcodeBoundingBox = barcode.boundingBox ?: return false
 
         val imageWidth = inputImage.height
