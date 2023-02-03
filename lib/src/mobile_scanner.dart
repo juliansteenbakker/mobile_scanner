@@ -56,6 +56,12 @@ class MobileScanner extends StatefulWidget {
   /// [BoxFit]
   final Rect? scanWindow;
 
+  /// Only set this to true if you are starting another instance of mobile_scanner
+  /// right after disposing the first one, like in a PageView.
+  ///
+  /// Default: false
+  final bool startDelay;
+
   /// Create a new [MobileScanner] using the provided [controller]
   /// and [onBarcodeDetected] callback.
   const MobileScanner({
@@ -67,6 +73,7 @@ class MobileScanner extends StatefulWidget {
     this.onScannerStarted,
     this.placeholderBuilder,
     this.scanWindow,
+    this.startDelay = false,
     super.key,
   });
 
@@ -88,7 +95,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   MobileScannerException? _startException;
 
-  Widget __buildPlaceholderOrError(BuildContext context, Widget? child) {
+  Widget _buildPlaceholderOrError(BuildContext context, Widget? child) {
     final error = _startException;
 
     if (error != null) {
@@ -104,18 +111,28 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   /// Start the given [scanner].
-  void _startScanner(MobileScannerController scanner) {
+  Future<void> _startScanner() async {
+    if (widget.startDelay) {
+      await Future.delayed(const Duration(seconds: 1, milliseconds: 500));
+    }
+
     if (!_controller.autoStart) {
       debugPrint(
         'mobile_scanner: not starting automatically because autoStart is set to false in the controller.',
       );
       return;
     }
-    scanner.start().then((arguments) {
+
+    _barcodesSubscription = _controller.barcodes.listen(
+      widget.onDetect,
+    );
+
+    _controller.start().then((arguments) {
       // ignore: deprecated_member_use_from_same_package
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     }).catchError((error) {
+      debugPrint('mobile_scanner: $error');
       if (mounted) {
         setState(() {
           _startException = error as MobileScannerException;
@@ -129,14 +146,7 @@ class _MobileScannerState extends State<MobileScanner>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     _controller = widget.controller ?? MobileScannerController();
-
-    _barcodesSubscription = _controller.barcodes.listen(
-      widget.onDetect,
-    );
-
-    if (!_controller.isStarting) {
-      _startScanner(_controller);
-    }
+    _startScanner();
   }
 
   @override
@@ -149,7 +159,7 @@ class _MobileScannerState extends State<MobileScanner>
     switch (state) {
       case AppLifecycleState.resumed:
         _resumeFromBackground = false;
-        _startScanner(_controller);
+        _startScanner();
         break;
       case AppLifecycleState.paused:
         _resumeFromBackground = true;
@@ -228,7 +238,7 @@ class _MobileScannerState extends State<MobileScanner>
           valueListenable: _controller.startArguments,
           builder: (context, value, child) {
             if (value == null) {
-              return __buildPlaceholderOrError(context, child);
+              return _buildPlaceholderOrError(context, child);
             }
 
             if (widget.scanWindow != null && scanWindow == null) {
@@ -238,7 +248,8 @@ class _MobileScannerState extends State<MobileScanner>
                 value.size,
                 Size(constraints.maxWidth, constraints.maxHeight),
               );
-              _controller.updateScanWindow(scanWindow!);
+
+              _controller.updateScanWindow(scanWindow);
             }
 
             return ClipRect(
@@ -268,8 +279,10 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void dispose() {
+    _controller.updateScanWindow(null);
     WidgetsBinding.instance.removeObserver(this);
     _barcodesSubscription?.cancel();
+    _barcodesSubscription = null;
     _controller.dispose();
     super.dispose();
   }

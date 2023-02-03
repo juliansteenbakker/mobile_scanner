@@ -20,20 +20,7 @@ class MobileScannerController {
     @Deprecated('Instead, use the result of calling `start()` to determine if permissions were granted.')
         this.onPermissionSet,
     this.autoStart = true,
-  }) {
-    // In case a new instance is created before calling dispose()
-    if (controllerHashcode != null) {
-      stop();
-    }
-    controllerHashcode = hashCode;
-    events = _eventChannel
-        .receiveBroadcastStream()
-        .listen((data) => _handleEvent(data as Map));
-  }
-
-  /// The hashcode of the controller to check if the correct object is mounted.
-  /// Must be static to keep the same value on new instances
-  static int? controllerHashcode;
+  });
 
   /// Select which camera should be used.
   ///
@@ -84,7 +71,7 @@ class MobileScannerController {
   Function(bool permissionGranted)? onPermissionSet;
 
   /// Listen to events from the platform specific code
-  late StreamSubscription events;
+  StreamSubscription? events;
 
   /// A notifier that provides several arguments about the MobileScanner
   final ValueNotifier<MobileScannerArguments?> startArguments =
@@ -163,6 +150,11 @@ class MobileScannerController {
     }
 
     isStarting = true;
+
+    events?.cancel();
+    events = _eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => _handleEvent(data as Map));
 
     // Check authorization status
     if (!kIsWeb) {
@@ -327,11 +319,8 @@ class MobileScannerController {
   /// If you call this, you cannot use this controller object anymore.
   void dispose() {
     stop();
-    events.cancel();
+    events?.cancel();
     _barcodesController.close();
-    if (hashCode == controllerHashcode) {
-      controllerHashcode = null;
-    }
   }
 
   /// Handles a returning event from the platform side
@@ -394,9 +383,13 @@ class MobileScannerController {
     }
   }
 
-  /// updates the native scanwindow
-  Future<void> updateScanWindow(Rect window) async {
-    final data = [window.left, window.top, window.right, window.bottom];
+  /// updates the native ScanWindow
+  Future<void> updateScanWindow(Rect? window) async {
+    List? data;
+    if (window != null) {
+      data = [window.left, window.top, window.right, window.bottom];
+    }
+
     await _methodChannel.invokeMethod('updateScanWindow', {'rect': data});
   }
 }
