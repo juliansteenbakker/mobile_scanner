@@ -1,7 +1,15 @@
-## Next
+## 3.0.0
+This big release contains all improvements from the beta releases.
+In addition to that, this release contains:
 
 Improvements:
-* [Web] Automatically inject js libraries
+* Fixed an issue in which the scanner would freeze if two scanner widgets where placed in a page view,
+and the paged was swiped. An example has been added in the example app.
+You need to set startDelay: true if used in a page view.
+* [Web] Automatically inject js libraries.
+* [macOS] The minimum build version is now macOS 10.14 in according to the latest Flutter version.
+* [Android] Fixed an issue in which the scanWindow would remain even after disposing the scanner.
+* Updated dependencies.
 
 ## 3.0.0-beta.4
 Fixes:
