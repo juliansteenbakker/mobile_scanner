@@ -124,12 +124,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         // Open the camera device
         if #available(iOS 13.0, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
-        } else if #available(iOS 10.2, *) {
-            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
-        } else if #available(iOS 10.0, *) {
-            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
         } else {
-            device = AVCaptureDevice.devices(for: .video).filter({$0.position == cameraPosition}).first
+            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
         }
 
         if (device == nil) {
