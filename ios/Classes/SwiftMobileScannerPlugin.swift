@@ -226,8 +226,6 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
                     let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                     barcodeHandler.publishEvent(event)
                 }
-                result(true)
-                return
             } else if error != nil {
                 barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
             }
