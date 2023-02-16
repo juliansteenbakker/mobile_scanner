@@ -320,7 +320,12 @@ class MobileScannerController {
         break;
       case 'barcode':
         if (data == null) return;
-        final parsed = (data as List).map((value) => Barcode.fromNative(value as Map)).toList();
+        final parsed = <Barcode>[];
+        if (data is List) {
+          parsed.addAll(data.map((value) => Barcode.fromNative(value as Map)).toList());
+        } else if (data is Map) {
+          parsed.addAll([Barcode.fromNative(data)]);
+        }
         _barcodesController.add(
           BarcodeCapture(
             barcodes: parsed,
