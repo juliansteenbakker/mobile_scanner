@@ -319,21 +319,37 @@ class MobileScannerController {
         torchState.value = state;
         break;
       case 'barcode':
+        developer.log('- - - - - - - - - - - - - - - - - - ');
         if (data == null) return;
         final parsed = <Barcode>[];
         if (data is List) {
+          developer.log('data is List');
           parsed.addAll(data.map((value) => Barcode.fromNative(value as Map)).toList());
         } else if (data is Map) {
+          developer.log('data is Map');
           parsed.addAll([Barcode.fromNative(data)]);
+        } else {
+          developer.log('data Not caught');
         }
-        _barcodesController.add(
-          BarcodeCapture(
-            barcodes: parsed,
-            image: event['image'] as Uint8List?,
-            width: event['width'] as double?,
-            height: event['height'] as double?,
-          ),
+
+        developer.log('- - - - - - - - - - - - - - - - - - ');
+        developer.log('parsed lenght: ${parsed.length}');
+        developer.log('- - - - - - - - - - - - - - - - - - ');
+        developer.log('parsed: $parsed');
+        developer.log('- - - - - - - - - - - - - - - - - - ');
+        final barcodeCapture = BarcodeCapture(
+          barcodes: parsed,
+          image: event['image'] as Uint8List?,
+          width: event['width'] as double?,
+          height: event['height'] as double?,
         );
+        developer.log('barcodeCapture: $barcodeCapture');
+        developer.log('- - - - - - - - - - - - - - - - - - ');
+
+        _barcodesController.add(
+          barcodeCapture,
+        );
+
         break;
       case 'barcodeMac':
         _barcodesController.add(
