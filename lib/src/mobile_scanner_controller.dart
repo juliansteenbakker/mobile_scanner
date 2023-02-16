@@ -335,8 +335,11 @@ class MobileScannerController {
         developer.log('- - - - - - - - - - - - - - - - - - ');
         developer.log('parsed lenght: ${parsed.length}');
         developer.log('- - - - - - - - - - - - - - - - - - ');
-        developer.log('parsed: $parsed');
+        developer.log('parsed: ${parsed.first.toString()}');
         developer.log('- - - - - - - - - - - - - - - - - - ');
+        developer.log('parsed.first.rawValue: ${parsed.first.rawValue}');
+        developer.log('- - - - - - - - - - - - - - - - - - ');
+
         final barcodeCapture = BarcodeCapture(
           barcodes: parsed,
           image: event['image'] as Uint8List?,
