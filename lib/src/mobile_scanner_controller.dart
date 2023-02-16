@@ -312,33 +312,21 @@ class MobileScannerController {
   void _handleEvent(Map event) {
     final name = event['name'];
     final data = event['data'];
-    developer.log('data _handleEvent: $data');
     switch (name) {
       case 'torchState':
         final state = TorchState.values[data as int? ?? 0];
         torchState.value = state;
         break;
       case 'barcode':
-        developer.log('- - - - - - - - - - - - - - - - - - ');
         if (data == null) return;
         final parsed = <Barcode>[];
         if (data is List) {
-          developer.log('data is List');
           parsed.addAll(data.map((value) => Barcode.fromNative(value as Map)).toList());
         } else if (data is Map) {
-          developer.log('data is Map');
           parsed.addAll([Barcode.fromNative(data)]);
         } else {
-          developer.log('data Not caught');
+          developer.log('Error: no data', name: 'Mobile Scanner Controller');
         }
-
-        developer.log('- - - - - - - - - - - - - - - - - - ');
-        developer.log('parsed lenght: ${parsed.length}');
-        developer.log('- - - - - - - - - - - - - - - - - - ');
-        developer.log('parsed: ${parsed.first.toString()}');
-        developer.log('- - - - - - - - - - - - - - - - - - ');
-        developer.log('parsed.first.rawValue: ${parsed.first.rawValue}');
-        developer.log('- - - - - - - - - - - - - - - - - - ');
 
         final barcodeCapture = BarcodeCapture(
           barcodes: parsed,
@@ -346,8 +334,6 @@ class MobileScannerController {
           width: event['width'] as double?,
           height: event['height'] as double?,
         );
-        developer.log('barcodeCapture: $barcodeCapture');
-        developer.log('- - - - - - - - - - - - - - - - - - ');
 
         _barcodesController.add(
           barcodeCapture,
