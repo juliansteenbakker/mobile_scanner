@@ -225,22 +225,22 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             if barcodes!.count <= 0 {
                 let event: [String: Any?] = ["name": "error", "message": "no cade"]
                 barcodeHandler.publishEvent(event)
-                result(false)   //add
+                result(false)  
             }else{
                 for barcode in barcodes! {
                     let event: [String: Any?] = ["name": "barcode", "data": barcode.data]
                     barcodeHandler.publishEvent(event)
-                    result(true)  //add
+                    result(true)  
                 }
             }
             
         } else if error != nil {
             barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
-            result(false) //add
+            result(false) 
         }else{
             let event: [String: Any?] = ["name": "error", "message": "no cade"]
             barcodeHandler.publishEvent(event)
-            result(false) //add
+            result(false) 
         }
     })
     }
