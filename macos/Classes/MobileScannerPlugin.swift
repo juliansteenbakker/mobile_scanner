@@ -26,6 +26,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var scanWindow: CGRect?
     
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
+
+    var timeoutSeconds: Double = 0
     
     
 //    var analyzeMode: Int = 0
@@ -90,8 +92,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         return Unmanaged<CVPixelBuffer>.passRetained(latestBuffer)
     }
     
-    var i = 0
-    
+    var nextScanTime = 0.0
+    var imagesCurrentlyBeingProcessed = 0
     
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
@@ -106,14 +108,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         latestBuffer = imageBuffer
         registry.textureFrameAvailable(textureId)
         
-        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && i > 10 || detectionSpeed == DetectionSpeed.unrestricted) {
-            i = 0
+        let currentTime = Date.now.timeIntervalSince1970
+        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == 0;
+        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
+            nextScanTime = currentTime + timeoutSeconds
+            imagesCurrentlyBeingProcessed += 1
             let imageRequestHandler = VNImageRequestHandler(
                 cvPixelBuffer: latestBuffer,
                 orientation: .right)
             
                 do {
                   try imageRequestHandler.perform([VNDetectBarcodesRequest { (request, error) in
+                    imagesCurrentlyBeingProcessed -= 1
                       if error == nil {
                           if let results = request.results as? [VNBarcodeObservation] {
                                 for barcode in results {
@@ -142,8 +148,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 } catch {
                   print(error)
                 }
-        } else {
-            i+=1
         }
     }
     
@@ -220,7 +224,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let torch: Bool = argReader.bool(key: "torch") ?? false
         let facing: Int = argReader.int(key: "facing") ?? 1
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
+        let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
         
+        timeoutSeconds = timeoutMs * 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
 
         // Set the camera to use
