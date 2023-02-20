@@ -123,7 +123,7 @@ class _MobileScannerState extends State<MobileScanner>
       return;
     }
 
-    _barcodesSubscription = _controller.barcodes.listen(
+    _barcodesSubscription ??= _controller.barcodes.listen(
       widget.onDetect,
     );
 
