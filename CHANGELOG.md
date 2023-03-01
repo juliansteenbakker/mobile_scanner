@@ -1,3 +1,8 @@
+## NEXT
+
+Improvements:
+* [iOS] No longer automatically focus on faces
+
 ## 3.0.0
 This big release contains all improvements from the beta releases.
 In addition to that, this release contains:
