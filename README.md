@@ -59,7 +59,7 @@ Import `package:mobile_scanner/mobile_scanner.dart`, and use the widget with or 
 
 If you don't provide a controller, you can't control functions like the torch(flash) or switching camera.
 
-If you don't set allowDuplicates to false, you can get multiple scans in a very short time, causing things like pop() to fire lots of times.
+If you don't set `detectionSpeed` to `DetectionSpeed.noDuplicates`, you can get multiple scans in a very short time, causing things like pop() to fire lots of times.
 
 Example without controller:
 
@@ -96,7 +96,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
       body: MobileScanner(
         // fit: BoxFit.contain,
         controller: MobileScannerController(
-          facing: CameraFacing.front, torchEnabled: true,
+          detectionSpeed: DetectionSpeed.normal,
+          facing: CameraFacing.front,
+          torchEnabled: true,
         ),
         onDetect: (capture) {
           final List<Barcode> barcodes = capture.barcodes;
