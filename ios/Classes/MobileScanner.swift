@@ -135,7 +135,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         do {
             try device.lockForConfiguration()
-            if device.isFocusModeSupported(focusMode: .continuousAutoFocus) {
+            if device.isFocusModeSupported(.continuousAutoFocus) {
                 device.focusMode = .continuousAutoFocus
             }
             if #available(iOS 15.4, *) {
