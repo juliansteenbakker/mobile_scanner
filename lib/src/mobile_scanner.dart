@@ -116,16 +116,16 @@ class _MobileScannerState extends State<MobileScanner>
       await Future.delayed(const Duration(seconds: 1, milliseconds: 500));
     }
 
+    _barcodesSubscription ??= _controller.barcodes.listen(
+      widget.onDetect,
+    );
+
     if (!_controller.autoStart) {
       debugPrint(
         'mobile_scanner: not starting automatically because autoStart is set to false in the controller.',
       );
       return;
     }
-
-    _barcodesSubscription ??= _controller.barcodes.listen(
-      widget.onDetect,
-    );
 
     _controller.start().then((arguments) {
       // ignore: deprecated_member_use_from_same_package
