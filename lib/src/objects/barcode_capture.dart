@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/objects/barcode.dart';
 /// [image] If enabled, an image of the scanned frame.
 class BarcodeCapture {
   final List<Barcode> barcodes;
+  final dynamic raw;
 
   final Uint8List? image;
 
@@ -18,6 +19,7 @@ class BarcodeCapture {
 
   BarcodeCapture({
     required this.barcodes,
+    required this.raw,
     this.image,
     this.width,
     this.height,
