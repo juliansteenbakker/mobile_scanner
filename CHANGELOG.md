@@ -1,7 +1,11 @@
-## NEXT
-
+## 3.1.0
 Improvements:
-* [iOS] No longer automatically focus on faces
+* [iOS] No longer automatically focus on faces.
+* [iOS] Fixed build error.
+* [Web] Waiting for js libs to load.
+* Do not returnImage if not specified.
+* Added raw data in barcode object.
+* Fixed several bugs.
 
 ## 3.0.0
 This big release contains all improvements from the beta releases.
