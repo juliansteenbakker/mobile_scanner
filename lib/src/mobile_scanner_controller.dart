@@ -130,7 +130,7 @@ class MobileScannerController {
         arguments['formats'] = formats!.map((e) => e.index).toList();
       }
     }
-    arguments['returnImage'] = true;
+    arguments['returnImage'] = returnImage;
     return arguments;
   }
 
