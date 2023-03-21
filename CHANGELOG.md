@@ -1,3 +1,7 @@
+## 3.1.1
+Bugs fixed:
+* [iOS] Fixed a bug that caused a crash when switching from camera.
+
 ## 3.1.0
 Improvements:
 * [iOS] No longer automatically focus on faces.
