@@ -36,7 +36,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     }
     
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
-        self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
+        self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { (barcodes:Array<Barcode>?, error:Error?, image:UIImage) in
             if barcodes != nil {
                 let barcodesMap = barcodes!.compactMap { barcode in
                     if (SwiftMobileScannerPlugin.scanWindow != nil) {
