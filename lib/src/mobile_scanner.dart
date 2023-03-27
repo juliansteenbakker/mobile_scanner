@@ -246,7 +246,7 @@ class _MobileScannerState extends State<MobileScanner>
                 widget.fit,
                 widget.scanWindow!,
                 value.size,
-                Size(constraints.maxWidth, constraints.maxHeight),
+                constraints.biggest,
               );
 
               _controller.updateScanWindow(scanWindow);
