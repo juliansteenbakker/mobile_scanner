@@ -259,9 +259,8 @@ class _MobileScannerState extends State<MobileScanner>
                     size: constraints.biggest,
                     child: FittedBox(
                       fit: widget.fit,
-                      child: SizedBox(
-                        width: value.size.width,
-                        height: value.size.height,
+                      child: SizedBox.fromSize(
+                        size: value.size,
                         child: kIsWeb
                             ? HtmlElementView(viewType: value.webId!)
                             : Texture(textureId: value.textureId!),
