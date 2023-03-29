@@ -4,8 +4,8 @@ Improvements:
 * [Android] Updated com.google.mlkit:barcode-scanning from 17.0.3 to 17.1.0
 
 Bugs fixed:
-* Fixed onDetect not working with analyzeImage
-* [iOS] explicit returned type for compactMap
+* Fixed onDetect not working with analyzeImage when autoStart is false in MobileScannerController
+* [iOS] Explicit returned type for compactMap
 
 ## 3.1.1
 Bugs fixed:
