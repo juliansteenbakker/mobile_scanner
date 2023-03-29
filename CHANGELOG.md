@@ -1,3 +1,7 @@
+## NEXT
+Improvements:
+* [iOS] Updated GoogleMLKit/BarcodeScanning to 4.0.0
+
 ## 3.1.1
 Bugs fixed:
 * [iOS] Fixed a bug that caused a crash when switching from camera.
