@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'mobile_scanner'
-  s.version          = '3.0.0'
+  s.version          = '3.2.0'
   s.summary          = 'An universal scanner for Flutter based on MLKit.'
   s.description      = <<-DESC
 An universal scanner for Flutter based on MLKit.
@@ -15,7 +15,7 @@ An universal scanner for Flutter based on MLKit.
   s.source           = { :path => '.' }
   s.source_files = 'Classes/**/*'
   s.dependency 'Flutter'
-  s.dependency 'GoogleMLKit/BarcodeScanning', '~> 3.2.0'
+  s.dependency 'GoogleMLKit/BarcodeScanning', '~> 4.0.0'
   s.platform = :ios, '11.0'
   s.static_framework = true
   # Flutter.framework does not contain a i386 slice.
