@@ -1,6 +1,11 @@
-## NEXT
+## 3.2.0
 Improvements:
-* [iOS] Updated GoogleMLKit/BarcodeScanning to 4.0.0
+* [iOS] Updated GoogleMLKit/BarcodeScanning to 4.0.0 
+* [Android] Updated com.google.mlkit:barcode-scanning from 17.0.3 to 17.1.0
+
+Bugs fixed:
+* Fixed onDetect not working with analyzeImage
+* [iOS] explicit returned type for compactMap
 
 ## 3.1.1
 Bugs fixed:
