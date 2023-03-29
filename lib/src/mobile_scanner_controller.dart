@@ -150,12 +150,11 @@ class MobileScannerController {
       return null;
     }
 
-    isStarting = true;
-
-    events?.cancel();
-    events = _eventChannel
+    events ??= _eventChannel
         .receiveBroadcastStream()
         .listen((data) => _handleEvent(data as Map));
+
+    isStarting = true;
 
     // Check authorization status
     if (!kIsWeb) {
@@ -294,6 +293,10 @@ class MobileScannerController {
   ///
   /// [path] The path of the image on the devices
   Future<bool> analyzeImage(String path) async {
+    events ??= _eventChannel
+        .receiveBroadcastStream()
+        .listen((data) => _handleEvent(data as Map));
+
     return _methodChannel
         .invokeMethod<bool>('analyzeImage', path)
         .then<bool>((bool? value) => value ?? false);
