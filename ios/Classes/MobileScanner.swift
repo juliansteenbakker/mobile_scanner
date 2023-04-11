@@ -204,6 +204,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         } catch {
             print("Failed to set initial torch state.")
         }
+
+        do {
+            try resetScale()
+        } catch {
+            print("Failed to reset zoom scale")
+        }
+
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
 
         return MobileScannerStartParameters(width: Double(dimensions.height), height: Double(dimensions.width), hasTorch: device.hasTorch, textureId: textureId)
