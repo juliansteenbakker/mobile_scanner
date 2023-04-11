@@ -286,7 +286,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             actualScale = min(maxZoomFactor, actualScale)
             
             // Limit to 1.0 scale
-            device.ramp(toVideoZoomFactor: actualScale, withRate: 5)
+            device.videoZoomFactor = actualScale
             device.unlockForConfiguration()
         } catch {
             throw MobileScannerError.zoomError(error)
