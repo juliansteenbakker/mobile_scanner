@@ -85,6 +85,10 @@ class MobileScannerController {
   late final ValueNotifier<CameraFacing> cameraFacingState =
       ValueNotifier(facing);
 
+  /// A notifier that provides zoomScale.
+  final ValueNotifier<double> zoomScaleState = ValueNotifier(0.0);
+
+
   bool isStarting = false;
 
   /// A notifier that provides availability of the Torch (Flash)
@@ -336,6 +340,9 @@ class MobileScannerController {
       case 'torchState':
         final state = TorchState.values[data as int? ?? 0];
         torchState.value = state;
+        break;
+      case 'zoomScaleState':
+        zoomScaleState.value = data as double? ?? 0.0;
         break;
       case 'barcode':
         if (data == null) return;

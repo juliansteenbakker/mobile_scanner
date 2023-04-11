@@ -70,6 +70,11 @@ class MobileScannerHandler(
         barcodeHandler.publishEvent(mapOf("name" to "torchState", "data" to state))
     }
 
+    private val zoomScaleStateCallback: ZoomScaleStateCallback = {zoomScale: Double ->
+        barcodeHandler.publishEvent(mapOf("name" to "zoomScaleState", "data" to zoomScale))
+    }
+
+
     init {
         methodChannel = MethodChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/method")
@@ -152,7 +157,7 @@ class MobileScannerHandler(
         val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
 
         try {
-            mobileScanner!!.start(barcodeScannerOptions, returnImage, position, torch, detectionSpeed, torchStateCallback, mobileScannerStartedCallback = {
+            mobileScanner!!.start(barcodeScannerOptions, returnImage, position, torch, detectionSpeed, torchStateCallback, zoomScaleStateCallback, mobileScannerStartedCallback = {
                 result.success(mapOf(
                     "textureId" to it.id,
                     "size" to mapOf("width" to it.width, "height" to it.height),
