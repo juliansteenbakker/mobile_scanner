@@ -88,7 +88,6 @@ class MobileScannerController {
   /// A notifier that provides zoomScale.
   final ValueNotifier<double> zoomScaleState = ValueNotifier(0.0);
 
-
   bool isStarting = false;
 
   /// A notifier that provides availability of the Torch (Flash)
@@ -326,7 +325,6 @@ class MobileScannerController {
   Future<void> resetZoomScale() async {
     await _methodChannel.invokeMethod('resetScale');
   }
-
 
   /// Disposes the MobileScannerController and closes all listeners.
   ///

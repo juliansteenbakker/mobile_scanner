@@ -40,7 +40,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// When zoom scale is changes, this callback will be called
     let zoomScaleChangeCallback: ZoomScaleChangeCallback
 
-
     /// If provided, the Flutter registry will be used to send the output of the CaptureOutput to a Flutter texture.
     private let registry: FlutterTextureRegistry?
 

@@ -297,5 +297,4 @@ class MobileScanner(
         camera!!.cameraControl.setZoomRatio(1f)
     }
 
-
 }

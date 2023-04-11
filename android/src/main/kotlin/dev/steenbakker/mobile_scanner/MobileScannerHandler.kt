@@ -74,7 +74,6 @@ class MobileScannerHandler(
         barcodeHandler.publishEvent(mapOf("name" to "zoomScaleState", "data" to zoomScale))
     }
 
-
     init {
         methodChannel = MethodChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/method")
@@ -240,7 +239,7 @@ class MobileScannerHandler(
             mobileScanner!!.resetScale()
             result.success(null)
         } catch (e: ZoomWhenStopped) {
-            result.error("MobileScanner", "Called setScale() while stopped!", null)
+            result.error("MobileScanner", "Called resetScale() while stopped!", null)
         }
     }
 
