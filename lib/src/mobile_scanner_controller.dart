@@ -322,6 +322,12 @@ class MobileScannerController {
     await _methodChannel.invokeMethod('setScale', zoomScale);
   }
 
+  /// Reset the zoomScale of the camera to use standard scale 1x.
+  Future<void> resetZoomScale() async {
+    await _methodChannel.invokeMethod('resetScale');
+  }
+
+
   /// Disposes the MobileScannerController and closes all listeners.
   ///
   /// If you call this, you cannot use this controller object anymore.

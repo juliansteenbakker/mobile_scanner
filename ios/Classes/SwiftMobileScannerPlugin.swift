@@ -87,6 +87,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             analyzeImage(call, result)
         case "setScale":
             setScale(call, result)
+        case "resetScale":
+            resetScale(call, result)
         case "updateScanWindow":
             updateScanWindow(call, result)
         default:
@@ -189,7 +191,28 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         }
         result(nil)
     }
-    
+
+    /// Reset the zoomScale
+    private func resetScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        do {
+            try mobileScanner.resetScale()
+        } catch MobileScannerError.zoomWhenStopped {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Called resetScale() while stopped!",
+                                details: nil))
+        } catch MobileScannerError.zoomError(let error) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error while zooming.",
+                                details: error))
+        } catch {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error while zooming.",
+                                details: nil))
+        }
+        result(nil)
+    }
+
+
     /// Toggles the torch
     func updateScanWindow(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let scanWindowData: Array? = (call.arguments as? [String: Any])?["rect"] as? [CGFloat]

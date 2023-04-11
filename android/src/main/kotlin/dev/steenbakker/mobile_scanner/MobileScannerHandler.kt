@@ -120,6 +120,7 @@ class MobileScannerHandler(
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
+            "resetScale" -> resetScale(call, result)
             "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
@@ -231,6 +232,15 @@ class MobileScannerHandler(
             result.error("MobileScanner", "Called setScale() while stopped!", null)
         } catch (e: ZoomNotInRange) {
             result.error("MobileScanner", "Scale should be within 0 and 1", null)
+        }
+    }
+
+    private fun resetScale(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            mobileScanner!!.resetScale()
+            result.success(null)
+        } catch (e: ZoomWhenStopped) {
+            result.error("MobileScanner", "Called setScale() while stopped!", null)
         }
     }
 

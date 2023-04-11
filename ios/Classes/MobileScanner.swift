@@ -52,6 +52,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
+    var standardZoomFactor: CGFloat = 1
+
     init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
         self.registry = registry
         self.mobileScannerCallback = mobileScannerCallback
@@ -140,6 +142,20 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor), options: .new, context: nil)
+
+        // Check the zoom factor at switching from ultra wide camera to wide camera.
+        standardZoomFactor = 1
+        if #available(iOS 13.0, *) {
+            for (index, actualDevice) in device.constituentDevices.enumerated() {
+                if (actualDevice.deviceType != .builtInUltraWideCamera) {
+                    if index > 0 && index <= device.virtualDeviceSwitchOverVideoZoomFactors.count {
+                        standardZoomFactor = CGFloat(truncating: device.virtualDeviceSwitchOverVideoZoomFactors[index - 1])
+                    }
+                    break
+                }
+            }
+        }
+
         do {
             try device.lockForConfiguration()
             if device.isFocusModeSupported(.continuousAutoFocus) {
@@ -271,6 +287,22 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         
     }
+
+    /// Set the zoom factor of the camera
+    func resetScale() throws {
+        if (device == nil) {
+            throw MobileScannerError.torchWhenStopped
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.videoZoomFactor = standardZoomFactor
+            device.unlockForConfiguration()
+        } catch {
+            throw MobileScannerError.zoomError(error)
+        }
+    }
+
 
     /// Analyze a single image
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position, callback: @escaping BarcodeScanningCallback) {
