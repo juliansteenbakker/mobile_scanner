@@ -294,10 +294,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         
     }
 
-    /// Set the zoom factor of the camera
+    /// Reset the zoom factor of the camera
     func resetScale() throws {
         if (device == nil) {
-            throw MobileScannerError.torchWhenStopped
+            throw MobileScannerError.zoomWhenStopped
         }
 
         do {
