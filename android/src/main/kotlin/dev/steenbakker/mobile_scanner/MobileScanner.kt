@@ -64,7 +64,7 @@ class MobileScanner(
                         // New scanned is duplicate, returning
                         return@addOnSuccessListener
                     }
-                    lastScanned = newScannedBarcodes
+                    if (newScannedBarcodes.isNotEmpty()) lastScanned = newScannedBarcodes
                 }
 
                 val barcodeMap: MutableList<Map<String, Any?>> = mutableListOf()
