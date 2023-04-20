@@ -43,6 +43,8 @@ android {
     defaultConfig {
         minSdkVersion 21
     }
+
+    namespace 'dev.steenbakker.mobile_scanner'
 }
 
 dependencies {
