@@ -1,3 +1,7 @@
+## 3.2.1
+Bugs fixed:
+* [Android] Fix Gradle 8 compatibility by adding the `namespace` attribute to the build.gradle.
+
 ## 3.2.0
 Improvements:
 * [iOS] Updated GoogleMLKit/BarcodeScanning to 4.0.0 
