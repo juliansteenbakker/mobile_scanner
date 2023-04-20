@@ -138,6 +138,7 @@ class MobileScanner(
         torch: Boolean,
         detectionSpeed: DetectionSpeed,
         torchStateCallback: TorchStateCallback,
+        zoomScaleStateCallback: ZoomScaleStateCallback,
         mobileScannerStartedCallback: MobileScannerStartedCallback,
         detectionTimeout: Long
     ) {
@@ -199,6 +200,11 @@ class MobileScanner(
             camera!!.cameraInfo.torchState.observe(activity) { state ->
                 // TorchState.OFF = 0; TorchState.ON = 1
                 torchStateCallback(state)
+            }
+
+            // Register the zoom scale listener
+            camera!!.cameraInfo.zoomState.observe(activity) { state ->
+                zoomScaleStateCallback(state.linearZoom.toDouble())
             }
 
 
@@ -281,6 +287,14 @@ class MobileScanner(
         if (camera == null) throw ZoomWhenStopped()
         if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
         camera!!.cameraControl.setLinearZoom(scale.toFloat())
+    }
+
+    /**
+     * Reset the zoom rate of the camera.
+     */
+    fun resetScale() {
+        if (camera == null) throw ZoomWhenStopped()
+        camera!!.cameraControl.setZoomRatio(1f)
     }
 
 }

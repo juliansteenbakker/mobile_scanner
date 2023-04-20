@@ -70,6 +70,10 @@ class MobileScannerHandler(
         barcodeHandler.publishEvent(mapOf("name" to "torchState", "data" to state))
     }
 
+    private val zoomScaleStateCallback: ZoomScaleStateCallback = {zoomScale: Double ->
+        barcodeHandler.publishEvent(mapOf("name" to "zoomScaleState", "data" to zoomScale))
+    }
+
     init {
         methodChannel = MethodChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/method")
@@ -115,6 +119,7 @@ class MobileScannerHandler(
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
+            "resetScale" -> resetScale(call, result)
             "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
@@ -152,7 +157,7 @@ class MobileScannerHandler(
         val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
 
         try {
-            mobileScanner!!.start(barcodeScannerOptions, returnImage, position, torch, detectionSpeed, torchStateCallback, mobileScannerStartedCallback = {
+            mobileScanner!!.start(barcodeScannerOptions, returnImage, position, torch, detectionSpeed, torchStateCallback, zoomScaleStateCallback, mobileScannerStartedCallback = {
                 result.success(mapOf(
                     "textureId" to it.id,
                     "size" to mapOf("width" to it.width, "height" to it.height),
@@ -226,6 +231,15 @@ class MobileScannerHandler(
             result.error("MobileScanner", "Called setScale() while stopped!", null)
         } catch (e: ZoomNotInRange) {
             result.error("MobileScanner", "Scale should be within 0 and 1", null)
+        }
+    }
+
+    private fun resetScale(call: MethodCall, result: MethodChannel.Result) {
+        try {
+            mobileScanner!!.resetScale()
+            result.success(null)
+        } catch (e: ZoomWhenStopped) {
+            result.error("MobileScanner", "Called resetScale() while stopped!", null)
         }
     }
 
