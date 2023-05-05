@@ -2,9 +2,11 @@ package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
 import android.graphics.Rect
+import android.media.CamcorderProfile
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.util.Size
 import android.view.Surface
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
@@ -186,7 +188,12 @@ class MobileScanner(
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                analysisBuilder.setTargetResolution(Size(1440, 1920))
+
+            val camProfile = CamcorderProfile.get(CamcorderProfile.QUALITY_HIGH)
+            analysisBuilder.setTargetResolution(
+                Size(camProfile.videoFrameWidth, camProfile.videoFrameHeight)
+            )
+
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
             camera = cameraProvider!!.bindToLifecycle(
