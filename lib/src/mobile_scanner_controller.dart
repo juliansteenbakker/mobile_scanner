@@ -19,7 +19,8 @@ class MobileScannerController {
     this.formats,
     this.returnImage = false,
     @Deprecated(
-        'Instead, use the result of calling `start()` to determine if permissions were granted.')
+      'Instead, use the result of calling `start()` to determine if permissions were granted.',
+    )
     this.onPermissionSet,
     this.autoStart = true,
   });
