@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:js' show context, JsObject;
+import 'dart:js' show JsObject, context;
 
 import 'package:mobile_scanner/src/web/base.dart';
 
