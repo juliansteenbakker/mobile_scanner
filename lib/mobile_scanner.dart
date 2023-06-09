@@ -1,5 +1,3 @@
-library mobile_scanner;
-
 export 'src/enums/camera_facing.dart';
 export 'src/enums/detection_speed.dart';
 export 'src/enums/mobile_scanner_error_code.dart';
