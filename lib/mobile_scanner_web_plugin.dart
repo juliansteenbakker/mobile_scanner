@@ -8,7 +8,6 @@ import 'package:mobile_scanner/mobile_scanner_web.dart';
 import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
-import 'package:mobile_scanner/src/web/utils.dart';
 
 /// This plugin is the web implementation of mobile_scanner.
 /// It only supports QR codes.
@@ -25,8 +24,6 @@ class MobileScannerWebPlugin {
       registrar,
     );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
-
-    _jsLibrariesLoadingFuture = injectJSLibraries(barCodeReader.jsLibraries);
 
     channel.setMethodCallHandler(instance.handleMethodCall);
     event.setController(instance.controller);
@@ -55,11 +52,8 @@ class MobileScannerWebPlugin {
       ZXingBarcodeReader(videoContainer: vidDiv);
   StreamSubscription? _barCodeStreamSubscription;
 
-  static late Future _jsLibrariesLoadingFuture;
-
   /// Handle incomming messages
   Future<dynamic> handleMethodCall(MethodCall call) async {
-    await _jsLibrariesLoadingFuture;
     switch (call.method) {
       case 'start':
         return _start(call.arguments as Map);
