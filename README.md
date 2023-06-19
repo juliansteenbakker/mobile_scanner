@@ -56,7 +56,7 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 ## Web
 This package uses ZXing on web to read barcodes so it needs to be included in `index.html` as script.
 ```html
-<script src="https://unpkg.com/@zxing/library@0.19.1" type="application/javascript"/>
+<script src="https://unpkg.com/@zxing/library@0.19.1" type="application/javascript"></script>
 ```
 
 ## Usage
