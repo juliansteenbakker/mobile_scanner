@@ -26,8 +26,6 @@ class MobileScannerWebPlugin {
     );
     final MobileScannerWebPlugin instance = MobileScannerWebPlugin();
 
-    _jsLibrariesLoadingFuture = injectJSLibraries(barCodeReader.jsLibraries);
-
     channel.setMethodCallHandler(instance.handleMethodCall);
     event.setController(instance.controller);
   }
@@ -53,13 +51,29 @@ class MobileScannerWebPlugin {
   /// }
   static WebBarcodeReaderBase barCodeReader =
       ZXingBarcodeReader(videoContainer: vidDiv);
+
+  /// Represents automatic loading of JavaScript library.
+  /// Change this property if you want to use disable automatic loading.
+  ///
+  /// Example of disable automatic loading:
+  /// void main() {
+  ///   if (kIsWeb) {
+  ///     MobileScannerWebPlugin.disableAutoLibraryLoading = true;
+  ///   }
+  ///   runApp(const MaterialApp(home: MyHome()));
+  /// }
+  static bool disableAutoLibraryLoading = false;
+
   StreamSubscription? _barCodeStreamSubscription;
 
-  static late Future _jsLibrariesLoadingFuture;
+  static bool _jsLibrariesLoaded = false;
 
   /// Handle incomming messages
   Future<dynamic> handleMethodCall(MethodCall call) async {
-    await _jsLibrariesLoadingFuture;
+    if (!disableAutoLibraryLoading && !_jsLibrariesLoaded) {
+      await injectJSLibraries(barCodeReader.jsLibraries);
+      _jsLibrariesLoaded = true;
+    }
     switch (call.method) {
       case 'start':
         return _start(call.arguments as Map);
