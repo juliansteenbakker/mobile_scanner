@@ -97,7 +97,7 @@ class MobileScanner(
 
                         imageFormat.yuvToRgb(mediaImage, bitmap)
 
-                        val bmResult = rotateBitmap(bitmap, camera!!.cameraInfo.sensorRotationDegrees.toFloat())
+                        val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
 
                         val stream = ByteArrayOutputStream()
                         bmResult.compress(Bitmap.CompressFormat.PNG, 100, stream)
