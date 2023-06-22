@@ -16,6 +16,11 @@ typedef MobileScannerErrorBuilder = Widget Function(
 
 /// The [MobileScanner] widget displays a live camera preview.
 class MobileScanner extends StatefulWidget {
+  /// Call this method to automatically load the javascript libraries, which are necessary for the plugin.
+  static Future<void> initialize() async {
+    await MobileScannerController.initialize();
+  }
+
   /// The controller that manages the barcode scanner.
   ///
   /// If this is null, the scanner will manage its own controller.

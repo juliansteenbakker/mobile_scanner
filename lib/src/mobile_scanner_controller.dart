@@ -68,6 +68,13 @@ class MobileScannerController {
   static const EventChannel _eventChannel =
       EventChannel('dev.steenbakker.mobile_scanner/scanner/event');
 
+  /// Call this method to automatically load the javascript libraries, which are necessary for the plugin.
+  static Future<void> initialize() async {
+    if (kIsWeb) {
+      await _methodChannel.invokeMethod('initialize');
+    }
+  }
+
   @Deprecated(
     'Instead, use the result of calling `start()` to determine if permissions were granted.',
   )
