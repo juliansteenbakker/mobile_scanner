@@ -16,7 +16,7 @@ typedef MobileScannerErrorBuilder = Widget Function(
 
 /// The [MobileScanner] widget displays a live camera preview.
 class MobileScanner extends StatefulWidget {
-  /// Call this method to automatically load the javascript libraries, which are necessary for the plugin.
+  /// Call this method to initialize the plugin.
   static Future<void> initialize() async {
     await MobileScannerController.initialize();
   }
