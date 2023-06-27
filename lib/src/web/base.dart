@@ -39,9 +39,6 @@ abstract class WebBarcodeReaderBase {
   int get videoWidth;
   int get videoHeight;
 
-  /// JS libraries to be injected into html page.
-  List<JsLibrary> get jsLibraries;
-
   /// Starts streaming video
   Future<void> start({
     required CameraFacing cameraFacing,
