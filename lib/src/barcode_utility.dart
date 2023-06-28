@@ -9,13 +9,13 @@ Size toSize(Map data) {
   return Size(width, height);
 }
 
-List<Offset>? toCorners(List<Map<String, Object?>>? data) {
+List<Offset>? toCorners(List<Map<Object?, Object?>>? data) {
   if (data == null) {
     return null;
   }
 
   return List.unmodifiable(
-    data.map((Map<String, Object?> e) {
+    data.map((Map<Object?, Object?> e) {
       return Offset(e['x']! as double, e['y']! as double);
     }),
   );
