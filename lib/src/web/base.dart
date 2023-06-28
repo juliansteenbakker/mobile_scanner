@@ -125,10 +125,8 @@ mixin InternalTorchDetection on InternalStreamCreation {
         final photoCapabilities = await promiseToFuture<PhotoCapabilities>(
           imageCapture.getPhotoCapabilities(),
         );
-        final fillLightMode = photoCapabilities.fillLightMode;
-        if (fillLightMode != null) {
-          return fillLightMode;
-        }
+
+        return photoCapabilities.fillLightMode;
       }
     } catch (e) {
       // ImageCapture is not supported by some browsers:
@@ -162,9 +160,16 @@ class Promise<T> {}
 
 @JS()
 @anonymous
-class PhotoCapabilities {
+@staticInterop
+class PhotoCapabilities {}
+
+extension PhotoCapabilitiesExtension on PhotoCapabilities {
+  @JS('fillLightMode')
+  external List<dynamic>? get _fillLightMode;
+
   /// Returns an array of available fill light options. Options include auto, off, or flash.
-  external List<String>? get fillLightMode;
+  List<String> get fillLightMode =>
+      _fillLightMode?.cast<String>() ?? <String>[];
 }
 
 @JS('ImageCapture')
