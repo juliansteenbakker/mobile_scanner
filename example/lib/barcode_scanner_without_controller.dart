@@ -18,6 +18,7 @@ class _BarcodeScannerWithoutControllerState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Without controller')),
       backgroundColor: Colors.black,
       body: Builder(
         builder: (context) {

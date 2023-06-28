@@ -70,6 +70,7 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('With PageView')),
       backgroundColor: Colors.black,
       body: PageView(
         children: [
