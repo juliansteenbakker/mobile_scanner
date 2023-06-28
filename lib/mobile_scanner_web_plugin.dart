@@ -113,12 +113,14 @@ class MobileScannerWebPlugin {
             .map((e) => toFormat(e))
             .toList();
       }
+
       final Duration? detectionTimeout;
       if (arguments.containsKey('timeout')) {
         detectionTimeout = Duration(milliseconds: arguments['timeout'] as int);
       } else {
         detectionTimeout = null;
       }
+
       await barCodeReader.start(
         cameraFacing: cameraFacing,
         formats: formats,
@@ -138,10 +140,11 @@ class MobileScannerWebPlugin {
           });
         }
       });
+
       final hasTorch = await barCodeReader.hasTorch();
 
       if (hasTorch && arguments.containsKey('torch')) {
-        barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+        await barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
       }
 
       return {
@@ -150,8 +153,12 @@ class MobileScannerWebPlugin {
         'videoHeight': barCodeReader.videoHeight,
         'torchable': hasTorch,
       };
-    } catch (e) {
-      throw PlatformException(code: 'MobileScannerWeb', message: '$e');
+    } catch (e, stackTrace) {
+      throw PlatformException(
+        code: 'MobileScannerWeb',
+        message: '$e',
+        details: stackTrace.toString(),
+      );
     }
   }
 
