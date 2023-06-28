@@ -207,9 +207,21 @@ class MobileScannerController {
     } on PlatformException catch (error) {
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
 
-      if (error.code == "MobileScannerWeb") {
-        errorCode = MobileScannerErrorCode.permissionDenied;
+      final String? errorMessage = error.message;
+
+      if (kIsWeb) {
+        if (errorMessage == null) {
+          errorCode = MobileScannerErrorCode.genericError;
+        } else if (errorMessage.contains('NotFoundError') ||
+            errorMessage.contains('NotSupportedError')) {
+          errorCode = MobileScannerErrorCode.unsupported;
+        } else if (errorMessage.contains('NotAllowedError')) {
+          errorCode = MobileScannerErrorCode.permissionDenied;
+        } else {
+          errorCode = MobileScannerErrorCode.genericError;
+        }
       }
+
       isStarting = false;
 
       throw MobileScannerException(
