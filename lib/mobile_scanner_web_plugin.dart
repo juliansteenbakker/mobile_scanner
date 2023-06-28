@@ -61,6 +61,8 @@ class MobileScannerWebPlugin {
         return _torch(call.arguments);
       case 'stop':
         return cancel();
+      case 'updateScanWindow':
+        return Future<void>.value();
       default:
         throw PlatformException(
           code: 'Unimplemented',
