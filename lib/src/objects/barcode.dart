@@ -92,7 +92,8 @@ class Barcode {
 
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map data)
-      : corners = toCorners((data['corners'] as List?)?.cast<Map<Object?, Object?>>()),
+      : corners = toCorners(
+            (data['corners'] as List?)?.cast<Map<Object?, Object?>>()),
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
@@ -149,8 +150,12 @@ class CalendarEvent {
   /// Create a [CalendarEvent] from native data.
   CalendarEvent.fromNative(Map data)
       : description = data['description'] as String?,
-        start = data['start'] != null ? DateTime.tryParse(data['start'] as String) : null,
-        end = data['end'] != null ? DateTime.tryParse(data['end'] as String) : null,
+        start = data['start'] != null
+            ? DateTime.tryParse(data['start'] as String)
+            : null,
+        end = data['end'] != null
+            ? DateTime.tryParse(data['end'] as String)
+            : null,
         location = data['location'] as String?,
         organizer = data['organizer'] as String?,
         status = data['status'] as String?,
@@ -197,7 +202,9 @@ class ContactInfo {
   /// Create a [ContactInfo] from native data.
   ContactInfo.fromNative(Map data)
       : addresses = List.unmodifiable(
-          (data['addresses'] as List? ?? []).cast<Map>().map(Address.fromNative),
+          (data['addresses'] as List? ?? [])
+              .cast<Map>()
+              .map(Address.fromNative),
         ),
         emails = List.unmodifiable(
           (data['emails'] as List? ?? []).cast<Map>().map(Email.fromNative),
