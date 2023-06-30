@@ -93,7 +93,8 @@ class Barcode {
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map data)
       : corners = toCorners(
-            (data['corners'] as List?)?.cast<Map<Object?, Object?>>()),
+          (data['corners'] as List?)?.cast<Map<Object?, Object?>>(),
+        ),
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
