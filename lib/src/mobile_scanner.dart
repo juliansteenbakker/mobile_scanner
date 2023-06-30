@@ -132,7 +132,6 @@ class _MobileScannerState extends State<MobileScanner>
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     }).catchError((error) {
-      debugPrint('mobile_scanner: $error');
       if (mounted) {
         setState(() {
           _startException = error as MobileScannerException;

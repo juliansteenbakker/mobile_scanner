@@ -50,6 +50,7 @@ class _BarcodeScannerWithControllerState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('With controller')),
       backgroundColor: Colors.black,
       body: Builder(
         builder: (context) {

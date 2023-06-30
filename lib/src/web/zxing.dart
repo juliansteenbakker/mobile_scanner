@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:html';
 import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
@@ -19,6 +20,16 @@ class JsZXingBrowserMultiFormatReader {
 
 @JS()
 @anonymous
+abstract class ResultPoint {
+  /// The x coordinate of the point.
+  external double get x;
+
+  /// The y coordinate of the point.
+  external double get y;
+}
+
+@JS()
+@anonymous
 abstract class Result {
   /// raw text encoded by the barcode
   external String get text;
@@ -28,15 +39,24 @@ abstract class Result {
 
   /// Representing the format of the barcode that was decoded
   external int? format;
+
+  /// Returns the result points of the barcode. These points represent the corners of the barcode.
+  external List<Object?> get resultPoints;
 }
 
 extension ResultExt on Result {
   Barcode toBarcode() {
+    final corners = resultPoints
+        .cast<ResultPoint>()
+        .map((ResultPoint rp) => Offset(rp.x, rp.y))
+        .toList();
+
     final rawBytes = this.rawBytes;
     return Barcode(
       rawValue: text,
       rawBytes: rawBytes != null ? Uint8List.fromList(rawBytes) : null,
       format: barcodeFormat,
+      corners: corners,
     );
   }
 

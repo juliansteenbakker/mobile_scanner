@@ -61,6 +61,8 @@ class MobileScannerWebPlugin {
         return _torch(call.arguments);
       case 'stop':
         return cancel();
+      case 'updateScanWindow':
+        return Future<void>.value();
       default:
         throw PlatformException(
           code: 'Unimplemented',
@@ -111,12 +113,14 @@ class MobileScannerWebPlugin {
             .map((e) => toFormat(e))
             .toList();
       }
+
       final Duration? detectionTimeout;
       if (arguments.containsKey('timeout')) {
         detectionTimeout = Duration(milliseconds: arguments['timeout'] as int);
       } else {
         detectionTimeout = null;
       }
+
       await barCodeReader.start(
         cameraFacing: cameraFacing,
         formats: formats,
@@ -126,20 +130,31 @@ class MobileScannerWebPlugin {
       _barCodeStreamSubscription =
           barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
+          final List<Offset>? corners = code.corners;
+
           controller.add({
             'name': 'barcodeWeb',
             'data': {
               'rawValue': code.rawValue,
               'rawBytes': code.rawBytes,
               'format': code.format.rawValue,
+              'displayValue': code.displayValue,
+              'type': code.type.index,
+              if (corners != null && corners.isNotEmpty)
+                'corners': corners
+                    .map(
+                      (Offset c) => <Object?, Object?>{'x': c.dx, 'y': c.dy},
+                    )
+                    .toList(),
             },
           });
         }
       });
+
       final hasTorch = await barCodeReader.hasTorch();
 
       if (hasTorch && arguments.containsKey('torch')) {
-        barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+        await barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
       }
 
       return {
@@ -148,8 +163,12 @@ class MobileScannerWebPlugin {
         'videoHeight': barCodeReader.videoHeight,
         'torchable': hasTorch,
       };
-    } catch (e) {
-      throw PlatformException(code: 'MobileScannerWeb', message: '$e');
+    } catch (e, stackTrace) {
+      throw PlatformException(
+        code: 'MobileScannerWeb',
+        message: '$e',
+        details: stackTrace.toString(),
+      );
     }
   }
 
