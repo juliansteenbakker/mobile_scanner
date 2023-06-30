@@ -130,12 +130,22 @@ class MobileScannerWebPlugin {
       _barCodeStreamSubscription =
           barCodeReader.detectBarcodeContinuously().listen((code) {
         if (code != null) {
+          final List<Offset>? corners = code.corners;
+
           controller.add({
             'name': 'barcodeWeb',
             'data': {
               'rawValue': code.rawValue,
               'rawBytes': code.rawBytes,
               'format': code.format.rawValue,
+              'displayValue': code.displayValue,
+              'type': code.type.index,
+              if (corners != null && corners.isNotEmpty)
+                'corners': corners
+                    .map(
+                      (Offset c) => <Object?, Object?>{'x': c.dx, 'y': c.dy},
+                    )
+                    .toList(),
             },
           });
         }

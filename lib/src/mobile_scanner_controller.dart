@@ -400,6 +400,10 @@ class MobileScannerController {
                   rawValue: barcode['rawValue'] as String?,
                   rawBytes: barcode['rawBytes'] as Uint8List?,
                   format: toFormat(barcode['format'] as int),
+                  corners: toCorners(
+                    (barcode['corners'] as List<Object?>? ?? [])
+                        .cast<Map<Object?, Object?>>(),
+                  ),
                 ),
             ],
           ),
