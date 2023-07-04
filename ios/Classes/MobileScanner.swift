@@ -227,6 +227,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         for output in captureSession.outputs {
             captureSession.removeOutput(output)
         }
+
+        latestBuffer = nil
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
         registry?.unregisterTexture(textureId)
