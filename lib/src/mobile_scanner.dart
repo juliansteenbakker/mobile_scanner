@@ -132,7 +132,6 @@ class _MobileScannerState extends State<MobileScanner>
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     }).catchError((error) {
-      debugPrint('mobile_scanner: $error');
       if (mounted) {
         setState(() {
           _startException = error as MobileScannerException;
@@ -232,46 +231,43 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return ValueListenableBuilder<MobileScannerArguments?>(
-          valueListenable: _controller.startArguments,
-          builder: (context, value, child) {
-            if (value == null) {
-              return _buildPlaceholderOrError(context, child);
-            }
+    final Size size = MediaQuery.sizeOf(context);
 
-            if (widget.scanWindow != null && scanWindow == null) {
-              scanWindow = calculateScanWindowRelativeToTextureInPercentage(
-                widget.fit,
-                widget.scanWindow!,
-                value.size,
-                Size(constraints.maxWidth, constraints.maxHeight),
+    return ValueListenableBuilder<MobileScannerArguments?>(
+      valueListenable: _controller.startArguments,
+      builder: (context, value, child) {
+        if (value == null) {
+          return _buildPlaceholderOrError(context, child);
+        }
+
+        if (widget.scanWindow != null && scanWindow == null) {
+          scanWindow = calculateScanWindowRelativeToTextureInPercentage(
+            widget.fit,
+            widget.scanWindow!,
+            value.size,
+            size,
+          );
+
+          _controller.updateScanWindow(scanWindow);
+        }
+
+        return ClipRect(
+          child: LayoutBuilder(
+            builder: (_, constraints) {
+              return SizedBox.fromSize(
+                size: constraints.biggest,
+                child: FittedBox(
+                  fit: widget.fit,
+                  child: SizedBox.fromSize(
+                    size: value.size,
+                    child: kIsWeb
+                        ? HtmlElementView(viewType: value.webId!)
+                        : Texture(textureId: value.textureId!),
+                  ),
+                ),
               );
-
-              _controller.updateScanWindow(scanWindow);
-            }
-
-            return ClipRect(
-              child: LayoutBuilder(
-                builder: (_, constraints) {
-                  return SizedBox.fromSize(
-                    size: constraints.biggest,
-                    child: FittedBox(
-                      fit: widget.fit,
-                      child: SizedBox(
-                        width: value.size.width,
-                        height: value.size.height,
-                        child: kIsWeb
-                            ? HtmlElementView(viewType: value.webId!)
-                            : Texture(textureId: value.textureId!),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            );
-          },
+            },
+          ),
         );
       },
     );

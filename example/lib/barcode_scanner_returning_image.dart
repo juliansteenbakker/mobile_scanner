@@ -52,6 +52,7 @@ class _BarcodeScannerReturningImageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: const Text('Returning image')),
       body: SafeArea(
         child: Column(
           children: [

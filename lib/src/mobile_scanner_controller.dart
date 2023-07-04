@@ -18,8 +18,10 @@ class MobileScannerController {
     this.torchEnabled = false,
     this.formats,
     this.returnImage = false,
-    @Deprecated('Instead, use the result of calling `start()` to determine if permissions were granted.')
-        this.onPermissionSet,
+    @Deprecated(
+      'Instead, use the result of calling `start()` to determine if permissions were granted.',
+    )
+    this.onPermissionSet,
     this.autoStart = true,
   });
 
@@ -205,9 +207,21 @@ class MobileScannerController {
     } on PlatformException catch (error) {
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
 
-      if (error.code == "MobileScannerWeb") {
-        errorCode = MobileScannerErrorCode.permissionDenied;
+      final String? errorMessage = error.message;
+
+      if (kIsWeb) {
+        if (errorMessage == null) {
+          errorCode = MobileScannerErrorCode.genericError;
+        } else if (errorMessage.contains('NotFoundError') ||
+            errorMessage.contains('NotSupportedError')) {
+          errorCode = MobileScannerErrorCode.unsupported;
+        } else if (errorMessage.contains('NotAllowedError')) {
+          errorCode = MobileScannerErrorCode.permissionDenied;
+        } else {
+          errorCode = MobileScannerErrorCode.genericError;
+        }
       }
+
       isStarting = false;
 
       throw MobileScannerException(
@@ -386,6 +400,10 @@ class MobileScannerController {
                   rawValue: barcode['rawValue'] as String?,
                   rawBytes: barcode['rawBytes'] as Uint8List?,
                   format: toFormat(barcode['format'] as int),
+                  corners: toCorners(
+                    (barcode['corners'] as List<Object?>? ?? [])
+                        .cast<Map<Object?, Object?>>(),
+                  ),
                 ),
             ],
           ),
