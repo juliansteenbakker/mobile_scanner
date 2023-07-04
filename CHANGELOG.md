@@ -1,6 +1,21 @@
-## 3.2.1
+## 3.3.0
 Bugs fixed:
+* Fixed bug where onDetect method was being called multiple times
 * [Android] Fix Gradle 8 compatibility by adding the `namespace` attribute to the build.gradle.
+
+Improvements:
+* [Android] Upgraded camera2 dependency
+* Added zoomScale value notifier in MobileScannerController for the application to know the zoom scale value set actually.
+  The value is notified from the native SDK(CameraX/AVFoundation).
+* Added resetZoomScale() in MobileScannerController to reset zoom ratio with 1x.
+  Both Android and iOS, if the device have ultra-wide camera, calling setZoomScale with small value causes to use ultra-wide camera and may be diffcult to detect barcodes.
+  resetZoomScale() is useful to use standard camera with zoom 1x.
+  setZoomScale() with the specific value can realize same effect, but added resetZoomScale for avoiding floating point errors.
+  The application can know what zoom scale value is selected actually by subscribing zoomScale above after calling resetZoomScale.
+* [iOS] Call resetZoomScale while starting scan.
+  Android camera is initialized with a zoom of 1x, whereas iOS is initialized with the minimum zoom value, which causes to select the ultra-wide camera unintentionally ([iOS] Impossible to focus and scan the QR code due to picking the wide back camera #554).
+  Fixed this issue by calling resetZoomScale
+* [iOS] Remove zoom animation with ramp function to match Android behavior.
 
 ## 3.2.0
 Improvements:

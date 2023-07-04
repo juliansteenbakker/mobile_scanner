@@ -11,4 +11,7 @@ enum MobileScannerErrorCode {
 
   /// The permission to use the camera was denied.
   permissionDenied,
+
+  /// Scanning is unsupported on the current device.
+  unsupported,
 }
