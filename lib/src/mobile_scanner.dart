@@ -81,17 +81,12 @@ class MobileScanner extends StatefulWidget {
   State<MobileScanner> createState() => _MobileScannerState();
 }
 
-class _MobileScannerState extends State<MobileScanner>
-    with WidgetsBindingObserver {
+class _MobileScannerState extends State<MobileScanner> {
   /// The subscription that listens to barcode detection.
   StreamSubscription<BarcodeCapture>? _barcodesSubscription;
 
   /// The internally managed controller.
   late MobileScannerController _controller;
-
-  /// Whether the controller should resume
-  /// when the application comes back to the foreground.
-  bool _resumeFromBackground = false;
 
   MobileScannerException? _startException;
 
@@ -143,34 +138,9 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
+
     _controller = widget.controller ?? MobileScannerController();
     _startScanner();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    // App state changed before the controller was initialized.
-    if (_controller.isStarting) {
-      return;
-    }
-
-    switch (state) {
-      case AppLifecycleState.resumed:
-        _resumeFromBackground = false;
-        _startScanner();
-        break;
-      case AppLifecycleState.paused:
-        _resumeFromBackground = true;
-        break;
-      case AppLifecycleState.inactive:
-        if (!_resumeFromBackground) {
-          _controller.stop();
-        }
-        break;
-      case AppLifecycleState.detached:
-        break;
-    }
   }
 
   /// the [scanWindow] rect will be relative and scaled to the [widgetSize] not the texture. so it is possible,
@@ -276,7 +246,6 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void dispose() {
     _controller.updateScanWindow(null);
-    WidgetsBinding.instance.removeObserver(this);
     _barcodesSubscription?.cancel();
     _barcodesSubscription = null;
     _controller.dispose();
