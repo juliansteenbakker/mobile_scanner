@@ -9,14 +9,16 @@ Size toSize(Map data) {
   return Size(width, height);
 }
 
-List<Offset>? toCorners(List? data) {
-  if (data != null) {
-    return List.unmodifiable(
-      data.map((e) => Offset((e as Map)['x'] as double, e['y'] as double)),
-    );
-  } else {
+List<Offset>? toCorners(List<Map<Object?, Object?>>? data) {
+  if (data == null) {
     return null;
   }
+
+  return List.unmodifiable(
+    data.map((Map<Object?, Object?> e) {
+      return Offset(e['x']! as double, e['y']! as double);
+    }),
+  );
 }
 
 BarcodeFormat toFormat(int value) {

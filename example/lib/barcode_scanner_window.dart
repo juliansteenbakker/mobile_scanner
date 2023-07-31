@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+import 'package:mobile_scanner_example/scanner_error_widget.dart';
+
 class BarcodeScannerWithScanWindow extends StatefulWidget {
   const BarcodeScannerWithScanWindow({Key? key}) : super(key: key);
 
@@ -32,6 +34,7 @@ class _BarcodeScannerWithScanWindowState
       height: 200,
     );
     return Scaffold(
+      appBar: AppBar(title: const Text('With Scan window')),
       backgroundColor: Colors.black,
       body: Builder(
         builder: (context) {
@@ -46,6 +49,9 @@ class _BarcodeScannerWithScanWindowState
                   setState(() {
                     this.arguments = arguments;
                   });
+                },
+                errorBuilder: (context, error, child) {
+                  return ScannerErrorWidget(error: error);
                 },
                 onDetect: onDetect,
               ),

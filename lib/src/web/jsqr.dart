@@ -20,12 +20,6 @@ class Code {
   external Uint8ClampedList get binaryData;
 }
 
-const jsqrLibrary = JsLibrary(
-  contextName: 'jsQR',
-  url: 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js',
-  usesRequireJs: true,
-);
-
 /// Barcode reader that uses jsQR library.
 /// jsQR supports only QR codes format.
 class JsQrCodeReader extends WebBarcodeReaderBase
@@ -34,9 +28,6 @@ class JsQrCodeReader extends WebBarcodeReaderBase
 
   @override
   bool get isStarted => localMediaStream != null;
-
-  @override
-  List<JsLibrary> get jsLibraries => [jsqrLibrary];
 
   @override
   Future<void> start({
