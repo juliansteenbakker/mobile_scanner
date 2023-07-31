@@ -192,44 +192,59 @@ class _MobileScannerState extends State<MobileScanner>
     Size textureSize,
     Size widgetSize,
   ) {
-    /// map the texture size to get its new size after fitted to screen
-    final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
+    double fittedTextureWidth;
+    double fittedTextureHeight;
 
-    /// create a new rectangle that represents the texture on the screen
-    final minX = widgetSize.width / 2 - fittedTextureSize.destination.width / 2;
-    final minY =
-        widgetSize.height / 2 - fittedTextureSize.destination.height / 2;
-    final textureWindow = Offset(minX, minY) & fittedTextureSize.destination;
+    switch (fit) {
+      case BoxFit.contain:
+        final widthRatio = widgetSize.width / textureSize.width;
+        final heightRatio = widgetSize.height / textureSize.height;
+        final scale = widthRatio < heightRatio ? widthRatio : heightRatio;
+        fittedTextureWidth = textureSize.width * scale;
+        fittedTextureHeight = textureSize.height * scale;
+        break;
 
-    /// create a new scan window and with only the area of the rect intersecting the texture window
-    final scanWindowInTexture = scanWindow.intersect(textureWindow);
+      case BoxFit.cover:
+        final widthRatio = widgetSize.width / textureSize.width;
+        final heightRatio = widgetSize.height / textureSize.height;
+        final scale = widthRatio > heightRatio ? widthRatio : heightRatio;
+        fittedTextureWidth = textureSize.width * scale;
+        fittedTextureHeight = textureSize.height * scale;
+        break;
 
-    /// update the scanWindow left and top to be relative to the texture not the widget
-    final newLeft = scanWindowInTexture.left - textureWindow.left;
-    final newTop = scanWindowInTexture.top - textureWindow.top;
-    final newWidth = scanWindowInTexture.width;
-    final newHeight = scanWindowInTexture.height;
+      case BoxFit.fill:
+        fittedTextureWidth = widgetSize.width;
+        fittedTextureHeight = widgetSize.height;
+        break;
 
-    /// new scanWindow that is adapted to the boxfit and relative to the texture
-    final windowInTexture = Rect.fromLTWH(newLeft, newTop, newWidth, newHeight);
+      case BoxFit.fitHeight:
+        final ratio = widgetSize.height / textureSize.height;
+        fittedTextureWidth = textureSize.width * ratio;
+        fittedTextureHeight = widgetSize.height;
+        break;
 
-    /// get the scanWindow as a percentage of the texture
-    final percentageLeft =
-        windowInTexture.left / fittedTextureSize.destination.width;
-    final percentageTop =
-        windowInTexture.top / fittedTextureSize.destination.height;
-    final percentageRight =
-        windowInTexture.right / fittedTextureSize.destination.width;
-    final percentagebottom =
-        windowInTexture.bottom / fittedTextureSize.destination.height;
+      case BoxFit.fitWidth:
+        final ratio = widgetSize.width / textureSize.width;
+        fittedTextureWidth = widgetSize.width;
+        fittedTextureHeight = textureSize.height * ratio;
+        break;
 
-    /// this rectangle can be send to native code and used to cut out a rectangle of the scan image
-    return Rect.fromLTRB(
-      percentageLeft,
-      percentageTop,
-      percentageRight,
-      percentagebottom,
-    );
+      case BoxFit.none:
+      case BoxFit.scaleDown:
+        fittedTextureWidth = textureSize.width;
+        fittedTextureHeight = textureSize.height;
+        break;
+    }
+
+    final offsetX = (widgetSize.width - fittedTextureWidth) / 2;
+    final offsetY = (widgetSize.height - fittedTextureHeight) / 2;
+
+    final left = (scanWindow.left - offsetX) / fittedTextureWidth;
+    final top = (scanWindow.top - offsetY) / fittedTextureHeight;
+    final right = (scanWindow.right - offsetX) / fittedTextureWidth;
+    final bottom = (scanWindow.bottom - offsetY) / fittedTextureHeight;
+
+    return Rect.fromLTRB(left, top, right, bottom);
   }
 
   Rect? scanWindow;
