@@ -255,34 +255,40 @@ class _MobileScannerState extends State<MobileScanner>
 
           _controller.updateScanWindow(scanWindow);
         }
-
-            return Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRect(
-                  child: LayoutBuilder(
-                    builder: (_, constraints) {
-                      return SizedBox.fromSize(
-                        size: constraints.biggest,
-                        child: FittedBox(
-                          fit: widget.fit,
-                          child: SizedBox(
-                            width: value.size.width,
-                            height: value.size.height,
-                            child: kIsWeb
-                              ? HtmlElementView(viewType: value.webId!)
-                              : Texture(textureId: value.textureId!),
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                if (widget.overlay != null)
-                  widget.overlay!
-              ],
-            );
+        if (widget.overlay != null) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              _scanner(value.size, value.webId, value.textureId),
+              widget.overlay!
+            ],
+          );
+        } else {
+          return _scanner(value.size, value.webId, value.textureId);
+        }
       },
+    );
+  }
+
+  Widget _scanner(Size size, String? webId, int? textureId) {
+    return ClipRect(
+      child: LayoutBuilder(
+        builder: (_, constraints) {
+          return SizedBox.fromSize(
+            size: constraints.biggest,
+            child: FittedBox(
+              fit: widget.fit,
+              child: SizedBox(
+                width: size.width,
+                height: size.height,
+                child: kIsWeb
+                    ? HtmlElementView(viewType: webId!)
+                    : Texture(textureId: textureId!),
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 
