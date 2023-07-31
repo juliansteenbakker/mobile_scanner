@@ -62,6 +62,10 @@ class MobileScanner extends StatefulWidget {
   /// Default: false
   final bool startDelay;
 
+  /// The overlay which will be painted above the scanner when has started successful.
+  /// Will no be pointed when an error occurs or the scanner hasn't be started yet.
+  final Widget? overlay;
+
   /// Create a new [MobileScanner] using the provided [controller]
   /// and [onBarcodeDetected] callback.
   const MobileScanner({
@@ -74,6 +78,7 @@ class MobileScanner extends StatefulWidget {
     this.placeholderBuilder,
     this.scanWindow,
     this.startDelay = false,
+    this.overlay,
     super.key,
   });
 
@@ -251,24 +256,32 @@ class _MobileScannerState extends State<MobileScanner>
           _controller.updateScanWindow(scanWindow);
         }
 
-        return ClipRect(
-          child: LayoutBuilder(
-            builder: (_, constraints) {
-              return SizedBox.fromSize(
-                size: constraints.biggest,
-                child: FittedBox(
-                  fit: widget.fit,
-                  child: SizedBox.fromSize(
-                    size: value.size,
-                    child: kIsWeb
-                        ? HtmlElementView(viewType: value.webId!)
-                        : Texture(textureId: value.textureId!),
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                ClipRect(
+                  child: LayoutBuilder(
+                    builder: (_, constraints) {
+                      return SizedBox.fromSize(
+                        size: constraints.biggest,
+                        child: FittedBox(
+                          fit: widget.fit,
+                          child: SizedBox(
+                            width: value.size.width,
+                            height: value.size.height,
+                            child: kIsWeb
+                              ? HtmlElementView(viewType: value.webId!)
+                              : Texture(textureId: value.textureId!),
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
-              );
-            },
-          ),
-        );
+                if (widget.overlay != null)
+                  widget.overlay!
+              ],
+            );
       },
     );
   }
