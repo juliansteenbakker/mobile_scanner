@@ -1,3 +1,6 @@
+## 3.4.1
+Change MediaQuery.sizeOf(context) to of(context).size for backwards compatibility
+
 ## 3.4.0
 New Features:
 * This PR adds an option to add an overlay to the scanner which is only visible when the scanner has started. (thanks @svenopdehipt !)
