@@ -1,3 +1,31 @@
+## 3.4.0
+New Features:
+* This PR adds an option to add an overlay to the scanner which is only visible when the scanner has started. (thanks @svenopdehipt !)
+
+Improvements:
+* fix a bug in the static interop binding of PhotoCapabilities (thanks @navaronbracke !)
+* [Web] add the corners from the ZXing result to the barcode on web (thanks @navaronbracke !)
+* update the example app web entrypoint to the latest template by running flutter create . --platforms=web (thanks @navaronbracke !)
+* add better handling for the case where scanning barcodes is unsupported (for example a desktop running the browser sample) (thanks @navaronbracke !)
+* [Web] fix the permission denied handling on the web, by using the NotAllowedError error message as defined by MDN (thanks @navaronbracke !)
+* add app bars with back buttons to the example app (so that you can go back easily) (thanks @navaronbracke !)
+
+* [iOS] Implements a fix from issue iOS After first QR Code Scan, When Scanning again, First Image stays on Camera buffer (thanks @FlockiiX !)
+
+* By dynamically adjusting the positioning and scaling of the scan window relative to the texture, the package ensures optimal coverage and alignment for scanning targets. (thanks @sdkysfzai !)
+* In the original package, If there are multiple barcode/qrcodes in the screen, the scan would randomly pick up any barcode/qrcode that shows in the screen, This upgrade fixes it and picks on the qrcode/barcode that is in the center of the camera. (thanks @sdkysfzai !)
+* In the original package if you changed the camera size, it would still pick scans even if the barcode are not shown in the screen, This issue is also fixed in the upgraded packaged. (thanks @sdkysfzai !)
+
+* [iOS] This removes a threading warning (and potentially jank). (thanks @ened !)
+* [Android] fix(ScanImage): fix android image result is not correct format and orientation (thanks @phanbaohuy96 !)
+
+* [iOS] Respect detectionTimeout on iOS devices, instead of arbitrarily waiting 10 frames (thanks @jorgenpt !)
+* [iOS] Don't start a second scan until the first one is done, to keep memory usage more fixed if the device is slow (thanks @jorgenpt !)
+* [Android] This PR ensure that the camera is not stopped in the callback. (thanks @g123k !)
+* [macOS] Fix some macOS build errors (thanks @svenopdehipt !)
+
+* [Android] Fixed an issue which caused the App Lifecycle States to not work correctly on Android. (thanks @androi7 !)
+
 ## 3.3.0
 Bugs fixed:
 * Fixed bug where onDetect method was being called multiple times
