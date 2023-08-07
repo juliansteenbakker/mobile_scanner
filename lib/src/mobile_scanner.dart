@@ -167,7 +167,6 @@ class _MobileScannerState extends State<MobileScanner>
         }
         break;
       case AppLifecycleState.paused:
-        _resumeFromBackground = true;
         break;
       case AppLifecycleState.inactive:
         _resumeFromBackground = true;
