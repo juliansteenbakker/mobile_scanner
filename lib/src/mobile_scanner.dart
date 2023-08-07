@@ -248,7 +248,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.sizeOf(context);
+    final Size size = MediaQuery.of(context).size;
 
     return ValueListenableBuilder<MobileScannerArguments?>(
       valueListenable: _controller.startArguments,
