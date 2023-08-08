@@ -226,7 +226,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
 
-        timeoutSeconds = Double(timeoutMs) * 1000.0
+        timeoutSeconds = Double(timeoutMs) / 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
 
         // Set the camera to use
