@@ -28,6 +28,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
     var timeoutSeconds: Double = 0
+  
+  var symbologies:[VNBarcodeSymbology] = []
     
     
 //    var analyzeMode: Int = 0
@@ -118,7 +120,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 orientation: .right)
             
                 do {
-                  try imageRequestHandler.perform([VNDetectBarcodesRequest { [self] (request, error) in
+                  let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [self] (request, error) in
                     imagesCurrentlyBeingProcessed -= 1
                       if error == nil {
                           if let results = request.results as? [VNBarcodeObservation] {
@@ -131,7 +133,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                     }
 
                                     let barcodeType = String(barcode.symbology.rawValue).replacingOccurrences(of: "VNBarcodeSymbology", with: "")
-                                    let event: [String: Any?] = ["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcodeType]]
+                                  let event: [String: Any?] = ["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]]
                                     self.sink?(event)
 
         //                                    if barcodeType == "QR" {
@@ -144,7 +146,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                       } else {
                           print(error!.localizedDescription)
                       }
-                  }])
+                  })
+                  if(symbologies.isEmpty == false){
+                    // add the symbologies the user wishes to support
+                    barcodeRequest.symbologies = symbologies
+                  }
+                  try imageRequestHandler.perform([barcodeRequest])
                 } catch {
                   print(error)
                 }
@@ -225,6 +232,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let facing: Int = argReader.int(key: "facing") ?? 1
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
+      symbologies = argReader.toSymbology()
 
         timeoutSeconds = Double(timeoutMs) / 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
@@ -365,16 +373,104 @@ class MapArgumentReader {
     return (args?[key] as? NSNumber)?.intValue
   }
     
-    func bool(key: String) -> Bool? {
-      return (args?[key] as? NSNumber)?.boolValue
-    }
-
+  func bool(key: String) -> Bool? {
+    return (args?[key] as? NSNumber)?.boolValue
+  }
+  
   func stringArray(key: String) -> [String]? {
     return args?[key] as? [String]
+  }
+  
+  func toSymbology() -> [VNBarcodeSymbology] {
+    guard let syms:[Int] = args?["formats"] as? [Int] else {
+      return []
+    }
+    if(syms.contains(0)){
+      return []
+    }
+    var barcodeFormats:[VNBarcodeSymbology] = []
+    syms.forEach { id in
+      if let bc:VNBarcodeSymbology = VNBarcodeSymbology.fromInt(id) {
+        barcodeFormats.append(bc)
+      }
+    }
+    return barcodeFormats
   }
 
   func floatArray(key: String) -> [CGFloat]? {
     return args?[key] as? [CGFloat]
+  }
+  
+}
+
+extension VNBarcodeSymbology {
+  
+  static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
+    if #available(macOS 12.0, *) {
+      if(mapValue == 8){
+        return VNBarcodeSymbology.codabar
+      }
+    }
+    switch(mapValue){
+    case 1:
+      return VNBarcodeSymbology.code128
+    case 2:
+      return VNBarcodeSymbology.code39
+    case 4:
+      return VNBarcodeSymbology.code93
+    case 16:
+      return VNBarcodeSymbology.dataMatrix
+    case 32:
+      return VNBarcodeSymbology.ean13
+    case 64:
+      return VNBarcodeSymbology.ean8
+    case 128:
+      return VNBarcodeSymbology.itf14
+    case 256:
+      return VNBarcodeSymbology.qr
+    case 1024:
+      return VNBarcodeSymbology.upce
+    case 2048:
+      return VNBarcodeSymbology.pdf417
+    case 4096:
+      return VNBarcodeSymbology.aztec
+    default:
+      return nil
+    }
+  }
+  
+  var toInt:Int? {
+    if #available(macOS 12.0, *) {
+      if(self == VNBarcodeSymbology.codabar){
+        return 8
+      }
+    }
+    switch(self){
+    case VNBarcodeSymbology.code128:
+      return 1
+    case VNBarcodeSymbology.code39:
+      return 2
+    case VNBarcodeSymbology.code93:
+      return 4
+    case VNBarcodeSymbology.dataMatrix:
+      return 16
+    case VNBarcodeSymbology.ean13:
+      return 32
+    case VNBarcodeSymbology.ean8:
+      return 64
+    case VNBarcodeSymbology.itf14:
+      return 128
+    case VNBarcodeSymbology.qr:
+      return 256
+    case VNBarcodeSymbology.upce:
+      return 1024
+    case VNBarcodeSymbology.pdf417:
+      return 2048
+    case VNBarcodeSymbology.aztec:
+      return 4096
+    default:
+      return -1;
+    }
   }
   
 }
