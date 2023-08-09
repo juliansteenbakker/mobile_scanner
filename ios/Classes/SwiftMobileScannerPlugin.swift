@@ -78,7 +78,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         case "request":
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         case "start":
-            start(call, result)
+            Task {
+                await start(call, result)
+            }
         case "stop":
             stop(result)
         case "torch":
@@ -97,7 +99,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     }
     
     /// Parses all parameters and starts the mobileScanner
-    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) async {
         let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
@@ -120,9 +122,16 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed) { parameters in
-                result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
-            }
+            let parameters = try await mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed)
+            
+                result([
+                    "textureId": parameters.textureId,
+                    "size": [
+                        "width": parameters.width,
+                        "height": parameters.height
+                    ],
+                    "torchable": parameters.hasTorch
+                ] as [String : Any])
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called start() while already started!",

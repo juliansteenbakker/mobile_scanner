@@ -120,7 +120,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode, detectionSpeed: DetectionSpeed) async throws -> MobileScannerStartParameters {
         self.detectionSpeed = detectionSpeed
         if (device != nil) {
             throw MobileScannerError.alreadyStarted
@@ -197,36 +197,41 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             }
         }
         captureSession.commitConfiguration()
+        
+        await withCheckedContinuation { continuation  in
+            backgroundQueue.async {
+                self.captureSession.startRunning()
 
-        backgroundQueue.async {
-            self.captureSession.startRunning()
-            // Enable the torch if parameter is set and torch is available
-            // torch should be set after 'startRunning' is called
-            do {
-                try self.toggleTorch(torch)
-            } catch {
-                print("Failed to set initial torch state.")
-            }
+                // Enable the torch if parameter is set and torch is available
+                // torch should be set after 'startRunning' is called
+                do {
+                    try self.toggleTorch(torch)
+                } catch {
+                    print("Failed to set initial torch state.")
+                }
 
-            do {
-                try self.resetScale()
-            } catch {
-                print("Failed to reset zoom scale")
-            }
-
-            let dimensions = CMVideoFormatDescriptionGetDimensions(self.device.activeFormat.formatDescription)
-
-            DispatchQueue.main.async {
-                completion(
-                    MobileScannerStartParameters(
-                        width: Double(dimensions.height),
-                        height: Double(dimensions.width),
-                        hasTorch: self.device.hasTorch,
-                        textureId: self.textureId
-                    )
-                )
+                do {
+                    try self.resetScale()
+                } catch {
+                    print("Failed to reset zoom scale")
+                }
+                
+                continuation.resume()
             }
         }
+        
+        let dimensions = CMVideoFormatDescriptionGetDimensions(self.device.activeFormat.formatDescription)
+        
+        if self.device == nil {
+            throw MobileScannerError.noCamera
+        }
+
+        return MobileScannerStartParameters(
+                width: Double(dimensions.height),
+                height: Double(dimensions.width),
+                hasTorch: self.device.hasTorch,
+                textureId: self.textureId
+        )
     }
 
     /// Stop scanning for barcodes
