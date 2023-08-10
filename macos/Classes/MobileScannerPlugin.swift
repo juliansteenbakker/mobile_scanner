@@ -2,6 +2,7 @@ import AVFoundation
 import FlutterMacOS
 import Vision
 import AppKit
+import VideoToolbox
 
 public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
@@ -17,8 +18,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var captureSession: AVCaptureSession!
     
     // The selected camera
-    var device: AVCaptureDevice!
-    
+    weak var device: AVCaptureDevice!
+
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
 
@@ -95,7 +96,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     var nextScanTime = 0.0
-    var imagesCurrentlyBeingProcessed = 0
+    var imagesCurrentlyBeingProcessed = false
     
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
@@ -111,50 +112,53 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         registry.textureFrameAvailable(textureId)
         
         let currentTime = Date().timeIntervalSince1970
-        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == 0;
+        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == false
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
             nextScanTime = currentTime + timeoutSeconds
-            imagesCurrentlyBeingProcessed += 1
-            let imageRequestHandler = VNImageRequestHandler(
-                cvPixelBuffer: latestBuffer,
-                orientation: .right)
-            
+            imagesCurrentlyBeingProcessed = true
+            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                if(self!.latestBuffer == nil){
+                    return
+                }
+                var cgImage: CGImage?
+                VTCreateCGImageFromCVPixelBuffer(self!.latestBuffer, options: nil, imageOut: &cgImage)
+                let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
                 do {
-                  let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [self] (request, error) in
-                    imagesCurrentlyBeingProcessed -= 1
-                      if error == nil {
-                          if let results = request.results as? [VNBarcodeObservation] {
+                    let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
+                        self?.imagesCurrentlyBeingProcessed = false
+                        if error == nil {
+                            if let results = request.results as? [VNBarcodeObservation] {
                                 for barcode in results {
-                                    if self.scanWindow != nil {
-                                        let match = self.isbarCodeInScanWindow(self.scanWindow!, barcode, self.latestBuffer)
-                                        if (!match) {
+                                    if self?.scanWindow != nil && cgImage != nil {
+                                        let match = self?.isbarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!)
+                                        if (match == false) {
                                             continue
                                         }
                                     }
 
-                                    let barcodeType = String(barcode.symbology.rawValue).replacingOccurrences(of: "VNBarcodeSymbology", with: "")
-                                  let event: [String: Any?] = ["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]]
-                                    self.sink?(event)
-
-        //                                    if barcodeType == "QR" {
-        //                                        let image = CIImage(image: source)
-        //                                        image?.cropping(to: barcode.boundingBox)
-        //                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
-        //                                    }
-                                      }
-                          }
-                      } else {
-                          print(error!.localizedDescription)
-                      }
-                  })
-                  if(symbologies.isEmpty == false){
-                    // add the symbologies the user wishes to support
-                    barcodeRequest.symbologies = symbologies
-                  }
-                  try imageRequestHandler.perform([barcodeRequest])
+                                    DispatchQueue.main.async {
+                                        self?.sink?(["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]] as [String : Any])
+                                    }
+//                                   if barcodeType == "QR" {
+//                                        let image = CIImage(image: source)
+//                                        image?.cropping(to: barcode.boundingBox)
+//                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
+//                                    }
+                                }
+                            }
+                        } else {
+                            print(error!.localizedDescription)
+                        }
+                    })
+                    if(self?.symbologies.isEmpty == false){
+                        // add the symbologies the user wishes to support
+                        barcodeRequest.symbologies = self!.symbologies
+                    }
+                    try imageRequestHandler.perform([barcodeRequest])
                 } catch {
-                  print(error)
+                    print(error)
                 }
+            }
         }
     }
     
@@ -187,10 +191,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let scanWindowData: Array? = argReader.floatArray(key: "rect")
 
         if (scanWindowData == nil) {
-            return 
+            return
         }
 
-        let minX = scanWindowData![0] 
+        let minX = scanWindowData![0]
         let minY = scanWindowData![1]
 
         let width = scanWindowData![2]  - minX
@@ -198,9 +202,23 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
     }
+    
+    func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CGImage) -> Bool {
+
+        let imageWidth = CGFloat(inputImage.width);
+        let imageHeight = CGFloat(inputImage.height);
+
+        let minX = scanWindow.minX * imageWidth
+        let minY = scanWindow.minY * imageHeight
+        let width = scanWindow.width * imageWidth
+        let height = scanWindow.height * imageHeight
+
+        let scaledScanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        return scaledScanWindow.contains(barcode.boundingBox)
+    }
 
     func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CVImageBuffer) -> Bool {
-       let size = CVImageBufferGetEncodedSize(inputImage)
+        let size = CVImageBufferGetEncodedSize(inputImage)
 
         let imageWidth = size.width;
         let imageHeight = size.height;
@@ -217,22 +235,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "Called start() while already started!",
-                                    details: nil))
+                                message: "Called start() while already started!",
+                                details: nil))
             return
         }
-        
+
         textureId = registry.register(self)
         captureSession = AVCaptureSession()
-        
+
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
-        
-//        let ratio: Int = argReader.int(key: "ratio")
-        let torch: Bool = argReader.bool(key: "torch") ?? false
-        let facing: Int = argReader.int(key: "facing") ?? 1
-        let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
-        let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
-      symbologies = argReader.toSymbology()
+
+        // let ratio: Int = argReader.int(key: "ratio")
+        let torch:Bool = argReader.bool(key: "torch") ?? false
+        let facing:Int = argReader.int(key: "facing") ?? 1
+        let speed:Int = argReader.int(key: "speed") ?? 0
+        let timeoutMs:Int = argReader.int(key: "timeout") ?? 0
+        symbologies = argReader.toSymbology()
 
         timeoutSeconds = Double(timeoutMs) / 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
@@ -249,8 +267,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         if (device == nil) {
             result(FlutterError(code: "MobileScanner",
-                                    message: "No camera found or failed to open camera!",
-                                    details: nil))
+                                message: "No camera found or failed to open camera!",
+                                details: nil))
             return
         }
         
@@ -258,10 +276,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         if (device.hasTorch) {
             do {
                 try device.lockForConfiguration()
-            device.torchMode = torch ? .on : .off
-            device.unlockForConfiguration()
-        } catch {
-            result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+                device.torchMode = torch ? .on : .off
+                device.unlockForConfiguration()
+            } catch {
+                result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
             }
         }
         
@@ -285,7 +303,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession.addOutput(videoOutput)
         for connection in videoOutput.connections {
-//            connection.videoOrientation = .portrait
+            // connection.videoOrientation = .portrait
             if position == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
             }
@@ -359,118 +377,117 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
 class MapArgumentReader {
   
-  let args: [String: Any]?
-  
-  init(_ args: [String: Any]?) {
-    self.args = args
-  }
-  
-  func string(key: String) -> String? {
-    return args?[key] as? String
-  }
-  
-  func int(key: String) -> Int? {
-    return (args?[key] as? NSNumber)?.intValue
-  }
-    
-  func bool(key: String) -> Bool? {
-    return (args?[key] as? NSNumber)?.boolValue
-  }
-  
-  func stringArray(key: String) -> [String]? {
-    return args?[key] as? [String]
-  }
-  
-  func toSymbology() -> [VNBarcodeSymbology] {
-    guard let syms:[Int] = args?["formats"] as? [Int] else {
-      return []
-    }
-    if(syms.contains(0)){
-      return []
-    }
-    var barcodeFormats:[VNBarcodeSymbology] = []
-    syms.forEach { id in
-      if let bc:VNBarcodeSymbology = VNBarcodeSymbology.fromInt(id) {
-        barcodeFormats.append(bc)
-      }
-    }
-    return barcodeFormats
-  }
+    let args: [String: Any]?
 
-  func floatArray(key: String) -> [CGFloat]? {
-    return args?[key] as? [CGFloat]
-  }
+    init(_ args: [String: Any]?) {
+        self.args = args
+    }
+
+    func string(key: String) -> String? {
+        return args?[key] as? String
+    }
+
+    func int(key: String) -> Int? {
+        return (args?[key] as? NSNumber)?.intValue
+    }
+
+    func bool(key: String) -> Bool? {
+        return (args?[key] as? NSNumber)?.boolValue
+    }
+
+    func stringArray(key: String) -> [String]? {
+        return args?[key] as? [String]
+    }
+
+    func toSymbology() -> [VNBarcodeSymbology] {
+        guard let syms:[Int] = args?["formats"] as? [Int] else {
+            return []
+        }
+        if(syms.contains(0)){
+            return []
+        }
+        var barcodeFormats:[VNBarcodeSymbology] = []
+        syms.forEach { id in
+            if let bc:VNBarcodeSymbology = VNBarcodeSymbology.fromInt(id) {
+                barcodeFormats.append(bc)
+            }
+        }
+        return barcodeFormats
+    }
+
+    func floatArray(key: String) -> [CGFloat]? {
+        return args?[key] as? [CGFloat]
+    }
   
 }
 
 extension VNBarcodeSymbology {
   
-  static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
-    if #available(macOS 12.0, *) {
-      if(mapValue == 8){
-        return VNBarcodeSymbology.codabar
-      }
+    static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
+        if #available(macOS 12.0, *) {
+            if(mapValue == 8){
+                return VNBarcodeSymbology.codabar
+            }
+        }
+        switch(mapValue){
+        case 1:
+            return VNBarcodeSymbology.code128
+        case 2:
+            return VNBarcodeSymbology.code39
+        case 4:
+            return VNBarcodeSymbology.code93
+        case 16:
+            return VNBarcodeSymbology.dataMatrix
+        case 32:
+            return VNBarcodeSymbology.ean13
+        case 64:
+            return VNBarcodeSymbology.ean8
+        case 128:
+            return VNBarcodeSymbology.itf14
+        case 256:
+            return VNBarcodeSymbology.qr
+        case 1024:
+            return VNBarcodeSymbology.upce
+        case 2048:
+            return VNBarcodeSymbology.pdf417
+        case 4096:
+            return VNBarcodeSymbology.aztec
+        default:
+            return nil
+        }
     }
-    switch(mapValue){
-    case 1:
-      return VNBarcodeSymbology.code128
-    case 2:
-      return VNBarcodeSymbology.code39
-    case 4:
-      return VNBarcodeSymbology.code93
-    case 16:
-      return VNBarcodeSymbology.dataMatrix
-    case 32:
-      return VNBarcodeSymbology.ean13
-    case 64:
-      return VNBarcodeSymbology.ean8
-    case 128:
-      return VNBarcodeSymbology.itf14
-    case 256:
-      return VNBarcodeSymbology.qr
-    case 1024:
-      return VNBarcodeSymbology.upce
-    case 2048:
-      return VNBarcodeSymbology.pdf417
-    case 4096:
-      return VNBarcodeSymbology.aztec
-    default:
-      return nil
+
+    var toInt:Int? {
+        if #available(macOS 12.0, *) {
+            if(self == VNBarcodeSymbology.codabar){
+                return 8
+            }
+        }
+        switch(self){
+        case VNBarcodeSymbology.code128:
+            return 1
+        case VNBarcodeSymbology.code39:
+            return 2
+        case VNBarcodeSymbology.code93:
+            return 4
+        case VNBarcodeSymbology.dataMatrix:
+            return 16
+        case VNBarcodeSymbology.ean13:
+            return 32
+        case VNBarcodeSymbology.ean8:
+            return 64
+        case VNBarcodeSymbology.itf14:
+            return 128
+        case VNBarcodeSymbology.qr:
+            return 256
+        case VNBarcodeSymbology.upce:
+            return 1024
+        case VNBarcodeSymbology.pdf417:
+            return 2048
+        case VNBarcodeSymbology.aztec:
+            return 4096
+        default:
+            return -1;
+        }
     }
-  }
-  
-  var toInt:Int? {
-    if #available(macOS 12.0, *) {
-      if(self == VNBarcodeSymbology.codabar){
-        return 8
-      }
-    }
-    switch(self){
-    case VNBarcodeSymbology.code128:
-      return 1
-    case VNBarcodeSymbology.code39:
-      return 2
-    case VNBarcodeSymbology.code93:
-      return 4
-    case VNBarcodeSymbology.dataMatrix:
-      return 16
-    case VNBarcodeSymbology.ean13:
-      return 32
-    case VNBarcodeSymbology.ean8:
-      return 64
-    case VNBarcodeSymbology.itf14:
-      return 128
-    case VNBarcodeSymbology.qr:
-      return 256
-    case VNBarcodeSymbology.upce:
-      return 1024
-    case VNBarcodeSymbology.pdf417:
-      return 2048
-    case VNBarcodeSymbology.aztec:
-      return 4096
-    default:
-      return -1;
-    }
-  }
-  
 }
