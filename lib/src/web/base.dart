@@ -80,7 +80,7 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
         'video': VideoOptions(
           facingMode:
               cameraFacing == CameraFacing.front ? 'user' : 'environment',
-        )
+        ),
       };
     } else {
       constraints = {'video': true};
@@ -147,8 +147,8 @@ mixin InternalTorchDetection on InternalStreamCreation {
       final track = localMediaStream?.getVideoTracks();
       await track?.first.applyConstraints({
         'advanced': [
-          {'torch': enabled}
-        ]
+          {'torch': enabled},
+        ],
       });
     }
   }
