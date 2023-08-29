@@ -264,6 +264,7 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
     };
     controller.onCancel = () {
       _reader?.stopContinuousDecode();
+      controller.close();
     };
     return controller.stream;
   }
