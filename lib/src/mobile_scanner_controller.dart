@@ -384,7 +384,7 @@ class MobileScannerController {
             barcodes: [
               Barcode(
                 rawValue: (data as Map)['payload'] as String?,
-              )
+              ),
             ],
           ),
         );
