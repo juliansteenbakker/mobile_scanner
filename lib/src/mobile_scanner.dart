@@ -248,36 +248,38 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   Widget build(BuildContext context) {
-    final Size size = MediaQuery.of(context).size;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return ValueListenableBuilder<MobileScannerArguments?>(
+          valueListenable: _controller.startArguments,
+          builder: (context, value, child) {
+            if (value == null) {
+              return _buildPlaceholderOrError(context, child);
+            }
 
-    return ValueListenableBuilder<MobileScannerArguments?>(
-      valueListenable: _controller.startArguments,
-      builder: (context, value, child) {
-        if (value == null) {
-          return _buildPlaceholderOrError(context, child);
-        }
+            if (widget.scanWindow != null && scanWindow == null) {
+              scanWindow = calculateScanWindowRelativeToTextureInPercentage(
+                widget.fit,
+                widget.scanWindow!,
+                value.size,
+                Size(constraints.maxWidth, constraints.maxHeight),
+              );
 
-        if (widget.scanWindow != null && scanWindow == null) {
-          scanWindow = calculateScanWindowRelativeToTextureInPercentage(
-            widget.fit,
-            widget.scanWindow!,
-            value.size,
-            size,
-          );
-
-          _controller.updateScanWindow(scanWindow);
-        }
-        if (widget.overlay != null) {
-          return Stack(
-            alignment: Alignment.center,
-            children: [
-              _scanner(value.size, value.webId, value.textureId),
-              widget.overlay!,
-            ],
-          );
-        } else {
-          return _scanner(value.size, value.webId, value.textureId);
-        }
+              _controller.updateScanWindow(scanWindow);
+            }
+            if (widget.overlay != null) {
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  _scanner(value.size, value.webId, value.textureId),
+                  widget.overlay!,
+                ],
+              );
+            } else {
+              return _scanner(value.size, value.webId, value.textureId);
+            }
+          },
+        );
       },
     );
   }
