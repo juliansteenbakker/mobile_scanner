@@ -204,7 +204,7 @@ class _MobileScannerState extends State<MobileScanner>
                 alignment: Alignment.center,
                 children: [
                   _scanner(value.size, value.webId, value.textureId),
-                  widget.overlay!
+                  widget.overlay!,
                 ],
               );
             } else {
