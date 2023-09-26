@@ -22,6 +22,10 @@ import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
 import kotlin.math.roundToInt
+import android.util.Size
+import android.hardware.display.DisplayManager
+import android.view.WindowManager
+import android.content.Context
 
 
 class MobileScanner(
@@ -166,6 +170,24 @@ class MobileScanner(
         return scaledScanWindow.contains(barcodeBoundingBox)
     }
 
+    // Return the best resolution for the actual device orientation.
+    // By default camera set its resolution to width 480 and height 640 which is too low for ML KIT.
+    // If we return an higher resolution than device can handle, camera package take the most relavant one available.
+    // Resolution set must take care of device orientation to preserve aspect ratio.
+    private fun getResolution(windowManager: WindowManager): Size {
+        val rotation = windowManager.defaultDisplay.rotation
+        val widthMaxRes = 480 * 4;
+        val heightMaxRes = 640 * 4;
+
+        val targetResolution = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
+            Size(widthMaxRes, heightMaxRes) // Portrait mode
+        } else {
+            Size(heightMaxRes, widthMaxRes) // Landscape mode
+        }
+        return targetResolution
+    }
+
+
     /**
      * Start barcode scanning by initializing the camera and barcode scanner.
      */
@@ -229,7 +251,19 @@ class MobileScanner(
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-//                analysisBuilder.setTargetResolution(Size(1440, 1920))
+            val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+            val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+            // Set initial resolution
+            analysisBuilder.setTargetResolution(getResolution(windowManager))
+            // Listen future orientation
+            displayManager.registerDisplayListener(object : DisplayManager.DisplayListener {
+                override fun onDisplayAdded(displayId: Int) {}
+                override fun onDisplayRemoved(displayId: Int) {}
+                override fun onDisplayChanged(displayId: Int) {
+                    analysisBuilder.setTargetResolution(getResolution(windowManager))
+                }
+            }, null)
+
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
             camera = cameraProvider!!.bindToLifecycle(
