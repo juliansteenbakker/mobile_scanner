@@ -16,4 +16,5 @@ enum MobileScannerError: Error {
     case zoomWhenStopped
     case zoomError(_ error: Error)
     case analyzerError(_ error: Error)
+    case takePictureError
 }

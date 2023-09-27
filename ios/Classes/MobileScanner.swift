@@ -15,7 +15,7 @@ typealias MobileScannerCallback = ((Array<Barcode>?, Error?, UIImage) -> ())
 typealias TorchModeChangeCallback = ((Int?) -> ())
 typealias ZoomScaleChangeCallback = ((Double?) -> ())
 
-public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture {
+public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture, AVCapturePhotoCaptureDelegate {
     /// Capture session of the camera
     var captureSession: AVCaptureSession!
 
@@ -48,6 +48,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     /// Texture id of the camera preview for Flutter
     private var textureId: Int64!
+    
+    private var photoOutput: AVCapturePhotoOutput?
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
@@ -190,6 +192,11 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
 
         captureSession.addOutput(videoOutput)
+        
+        let photoOutput = AVCapturePhotoOutput()
+        captureSession.addOutput(photoOutput)
+        self.photoOutput = photoOutput
+        
         for connection in videoOutput.connections {
             connection.videoOrientation = .portrait
             if cameraPosition == .front && connection.isVideoMirroringSupported {
@@ -249,6 +256,20 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         textureId = nil
         captureSession = nil
         device = nil
+    }
+    
+    // Define a completion handler that takes Data? as a parameter
+    typealias CaptureCompletionHandler = (Data?) -> Void
+
+    // Store the completion handler as a property
+    private var captureCompletion: CaptureCompletionHandler?
+    
+    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        guard let photoData = photo.fileDataRepresentation() else {
+            captureCompletion?(nil)
+            return
+        }
+        captureCompletion?(photoData)
     }
 
     /// Toggle the flashlight between on and off
@@ -337,6 +358,20 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         scanner.process(image, completion: callback)
     }
+
+    
+    
+    func takePicture(completion: @escaping CaptureCompletionHandler) {
+        guard let photoOutput else {
+            completion(nil)
+            return
+        }
+
+        let photoSettings = AVCapturePhotoSettings()
+        self.captureCompletion = completion
+        photoOutput.capturePhoto(with: photoSettings, delegate: self)
+    }
+    
 
     var i = 0
 

@@ -91,6 +91,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             resetScale(call, result)
         case "updateScanWindow":
             updateScanWindow(call, result)
+        case "takePicture":
+            takePicture(result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -261,4 +263,21 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
             }
         })
     }
+    
+    private func takePicture(_ result: @escaping FlutterResult) {
+        do {
+            try mobileScanner.takePicture { imageData in
+                if let data = imageData {
+                    result(FlutterStandardTypedData(bytes: data))
+                } else {
+                    result(nil)
+                }
+            }
+        } catch MobileScannerError.takePictureError {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error occurred when taking picture!",
+                                details: nil))
+        }
+        
+   }
 }

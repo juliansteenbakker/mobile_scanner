@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 // ignore: unnecessary_import
 import 'dart:typed_data';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
@@ -61,6 +62,7 @@ class MobileScannerController {
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
       StreamController.broadcast();
+
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   static const MethodChannel _methodChannel =
@@ -427,5 +429,11 @@ class MobileScannerController {
     }
 
     await _methodChannel.invokeMethod('updateScanWindow', {'rect': data});
+  }
+
+  Future<Uint8List?> takePicture() async {
+    return _methodChannel
+        .invokeMethod('takePicture')
+        .then((img) => img as Uint8List?);
   }
 }

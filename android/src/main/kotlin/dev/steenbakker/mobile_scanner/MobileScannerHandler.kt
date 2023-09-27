@@ -37,6 +37,7 @@ class MobileScannerHandler(
     }
 
     private var analyzerResult: MethodChannel.Result? = null
+    private var photoResult: MethodChannel.Result? = null
 
     private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
         if (image != null) {
@@ -60,6 +61,10 @@ class MobileScannerHandler(
             "name" to "error",
             "data" to error,
         ))
+    }
+
+    private val takePictureCallback: TakePictureCallback = { captureImage: ByteArray ->
+        photoResult?.success(captureImage)
     }
 
     private var methodChannel: MethodChannel? = null
@@ -114,6 +119,7 @@ class MobileScannerHandler(
                         }
                     }
                 })
+
             "start" -> start(call, result)
             "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
@@ -121,6 +127,7 @@ class MobileScannerHandler(
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(call, result)
             "updateScanWindow" -> updateScanWindow(call)
+            "takePicture" -> takePicture(result)
             else -> result.notImplemented()
         }
     }
@@ -245,5 +252,14 @@ class MobileScannerHandler(
 
     private fun updateScanWindow(call: MethodCall) {
         mobileScanner!!.scanWindow = call.argument<List<Float>?>("rect")
+    }
+
+    private fun takePicture(result: MethodChannel.Result) {
+        photoResult = result
+        try {
+            mobileScanner!!.takePicture(takePictureCallback)
+        } catch (e: TakePictureError) {
+            result.error("MobileScanner", "Error occurred when taking picture!", null)
+        }
     }
 }

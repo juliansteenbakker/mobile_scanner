@@ -39,6 +39,7 @@ class MobileScanner(
     private var scanner = BarcodeScanning.getClient()
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
+    private var imageCapture: ImageCapture? = null
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -185,7 +186,7 @@ class MobileScanner(
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
 
-        if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
+        if (camera?.cameraInfo != null && preview != null && textureEntry != null && imageCapture != null) {
             throw AlreadyStarted()
         }
 
@@ -232,11 +233,16 @@ class MobileScanner(
 //                analysisBuilder.setTargetResolution(Size(1440, 1920))
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
+            val captureBuilder = ImageCapture.Builder().build()
+
+            imageCapture = captureBuilder
+
             camera = cameraProvider!!.bindToLifecycle(
                 activity as LifecycleOwner,
                 cameraPosition,
+                imageCapture,
                 preview,
-                analysis
+                analysis,
             )
 
             // Register the torch listener
@@ -268,8 +274,8 @@ class MobileScanner(
                 )
             )
         }, executor)
-
     }
+
     /**
      * Stop barcode scanning.
      */
@@ -287,6 +293,7 @@ class MobileScanner(
         preview = null
         textureEntry = null
         cameraProvider = null
+        imageCapture = null
     }
 
     private fun isStopped() = camera == null && preview == null
@@ -341,4 +348,29 @@ class MobileScanner(
         camera!!.cameraControl.setZoomRatio(1f)
     }
 
+    fun takePicture(takePictureCallback: TakePictureCallback) {
+        if (imageCapture == null) throw TakePictureError()
+
+        imageCapture!!.takePicture(
+            ContextCompat.getMainExecutor(activity.applicationContext),
+            object : ImageCapture.OnImageCapturedCallback() {
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    val buffer = image.planes[0].buffer
+
+                    val size = buffer.remaining()
+                    val imageData = ByteArray(size)
+
+                    buffer.get(imageData)
+
+                    takePictureCallback(imageData)
+                    buffer.rewind()
+                    image.close()
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    throw TakePictureError()
+                }
+            }
+        )
+    }
 }
