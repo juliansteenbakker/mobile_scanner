@@ -27,7 +27,7 @@ See the example app for detailed implementation information.
 
 ## Platform specific setup
 ### Android
-This package uses by default the **bundled version** of MLKit Barcode-scanning for Android. This version is immediately available to the devicee. But it will increase the size of the app by approximately 3 to 10 MB.
+This package uses by default the **bundled version** of MLKit Barcode-scanning for Android. This version is immediately available to the device. But it will increase the size of the app by approximately 3 to 10 MB.
 
 The alternative is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is downloaded on first use via Google Play Services. It increases the app size by around 600KB.
 
