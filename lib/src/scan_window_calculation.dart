@@ -18,11 +18,11 @@ import 'package:flutter/rendering.dart';
 /// Returns a [Rect] that represents the position and size of the scan window in the texture.
 Rect calculateScanWindowRelativeToTextureInPercentage(
   BoxFit fit,
-  Rect scanWindow,
-  Size textureSize,
-  Size widgetSize,
-) {
-  /// map the texture size to get its new size after fitted to screen
+  Rect scanWindow, {
+  required Size textureSize,
+  required Size widgetSize,
+}) {
+  // Convert the texture size to a size in widget-space, with the box fit applied.
   final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
 
   // Get the correct scaling values depending on the given BoxFit mode
@@ -76,8 +76,9 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
 
   // Clip the scan window in texture coordinates with the texture bounds.
   // This prevents percentages outside the range [0; 1].
-  final clippedScanWndInTexSpace = scanWindowInTexSpace
-      .intersect(Rect.fromLTWH(0, 0, textureSize.width, textureSize.height));
+  final clippedScanWndInTexSpace = scanWindowInTexSpace.intersect(
+    Rect.fromLTWH(0, 0, textureSize.width, textureSize.height),
+  );
 
   // Compute relative rectangle coordinates,
   // with respect to the texture size, i.e. scan image.

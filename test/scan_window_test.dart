@@ -20,49 +20,58 @@ void main() {
 
       test('wl tp: BoxFit.none', () {
         ctx.testScanWindow(
-            BoxFit.none, const Rect.fromLTRB(0.275, 0.4, 0.725, 0.6));
+          BoxFit.none,
+          const Rect.fromLTRB(0.275, 0.4, 0.725, 0.6),
+        );
       });
 
       test('wl tp: BoxFit.fill', () {
         ctx.testScanWindow(
-            BoxFit.fill, const Rect.fromLTRB(0.25, 0.25, 0.75, 0.75));
+          BoxFit.fill,
+          const Rect.fromLTRB(0.25, 0.25, 0.75, 0.75),
+        );
       });
 
       test('wl tp: BoxFit.fitHeight', () {
         ctx.testScanWindow(
-            BoxFit.fitHeight, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.fitHeight,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
 
       test('wl tp: BoxFit.fitWidth', () {
         ctx.testScanWindow(
-            BoxFit.fitWidth,
-            const Rect.fromLTRB(
-                0.25, 0.38888888888888895, 0.75, 0.6111111111111112));
+          BoxFit.fitWidth,
+          const Rect.fromLTRB(0.25, 0.38888888888888895, 0.75, 0.6111111111111112),
+        );
       });
 
       test('wl tp: BoxFit.cover', () {
         // equal to fitWidth
         ctx.testScanWindow(
-            BoxFit.cover,
-            const Rect.fromLTRB(
-                0.25, 0.38888888888888895, 0.75, 0.6111111111111112));
+          BoxFit.cover,
+          const Rect.fromLTRB(0.25, 0.38888888888888895, 0.75, 0.6111111111111112),
+        );
       });
 
       test('wl tp: BoxFit.contain', () {
         // equal to fitHeigth
         ctx.testScanWindow(
-            BoxFit.contain, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.contain,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
 
       test('wl tp: BoxFit.scaleDown', () {
         // equal to fitHeigth, contain
         ctx.testScanWindow(
-            BoxFit.scaleDown, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.scaleDown,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
     });
 
-    group('Widget (landscape) smaller than texture and texture (landscape)',
-        () {
+    group('Widget (landscape) smaller than texture and texture (landscape)', () {
       const textureSize = Size(640.0, 480.0);
       const widgetSize = Size(320.0, 120.0);
       final ctx = ScanWindowTestContext(
@@ -78,40 +87,54 @@ void main() {
 
       test('wl tl: BoxFit.none', () {
         ctx.testScanWindow(
-            BoxFit.none, const Rect.fromLTRB(0.375, 0.4375, 0.625, 0.5625));
+          BoxFit.none,
+          const Rect.fromLTRB(0.375, 0.4375, 0.625, 0.5625),
+        );
       });
 
       test('wl tl: BoxFit.fill', () {
         ctx.testScanWindow(
-            BoxFit.fill, const Rect.fromLTRB(0.25, 0.25, 0.75, 0.75));
+          BoxFit.fill,
+          const Rect.fromLTRB(0.25, 0.25, 0.75, 0.75),
+        );
       });
 
       test('wl tl: BoxFit.fitHeight', () {
         ctx.testScanWindow(
-            BoxFit.fitHeight, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.fitHeight,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
 
       test('wl tl: BoxFit.fitWidth', () {
         ctx.testScanWindow(
-            BoxFit.fitWidth, const Rect.fromLTRB(0.25, 0.375, 0.75, 0.625));
+          BoxFit.fitWidth,
+          const Rect.fromLTRB(0.25, 0.375, 0.75, 0.625),
+        );
       });
 
       test('wl tl: BoxFit.cover', () {
         // equal to fitWidth
         ctx.testScanWindow(
-            BoxFit.cover, const Rect.fromLTRB(0.25, 0.375, 0.75, 0.625));
+          BoxFit.cover,
+          const Rect.fromLTRB(0.25, 0.375, 0.75, 0.625),
+        );
       });
 
       test('wl tl: BoxFit.contain', () {
         // equal to fitHeigth
         ctx.testScanWindow(
-            BoxFit.contain, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.contain,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
 
       test('wl tl: BoxFit.scaleDown', () {
         // equal to fitHeigth, contain
         ctx.testScanWindow(
-            BoxFit.scaleDown, const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75));
+          BoxFit.scaleDown,
+          const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+        );
       });
     });
   });
@@ -132,8 +155,8 @@ class ScanWindowTestContext {
     final actual = calculateScanWindowRelativeToTextureInPercentage(
       fit,
       scanWindow,
-      textureSize,
-      widgetSize,
+      textureSize: textureSize,
+      widgetSize: widgetSize,
     );
 
     // don't use expect(actual, expected) because Rect.toString() only shows one digit after the comma which can be confusing

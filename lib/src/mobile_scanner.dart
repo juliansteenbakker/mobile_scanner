@@ -193,8 +193,8 @@ class _MobileScannerState extends State<MobileScanner>
               scanWindow = calculateScanWindowRelativeToTextureInPercentage(
                 widget.fit,
                 widget.scanWindow!,
-                value.size,
-                constraints.biggest,
+                textureSize: value.size,
+                widgetSize: constraints.biggest,
               );
 
               _controller.updateScanWindow(scanWindow);
