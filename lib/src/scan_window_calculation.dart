@@ -2,14 +2,20 @@ import 'dart:math';
 
 import 'package:flutter/rendering.dart';
 
-/// the [scanWindow] rect will be relative and scaled to the [widgetSize] not the texture. so it is possible,
-/// depending on the [fit], for the [scanWindow] to partially or not at all overlap the [textureSize]
+/// Calculate the scan window rectangle relative to the texture size.
 ///
-/// since when using a [BoxFit] the content will always be centered on its parent. we can convert the rect
-/// to be relative to the texture.
+/// The [scanWindow] rectangle will be relative and scaled to [widgetSize], not [textureSize].
+/// Depending on the given [fit], the [scanWindow] can partially overlap the [textureSize],
+/// or not at all.
 ///
-/// since the textures size and the actuall image (on the texture size) might not be the same, we also need to
-/// calculate the scanWindow in terms of percentages of the texture, not pixels.
+/// Due to using [BoxFit] the content will always be centered on its parent,
+/// which enables converting the rectangle to be relative to the texture.
+///
+/// Because the size of the actual texture and the size of the texture in widget-space
+/// can be different, calculate the size of the scan window in percentages,
+/// rather than pixels.
+///
+/// Returns a [Rect] that represents the position and size of the scan window in the texture.
 Rect calculateScanWindowRelativeToTextureInPercentage(
   BoxFit fit,
   Rect scanWindow,
@@ -25,8 +31,7 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
 
   switch (fit) {
     case BoxFit.fill:
-      // nop
-      // Just use sx and sy
+      // No-op, just use sx and sy.
       break;
     case BoxFit.contain:
       final s = min(sx, sy);
@@ -55,13 +60,13 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
       break;
   }
 
-  // Fit the texture size to the widget rectangle given by the scaling values above
+  // Fit the texture size to the widget rectangle given by the scaling values above.
   final textureWindow = Alignment.center.inscribe(
     Size(textureSize.width * sx, textureSize.height * sy),
     Rect.fromLTWH(0, 0, widgetSize.width, widgetSize.height),
   );
 
-  // Transform the scan window from widget coordinates to texture coordinates
+  // Transform the scan window from widget coordinates to texture coordinates.
   final scanWindowInTexSpace = Rect.fromLTRB(
     (1 / sx) * (scanWindow.left - textureWindow.left),
     (1 / sy) * (scanWindow.top - textureWindow.top),
@@ -74,13 +79,14 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
   final clippedScanWndInTexSpace = scanWindowInTexSpace
       .intersect(Rect.fromLTWH(0, 0, textureSize.width, textureSize.height));
 
-  // Compute relative rectangle coordinates with respect to the texture size, i.e. scan image
+  // Compute relative rectangle coordinates,
+  // with respect to the texture size, i.e. scan image.
   final percentageLeft = clippedScanWndInTexSpace.left / textureSize.width;
   final percentageTop = clippedScanWndInTexSpace.top / textureSize.height;
   final percentageRight = clippedScanWndInTexSpace.right / textureSize.width;
   final percentageBottom = clippedScanWndInTexSpace.bottom / textureSize.height;
 
-  // This rectangle can be send to native code and used to cut out a rectangle of the scan image
+  // This rectangle can be used to cut out a rectangle of the scan image.
   return Rect.fromLTRB(
     percentageLeft,
     percentageTop,
