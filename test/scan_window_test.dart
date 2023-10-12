@@ -118,15 +118,15 @@ void main() {
 }
 
 class ScanWindowTestContext {
-  final Size textureSize;
-  final Size widgetSize;
-  final Rect scanWindow;
-
   ScanWindowTestContext({
     required this.textureSize,
     required this.widgetSize,
     required this.scanWindow,
   });
+
+  final Size textureSize;
+  final Size widgetSize;
+  final Rect scanWindow;
 
   void testScanWindow(BoxFit fit, Rect expected) {
     final actual = calculateScanWindowRelativeToTextureInPercentage(
