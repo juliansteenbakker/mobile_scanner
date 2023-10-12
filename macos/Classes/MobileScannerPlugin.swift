@@ -112,7 +112,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         registry.textureFrameAvailable(textureId)
         
         let currentTime = Date().timeIntervalSince1970
-        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == false
+        let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
@@ -130,8 +130,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             if let results = request.results as? [VNBarcodeObservation] {
                                 for barcode in results {
                                     if self?.scanWindow != nil && cgImage != nil {
-                                        let match = self?.isbarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!)
-                                        if (match == false) {
+                                        let match = self?.isBarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!) ?? false
+                                        if (!match) {
                                             continue
                                         }
                                     }
@@ -147,7 +147,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 }
                             }
                         } else {
-                            print(error!.localizedDescription)
+                            self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
                         }
                     })
                     if(self?.symbologies.isEmpty == false){
@@ -155,8 +155,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         barcodeRequest.symbologies = self!.symbologies
                     }
                     try imageRequestHandler.perform([barcodeRequest])
-                } catch {
-                    print(error)
+                } catch let e {
+                    self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
                 }
             }
         }
@@ -203,7 +203,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
     }
     
-    func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CGImage) -> Bool {
+    func isBarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CGImage) -> Bool {
 
         let imageWidth = CGFloat(inputImage.width);
         let imageHeight = CGFloat(inputImage.height);
@@ -217,7 +217,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         return scaledScanWindow.contains(barcode.boundingBox)
     }
 
-    func isbarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CVImageBuffer) -> Bool {
+    func isBarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CVImageBuffer) -> Bool {
         let size = CVImageBufferGetEncodedSize(inputImage)
 
         let imageWidth = size.width;
