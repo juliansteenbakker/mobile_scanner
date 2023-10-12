@@ -5,7 +5,7 @@
 [![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
 [![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=like%20my%20work?%20sponsor%20me!)](https://github.com/sponsors/juliansteenbakker)
 
-A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS. 
+A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
 
 
 ## Features Supported
@@ -27,28 +27,34 @@ See the example app for detailed implementation information.
 
 ## Platform specific setup
 ### Android
-This packages uses the **bundled version** of MLKit Barcode-scanning for Android. This version is more accurate and immediately available to devices. However, this version will increase the size of the app with approximately 3 to 10 MB. The alternative for this is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is older than the bundled version however this only increases the size by around 600KB.
-To use this version you must alter the mobile_scanner gradle file to replace `com.google.mlkit:barcode-scanning:17.0.2` with `com.google.android.gms:play-services-mlkit-barcode-scanning:18.0.0`. Keep in mind that if you alter the gradle files directly in your project it can be overriden when you update your pubspec.yaml. I am still searching for a way to properly replace the module in gradle but have yet to find one.
+This package uses by default the **bundled version** of MLKit Barcode-scanning for Android. This version is immediately available to the device. But it will increase the size of the app by approximately 3 to 10 MB.
+
+The alternative is to use the **unbundled version** of MLKit Barcode-scanning for Android. This version is downloaded on first use via Google Play Services. It increases the app size by around 600KB.
 
 [You can read more about the difference between the two versions here.](https://developers.google.com/ml-kit/vision/barcode-scanning/android)
+
+To use the **unbundled version** of the MLKit Barcode-scanning, add the following line to your `/android/gradle.properties` file:
+```
+dev.steenbakker.mobile_scanner.useUnbundled=true
+```
 
 ### iOS
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
-  
+
 **If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)**
 NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
-  
+
   Example,
   ```
   <key>NSCameraUsageDescription</key>
   <string>This app needs camera access to scan QR codes</string>
-  
+
   <key>NSPhotoLibraryUsageDescription</key>
   <string>This app needs photos access to get QR code from photo library</string>
   ```
-  
-  
+
+
 ### macOS
 Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
