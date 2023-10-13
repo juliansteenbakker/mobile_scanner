@@ -44,7 +44,7 @@ class MobileScanner(
     private var scanner = BarcodeScanning.getClient()
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
-    private var displayListener: MobileScannerDisplayListener? = null
+    private var displayListener: DisplayManager.DisplayListener? = null
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -272,8 +272,14 @@ class MobileScanner(
                 analysisBuilder.setTargetResolution(getResolution(cameraResolution))
 
                 if (displayListener == null) {
-                    displayListener = MobileScannerDisplayListener {
-                        analysisBuilder.setTargetResolution(getResolution(cameraResolution))
+                    displayListener = object : DisplayManager.DisplayListener {
+                        override fun onDisplayAdded(displayId: Int) {}
+
+                        override fun onDisplayRemoved(displayId: Int) {}
+
+                        override fun onDisplayChanged(displayId: Int) {
+                            analysisBuilder.setTargetResolution(getResolution(cameraResolution))
+                        }
                     }
 
                     displayManager.registerDisplayListener(
