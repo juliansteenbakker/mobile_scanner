@@ -6,7 +6,7 @@ class BarcodeScannerWithoutController extends StatefulWidget {
   const BarcodeScannerWithoutController({Key? key}) : super(key: key);
 
   @override
-  _BarcodeScannerWithoutControllerState createState() =>
+  State<BarcodeScannerWithoutController> createState() =>
       _BarcodeScannerWithoutControllerState();
 }
 
