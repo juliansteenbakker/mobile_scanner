@@ -1,3 +1,13 @@
+## 3.5.0
+* Fixed the scan window calculation by reintroducing a LayoutBuilder.
+* Fixed the BarcodeCapture format on MacOS.
+* Fixed the timeout for scanning on MacOS.
+* Improve MacOS memory footprint using a background queue.
+* Added the option to switch between bundled and unbundled MLKit for Android.
+* Fixed Android builds failing by downgrading from Kotlin 1.9.10 to 1.7.22.
+* Fixed a crash on iOS when the device is nil.
+* Added the option to specify the camera resolution for Android.
+
 ## 3.4.1
 Change MediaQuery.sizeOf(context) to of(context).size for backwards compatibility
 
