@@ -23,6 +23,7 @@ class MobileScannerController {
     )
     this.onPermissionSet,
     this.autoStart = true,
+    this.androidResolution,
   });
 
   /// Select which camera should be used.
@@ -58,9 +59,25 @@ class MobileScannerController {
   /// Automatically start the mobileScanner on initialization.
   final bool autoStart;
 
+  /// Can be used to override default Android camera resolution.
+  /// The default camera resolution is 640x480.
+  /// Overriding the resolution can change the camera aspect ratio.
+  ///
+  /// Example: androidResolution: Size(1920, 2560);
+  ///
+  /// NOTE:
+  /// Values inside this Size will be converted to integer type.
+  ///
+  /// The package Android implementation will manage itself the orientation.
+  /// You don't need to update this parameter if orientation change.
+  ///
+  /// Android will take the closest resolution available if the overrided one can't be set
+  final Size? androidResolution;
+
   /// Sets the barcode stream
   final StreamController<BarcodeCapture> _barcodesController =
       StreamController.broadcast();
+
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   static const MethodChannel _methodChannel =
@@ -133,6 +150,12 @@ class MobileScannerController {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
       } else if (Platform.isAndroid) {
         arguments['formats'] = formats!.map((e) => e.index).toList();
+        if (androidResolution != null) {
+          arguments['androidResolution'] = <int>[
+            androidResolution!.width.toInt(),
+            androidResolution!.height.toInt(),
+          ];
+        }
       }
     }
     arguments['returnImage'] = returnImage;
@@ -384,6 +407,7 @@ class MobileScannerController {
             barcodes: [
               Barcode(
                 rawValue: (data as Map)['payload'] as String?,
+                format: toFormat(data['symbology'] as int),
               ),
             ],
           ),
