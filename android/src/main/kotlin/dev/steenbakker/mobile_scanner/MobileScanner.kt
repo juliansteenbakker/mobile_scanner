@@ -43,6 +43,8 @@ class MobileScanner(
     private var scanner = BarcodeScanning.getClient()
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
+    private var displayManager: DisplayManager? = null
+    private var displayListener: DisplayManager.DisplayListener? = null
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -172,12 +174,12 @@ class MobileScanner(
 
     // Return the best resolution for the actual device orientation.
     // By default camera set its resolution to width 480 and height 640 which is too low for ML KIT.
-    // If we return an higher resolution than device can handle, camera package take the most relavant one available.
+    // If we return an higher resolution than device can handle, camera package take the most relevant one available.
     // Resolution set must take care of device orientation to preserve aspect ratio.
-    private fun getResolution(windowManager: WindowManager): Size {
+    private fun getResolution(windowManager: WindowManager, cameraResolution: Size): Size {
         val rotation = windowManager.defaultDisplay.rotation
-        val widthMaxRes = 480 * 4;
-        val heightMaxRes = 640 * 4;
+        val widthMaxRes = cameraResolution.width
+        val heightMaxRes = cameraResolution.height
 
         val targetResolution = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
             Size(widthMaxRes, heightMaxRes) // Portrait mode
@@ -201,7 +203,8 @@ class MobileScanner(
         torchStateCallback: TorchStateCallback,
         zoomScaleStateCallback: ZoomScaleStateCallback,
         mobileScannerStartedCallback: MobileScannerStartedCallback,
-        detectionTimeout: Long
+        detectionTimeout: Long,
+        cameraResolution: Size?
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
@@ -251,18 +254,23 @@ class MobileScanner(
             // Build the analyzer to be passed on to MLKit
             val analysisBuilder = ImageAnalysis.Builder()
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+            displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
             val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-            // Set initial resolution
-            analysisBuilder.setTargetResolution(getResolution(windowManager))
-            // Listen future orientation
-            displayManager.registerDisplayListener(object : DisplayManager.DisplayListener {
-                override fun onDisplayAdded(displayId: Int) {}
-                override fun onDisplayRemoved(displayId: Int) {}
-                override fun onDisplayChanged(displayId: Int) {
-                    analysisBuilder.setTargetResolution(getResolution(windowManager))
+
+            if (cameraResolution != null) {
+                // Override initial resolution
+                analysisBuilder.setTargetResolution(getResolution(windowManager, cameraResolution))
+                // Create the listener
+                displayListener = object : DisplayManager.DisplayListener {
+                    override fun onDisplayAdded(displayId: Int) {}
+                    override fun onDisplayRemoved(displayId: Int) {}
+                    override fun onDisplayChanged(displayId: Int) {
+                        analysisBuilder.setTargetResolution(getResolution(windowManager, cameraResolution))
+                    }
                 }
-            }, null)
+                // Listen future orientation change to apply the custom resolution
+                displayManager!!.registerDisplayListener(displayListener, null)
+            }
 
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
@@ -317,6 +325,11 @@ class MobileScanner(
         cameraProvider?.unbindAll()
         textureEntry?.release()
 
+        if (displayListener != null && displayManager != null) {
+            displayManager!!.unregisterDisplayListener(displayListener!!)
+        }
+        displayListener = null
+        displayManager = null
         camera = null
         preview = null
         textureEntry = null

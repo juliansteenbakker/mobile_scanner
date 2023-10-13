@@ -213,18 +213,28 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             } catch {
                 print("Failed to reset zoom scale")
             }
-
-            let dimensions = CMVideoFormatDescriptionGetDimensions(self.device.activeFormat.formatDescription)
-
-            DispatchQueue.main.async {
-                completion(
-                    MobileScannerStartParameters(
-                        width: Double(dimensions.height),
-                        height: Double(dimensions.width),
-                        hasTorch: self.device.hasTorch,
-                        textureId: self.textureId
+            
+            if let device = self.device {
+                let dimensions = CMVideoFormatDescriptionGetDimensions(
+                    device.activeFormat.formatDescription)
+                let hasTorch = device.hasTorch
+                
+                DispatchQueue.main.async {
+                    completion(
+                        MobileScannerStartParameters(
+                            width: Double(dimensions.height),
+                            height: Double(dimensions.width),
+                            hasTorch: hasTorch,
+                            textureId: self.textureId ?? 0
+                        )
                     )
-                )
+                }
+                
+                return
+            }
+            
+            DispatchQueue.main.async {
+                completion(MobileScannerStartParameters())
             }
         }
     }
