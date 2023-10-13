@@ -174,10 +174,10 @@ class MobileScanner(
     // By default camera set its resolution to width 480 and height 640 which is too low for ML KIT.
     // If we return an higher resolution than device can handle, camera package take the most relevant one available.
     // Resolution set must take care of device orientation to preserve aspect ratio.
-    private fun getResolution(windowManager: WindowManager, androidResolution: Size): Size {
+    private fun getResolution(windowManager: WindowManager, cameraResolution: Size): Size {
         val rotation = windowManager.defaultDisplay.rotation
-        val widthMaxRes = androidResolution.width
-        val heightMaxRes = androidResolution.height
+        val widthMaxRes = cameraResolution.width
+        val heightMaxRes = cameraResolution.height
 
         val targetResolution = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
             Size(widthMaxRes, heightMaxRes) // Portrait mode
@@ -202,7 +202,7 @@ class MobileScanner(
         zoomScaleStateCallback: ZoomScaleStateCallback,
         mobileScannerStartedCallback: MobileScannerStartedCallback,
         detectionTimeout: Long,
-        androidResolution: Size?
+        cameraResolution: Size?
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
@@ -255,15 +255,15 @@ class MobileScanner(
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
             val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
-            if (androidResolution != null) {
+            if (cameraResolution != null) {
                 // Override initial resolution
-                analysisBuilder.setTargetResolution(getResolution(windowManager, androidResolution))
+                analysisBuilder.setTargetResolution(getResolution(windowManager, cameraResolution))
                 // Listen future orientation change to apply the custom resolution
                 displayManager.registerDisplayListener(object : DisplayManager.DisplayListener {
                     override fun onDisplayAdded(displayId: Int) {}
                     override fun onDisplayRemoved(displayId: Int) {}
                     override fun onDisplayChanged(displayId: Int) {
-                        analysisBuilder.setTargetResolution(getResolution(windowManager, androidResolution))
+                        analysisBuilder.setTargetResolution(getResolution(windowManager, cameraResolution))
                     }
                 }, null)
             }

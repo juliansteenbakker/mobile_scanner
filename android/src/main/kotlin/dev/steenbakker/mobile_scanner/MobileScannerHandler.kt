@@ -134,9 +134,9 @@ class MobileScannerHandler(
         val returnImage: Boolean = call.argument<Boolean>("returnImage") ?: false
         val speed: Int = call.argument<Int>("speed") ?: 1
         val timeout: Int = call.argument<Int>("timeout") ?: 250
-        val androidResolutionValueList: List<Int>? = call.argument<List<Int>>("androidResolution")
-        val androidResolution: Size? = if (androidResolutionValueList != null) {
-            Size(androidResolutionValueList[0], androidResolutionValueList[1])
+        val cameraResolutionValues: List<Int>? = call.argument<List<Int>>("cameraResolution")
+        val cameraResolution: Size? = if (cameraResolutionValues != null) {
+            Size(cameraResolutionValues[0], cameraResolutionValues[1])
         } else {
             null
         }
@@ -164,16 +164,24 @@ class MobileScannerHandler(
         val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
 
         try {
-            mobileScanner!!.start(barcodeScannerOptions, returnImage, position, torch, detectionSpeed, torchStateCallback, zoomScaleStateCallback, mobileScannerStartedCallback = {
-                result.success(mapOf(
-                    "textureId" to it.id,
-                    "size" to mapOf("width" to it.width, "height" to it.height),
-                    "torchable" to it.hasFlashUnit
-                ))
-            },
+            mobileScanner!!.start(
+                barcodeScannerOptions,
+                returnImage, 
+                position,
+                torch,
+                detectionSpeed,
+                torchStateCallback,
+                zoomScaleStateCallback,
+                mobileScannerStartedCallback = {
+                    result.success(mapOf(
+                        "textureId" to it.id,
+                        "size" to mapOf("width" to it.width, "height" to it.height),
+                        "torchable" to it.hasFlashUnit
+                    ))
+                },
                 timeout.toLong(),
-                androidResolution)
-
+                cameraResolution,
+            )
         } catch (e: AlreadyStarted) {
             result.error(
                 "MobileScanner",
