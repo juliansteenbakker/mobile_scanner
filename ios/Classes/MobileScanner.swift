@@ -54,6 +54,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     private let backgroundQueue = DispatchQueue(label: "camera-handling")
 
     var standardZoomFactor: CGFloat = 1
+    
+    private var nextScanTime = 0.0
+    
+    private var imagesCurrentlyBeingProcessed = 0
+    
+    public var timeoutSeconds: Double = 0
 
     init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
         self.registry = registry
@@ -89,8 +95,15 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         latestBuffer = imageBuffer
         registry?.textureFrameAvailable(textureId)
-        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && i > 10 || detectionSpeed == DetectionSpeed.unrestricted) {
-            i = 0
+        
+        let currentTime = Date().timeIntervalSince1970
+        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == 0
+        
+        if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
+
+            nextScanTime = currentTime + timeoutSeconds
+            imagesCurrentlyBeingProcessed += 1
+            
             let ciImage = latestBuffer.image
 
             let image = VisionImage(image: ciImage)
@@ -101,6 +114,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             )
 
             scanner.process(image) { [self] barcodes, error in
+                imagesCurrentlyBeingProcessed -= 1
+                
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
                     let newScannedBarcodes = barcodes?.map { barcode in
                         return barcode.rawValue
@@ -114,8 +129,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
                 mobileScannerCallback(barcodes, error, ciImage)
             }
-        } else {
-            i+=1
         }
     }
 
@@ -301,7 +314,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         
         do {
             try device.lockForConfiguration()
-            var maxZoomFactor = device.activeFormat.videoMaxZoomFactor
+            let maxZoomFactor = device.activeFormat.videoMaxZoomFactor
             
             var actualScale = (scale * 4) + 1
             
@@ -347,8 +360,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         scanner.process(image, completion: callback)
     }
-
-    var i = 0
 
     var barcodesString: Array<String?>?
 
