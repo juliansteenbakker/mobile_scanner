@@ -256,7 +256,7 @@ class _MyAppState extends State<BarcodeScannerWithOverlay> {
                             children: [
                               IconButton(onPressed: ()=>{
                                 controller.toggleTorch()
-                              }, icon: const Icon(Icons.flashlight_on, color: Colors.white,),),
+                              }, icon:  Icon(Icons.flashlight_on, color: controller.torchEnabled ? Colors.yellow : Colors.black,),),
                               IconButton(onPressed: ()=>{
                                 controller.switchCamera()
                               }, icon: const Icon(Icons.cameraswitch_rounded, color: Colors.white,)),
