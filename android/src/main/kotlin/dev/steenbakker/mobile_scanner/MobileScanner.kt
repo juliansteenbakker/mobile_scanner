@@ -182,7 +182,7 @@ class MobileScanner(
     @Suppress("deprecation")
     private fun getResolution(cameraResolution: Size): Size {
         val rotation = if (Build.VERSION.SDK_INT >= 30) {
-            activity.applicationContext.display!!.rotation
+            activity.display!!.rotation
         } else {
             val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
 
