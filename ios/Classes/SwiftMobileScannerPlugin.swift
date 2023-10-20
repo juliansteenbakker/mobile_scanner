@@ -12,8 +12,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     /// The handler sends all information via an event channel back to Flutter
     private let barcodeHandler: BarcodeHandler
 
+    /// The points for the scan window.
     static var scanWindow: [CGFloat]?
-    
+        
     private static func isBarcodeInScanWindow(barcode: Barcode, imageSize: CGSize) -> Bool {
         let scanwindow = SwiftMobileScannerPlugin.scanWindow!
         let barcodeminX = barcode.cornerPoints![0].cgPointValue.x
@@ -103,7 +104,9 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
-
+        let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
+        self.mobileScanner.timeoutSeconds = Double(timeoutMs / 1000)
+        
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         var barcodeOptions: BarcodeScannerOptions? = nil
 
@@ -168,7 +171,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// Toggles the zoomScale
     private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        var scale = call.arguments as? CGFloat
+        let scale = call.arguments as? CGFloat
         if (scale == nil) {
             result(FlutterError(code: "MobileScanner",
                                               message: "You must provide a scale when calling setScale!",
