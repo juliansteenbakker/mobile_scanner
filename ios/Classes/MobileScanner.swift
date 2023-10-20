@@ -57,7 +57,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     private var nextScanTime = 0.0
     
-    private var imagesCurrentlyBeingProcessed = 0
+    private var imagesCurrentlyBeingProcessed = false
     
     public var timeoutSeconds: Double = 0
 
@@ -97,12 +97,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         registry?.textureFrameAvailable(textureId)
         
         let currentTime = Date().timeIntervalSince1970
-        let eligibleForScan = currentTime > nextScanTime && imagesCurrentlyBeingProcessed == 0
+        let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
         
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
 
             nextScanTime = currentTime + timeoutSeconds
-            imagesCurrentlyBeingProcessed += 1
+            imagesCurrentlyBeingProcessed = true
             
             let ciImage = latestBuffer.image
 
@@ -114,7 +114,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             )
 
             scanner.process(image) { [self] barcodes, error in
-                imagesCurrentlyBeingProcessed -= 1
+                imagesCurrentlyBeingProcessed = false
                 
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
                     let newScannedBarcodes = barcodes?.map { barcode in
