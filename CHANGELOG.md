@@ -1,15 +1,23 @@
 ## 3.5.0
-* Fixed the scan window calculation by reintroducing a LayoutBuilder.
-* Fixed the BarcodeCapture format on MacOS.
-* Fixed the timeout for scanning on MacOS.
-* Improve MacOS memory footprint using a background queue.
-* Added the option to switch between bundled and unbundled MLKit for Android.
-* Fixed Android builds failing by downgrading from Kotlin 1.9.10 to 1.7.22.
-* Fixed a crash on iOS when the device is nil.
-* Added the option to specify the camera resolution for Android.
+New Features:
+* Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
+* Added the option to specify the camera resolution for Android. (thanks @EArminjon !)
+
+Bugs fixed:
+* Fixed the scan window calculation taking into account the widget coordinates, instead of the screen coordinates. (thanks @jlin5 !)
+* Fixed the scan window calculation returning wrong results. (thanks @MBulli !)
+* Fixed the BarcodeCapture format on MacOS. (thanks @ryanduffyne !)
+* Fixed the timeout for scanning on MacOS. (thanks @ryanduffyne !)
+* Fixed Android builds failing by downgrading from Kotlin 1.9.10 to 1.7.22. (thanks @vbuberen !)
+* Fixed images on iOS being rotated, resulting in bad detection rates. (thanks @EArminjon !)
+* Fixed scan timeout not working on iOS. (thanks @navaronbracke !)
+* Fixed a crash on iOS when the device is nil. (thanks @navaronbracke !)
+
+Improvements:
+* Improved MacOS memory footprint by using a background queue. (thanks @ryanduffyne !)
 
 ## 3.4.1
-Change MediaQuery.sizeOf(context) to of(context).size for backwards compatibility
+* Changed MediaQuery.sizeOf(context) to of(context).size for compatibility with older Flutter versions.
 
 ## 3.4.0
 New Features:
