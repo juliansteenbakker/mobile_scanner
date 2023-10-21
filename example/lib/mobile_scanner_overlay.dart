@@ -12,8 +12,6 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   String overlayText = "Please scan QR Code";
   bool camStarted = false;
 
-  final ValueNotifier<bool> torchStateNotifier = ValueNotifier<bool>(false);
-
   final MobileScannerController controller = MobileScannerController(
     formats: const [BarcodeFormat.qrCode],
     autoStart: false,
@@ -26,19 +24,26 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   }
 
   void startCamera() {
-    try {
-      setState(() {
-        camStarted = !camStarted;
-        controller.start();
-      });
-    } on Exception catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Something went wrong! $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+    if (camStarted) {
+      return;
     }
+
+    controller.start().then((_) {
+      if (mounted) {
+        setState(() {
+          camStarted = true;
+        });
+      }
+    }).catchError((Object error, StackTrace stackTrace) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Something went wrong! $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
   }
 
   void onBarcodeDetect(BarcodeCapture barcodeCapture) {
@@ -112,20 +117,25 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                ValueListenableBuilder<bool>(
-                                  valueListenable: torchStateNotifier,
-                                  builder: (context, isTorchOn, child) {
+                                ValueListenableBuilder<TorchState>(
+                                  valueListenable: controller.torchState,
+                                  builder: (context, value, child) {
+                                    final Color iconColor;
+
+                                    switch (value) {
+                                      case TorchState.off:
+                                        iconColor = Colors.black;
+                                        break;
+                                      case TorchState.on:
+                                        iconColor = Colors.yellow;
+                                        break;
+                                    }
+
                                     return IconButton(
-                                      onPressed: () {
-                                        controller.toggleTorch();
-                                        torchStateNotifier.value =
-                                            !torchStateNotifier.value;
-                                      },
+                                      onPressed: () => controller.toggleTorch(),
                                       icon: Icon(
                                         Icons.flashlight_on,
-                                        color: isTorchOn
-                                            ? Colors.yellow
-                                            : Colors.black,
+                                        color: iconColor,
                                       ),
                                     );
                                   },
@@ -153,12 +163,8 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
       floatingActionButton: camStarted
           ? null
           : FloatingActionButton(
-              child: const Icon(
-                Icons.camera_alt,
-              ),
-              onPressed: () {
-                startCamera();
-              },
+              onPressed: startCamera,
+              child: const Icon(Icons.camera_alt),
             ),
     );
   }

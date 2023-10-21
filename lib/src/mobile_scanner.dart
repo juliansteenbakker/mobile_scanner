@@ -64,7 +64,7 @@ class MobileScanner extends StatefulWidget {
   final bool startDelay;
 
   /// The overlay which will be painted above the scanner when has started successful.
-  /// Will no be pointed when an error occurs or the scanner hasn't be started yet.
+  /// Will no be pointed when an error occurs or the scanner hasn't been started yet.
   final Widget? overlay;
 
   /// Create a new [MobileScanner] using the provided [controller]
