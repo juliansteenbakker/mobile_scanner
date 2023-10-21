@@ -2,6 +2,7 @@
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
 * Added the option to specify the camera resolution for Android. (thanks @EArminjon !)
+* Added a sample with a scanner overlay. (thanks @Spyy004 !)
 
 Bugs fixed:
 * Fixed the scan window calculation taking into account the widget coordinates, instead of the screen coordinates. (thanks @jlin5 !)
