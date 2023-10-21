@@ -11,30 +11,42 @@ class BarcodeScannerWithOverlay extends StatefulWidget {
 class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   String overlayText = "Please scan QR Code";
   bool camStarted = false;
-  BarcodeCapture? currentBarcodeCapture;
+
+  final ValueNotifier<bool> torchStateNotifier = ValueNotifier<bool>(false);
+
   final MobileScannerController controller = MobileScannerController(
-    facing: CameraFacing.back,
     formats: const [BarcodeFormat.qrCode],
     autoStart: false,
   );
 
   @override
-  dispose() {
+  void dispose() {
     controller.dispose();
     super.dispose();
   }
 
   void startCamera() {
-    setState(() {
-      camStarted = !camStarted;
-      controller.start();
-    });
+    try {
+      setState(() {
+        camStarted = !camStarted;
+        controller.start();
+      });
+    } on Exception catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Something went wrong! $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void onBarcodeDetect(BarcodeCapture barcodeCapture) {
+    final barcode = barcodeCapture.barcodes.last;
     setState(() {
-      currentBarcodeCapture = barcodeCapture;
-      overlayText = barcodeCapture.barcodes.last.displayValue!;
+      overlayText = barcodeCapture.barcodes.last.displayValue ??
+          barcode.rawValue ??
+          'Barcode has no displayable value';
     });
   }
 
@@ -52,7 +64,6 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
       ),
       body: Center(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Expanded(
@@ -101,14 +112,23 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                IconButton(
-                                  onPressed: () => controller.toggleTorch(),
-                                  icon: Icon(
-                                    Icons.flashlight_on,
-                                    color: controller.torchEnabled
-                                        ? Colors.yellow
-                                        : Colors.black,
-                                  ),
+                                ValueListenableBuilder<bool>(
+                                  valueListenable: torchStateNotifier,
+                                  builder: (context, isTorchOn, child) {
+                                    return IconButton(
+                                      onPressed: () {
+                                        controller.toggleTorch();
+                                        torchStateNotifier.value =
+                                            !torchStateNotifier.value;
+                                      },
+                                      icon: Icon(
+                                        Icons.flashlight_on,
+                                        color: isTorchOn
+                                            ? Colors.yellow
+                                            : Colors.black,
+                                      ),
+                                    );
+                                  },
                                 ),
                                 IconButton(
                                   onPressed: () => controller.switchCamera(),
@@ -124,7 +144,8 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                       ],
                     )
                   : const Center(
-                      child: Text("Tap on Camera to activate QR Scanner")),
+                      child: Text("Tap on Camera to activate QR Scanner"),
+                    ),
             ),
           ],
         ),
@@ -147,11 +168,21 @@ class ScannerOverlay extends CustomPainter {
   ScannerOverlay(this.scanWindow);
 
   final Rect scanWindow;
+  final double borderRadius = 12.0;
 
   @override
   void paint(Canvas canvas, Size size) {
     final backgroundPath = Path()..addRect(Rect.largest);
-    final cutoutPath = Path()..addRect(scanWindow);
+    final cutoutPath = Path()
+      ..addRRect(
+        RRect.fromRectAndCorners(
+          scanWindow,
+          topLeft: Radius.circular(borderRadius),
+          topRight: Radius.circular(borderRadius),
+          bottomLeft: Radius.circular(borderRadius),
+          bottomRight: Radius.circular(borderRadius),
+        ),
+      );
 
     final backgroundPaint = Paint()
       ..color = Colors.black.withOpacity(0.5)
@@ -174,10 +205,10 @@ class ScannerOverlay extends CustomPainter {
 // Adjust the radius as needed
     final borderRect = RRect.fromRectAndCorners(
       scanWindow,
-      topLeft: const Radius.circular(12.0),
-      topRight: const Radius.circular(12.0),
-      bottomLeft: const Radius.circular(12.0),
-      bottomRight: const Radius.circular(12.0),
+      topLeft: Radius.circular(borderRadius),
+      topRight: Radius.circular(borderRadius),
+      bottomLeft: Radius.circular(borderRadius),
+      bottomRight: Radius.circular(borderRadius),
     );
 
     // Draw the white border
