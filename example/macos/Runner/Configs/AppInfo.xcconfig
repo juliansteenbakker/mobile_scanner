@@ -11,4 +11,4 @@ PRODUCT_NAME = mobile_scanner_example
 PRODUCT_BUNDLE_IDENTIFIER = dev.steenbakker.mobileScannerExample
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2022 dev.steenbakker. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2023 dev.steenbakker. All rights reserved.
