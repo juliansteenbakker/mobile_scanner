@@ -5,10 +5,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithZoom extends StatefulWidget {
-  const BarcodeScannerWithZoom({Key? key}) : super(key: key);
+  const BarcodeScannerWithZoom({super.key});
 
   @override
-  _BarcodeScannerWithZoomState createState() => _BarcodeScannerWithZoomState();
+  State<BarcodeScannerWithZoom> createState() => _BarcodeScannerWithZoomState();
 }
 
 class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom>
