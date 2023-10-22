@@ -4,7 +4,7 @@ import MLKitBarcodeScanning
 import AVFoundation
 import UIKit
 
-public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
+public class MobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// The mobile scanner object that handles all logic
     private let mobileScanner: MobileScanner
@@ -16,7 +16,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     static var scanWindow: [CGFloat]?
     
     private static func isBarcodeInScanWindow(barcode: Barcode, imageSize: CGSize) -> Bool {
-        let scanwindow = SwiftMobileScannerPlugin.scanWindow!
+        let scanwindow = MobileScannerPlugin.scanWindow!
         let barcodeminX = barcode.cornerPoints![0].cgPointValue.x
         let barcodeminY = barcode.cornerPoints![1].cgPointValue.y
         
@@ -39,8 +39,8 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
             if barcodes != nil {
                 let barcodesMap: [Any?] = barcodes!.compactMap { barcode in
-                    if (SwiftMobileScannerPlugin.scanWindow != nil) {
-                        if (SwiftMobileScannerPlugin.isBarcodeInScanWindow(barcode: barcode, imageSize: image.size)) {
+                    if (MobileScannerPlugin.scanWindow != nil) {
+                        if (MobileScannerPlugin.isBarcodeInScanWindow(barcode: barcode, imageSize: image.size)) {
                             return barcode.data
                         } else {
                             return nil
@@ -66,7 +66,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
-        let instance = SwiftMobileScannerPlugin(barcodeHandler: BarcodeHandler(registrar: registrar), registry: registrar.textures())
+        let instance = MobileScannerPlugin(barcodeHandler: BarcodeHandler(registrar: registrar), registry: registrar.textures())
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
 
@@ -216,7 +216,7 @@ public class SwiftMobileScannerPlugin: NSObject, FlutterPlugin {
     /// Toggles the torch
     func updateScanWindow(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let scanWindowData: Array? = (call.arguments as? [String: Any])?["rect"] as? [CGFloat]
-        SwiftMobileScannerPlugin.scanWindow = scanWindowData
+        MobileScannerPlugin.scanWindow = scanWindowData
 
         result(nil)
     }
