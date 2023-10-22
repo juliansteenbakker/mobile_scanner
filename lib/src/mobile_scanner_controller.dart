@@ -185,8 +185,24 @@ class MobileScannerController {
 
     // Check authorization status
     if (!kIsWeb) {
-      final MobileScannerState state = MobileScannerState
-          .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
+      final MobileScannerState state;
+
+      try {
+        state = MobileScannerState
+            .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
+      } on PlatformException catch (error) {
+        isStarting = false;
+
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            code: error.code,
+            details: error.details as Object?,
+            message: error.message,
+          ),
+        );
+      }
+
       switch (state) {
         case MobileScannerState.undetermined:
           bool result = false;
