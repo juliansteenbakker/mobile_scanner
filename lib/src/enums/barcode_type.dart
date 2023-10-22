@@ -1,67 +1,78 @@
-/// Barcode value type constants
+/// Barcode value type constants.
 enum BarcodeType {
-  /// Barcode value type unknown, which indicates the current version of SDK cannot recognize the structure of the barcode. Developers can inspect the raw value instead.
-  ///
-  /// Constant Value: 0
-  unknown,
+  /// An unknown barcode type.
+  unknown(0),
 
   /// Barcode value type constant for contact information.
-  ///
-  /// Constant Value: 1
-  contactInfo,
+  contactInfo(1),
 
   /// Barcode value type constant for email message details.
-  ///
-  /// Constant Value: 2
-  email,
+  email(2),
 
   /// Barcode value type constant for ISBNs.
-  ///
-  /// Constant Value: 3
-  isbn,
+  isbn(3),
 
   /// Barcode value type constant for phone numbers.
-  ///
-  /// Constant Value: 4
-  phone,
+  phone(4),
 
   /// Barcode value type constant for product codes.
-  ///
-  /// Constant Value: 5
-  product,
+  product(5),
 
   /// Barcode value type constant for SMS details.
-  ///
-  /// Constant Value: 6
-  sms,
+  sms(6),
 
   /// Barcode value type constant for plain text.
-  ///
-  ///Constant Value: 7
-  text,
+  text(7),
 
-  /// Barcode value type constant for URLs/bookmarks.
-  ///
-  /// Constant Value: 8
-  url,
+  /// Barcode value type constant for URLs or bookmarks.
+  url(8),
 
   /// Barcode value type constant for WiFi access point details.
-  ///
-  /// Constant Value: 9
-  wifi,
+  wifi(9),
 
   /// Barcode value type constant for geographic coordinates.
-  ///
-  /// Constant Value: 10
-  geo,
+  geo(10),
 
   /// Barcode value type constant for calendar events.
-  ///
-  /// Constant Value: 11
-  calendarEvent,
+  calendarEvent(11),
 
-  /// Barcode value type constant for driver's license data.
-  ///
-  /// Constant Value: 12
-  driverLicense,
+  /// Barcode value type constant for driver license data.
+  driverLicense(12);
+
+  const BarcodeType(this.rawValue);
+
+  factory BarcodeType.fromRawValue(int value) {
+    switch (value) {
+      case 1:
+        return BarcodeType.contactInfo;
+      case 2:
+        return BarcodeType.email;
+      case 3:
+        return BarcodeType.isbn;
+      case 4:
+        return BarcodeType.phone;
+      case 5:
+        return BarcodeType.product;
+      case 6:
+        return BarcodeType.sms;
+      case 7:
+        return BarcodeType.text;
+      case 8:
+        return BarcodeType.url;
+      case 9:
+        return BarcodeType.wifi;
+      case 10:
+        return BarcodeType.geo;
+      case 11:
+        return BarcodeType.calendarEvent;
+      case 12:
+        return BarcodeType.driverLicense;
+      case 0:
+      default:
+        return BarcodeType.unknown;
+    }
+  }
+
+  /// The raw barcode type value.
+  final int rawValue;
 }
