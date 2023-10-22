@@ -1,5 +1,5 @@
 //
-//  SwiftMobileScanner.swift
+//  MobileScanner.swift
 //  mobile_scanner
 //
 //  Created by Julian Steenbakker on 15/02/2022.
@@ -54,7 +54,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     private let backgroundQueue = DispatchQueue(label: "camera-handling")
 
     var standardZoomFactor: CGFloat = 1
-    
+
     private var nextScanTime = 0.0
     
     private var imagesCurrentlyBeingProcessed = false
@@ -191,7 +191,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.cameraError(error)
         }
 
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo;
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
 
@@ -294,7 +294,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
-            // off = 0; on = 1; auto = 2;
+            // off = 0; on = 1; auto = 2
             let state = change?[.newKey] as? Int
             torchModeChangeCallback(state)
         case "videoZoomFactor":
@@ -348,7 +348,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
 
-
     /// Analyze a single image
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position, callback: @escaping BarcodeScanningCallback) {
         let image = VisionImage(image: image)
@@ -363,18 +362,16 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var barcodesString: Array<String?>?
 
-
-
-//    /// Convert image buffer to jpeg
-//    private func ciImageToJpeg(ciImage: CIImage) -> Data {
-//
-//        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
-//        let context:CIContext = CIContext.init(options: nil)
-//        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
-//        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
-//
-//        return uiImage.jpegData(compressionQuality: 0.8)!;
-//    }
+    //    /// Convert image buffer to jpeg
+    //    private func ciImageToJpeg(ciImage: CIImage) -> Data {
+    //
+    //        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
+    //        let context:CIContext = CIContext.init(options: nil)
+    //        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
+    //        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
+    //
+    //        return uiImage.jpegData(compressionQuality: 0.8)!
+    //    }
 
     /// Rotates images accordingly
     func imageOrientation(
