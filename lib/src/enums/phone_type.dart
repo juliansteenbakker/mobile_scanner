@@ -1,27 +1,38 @@
 /// Phone number format type constants.
 enum PhoneType {
   /// Unknown phone type.
-  ///
-  /// Constant Value: 0
-  unknown,
+  unknown(0),
 
   /// Work phone.
-  ///
-  /// Constant Value: 1
-  work,
+  work(1),
 
   /// Home phone.
-  ///
-  /// Constant Value: 2
-  home,
+  home(2),
 
   /// Fax machine.
-  ///
-  /// Constant Value: 3
-  fax,
+  fax(3),
 
   /// Mobile phone.
-  ///
-  /// Constant Value: 4
-  mobile,
+  mobile(4);
+
+  const PhoneType(this.rawValue);
+
+  factory PhoneType.fromRawValue(int value) {
+    switch (value) {
+      case 1:
+        return PhoneType.work;
+      case 2:
+        return PhoneType.home;
+      case 3:
+        return PhoneType.fax;
+      case 4:
+        return PhoneType.mobile;
+      case 0:
+      default:
+        return PhoneType.unknown;
+    }
+  }
+
+  /// The raw phone type value.
+  final int rawValue;
 }
