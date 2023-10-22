@@ -1,113 +1,88 @@
+/// This enum defines the different barcode formats.
 enum BarcodeFormat {
-  /// Barcode format unknown to the current SDK.
-  ///
-  /// Constant Value: -1
-  unknown,
+  /// A barcode format that represents all unknown formats.
+  unknown(-1),
 
-  /// Barcode format constant representing the union of all supported formats.
-  ///
-  /// Constant Value: 0
-  all,
+  /// A barcode format that represents all known formats.
+  all(0),
 
   /// Barcode format constant for Code 128.
-  ///
-  /// Constant Value: 1
-  code128,
+  code128(1),
 
   /// Barcode format constant for Code 39.
-  ///
-  /// Constant Value: 2
-  code39,
+  code39(2),
 
   /// Barcode format constant for Code 93.
-  ///
-  /// Constant Value: 4
-  code93,
+  code93(4),
 
   /// Barcode format constant for Codabar.
-  ///
-  /// Constant Value: 8
-  codebar,
+  codebar(8),
 
   /// Barcode format constant for Data Matrix.
-  ///
-  /// Constant Value: 16
-  dataMatrix,
+  dataMatrix(16),
 
   /// Barcode format constant for EAN-13.
-  ///
-  /// Constant Value: 32
-  ean13,
+  ean13(32),
 
   /// Barcode format constant for EAN-8.
-  ///
-  /// Constant Value: 64
-  ean8,
+  ean8(64),
 
   /// Barcode format constant for ITF (Interleaved Two-of-Five).
-  ///
-  /// Constant Value: 128
-  itf,
+  itf(128),
 
-  /// Barcode format constant for QR Code.
-  ///
-  /// Constant Value: 256
-  qrCode,
+  /// Barcode format constant for QR Codes.
+  qrCode(256),
 
   /// Barcode format constant for UPC-A.
-  ///
-  /// Constant Value: 512
-  upcA,
+  upcA(512),
 
   /// Barcode format constant for UPC-E.
-  ///
-  /// Constant Value: 1024
-  upcE,
+  upcE(1024),
 
   /// Barcode format constant for PDF-417.
-  ///
-  /// Constant Value: 2048
-  pdf417,
+  pdf417(2048),
 
   /// Barcode format constant for AZTEC.
-  ///
-  /// Constant Value: 4096
-  aztec,
-}
+  aztec(4096);
 
-extension BarcodeValue on BarcodeFormat {
-  int get rawValue {
-    switch (this) {
-      case BarcodeFormat.unknown:
-        return -1;
-      case BarcodeFormat.all:
-        return 0;
-      case BarcodeFormat.code128:
-        return 1;
-      case BarcodeFormat.code39:
-        return 2;
-      case BarcodeFormat.code93:
-        return 4;
-      case BarcodeFormat.codebar:
-        return 8;
-      case BarcodeFormat.dataMatrix:
-        return 16;
-      case BarcodeFormat.ean13:
-        return 32;
-      case BarcodeFormat.ean8:
-        return 64;
-      case BarcodeFormat.itf:
-        return 128;
-      case BarcodeFormat.qrCode:
-        return 256;
-      case BarcodeFormat.upcA:
-        return 512;
-      case BarcodeFormat.upcE:
-        return 1024;
-      case BarcodeFormat.pdf417:
-        return 2048;
-      case BarcodeFormat.aztec:
-        return 4096;
+  const BarcodeFormat(this.rawValue);
+
+  factory BarcodeFormat.fromRawValue(int value) {
+    switch (value) {
+      case 0:
+        return BarcodeFormat.all;
+      case 1:
+        return BarcodeFormat.code128;
+      case 2:
+        return BarcodeFormat.code39;
+      case 4:
+        return BarcodeFormat.code93;
+      case 8:
+        return BarcodeFormat.codebar;
+      case 16:
+        return BarcodeFormat.dataMatrix;
+      case 32:
+        return BarcodeFormat.ean13;
+      case 64:
+        return BarcodeFormat.ean8;
+      case 128:
+        return BarcodeFormat.itf;
+      case 256:
+        return BarcodeFormat.qrCode;
+      case 512:
+        return BarcodeFormat.upcA;
+      case 1024:
+        return BarcodeFormat.upcE;
+      case 2048:
+        return BarcodeFormat.pdf417;
+      case 4096:
+        return BarcodeFormat.aztec;
+      case -1:
+      default:
+        return BarcodeFormat.unknown;
     }
   }
+
+  /// The raw value of the barcode format.
+  final int rawValue;
 }
