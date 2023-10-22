@@ -27,9 +27,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSCameraUsageDescription</key>
-	<string>We use the camera to scan barcodes</string>
+	<string>This app needs camera access to scan QR codes</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>We need access in order to open photos of barcodes</string>
+	<string>This app needs photos access to get QR code from photo library</string>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -51,10 +51,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<key>NSCameraUsageDescription</key>
-	<string>This app needs camera access to scan QR codes</string>
-
-	<key>NSPhotoLibraryUsageDescription</key>
-	<string>This app needs photos access to get QR code from photo library</string>
 </dict>
 </plist>
