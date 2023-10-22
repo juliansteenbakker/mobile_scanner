@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
@@ -138,11 +140,31 @@ class _MobileScannerState extends State<MobileScanner>
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _startException = error as MobileScannerException;
-        });
+      if (!mounted) {
+        return;
       }
+
+      if (error is MobileScannerException) {
+        _startException = error;
+      } else if (error is PlatformException) {
+        _startException = MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          ),
+        );
+      } else {
+        _startException = MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            details: error,
+          ),
+        );
+      }
+
+      setState(() {});
     });
   }
 
