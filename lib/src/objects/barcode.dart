@@ -2,6 +2,12 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/barcode_utility.dart';
+import 'package:mobile_scanner/src/enums/address_type.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/barcode_type.dart';
+import 'package:mobile_scanner/src/enums/email_type.dart';
+import 'package:mobile_scanner/src/enums/encryption_type.dart';
+import 'package:mobile_scanner/src/enums/phone_type.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
