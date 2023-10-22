@@ -1,8 +1,13 @@
-/// The state of torch.
+/// The state of the flashlight.
 enum TorchState {
-  /// Torch is off.
-  off,
+  /// The flashlight is off.
+  off(0),
 
-  /// Torch is on.
-  on,
+  /// The flashlight is on.
+  on(1);
+
+  const TorchState(this.rawValue);
+
+  /// The raw value for the torch state.
+  final int rawValue;
 }
