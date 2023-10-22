@@ -11,7 +11,7 @@ import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 void main() => runApp(const MaterialApp(home: MyHome()));
 
 class MyHome extends StatelessWidget {
-  const MyHome({Key? key}) : super(key: key);
+  const MyHome({super.key});
 
   @override
   Widget build(BuildContext context) {
