@@ -13,6 +13,7 @@ Bugs fixed:
 * Fixed images on iOS being rotated, resulting in bad detection rates. (thanks @EArminjon !)
 * Fixed scan timeout not working on iOS. (thanks @navaronbracke !)
 * Fixed a crash on iOS when the device is nil. (thanks @navaronbracke !)
+* Fixed a case of an unhandled exception when starting the scanner. (thanks @navaronbracke !)
 
 Improvements:
 * Improved MacOS memory footprint by using a background queue. (thanks @ryanduffyne !)
