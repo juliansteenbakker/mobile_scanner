@@ -6,7 +6,7 @@
 //
 
 import Foundation
-
+import Flutter
 import AVFoundation
 import MLKitVision
 import MLKitBarcodeScanning

@@ -5,6 +5,7 @@
 //  Created by Julian Steenbakker on 24/08/2022.
 //
 
+import Flutter
 import Foundation
 
 public class BarcodeHandler: NSObject, FlutterStreamHandler {
