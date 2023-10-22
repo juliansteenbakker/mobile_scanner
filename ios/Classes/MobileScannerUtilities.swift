@@ -1,10 +1,3 @@
-//
-//  Util.swift
-//  camerax
-//
-//  Created by 闫守旺 on 2021/2/6.
-//
-
 import AVFoundation
 import Flutter
 import Foundation

@@ -10,13 +10,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     // Sink for publishing event changes
     var sink: FlutterEventSink!
-    
+
     // Texture id of the camera preview
     var textureId: Int64!
-    
+
     // Capture session of the camera
     var captureSession: AVCaptureSession!
-    
+
     // The selected camera
     weak var device: AVCaptureDevice!
 
@@ -25,21 +25,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // optional window to limit scan search
     var scanWindow: CGRect?
-    
+
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
     var timeoutSeconds: Double = 0
-  
-  var symbologies:[VNBarcodeSymbology] = []
+
+    var symbologies:[VNBarcodeSymbology] = []
     
-    
-//    var analyzeMode: Int = 0
+    //    var analyzeMode: Int = 0
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = MobileScannerPlugin(registrar.textures)
-        
         let method = FlutterMethodChannel(name:
                                             "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger)
         let event = FlutterEventChannel(name:
@@ -53,7 +51,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         super.init()
     }
     
-    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "state":
@@ -64,8 +61,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             start(call, result)
         case "torch":
             toggleTorch(call, result)
-//        case "analyze":
-//            switchAnalyzeMode(call, result)
+            //        case "analyze":
+            //            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
         case "updateScanWindow":
@@ -139,11 +136,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                     DispatchQueue.main.async {
                                         self?.sink?(["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]] as [String : Any])
                                     }
-//                                   if barcodeType == "QR" {
-//                                        let image = CIImage(image: source)
-//                                        image?.cropping(to: barcode.boundingBox)
-//                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
-//                                    }
+                                    //                                   if barcodeType == "QR" {
+                                    //                                        let image = CIImage(image: source)
+                                    //                                        image?.cropping(to: barcode.boundingBox)
+                                    //                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
+                                    //                                    }
                                 }
                             }
                         } else {
@@ -204,9 +201,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func isBarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CGImage) -> Bool {
-
-        let imageWidth = CGFloat(inputImage.width);
-        let imageHeight = CGFloat(inputImage.height);
+        let imageWidth = CGFloat(inputImage.width)
+        let imageHeight = CGFloat(inputImage.height)
 
         let minX = scanWindow.minX * imageWidth
         let minY = scanWindow.minY * imageHeight
@@ -220,8 +216,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     func isBarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CVImageBuffer) -> Bool {
         let size = CVImageBufferGetEncodedSize(inputImage)
 
-        let imageWidth = size.width;
-        let imageHeight = size.height;
+        let imageWidth = size.width
+        let imageHeight = size.height
 
         let minX = scanWindow.minX * imageWidth
         let minY = scanWindow.minY * imageHeight
@@ -293,7 +289,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
         }
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo;
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
         
@@ -331,10 +327,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
 
-//    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-//        analyzeMode = call.arguments as! Int
-//        result(nil)
-//    }
+    //    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    //        analyzeMode = call.arguments as! Int
+    //        result(nil)
+    //    }
 
     func stop(_ result: FlutterResult) {
         if (device == nil) {
@@ -352,7 +348,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
         
-//        analyzeMode = 0
+        //        analyzeMode = 0
         latestBuffer = nil
         captureSession = nil
         device = nil
@@ -365,7 +361,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
-            // off = 0; on = 1; auto = 2;
+            // off = 0 on = 1 auto = 2
             let state = change?[.newKey] as? Int
             let event: [String: Any?] = ["name": "torchState", "data": state]
             sink?(event)
@@ -376,7 +372,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 }
 
 class MapArgumentReader {
-  
     let args: [String: Any]?
 
     init(_ args: [String: Any]?) {
@@ -418,11 +413,10 @@ class MapArgumentReader {
     func floatArray(key: String) -> [CGFloat]? {
         return args?[key] as? [CGFloat]
     }
-  
+
 }
 
 extension VNBarcodeSymbology {
-  
     static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
         if #available(macOS 12.0, *) {
             if(mapValue == 8){
@@ -487,7 +481,7 @@ extension VNBarcodeSymbology {
         case VNBarcodeSymbology.aztec:
             return 4096
         default:
-            return -1;
+            return -1
         }
     }
 }
