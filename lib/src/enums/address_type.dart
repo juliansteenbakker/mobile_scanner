@@ -1,17 +1,28 @@
 /// Address type constants.
 enum AddressType {
   /// Unknown address type.
-  ///
-  /// Constant Value: 0
-  unknown,
+  unknown(0),
 
   /// Work address.
-  ///
-  /// Constant Value: 1
-  work,
+  work(1),
 
   /// Home address.
-  ///
-  /// Constant Value: 2
-  home,
+  home(2);
+
+  const AddressType(this.rawValue);
+
+  factory AddressType.fromRawValue(int value) {
+    switch (value) {
+      case 1:
+        return AddressType.work;
+      case 2:
+        return AddressType.home;
+      case 0:
+      default:
+        return AddressType.unknown;
+    }
+  }
+
+  /// The raw address type value.
+  final int rawValue;
 }
