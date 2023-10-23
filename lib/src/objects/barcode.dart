@@ -12,6 +12,7 @@ import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 import 'package:mobile_scanner/src/objects/geo_point.dart';
 import 'package:mobile_scanner/src/objects/sms.dart';
+import 'package:mobile_scanner/src/objects/url_bookmark.dart';
 import 'package:mobile_scanner/src/objects/wifi.dart';
 
 /// Represents a single recognized barcode and its value.
@@ -205,22 +206,4 @@ class Phone {
   Phone.fromNative(Map data)
       : number = data['number'] as String?,
         type = PhoneType.values[data['type'] as int];
-}
-
-/// A URL and title from a 'MEBKM:' or similar QRCode type.
-class UrlBookmark {
-  /// Gets the title of the bookmark.
-  ///
-  /// Returns null if not available.
-  final String? title;
-
-  /// Gets the url of the bookmark.
-  ///
-  /// Returns null if not available.
-  final String? url;
-
-  /// Create a [UrlBookmark] from native data.
-  UrlBookmark.fromNative(Map data)
-      : title = data['title'] as String?,
-        url = data['url'] as String?;
 }

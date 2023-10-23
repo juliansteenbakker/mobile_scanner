@@ -4,6 +4,7 @@ Improvements:
 * The `phoneNumber` of an `SMS` is now non-null.
 * The `latitude` and `longitude` of a `GeoPoint` are now non-null.
 * The `phones` and `urls` of `ContactInfo` are now non-null.
+* The `url` of a `UrlBookmark` is now non-null.
 
 ## 3.5.0
 New Features:
