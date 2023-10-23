@@ -144,8 +144,8 @@ class MobileScannerHandler(
         var barcodeScannerOptions: BarcodeScannerOptions? = null
         if (formats != null) {
             val formatsList: MutableList<Int> = mutableListOf()
-            for (index in formats) {
-                formatsList.add(BarcodeFormats.values()[index].intValue)
+            for (formatValue in formats) {
+                formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
             }
             barcodeScannerOptions = if (formatsList.size == 1) {
                 BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
