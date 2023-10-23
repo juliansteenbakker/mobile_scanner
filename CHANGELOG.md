@@ -2,6 +2,7 @@
 Improvements:
 * The `type` of an `Email` is now non-null.
 * The `phoneNumber` of an `SMS` is now non-null.
+* The `latitude` and `longitude` of a `GeoPoint` are now non-null.
 
 ## 3.5.0
 New Features:

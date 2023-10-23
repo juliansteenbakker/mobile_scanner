@@ -17,6 +17,7 @@ export 'src/objects/barcode_capture.dart';
 export 'src/objects/calendar_event.dart';
 export 'src/objects/driver_license.dart';
 export 'src/objects/email.dart';
+export 'src/objects/geo_point.dart';
 export 'src/objects/mobile_scanner_arguments.dart';
 export 'src/objects/sms.dart';
 export 'src/objects/wifi.dart';

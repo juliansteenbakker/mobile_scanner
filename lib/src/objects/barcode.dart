@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/enums/phone_type.dart';
 import 'package:mobile_scanner/src/objects/calendar_event.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
+import 'package:mobile_scanner/src/objects/geo_point.dart';
 import 'package:mobile_scanner/src/objects/sms.dart';
 import 'package:mobile_scanner/src/objects/wifi.dart';
 
@@ -240,20 +241,6 @@ class PersonName {
         suffix = data['suffix'] as String?,
         formattedName = data['formattedName'] as String?,
         pronunciation = data['pronunciation'] as String?;
-}
-
-/// GPS coordinates from a 'GEO:' or similar QRCode type.
-class GeoPoint {
-  /// Gets the latitude.
-  final double? latitude;
-
-  /// Gets the longitude.
-  final double? longitude;
-
-  /// Create a [GeoPoint] from native data.
-  GeoPoint.fromNative(Map data)
-      : latitude = data['latitude'] as double?,
-        longitude = data['longitude'] as double?;
 }
 
 /// Phone number info.

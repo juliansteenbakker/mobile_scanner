@@ -2,6 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/objects/geo_point.dart';
 
 Size toSize(Map data) {
   final width = data['width'] as double;
