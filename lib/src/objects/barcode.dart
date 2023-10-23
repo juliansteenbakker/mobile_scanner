@@ -7,6 +7,7 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
 import 'package:mobile_scanner/src/objects/calendar_event.dart';
+import 'package:mobile_scanner/src/objects/contact_info.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 import 'package:mobile_scanner/src/objects/geo_point.dart';
@@ -119,62 +120,6 @@ class Barcode {
         sms = toSMS(data['sms'] as Map?),
         url = toUrl(data['url'] as Map?),
         wifi = toWiFi(data['wifi'] as Map?);
-}
-
-/// A person's or organization's business card. For example a VCARD.
-class ContactInfo {
-  /// Gets contact person's addresses.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Address> addresses;
-
-  /// Gets contact person's emails.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Email> emails;
-
-  /// Gets contact person's name.
-  ///
-  /// Returns null if not available.
-  final PersonName? name;
-
-  /// Gets contact person's organization.
-  ///
-  /// Returns null if not available.
-  final String? organization;
-
-  /// Gets contact person's phones.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Phone>? phones;
-
-  /// Gets contact person's title.
-  ///
-  /// Returns null if not available.
-  final String? title;
-
-  /// Gets contact person's urls.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<String>? urls;
-
-  /// Create a [ContactInfo] from native data.
-  ContactInfo.fromNative(Map data)
-      : addresses = List.unmodifiable(
-          (data['addresses'] as List? ?? [])
-              .cast<Map>()
-              .map(Address.fromNative),
-        ),
-        emails = List.unmodifiable(
-          (data['emails'] as List? ?? []).cast<Map>().map(Email.fromNative),
-        ),
-        name = toName(data['name'] as Map?),
-        organization = data['organization'] as String?,
-        phones = List.unmodifiable(
-          (data['phones'] as List? ?? []).cast<Map>().map(Phone.fromNative),
-        ),
-        title = data['title'] as String?,
-        urls = List.unmodifiable((data['urls'] as List? ?? []).cast<String>());
 }
 
 /// An address.
