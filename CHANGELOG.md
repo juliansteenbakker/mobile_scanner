@@ -1,5 +1,6 @@
 ## NEXT
 Improvements:
+* The `type` of an `Address` is now non-null.
 * The `type` of an `Email` is now non-null.
 * The `phoneNumber` of an `SMS` is now non-null.
 * The `latitude` and `longitude` of a `GeoPoint` are now non-null.

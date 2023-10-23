@@ -1,3 +1,4 @@
+import 'package:mobile_scanner/src/objects/address.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 import 'package:mobile_scanner/src/objects/person_name.dart';

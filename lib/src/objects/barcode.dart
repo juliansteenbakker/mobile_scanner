@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/barcode_utility.dart';
-import 'package:mobile_scanner/src/enums/address_type.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
@@ -121,24 +120,6 @@ class Barcode {
         sms = toSMS(data['sms'] as Map?),
         url = toUrl(data['url'] as Map?),
         wifi = toWiFi(data['wifi'] as Map?);
-}
-
-/// An address.
-class Address {
-  /// Gets formatted address, multiple lines when appropriate. This field always contains at least one line.
-  final List<String> addressLines;
-
-  /// Gets type of the address.
-  ///
-  /// Returns null if not available.
-  final AddressType? type;
-
-  /// Create a [Address] from native data.
-  Address.fromNative(Map data)
-      : addressLines = List.unmodifiable(
-          (data['addressLines'] as List? ?? []).cast<String>(),
-        ),
-        type = AddressType.values[data['type'] as int];
 }
 
 /// Phone number info.
