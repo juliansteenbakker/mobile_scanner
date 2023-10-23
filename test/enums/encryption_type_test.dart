@@ -23,7 +23,10 @@ void main() {
       const int outOfRange = 4;
 
       expect(() => EncryptionType.fromRawValue(negative), throwsArgumentError);
-      expect(() => EncryptionType.fromRawValue(outOfRange), throwsArgumentError);
+      expect(
+        () => EncryptionType.fromRawValue(outOfRange),
+        throwsArgumentError,
+      );
     });
 
     test('can be converted to raw value', () {

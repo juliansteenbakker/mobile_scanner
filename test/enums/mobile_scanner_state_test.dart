@@ -11,7 +11,9 @@ void main() {
       };
 
       for (final MapEntry<int, MobileScannerState> entry in values.entries) {
-        final MobileScannerState result = MobileScannerState.fromRawValue(entry.key);
+        final MobileScannerState result = MobileScannerState.fromRawValue(
+          entry.key,
+        );
 
         expect(result, entry.value);
       }
@@ -21,8 +23,14 @@ void main() {
       const int negative = -1;
       const int outOfRange = 3;
 
-      expect(() => MobileScannerState.fromRawValue(negative), throwsArgumentError);
-      expect(() => MobileScannerState.fromRawValue(outOfRange), throwsArgumentError);
+      expect(
+        () => MobileScannerState.fromRawValue(negative),
+        throwsArgumentError,
+      );
+      expect(
+        () => MobileScannerState.fromRawValue(outOfRange),
+        throwsArgumentError,
+      );
     });
 
     test('can be converted to raw value', () {

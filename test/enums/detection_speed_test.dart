@@ -22,7 +22,10 @@ void main() {
       const int outOfRange = 3;
 
       expect(() => DetectionSpeed.fromRawValue(negative), throwsArgumentError);
-      expect(() => DetectionSpeed.fromRawValue(outOfRange), throwsArgumentError);
+      expect(
+        () => DetectionSpeed.fromRawValue(outOfRange),
+        throwsArgumentError,
+      );
     });
 
     test('can be converted to raw value', () {
