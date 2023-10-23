@@ -132,9 +132,9 @@ class MobileScannerController {
     final Map<String, dynamic> arguments = {};
 
     cameraFacingState.value = cameraFacingOverride ?? facing;
-    arguments['facing'] = cameraFacingState.value.index;
+    arguments['facing'] = cameraFacingState.value.rawValue;
     arguments['torch'] = torchEnabled;
-    arguments['speed'] = detectionSpeed.index;
+    arguments['speed'] = detectionSpeed.rawValue;
     arguments['timeout'] = detectionTimeoutMs;
 
     /*    if (scanWindow != null) {
@@ -329,7 +329,7 @@ class MobileScannerController {
     torchState.value =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
-    await _methodChannel.invokeMethod('torch', torchState.value.index);
+    await _methodChannel.invokeMethod('torch', torchState.value.rawValue);
   }
 
   /// Changes the state of the camera (front or back).
