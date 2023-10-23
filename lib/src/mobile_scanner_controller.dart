@@ -436,7 +436,9 @@ class MobileScannerController {
             barcodes: [
               Barcode(
                 rawValue: (data as Map)['payload'] as String?,
-                format: toFormat(data['symbology'] as int),
+                format: BarcodeFormat.fromRawValue(
+                  data['symbology'] as int? ?? -1,
+                ),
               ),
             ],
           ),
@@ -452,7 +454,9 @@ class MobileScannerController {
                 Barcode(
                   rawValue: barcode['rawValue'] as String?,
                   rawBytes: barcode['rawBytes'] as Uint8List?,
-                  format: toFormat(barcode['format'] as int),
+                  format: BarcodeFormat.fromRawValue(
+                    barcode['format'] as int? ?? -1,
+                  ),
                   corners: toCorners(
                         (barcode['corners'] as List<Object?>? ?? [])
                             .cast<Map<Object?, Object?>>(),
