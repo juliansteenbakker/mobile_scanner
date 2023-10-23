@@ -9,6 +9,7 @@ Improvements:
 * The `type` of `Phone` is now non-null.
 * The `width` and `height` of `BarcodeCapture` are now non-null.
 * The `BarcodeCapture` class now exposes a `size`.
+* The list of `corners` of a `Barcode` is now non-null.
 
 ## 3.5.0
 New Features:
@@ -26,6 +27,9 @@ Bugs fixed:
 * Fixed scan timeout not working on iOS. (thanks @navaronbracke !)
 * Fixed a crash on iOS when the device is nil. (thanks @navaronbracke !)
 * Fixed a case of an unhandled exception when starting the scanner. (thanks @navaronbracke !)
+* Fixed the default values for the `format` and `type` arguments of the Barcode constructor.
+  These now use `BarcodeFormat.unknown` and `BarcodeType.unknown`, rather than `BarcodeFormat.ean13` and `BarcodeType.text`.
+  (thanks @navaronbracke !)
 
 Improvements:
 * Improved MacOS memory footprint by using a background queue. (thanks @ryanduffyne !)
