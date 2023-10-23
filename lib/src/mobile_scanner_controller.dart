@@ -287,14 +287,26 @@ class MobileScannerController {
       torchState.value = TorchState.on;
     }
 
+    final Size size;
+
+    if (kIsWeb) {
+      size = Size(
+        startResult['videoWidth'] as double? ?? 0,
+        startResult['videoHeight'] as double? ?? 0,
+      );
+    } else {
+      final Map<Object?, Object?>? sizeInfo =
+          startResult['size'] as Map<Object?, Object?>?;
+
+      size = Size(
+        sizeInfo?['width'] as double? ?? 0,
+        sizeInfo?['height'] as double? ?? 0,
+      );
+    }
+
     isStarting = false;
     return startArguments.value = MobileScannerArguments(
-      size: kIsWeb
-          ? Size(
-              startResult['videoWidth'] as double? ?? 0,
-              startResult['videoHeight'] as double? ?? 0,
-            )
-          : toSize(startResult['size'] as Map? ?? {}),
+      size: size,
       hasTorch: hasTorch,
       textureId: kIsWeb ? null : startResult['textureId'] as int?,
       webId: kIsWeb ? startResult['ViewID'] as String? : null,

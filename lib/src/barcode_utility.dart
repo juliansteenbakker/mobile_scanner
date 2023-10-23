@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-Size toSize(Map data) {
-  final width = data['width'] as double;
-  final height = data['height'] as double;
-  return Size(width, height);
-}
-
 List<Offset>? toCorners(List<Map<Object?, Object?>>? data) {
   if (data == null) {
     return null;
