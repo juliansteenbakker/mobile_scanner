@@ -5,11 +5,11 @@ import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/address_type.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
-import 'package:mobile_scanner/src/enums/encryption_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
 import 'package:mobile_scanner/src/objects/calendar_event.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
+import 'package:mobile_scanner/src/objects/wifi.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
@@ -308,28 +308,4 @@ class UrlBookmark {
   UrlBookmark.fromNative(Map data)
       : title = data['title'] as String?,
         url = data['url'] as String?;
-}
-
-/// A wifi network parameters from a 'WIFI:' or similar QRCode type.
-class WiFi {
-  /// Gets the encryption type of the WIFI.
-  ///
-  /// See all [EncryptionType].
-  final EncryptionType encryptionType;
-
-  /// Gets the ssid of the WIFI.
-  ///
-  /// Returns null if not available.
-  final String? ssid;
-
-  /// Gets the password of the WIFI.
-  ///
-  /// Returns null if not available.
-  final String? password;
-
-  /// Create a [WiFi] from native data.
-  WiFi.fromNative(Map data)
-      : encryptionType = EncryptionType.values[data['encryptionType'] as int],
-        ssid = data['ssid'] as String?,
-        password = data['password'] as String?;
 }
