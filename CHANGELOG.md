@@ -12,6 +12,11 @@ Improvements:
 * The list of `corners` of a `Barcode` is now non-null.
 * The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
 
+Bugs fixed:
+* Fixed the default values for the `format` and `type` arguments of the Barcode constructor.
+  These now use `BarcodeFormat.unknown` and `BarcodeType.unknown`, rather than `BarcodeFormat.ean13` and `BarcodeType.text`.
+  (thanks @navaronbracke !)
+
 ## 3.5.0
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
