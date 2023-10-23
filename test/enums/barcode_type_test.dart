@@ -27,12 +27,12 @@ void main() {
       }
     });
 
-    test('invalid raw value creates unknown barcode type', () {
-      final BarcodeType negative = BarcodeType.fromRawValue(-1);
-      final BarcodeType outOfRange = BarcodeType.fromRawValue(13);
+    test('invalid raw value throws argument error', () {
+      const int negative = -1;
+      const int outOfRange = 13;
 
-      expect(negative, BarcodeType.unknown);
-      expect(outOfRange, BarcodeType.unknown);
+      expect(() => BarcodeType.fromRawValue(negative), throwsArgumentError);
+      expect(() => BarcodeType.fromRawValue(outOfRange), throwsArgumentError);
     });
 
     test('can be converted to raw value', () {

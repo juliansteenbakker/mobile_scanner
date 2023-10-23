@@ -16,7 +16,7 @@ void main() {
       }
     });
 
-    test('invalid raw value throws assertion error', () {
+    test('invalid raw value throws argument error', () {
       const int negative = -1;
       const int outOfRange = 2;
 

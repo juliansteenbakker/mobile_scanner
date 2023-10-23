@@ -17,12 +17,12 @@ void main() {
       }
     });
 
-    test('invalid raw value creates unknown address type', () {
-      final AddressType negative = AddressType.fromRawValue(-1);
-      final AddressType outOfRange = AddressType.fromRawValue(3);
+    test('invalid raw value throws argument error', () {
+      const int negative = -1;
+      const int outOfRange = 3;
 
-      expect(negative, AddressType.unknown);
-      expect(outOfRange, AddressType.unknown);
+      expect(() => AddressType.fromRawValue(negative), throwsArgumentError);
+      expect(() => AddressType.fromRawValue(outOfRange), throwsArgumentError);
     });
 
     test('can be converted to raw value', () {

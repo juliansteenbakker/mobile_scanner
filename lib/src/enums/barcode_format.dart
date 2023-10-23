@@ -49,6 +49,8 @@ enum BarcodeFormat {
 
   factory BarcodeFormat.fromRawValue(int value) {
     switch (value) {
+      case -1:
+        return BarcodeFormat.unknown;
       case 0:
         return BarcodeFormat.all;
       case 1:
@@ -77,9 +79,8 @@ enum BarcodeFormat {
         return BarcodeFormat.pdf417;
       case 4096:
         return BarcodeFormat.aztec;
-      case -1:
       default:
-        return BarcodeFormat.unknown;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 
