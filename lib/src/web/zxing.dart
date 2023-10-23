@@ -107,7 +107,7 @@ extension ZXingBarcodeFormat on BarcodeFormat {
     switch (this) {
       case BarcodeFormat.aztec:
         return 0;
-      case BarcodeFormat.codebar:
+      case BarcodeFormat.codabar:
         return 1;
       case BarcodeFormat.code39:
         return 2;

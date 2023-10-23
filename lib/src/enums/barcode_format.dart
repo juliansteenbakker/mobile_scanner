@@ -16,7 +16,7 @@ enum BarcodeFormat {
   code93(4),
 
   /// Barcode format constant for Codabar.
-  codebar(8),
+  codabar(8),
 
   /// Barcode format constant for Data Matrix.
   dataMatrix(16),
@@ -44,6 +44,12 @@ enum BarcodeFormat {
 
   /// Barcode format constant for AZTEC.
   aztec(4096);
+
+  /// This constant represents the old value for [BarcodeFormat.codabar].
+  ///
+  /// Prefer using the new [BarcodeFormat.codabar] constant,
+  /// as the `codebar` value will be removed in a future release.
+  static const BarcodeFormat codebar = codabar;
 
   const BarcodeFormat(this.rawValue);
 
