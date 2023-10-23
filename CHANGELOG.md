@@ -1,3 +1,7 @@
+## NEXT
+Improvements:
+* The `type` of an `Email` is no longer null.
+
 ## 3.5.0
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)

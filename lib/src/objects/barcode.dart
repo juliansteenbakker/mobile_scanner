@@ -5,9 +5,9 @@ import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/address_type.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
-import 'package:mobile_scanner/src/enums/email_type.dart';
 import 'package:mobile_scanner/src/enums/encryption_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
+import 'package:mobile_scanner/src/objects/email.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
@@ -381,37 +381,6 @@ class DriverLicense {
         lastName = data['lastName'] as String?,
         licenseNumber = data['licenseNumber'] as String?,
         middleName = data['middleName'] as String?;
-}
-
-/// An email message from a 'MAILTO:' or similar QRCode type.
-class Email {
-  /// Gets email's address.
-  ///
-  /// Returns null if not available.
-  final String? address;
-
-  /// Gets email's body.
-  ///
-  /// Returns null if not available.
-  final String? body;
-
-  /// Gets email's subject.
-  ///
-  /// Returns null if not available.
-  final String? subject;
-
-  /// Gets type of the email.
-  ///
-  /// See also [EmailType].
-  /// Returns null if not available.
-  final EmailType? type;
-
-  /// Create a [Email] from native data.
-  Email.fromNative(Map data)
-      : address = data['address'] as String?,
-        body = data['body'] as String?,
-        subject = data['subject'] as String?,
-        type = EmailType.values[data['type'] as int];
 }
 
 /// GPS coordinates from a 'GEO:' or similar QRCode type.
