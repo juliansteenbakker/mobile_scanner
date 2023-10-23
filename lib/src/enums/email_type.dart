@@ -13,13 +13,14 @@ enum EmailType {
 
   factory EmailType.fromRawValue(int value) {
     switch (value) {
+      case 0:
+        return EmailType.unknown;
       case 1:
         return EmailType.work;
       case 2:
         return EmailType.home;
-      case 0:
       default:
-        return EmailType.unknown;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 
