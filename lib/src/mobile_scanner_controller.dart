@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/barcode_utility.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
 /// where as the [MobileScanner] class is the frontend of this plugin.
@@ -287,14 +286,26 @@ class MobileScannerController {
       torchState.value = TorchState.on;
     }
 
+    final Size size;
+
+    if (kIsWeb) {
+      size = Size(
+        startResult['videoWidth'] as double? ?? 0,
+        startResult['videoHeight'] as double? ?? 0,
+      );
+    } else {
+      final Map<Object?, Object?>? sizeInfo =
+          startResult['size'] as Map<Object?, Object?>?;
+
+      size = Size(
+        sizeInfo?['width'] as double? ?? 0,
+        sizeInfo?['height'] as double? ?? 0,
+      );
+    }
+
     isStarting = false;
     return startArguments.value = MobileScannerArguments(
-      size: kIsWeb
-          ? Size(
-              startResult['videoWidth'] as double? ?? 0,
-              startResult['videoHeight'] as double? ?? 0,
-            )
-          : toSize(startResult['size'] as Map? ?? {}),
+      size: size,
       hasTorch: hasTorch,
       textureId: kIsWeb ? null : startResult['textureId'] as int?,
       webId: kIsWeb ? startResult['ViewID'] as String? : null,
@@ -424,7 +435,9 @@ class MobileScannerController {
             barcodes: [
               Barcode(
                 rawValue: (data as Map)['payload'] as String?,
-                format: toFormat(data['symbology'] as int),
+                format: BarcodeFormat.fromRawValue(
+                  data['symbology'] as int? ?? -1,
+                ),
               ),
             ],
           ),
@@ -432,6 +445,8 @@ class MobileScannerController {
         break;
       case 'barcodeWeb':
         final barcode = data as Map?;
+        final corners = barcode?['corners'] as List<Object?>? ?? <Object?>[];
+
         _barcodesController.add(
           BarcodeCapture(
             raw: data,
@@ -440,12 +455,16 @@ class MobileScannerController {
                 Barcode(
                   rawValue: barcode['rawValue'] as String?,
                   rawBytes: barcode['rawBytes'] as Uint8List?,
-                  format: toFormat(barcode['format'] as int),
-                  corners: toCorners(
-                        (barcode['corners'] as List<Object?>? ?? [])
-                            .cast<Map<Object?, Object?>>(),
-                      ) ??
-                      const <Offset>[],
+                  format: BarcodeFormat.fromRawValue(
+                    barcode['format'] as int? ?? -1,
+                  ),
+                  corners: List.unmodifiable(
+                    corners.cast<Map<Object?, Object?>>().map(
+                      (Map<Object?, Object?> e) {
+                        return Offset(e['x']! as double, e['y']! as double);
+                      },
+                    ),
+                  ),
                 ),
             ],
           ),
