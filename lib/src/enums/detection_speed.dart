@@ -18,6 +18,19 @@ enum DetectionSpeed {
 
   const DetectionSpeed(this.rawValue);
 
+  factory DetectionSpeed.fromRawValue(int value) {
+    switch (value) {
+      case 0:
+        return DetectionSpeed.noDuplicates;
+      case 1:
+        return DetectionSpeed.normal;
+      case 2:
+        return DetectionSpeed.unrestricted;
+      default:
+        return DetectionSpeed.normal;
+    }
+  }
+
   /// The raw value for the detection speed.
   final int rawValue;
 }
