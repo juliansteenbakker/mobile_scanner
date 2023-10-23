@@ -141,54 +141,6 @@ class Address {
         type = AddressType.values[data['type'] as int];
 }
 
-/// A person's name, both formatted version and individual name components.
-class PersonName {
-  /// Gets first name.
-  ///
-  /// Returns null if not available.
-  final String? first;
-
-  /// Gets middle name.
-  ///
-  /// Returns null if not available.
-  final String? middle;
-
-  /// Gets last name.
-  ///
-  /// Returns null if not available.
-  final String? last;
-
-  /// Gets prefix of the name.
-  ///
-  /// Returns null if not available.
-  final String? prefix;
-
-  /// Gets suffix of the person's name.
-  ///
-  /// Returns null if not available.
-  final String? suffix;
-
-  /// Gets the properly formatted name.
-  ///
-  /// Returns null if not available.
-  final String? formattedName;
-
-  /// Designates a text string to be set as the kana name in the phonebook. Used for Japanese contacts.
-  ///
-  /// Returns null if not available.
-  final String? pronunciation;
-
-  /// Create a [PersonName] from native data.
-  PersonName.fromNative(Map data)
-      : first = data['first'] as String?,
-        middle = data['middle'] as String?,
-        last = data['last'] as String?,
-        prefix = data['prefix'] as String?,
-        suffix = data['suffix'] as String?,
-        formattedName = data['formattedName'] as String?,
-        pronunciation = data['pronunciation'] as String?;
-}
-
 /// Phone number info.
 class Phone {
   /// Gets phone number.

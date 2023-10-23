@@ -20,6 +20,7 @@ export 'src/objects/driver_license.dart';
 export 'src/objects/email.dart';
 export 'src/objects/geo_point.dart';
 export 'src/objects/mobile_scanner_arguments.dart';
+export 'src/objects/person_name.dart';
 export 'src/objects/sms.dart';
 export 'src/objects/url_bookmark.dart';
 export 'src/objects/wifi.dart';
