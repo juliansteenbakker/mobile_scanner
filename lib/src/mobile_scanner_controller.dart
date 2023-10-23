@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner/src/barcode_utility.dart';
 
 /// The [MobileScannerController] holds all the logic of this plugin,
 /// where as the [MobileScanner] class is the frontend of this plugin.
@@ -446,6 +445,8 @@ class MobileScannerController {
         break;
       case 'barcodeWeb':
         final barcode = data as Map?;
+        final corners = barcode?['corners'] as List<Object?>? ?? <Object?>[];
+
         _barcodesController.add(
           BarcodeCapture(
             raw: data,
@@ -457,11 +458,13 @@ class MobileScannerController {
                   format: BarcodeFormat.fromRawValue(
                     barcode['format'] as int? ?? -1,
                   ),
-                  corners: toCorners(
-                        (barcode['corners'] as List<Object?>? ?? [])
-                            .cast<Map<Object?, Object?>>(),
-                      ) ??
-                      const <Offset>[],
+                  corners: List.unmodifiable(
+                    corners.cast<Map<Object?, Object?>>().map(
+                      (Map<Object?, Object?> e) {
+                        return Offset(e['x']! as double, e['y']! as double);
+                      },
+                    ),
+                  ),
                 ),
             ],
           ),
