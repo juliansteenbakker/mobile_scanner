@@ -27,7 +27,7 @@ enum DetectionSpeed {
       case 2:
         return DetectionSpeed.unrestricted;
       default:
-        return DetectionSpeed.normal;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 
