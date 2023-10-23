@@ -7,6 +7,8 @@ Improvements:
 * The `phones` and `urls` of `ContactInfo` are now non-null.
 * The `url` of a `UrlBookmark` is now non-null.
 * The `type` of `Phone` is now non-null.
+* The `width` and `height` of `BarcodeCapture` are now non-null.
+* The `BarcodeCapture` class now exposes a `size`.
 
 ## 3.5.0
 New Features:
