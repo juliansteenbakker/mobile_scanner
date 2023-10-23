@@ -14,6 +14,7 @@ export 'src/mobile_scanner_controller.dart';
 export 'src/mobile_scanner_exception.dart';
 export 'src/objects/barcode.dart';
 export 'src/objects/barcode_capture.dart';
+export 'src/objects/calendar_event.dart';
 export 'src/objects/driver_license.dart';
 export 'src/objects/email.dart';
 export 'src/objects/mobile_scanner_arguments.dart';

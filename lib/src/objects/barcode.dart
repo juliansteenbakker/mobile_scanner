@@ -7,6 +7,7 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
 import 'package:mobile_scanner/src/enums/encryption_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
+import 'package:mobile_scanner/src/objects/calendar_event.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 
@@ -116,58 +117,6 @@ class Barcode {
         sms = toSMS(data['sms'] as Map?),
         url = toUrl(data['url'] as Map?),
         wifi = toWiFi(data['wifi'] as Map?);
-}
-
-/// A calendar event extracted from QRCode.
-class CalendarEvent {
-  /// Gets the description of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? description;
-
-  /// Gets the start date time of the calendar event.
-  ///
-  /// Returns null if not available.
-  final DateTime? start;
-
-  /// Gets the end date time of the calendar event.
-  ///
-  /// Returns null if not available.
-  final DateTime? end;
-
-  /// Gets the location of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? location;
-
-  /// Gets the organizer of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? organizer;
-
-  /// Gets the status of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? status;
-
-  /// Gets the summary of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? summary;
-
-  /// Create a [CalendarEvent] from native data.
-  CalendarEvent.fromNative(Map data)
-      : description = data['description'] as String?,
-        start = data['start'] != null
-            ? DateTime.tryParse(data['start'] as String)
-            : null,
-        end = data['end'] != null
-            ? DateTime.tryParse(data['end'] as String)
-            : null,
-        location = data['location'] as String?,
-        organizer = data['organizer'] as String?,
-        status = data['status'] as String?,
-        summary = data['summary'] as String?;
 }
 
 /// A person's or organization's business card. For example a VCARD.
