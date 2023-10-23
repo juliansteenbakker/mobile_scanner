@@ -19,6 +19,8 @@ enum PhoneType {
 
   factory PhoneType.fromRawValue(int value) {
     switch (value) {
+      case 0:
+        return PhoneType.unknown;
       case 1:
         return PhoneType.work;
       case 2:
@@ -27,9 +29,8 @@ enum PhoneType {
         return PhoneType.fax;
       case 4:
         return PhoneType.mobile;
-      case 0:
       default:
-        return PhoneType.unknown;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 

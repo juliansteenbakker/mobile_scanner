@@ -43,6 +43,8 @@ enum BarcodeType {
 
   factory BarcodeType.fromRawValue(int value) {
     switch (value) {
+      case 0:
+        return BarcodeType.unknown;
       case 1:
         return BarcodeType.contactInfo;
       case 2:
@@ -67,9 +69,8 @@ enum BarcodeType {
         return BarcodeType.calendarEvent;
       case 12:
         return BarcodeType.driverLicense;
-      case 0:
       default:
-        return BarcodeType.unknown;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 

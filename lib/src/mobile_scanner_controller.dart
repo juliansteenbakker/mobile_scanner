@@ -49,11 +49,13 @@ class MobileScannerController {
   /// WARNING: DetectionSpeed.unrestricted can cause memory issues on some devices
   final DetectionSpeed detectionSpeed;
 
-  /// Sets the timeout of scanner.
-  /// The timeout is set in miliseconds.
+  /// Sets the timeout, in milliseconds, of the scanner.
   ///
-  /// NOTE: The timeout only works if the [detectionSpeed] is set to
-  /// [DetectionSpeed.normal] (which is the default value).
+  /// This timeout is ignored if the [detectionSpeed]
+  /// is not set to [DetectionSpeed.normal].
+  ///
+  /// By default this is set to `250` milliseconds,
+  /// which prevents memory issues on older devices.
   final int detectionTimeoutMs;
 
   /// Automatically start the mobileScanner on initialization.

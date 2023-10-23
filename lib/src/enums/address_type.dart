@@ -13,13 +13,14 @@ enum AddressType {
 
   factory AddressType.fromRawValue(int value) {
     switch (value) {
+      case 0:
+        return AddressType.unknown;
       case 1:
         return AddressType.work;
       case 2:
         return AddressType.home;
-      case 0:
       default:
-        return AddressType.unknown;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 
