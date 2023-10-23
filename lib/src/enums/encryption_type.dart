@@ -16,15 +16,16 @@ enum EncryptionType {
 
   factory EncryptionType.fromRawValue(int value) {
     switch (value) {
+      case 0:
+        return EncryptionType.none;
       case 1:
         return EncryptionType.open;
       case 2:
         return EncryptionType.wpa;
       case 3:
         return EncryptionType.wep;
-      case 0:
       default:
-        return EncryptionType.none;
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
 
