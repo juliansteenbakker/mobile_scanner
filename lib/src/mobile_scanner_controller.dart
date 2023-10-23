@@ -136,6 +136,7 @@ class MobileScannerController {
     arguments['torch'] = torchEnabled;
     arguments['speed'] = detectionSpeed.rawValue;
     arguments['timeout'] = detectionTimeoutMs;
+    arguments['returnImage'] = returnImage;
 
     /*    if (scanWindow != null) {
       arguments['scanWindow'] = [
@@ -147,19 +148,18 @@ class MobileScannerController {
     } */
 
     if (formats != null) {
-      if (kIsWeb || Platform.isIOS || Platform.isMacOS) {
+      if (kIsWeb || Platform.isIOS || Platform.isMacOS || Platform.isAndroid) {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
-      } else if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((e) => e.index).toList();
-        if (cameraResolution != null) {
-          arguments['cameraResolution'] = <int>[
-            cameraResolution!.width.toInt(),
-            cameraResolution!.height.toInt(),
-          ];
-        }
       }
     }
-    arguments['returnImage'] = returnImage;
+
+    if (cameraResolution != null) {
+      arguments['cameraResolution'] = <int>[
+        cameraResolution!.width.toInt(),
+        cameraResolution!.height.toInt(),
+      ];
+    }
+
     return arguments;
   }
 
