@@ -120,7 +120,7 @@ class MobileScannerHandler(
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
-            "resetScale" -> resetScale(call, result)
+            "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
@@ -250,7 +250,7 @@ class MobileScannerHandler(
         }
     }
 
-    private fun resetScale(call: MethodCall, result: MethodChannel.Result) {
+    private fun resetScale(result: MethodChannel.Result) {
         try {
             mobileScanner!!.resetScale()
             result.success(null)
