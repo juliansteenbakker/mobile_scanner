@@ -4,12 +4,12 @@ import 'dart:ui';
 import 'package:mobile_scanner/src/barcode_utility.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
-import 'package:mobile_scanner/src/enums/phone_type.dart';
 import 'package:mobile_scanner/src/objects/calendar_event.dart';
 import 'package:mobile_scanner/src/objects/contact_info.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 import 'package:mobile_scanner/src/objects/geo_point.dart';
+import 'package:mobile_scanner/src/objects/phone.dart';
 import 'package:mobile_scanner/src/objects/sms.dart';
 import 'package:mobile_scanner/src/objects/url_bookmark.dart';
 import 'package:mobile_scanner/src/objects/wifi.dart';
@@ -120,23 +120,4 @@ class Barcode {
         sms = toSMS(data['sms'] as Map?),
         url = toUrl(data['url'] as Map?),
         wifi = toWiFi(data['wifi'] as Map?);
-}
-
-/// Phone number info.
-class Phone {
-  /// Gets phone number.
-  ///
-  /// Returns null if not available.
-  final String? number;
-
-  /// Gets type of the phone number.
-  ///
-  /// See also [PhoneType].
-  /// Returns null if not available.
-  final PhoneType? type;
-
-  /// Create a [Phone] from native data.
-  Phone.fromNative(Map data)
-      : number = data['number'] as String?,
-        type = PhoneType.values[data['type'] as int];
 }
