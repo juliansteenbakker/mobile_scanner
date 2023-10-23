@@ -7,6 +7,7 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
 import 'package:mobile_scanner/src/enums/encryption_type.dart';
 import 'package:mobile_scanner/src/enums/phone_type.dart';
+import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
 
 /// Represents a single recognized barcode and its value.
@@ -289,98 +290,6 @@ class PersonName {
         suffix = data['suffix'] as String?,
         formattedName = data['formattedName'] as String?,
         pronunciation = data['pronunciation'] as String?;
-}
-
-/// A driver license or ID card.
-class DriverLicense {
-  /// Gets city of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressCity;
-
-  /// Gets state of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressState;
-
-  /// Gets holder's street address.
-  ///
-  /// Returns null if not available.
-  final String? addressStreet;
-
-  /// Gets postal code of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressZip;
-
-  /// Gets birth date of the holder.
-  ///
-  /// Returns null if not available.
-  final String? birthDate;
-
-  /// Gets "DL" for driver licenses, "ID" for ID cards.
-  ///
-  /// Returns null if not available.
-  final String? documentType;
-
-  /// Gets expiry date of the license.
-  ///
-  /// Returns null if not available.
-  final String? expiryDate;
-
-  /// Gets holder's first name.
-  ///
-  /// Returns null if not available.
-  final String? firstName;
-
-  /// Gets holder's gender. 1 - male, 2 - female.
-  ///
-  /// Returns null if not available.
-  final String? gender;
-
-  /// Gets issue date of the license.
-  ///
-  /// The date format depends on the issuing country. MMDDYYYY for the US, YYYYMMDD for Canada.
-  ///
-  /// Returns null if not available.
-  final String? issueDate;
-
-  /// Gets the three-letter country code in which DL/ID was issued.
-  ///
-  /// Returns null if not available.
-  final String? issuingCountry;
-
-  /// Gets holder's last name.
-  ///
-  /// Returns null if not available.
-  final String? lastName;
-
-  /// Gets driver license ID number.
-  ///
-  /// Returns null if not available.
-  final String? licenseNumber;
-
-  /// Gets holder's middle name.
-  ///
-  /// Returns null if not available.
-  final String? middleName;
-
-  /// Create a [DriverLicense] from native data.
-  DriverLicense.fromNative(Map data)
-      : addressCity = data['addressCity'] as String?,
-        addressState = data['addressState'] as String?,
-        addressStreet = data['addressStreet'] as String?,
-        addressZip = data['addressZip'] as String?,
-        birthDate = data['birthDate'] as String?,
-        documentType = data['documentType'] as String?,
-        expiryDate = data['expiryDate'] as String?,
-        firstName = data['firstName'] as String?,
-        gender = data['gender'] as String?,
-        issueDate = data['issueDate'] as String?,
-        issuingCountry = data['issuingCountry'] as String?,
-        lastName = data['lastName'] as String?,
-        licenseNumber = data['licenseNumber'] as String?,
-        middleName = data['middleName'] as String?;
 }
 
 /// GPS coordinates from a 'GEO:' or similar QRCode type.
