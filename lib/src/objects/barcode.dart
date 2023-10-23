@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/enums/phone_type.dart';
 import 'package:mobile_scanner/src/objects/calendar_event.dart';
 import 'package:mobile_scanner/src/objects/driver_license.dart';
 import 'package:mobile_scanner/src/objects/email.dart';
+import 'package:mobile_scanner/src/objects/sms.dart';
 import 'package:mobile_scanner/src/objects/wifi.dart';
 
 /// Represents a single recognized barcode and its value.
@@ -272,24 +273,6 @@ class Phone {
   Phone.fromNative(Map data)
       : number = data['number'] as String?,
         type = PhoneType.values[data['type'] as int];
-}
-
-/// A sms message from a 'SMS:' or similar QRCode type.
-class SMS {
-  /// Gets the message content of the sms.
-  ///
-  /// Returns null if not available.
-  final String? message;
-
-  /// Gets the phone number of the sms.
-  ///
-  /// Returns null if not available.
-  final String? phoneNumber;
-
-  /// Create a [SMS] from native data.
-  SMS.fromNative(Map data)
-      : message = data['message'] as String?,
-        phoneNumber = data['phoneNumber'] as String?;
 }
 
 /// A URL and title from a 'MEBKM:' or similar QRCode type.
