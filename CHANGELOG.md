@@ -1,3 +1,17 @@
+## NEXT
+Improvements:
+* The `type` of an `Address` is now non-null.
+* The `type` of an `Email` is now non-null.
+* The `phoneNumber` of an `SMS` is now non-null.
+* The `latitude` and `longitude` of a `GeoPoint` are now non-null.
+* The `phones` and `urls` of `ContactInfo` are now non-null.
+* The `url` of a `UrlBookmark` is now non-null.
+* The `type` of `Phone` is now non-null.
+* The `width` and `height` of `BarcodeCapture` are now non-null.
+* The `BarcodeCapture` class now exposes a `size`.
+* The list of `corners` of a `Barcode` is now non-null.
+* The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
+
 ## 3.5.0
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)

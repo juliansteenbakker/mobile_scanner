@@ -2,12 +2,17 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/barcode_utility.dart';
-import 'package:mobile_scanner/src/enums/address_type.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/barcode_type.dart';
-import 'package:mobile_scanner/src/enums/email_type.dart';
-import 'package:mobile_scanner/src/enums/encryption_type.dart';
-import 'package:mobile_scanner/src/enums/phone_type.dart';
+import 'package:mobile_scanner/src/objects/calendar_event.dart';
+import 'package:mobile_scanner/src/objects/contact_info.dart';
+import 'package:mobile_scanner/src/objects/driver_license.dart';
+import 'package:mobile_scanner/src/objects/email.dart';
+import 'package:mobile_scanner/src/objects/geo_point.dart';
+import 'package:mobile_scanner/src/objects/phone.dart';
+import 'package:mobile_scanner/src/objects/sms.dart';
+import 'package:mobile_scanner/src/objects/url_bookmark.dart';
+import 'package:mobile_scanner/src/objects/wifi.dart';
 
 /// Represents a single recognized barcode and its value.
 class Barcode {
@@ -16,7 +21,7 @@ class Barcode {
   /// Due to the possible perspective distortions, this is not necessarily a rectangle.
   ///
   /// Returns null if the corner points can not be determined.
-  final List<Offset>? corners;
+  final List<Offset> corners;
 
   /// Returns barcode format
   final BarcodeFormat format;
@@ -79,7 +84,7 @@ class Barcode {
   final WiFi? wifi;
 
   Barcode({
-    this.corners,
+    this.corners = const <Offset>[],
     this.format = BarcodeFormat.ean13,
     this.rawBytes,
     this.type = BarcodeType.text,
@@ -99,8 +104,9 @@ class Barcode {
   /// Create a [Barcode] from native data.
   Barcode.fromNative(Map data)
       : corners = toCorners(
-          (data['corners'] as List?)?.cast<Map<Object?, Object?>>(),
-        ),
+              (data['corners'] as List?)?.cast<Map<Object?, Object?>>(),
+            ) ??
+            const <Offset>[],
         format = toFormat(data['format'] as int),
         rawBytes = data['rawBytes'] as Uint8List?,
         rawValue = data['rawValue'] as String?,
@@ -115,394 +121,4 @@ class Barcode {
         sms = toSMS(data['sms'] as Map?),
         url = toUrl(data['url'] as Map?),
         wifi = toWiFi(data['wifi'] as Map?);
-}
-
-/// A calendar event extracted from QRCode.
-class CalendarEvent {
-  /// Gets the description of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? description;
-
-  /// Gets the start date time of the calendar event.
-  ///
-  /// Returns null if not available.
-  final DateTime? start;
-
-  /// Gets the end date time of the calendar event.
-  ///
-  /// Returns null if not available.
-  final DateTime? end;
-
-  /// Gets the location of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? location;
-
-  /// Gets the organizer of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? organizer;
-
-  /// Gets the status of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? status;
-
-  /// Gets the summary of the calendar event.
-  ///
-  /// Returns null if not available.
-  final String? summary;
-
-  /// Create a [CalendarEvent] from native data.
-  CalendarEvent.fromNative(Map data)
-      : description = data['description'] as String?,
-        start = data['start'] != null
-            ? DateTime.tryParse(data['start'] as String)
-            : null,
-        end = data['end'] != null
-            ? DateTime.tryParse(data['end'] as String)
-            : null,
-        location = data['location'] as String?,
-        organizer = data['organizer'] as String?,
-        status = data['status'] as String?,
-        summary = data['summary'] as String?;
-}
-
-/// A person's or organization's business card. For example a VCARD.
-class ContactInfo {
-  /// Gets contact person's addresses.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Address> addresses;
-
-  /// Gets contact person's emails.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Email> emails;
-
-  /// Gets contact person's name.
-  ///
-  /// Returns null if not available.
-  final PersonName? name;
-
-  /// Gets contact person's organization.
-  ///
-  /// Returns null if not available.
-  final String? organization;
-
-  /// Gets contact person's phones.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<Phone>? phones;
-
-  /// Gets contact person's title.
-  ///
-  /// Returns null if not available.
-  final String? title;
-
-  /// Gets contact person's urls.
-  ///
-  /// Returns an empty list if nothing found.
-  final List<String>? urls;
-
-  /// Create a [ContactInfo] from native data.
-  ContactInfo.fromNative(Map data)
-      : addresses = List.unmodifiable(
-          (data['addresses'] as List? ?? [])
-              .cast<Map>()
-              .map(Address.fromNative),
-        ),
-        emails = List.unmodifiable(
-          (data['emails'] as List? ?? []).cast<Map>().map(Email.fromNative),
-        ),
-        name = toName(data['name'] as Map?),
-        organization = data['organization'] as String?,
-        phones = List.unmodifiable(
-          (data['phones'] as List? ?? []).cast<Map>().map(Phone.fromNative),
-        ),
-        title = data['title'] as String?,
-        urls = List.unmodifiable((data['urls'] as List? ?? []).cast<String>());
-}
-
-/// An address.
-class Address {
-  /// Gets formatted address, multiple lines when appropriate. This field always contains at least one line.
-  final List<String> addressLines;
-
-  /// Gets type of the address.
-  ///
-  /// Returns null if not available.
-  final AddressType? type;
-
-  /// Create a [Address] from native data.
-  Address.fromNative(Map data)
-      : addressLines = List.unmodifiable(
-          (data['addressLines'] as List? ?? []).cast<String>(),
-        ),
-        type = AddressType.values[data['type'] as int];
-}
-
-/// A person's name, both formatted version and individual name components.
-class PersonName {
-  /// Gets first name.
-  ///
-  /// Returns null if not available.
-  final String? first;
-
-  /// Gets middle name.
-  ///
-  /// Returns null if not available.
-  final String? middle;
-
-  /// Gets last name.
-  ///
-  /// Returns null if not available.
-  final String? last;
-
-  /// Gets prefix of the name.
-  ///
-  /// Returns null if not available.
-  final String? prefix;
-
-  /// Gets suffix of the person's name.
-  ///
-  /// Returns null if not available.
-  final String? suffix;
-
-  /// Gets the properly formatted name.
-  ///
-  /// Returns null if not available.
-  final String? formattedName;
-
-  /// Designates a text string to be set as the kana name in the phonebook. Used for Japanese contacts.
-  ///
-  /// Returns null if not available.
-  final String? pronunciation;
-
-  /// Create a [PersonName] from native data.
-  PersonName.fromNative(Map data)
-      : first = data['first'] as String?,
-        middle = data['middle'] as String?,
-        last = data['last'] as String?,
-        prefix = data['prefix'] as String?,
-        suffix = data['suffix'] as String?,
-        formattedName = data['formattedName'] as String?,
-        pronunciation = data['pronunciation'] as String?;
-}
-
-/// A driver license or ID card.
-class DriverLicense {
-  /// Gets city of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressCity;
-
-  /// Gets state of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressState;
-
-  /// Gets holder's street address.
-  ///
-  /// Returns null if not available.
-  final String? addressStreet;
-
-  /// Gets postal code of holder's address.
-  ///
-  /// Returns null if not available.
-  final String? addressZip;
-
-  /// Gets birth date of the holder.
-  ///
-  /// Returns null if not available.
-  final String? birthDate;
-
-  /// Gets "DL" for driver licenses, "ID" for ID cards.
-  ///
-  /// Returns null if not available.
-  final String? documentType;
-
-  /// Gets expiry date of the license.
-  ///
-  /// Returns null if not available.
-  final String? expiryDate;
-
-  /// Gets holder's first name.
-  ///
-  /// Returns null if not available.
-  final String? firstName;
-
-  /// Gets holder's gender. 1 - male, 2 - female.
-  ///
-  /// Returns null if not available.
-  final String? gender;
-
-  /// Gets issue date of the license.
-  ///
-  /// The date format depends on the issuing country. MMDDYYYY for the US, YYYYMMDD for Canada.
-  ///
-  /// Returns null if not available.
-  final String? issueDate;
-
-  /// Gets the three-letter country code in which DL/ID was issued.
-  ///
-  /// Returns null if not available.
-  final String? issuingCountry;
-
-  /// Gets holder's last name.
-  ///
-  /// Returns null if not available.
-  final String? lastName;
-
-  /// Gets driver license ID number.
-  ///
-  /// Returns null if not available.
-  final String? licenseNumber;
-
-  /// Gets holder's middle name.
-  ///
-  /// Returns null if not available.
-  final String? middleName;
-
-  /// Create a [DriverLicense] from native data.
-  DriverLicense.fromNative(Map data)
-      : addressCity = data['addressCity'] as String?,
-        addressState = data['addressState'] as String?,
-        addressStreet = data['addressStreet'] as String?,
-        addressZip = data['addressZip'] as String?,
-        birthDate = data['birthDate'] as String?,
-        documentType = data['documentType'] as String?,
-        expiryDate = data['expiryDate'] as String?,
-        firstName = data['firstName'] as String?,
-        gender = data['gender'] as String?,
-        issueDate = data['issueDate'] as String?,
-        issuingCountry = data['issuingCountry'] as String?,
-        lastName = data['lastName'] as String?,
-        licenseNumber = data['licenseNumber'] as String?,
-        middleName = data['middleName'] as String?;
-}
-
-/// An email message from a 'MAILTO:' or similar QRCode type.
-class Email {
-  /// Gets email's address.
-  ///
-  /// Returns null if not available.
-  final String? address;
-
-  /// Gets email's body.
-  ///
-  /// Returns null if not available.
-  final String? body;
-
-  /// Gets email's subject.
-  ///
-  /// Returns null if not available.
-  final String? subject;
-
-  /// Gets type of the email.
-  ///
-  /// See also [EmailType].
-  /// Returns null if not available.
-  final EmailType? type;
-
-  /// Create a [Email] from native data.
-  Email.fromNative(Map data)
-      : address = data['address'] as String?,
-        body = data['body'] as String?,
-        subject = data['subject'] as String?,
-        type = EmailType.values[data['type'] as int];
-}
-
-/// GPS coordinates from a 'GEO:' or similar QRCode type.
-class GeoPoint {
-  /// Gets the latitude.
-  final double? latitude;
-
-  /// Gets the longitude.
-  final double? longitude;
-
-  /// Create a [GeoPoint] from native data.
-  GeoPoint.fromNative(Map data)
-      : latitude = data['latitude'] as double?,
-        longitude = data['longitude'] as double?;
-}
-
-/// Phone number info.
-class Phone {
-  /// Gets phone number.
-  ///
-  /// Returns null if not available.
-  final String? number;
-
-  /// Gets type of the phone number.
-  ///
-  /// See also [PhoneType].
-  /// Returns null if not available.
-  final PhoneType? type;
-
-  /// Create a [Phone] from native data.
-  Phone.fromNative(Map data)
-      : number = data['number'] as String?,
-        type = PhoneType.values[data['type'] as int];
-}
-
-/// A sms message from a 'SMS:' or similar QRCode type.
-class SMS {
-  /// Gets the message content of the sms.
-  ///
-  /// Returns null if not available.
-  final String? message;
-
-  /// Gets the phone number of the sms.
-  ///
-  /// Returns null if not available.
-  final String? phoneNumber;
-
-  /// Create a [SMS] from native data.
-  SMS.fromNative(Map data)
-      : message = data['message'] as String?,
-        phoneNumber = data['phoneNumber'] as String?;
-}
-
-/// A URL and title from a 'MEBKM:' or similar QRCode type.
-class UrlBookmark {
-  /// Gets the title of the bookmark.
-  ///
-  /// Returns null if not available.
-  final String? title;
-
-  /// Gets the url of the bookmark.
-  ///
-  /// Returns null if not available.
-  final String? url;
-
-  /// Create a [UrlBookmark] from native data.
-  UrlBookmark.fromNative(Map data)
-      : title = data['title'] as String?,
-        url = data['url'] as String?;
-}
-
-/// A wifi network parameters from a 'WIFI:' or similar QRCode type.
-class WiFi {
-  /// Gets the encryption type of the WIFI.
-  ///
-  /// See all [EncryptionType].
-  final EncryptionType encryptionType;
-
-  /// Gets the ssid of the WIFI.
-  ///
-  /// Returns null if not available.
-  final String? ssid;
-
-  /// Gets the password of the WIFI.
-  ///
-  /// Returns null if not available.
-  final String? password;
-
-  /// Create a [WiFi] from native data.
-  WiFi.fromNative(Map data)
-      : encryptionType = EncryptionType.values[data['encryptionType'] as int],
-        ssid = data['ssid'] as String?,
-        password = data['password'] as String?;
 }
