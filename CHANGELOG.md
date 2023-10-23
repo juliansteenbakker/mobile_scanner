@@ -1,4 +1,7 @@
 ## NEXT
+Breaking changes:
+* The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
+
 Improvements:
 * The `type` of an `Address` is now non-null.
 * The `type` of an `Email` is now non-null.
@@ -10,7 +13,6 @@ Improvements:
 * The `width` and `height` of `BarcodeCapture` are now non-null.
 * The `BarcodeCapture` class now exposes a `size`.
 * The list of `corners` of a `Barcode` is now non-null.
-* The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
 
 Bugs fixed:
 * Fixed the default values for the `format` and `type` arguments of the Barcode constructor.
