@@ -120,7 +120,7 @@ class MobileScannerHandler(
             "stop" -> stop(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
-            "resetScale" -> resetScale(call, result)
+            "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call)
             else -> result.notImplemented()
         }
@@ -144,8 +144,8 @@ class MobileScannerHandler(
         var barcodeScannerOptions: BarcodeScannerOptions? = null
         if (formats != null) {
             val formatsList: MutableList<Int> = mutableListOf()
-            for (index in formats) {
-                formatsList.add(BarcodeFormats.values()[index].intValue)
+            for (formatValue in formats) {
+                formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
             }
             barcodeScannerOptions = if (formatsList.size == 1) {
                 BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
@@ -250,7 +250,7 @@ class MobileScannerHandler(
         }
     }
 
-    private fun resetScale(call: MethodCall, result: MethodChannel.Result) {
+    private fun resetScale(result: MethodChannel.Result) {
         try {
             mobileScanner!!.resetScale()
             result.success(null)

@@ -139,7 +139,7 @@ class MobileScannerWebPlugin {
               'rawBytes': code.rawBytes,
               'format': code.format.rawValue,
               'displayValue': code.displayValue,
-              'type': code.type.index,
+              'type': code.type.rawValue,
               if (corners != null && corners.isNotEmpty)
                 'corners': corners
                     .map(

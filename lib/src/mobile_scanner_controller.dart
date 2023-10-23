@@ -132,10 +132,11 @@ class MobileScannerController {
     final Map<String, dynamic> arguments = {};
 
     cameraFacingState.value = cameraFacingOverride ?? facing;
-    arguments['facing'] = cameraFacingState.value.index;
+    arguments['facing'] = cameraFacingState.value.rawValue;
     arguments['torch'] = torchEnabled;
-    arguments['speed'] = detectionSpeed.index;
+    arguments['speed'] = detectionSpeed.rawValue;
     arguments['timeout'] = detectionTimeoutMs;
+    arguments['returnImage'] = returnImage;
 
     /*    if (scanWindow != null) {
       arguments['scanWindow'] = [
@@ -147,19 +148,18 @@ class MobileScannerController {
     } */
 
     if (formats != null) {
-      if (kIsWeb || Platform.isIOS || Platform.isMacOS) {
+      if (kIsWeb || Platform.isIOS || Platform.isMacOS || Platform.isAndroid) {
         arguments['formats'] = formats!.map((e) => e.rawValue).toList();
-      } else if (Platform.isAndroid) {
-        arguments['formats'] = formats!.map((e) => e.index).toList();
-        if (cameraResolution != null) {
-          arguments['cameraResolution'] = <int>[
-            cameraResolution!.width.toInt(),
-            cameraResolution!.height.toInt(),
-          ];
-        }
       }
     }
-    arguments['returnImage'] = returnImage;
+
+    if (cameraResolution != null) {
+      arguments['cameraResolution'] = <int>[
+        cameraResolution!.width.toInt(),
+        cameraResolution!.height.toInt(),
+      ];
+    }
+
     return arguments;
   }
 
@@ -329,7 +329,7 @@ class MobileScannerController {
     torchState.value =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
-    await _methodChannel.invokeMethod('torch', torchState.value.index);
+    await _methodChannel.invokeMethod('torch', torchState.value.rawValue);
   }
 
   /// Changes the state of the camera (front or back).
