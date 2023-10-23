@@ -10,6 +10,7 @@ Improvements:
 * The `width` and `height` of `BarcodeCapture` are now non-null.
 * The `BarcodeCapture` class now exposes a `size`.
 * The list of `corners` of a `Barcode` is now non-null.
+* The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
 
 ## 3.5.0
 New Features:
