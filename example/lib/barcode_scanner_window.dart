@@ -151,7 +151,7 @@ class BarcodeOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcode.corners == null) {
+    if (barcode.corners.isEmpty) {
       return;
     }
 
@@ -183,7 +183,7 @@ class BarcodeOverlay extends CustomPainter {
     }
 
     final List<Offset> adjustedOffset = [];
-    for (final offset in barcode.corners!) {
+    for (final offset in barcode.corners) {
       adjustedOffset.add(
         Offset(
           offset.dx / ratioWidth + horizontalPadding,
