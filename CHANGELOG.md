@@ -1,4 +1,4 @@
-## NEXT
+## 3.5.1
 Improvements:
 * The `type` of an `Address` is now non-null.
 * The `type` of an `Email` is now non-null.
