@@ -163,12 +163,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try mobileScanner.toggleTorch(call.arguments as? Int == 1 ? .on : .off)
+            result(nil)
         } catch {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called toggleTorch() while stopped!",
                                 details: nil))
         }
-        result(nil)
     }
     
     /// Toggles the zoomScale
@@ -182,6 +182,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         }
         do {
             try mobileScanner.setScale(scale!)
+            result(nil)
         } catch MobileScannerError.zoomWhenStopped {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called setScale() while stopped!",
@@ -195,13 +196,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: "Error while zooming.",
                                 details: nil))
         }
-        result(nil)
     }
 
     /// Reset the zoomScale
     private func resetScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try mobileScanner.resetScale()
+            result(nil)
         } catch MobileScannerError.zoomWhenStopped {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called resetScale() while stopped!",
@@ -215,7 +216,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: "Error while zooming.",
                                 details: nil))
         }
-        result(nil)
     }
 
     /// Toggles the torch
