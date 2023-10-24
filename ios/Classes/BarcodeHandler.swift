@@ -9,9 +9,6 @@ import Flutter
 import Foundation
 
 public class BarcodeHandler: NSObject, FlutterStreamHandler {
-    
-    var event: [String: Any?] = [:]
-    
     private var eventSink: FlutterEventSink?
     private let eventChannel: FlutterEventChannel
     
@@ -23,8 +20,9 @@ public class BarcodeHandler: NSObject, FlutterStreamHandler {
     }
     
     func publishEvent(_ event: [String: Any?]) {
-        self.event = event
-        eventSink?(event)
+        DispatchQueue.main.async {
+            self.eventSink?(event)
+        }
     }
     
     public func onListen(withArguments arguments: Any?,
