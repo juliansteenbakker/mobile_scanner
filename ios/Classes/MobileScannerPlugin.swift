@@ -121,7 +121,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
 
         do {
             try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed) { parameters in
-                result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
+                DispatchQueue.main.async {
+                    result([
+                        "textureId": parameters.textureId,
+                        "size": ["width": parameters.width, "height": parameters.height],
+                        "torchable": parameters.hasTorch])
+                }
             }
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",

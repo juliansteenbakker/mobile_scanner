@@ -232,23 +232,19 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                     device.activeFormat.formatDescription)
                 let hasTorch = device.hasTorch
                 
-                DispatchQueue.main.async {
-                    completion(
-                        MobileScannerStartParameters(
-                            width: Double(dimensions.height),
-                            height: Double(dimensions.width),
-                            hasTorch: hasTorch,
-                            textureId: self.textureId ?? 0
-                        )
+                completion(
+                    MobileScannerStartParameters(
+                        width: Double(dimensions.height),
+                        height: Double(dimensions.width),
+                        hasTorch: hasTorch,
+                        textureId: self.textureId ?? 0
                     )
-                }
+                )
                 
                 return
             }
             
-            DispatchQueue.main.async {
-                completion(MobileScannerStartParameters())
-            }
+            completion(MobileScannerStartParameters())
         }
     }
 
