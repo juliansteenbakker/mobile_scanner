@@ -2,6 +2,8 @@ package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
@@ -30,11 +32,12 @@ class MobileScannerHandler(
                 "name" to "barcode",
                 "data" to barcodes
             ))
-            analyzerResult?.success(true)
-        } else {
-            analyzerResult?.success(false)
         }
-        analyzerResult = null
+
+        Handler(Looper.getMainLooper()).post {
+            analyzerResult?.success(barcodes != null)
+            analyzerResult = null
+        }
     }
 
     private var analyzerResult: MethodChannel.Result? = null
@@ -92,7 +95,6 @@ class MobileScannerHandler(
         if(listener != null) {
             activityPluginBinding.removeRequestPermissionsResultListener(listener)
         }
-
     }
 
     @ExperimentalGetImage
@@ -173,11 +175,13 @@ class MobileScannerHandler(
                 torchStateCallback,
                 zoomScaleStateCallback,
                 mobileScannerStartedCallback = {
-                    result.success(mapOf(
-                        "textureId" to it.id,
-                        "size" to mapOf("width" to it.width, "height" to it.height),
-                        "torchable" to it.hasFlashUnit
-                    ))
+                    Handler(Looper.getMainLooper()).post {
+                        result.success(mapOf(
+                            "textureId" to it.id,
+                            "size" to mapOf("width" to it.width, "height" to it.height),
+                            "torchable" to it.hasFlashUnit
+                        ))
+                    }
                 },
                 timeout.toLong(),
                 cameraResolution,
