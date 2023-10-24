@@ -276,6 +276,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 device.unlockForConfiguration()
             } catch {
                 result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+                return
             }
         }
         
@@ -288,6 +289,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             captureSession.addInput(input)
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            return
         }
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.
