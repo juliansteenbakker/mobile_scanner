@@ -15,6 +15,7 @@ Bugs fixed:
 * Fixed the default values for the `format` and `type` arguments of the Barcode constructor.
   These now use `BarcodeFormat.unknown` and `BarcodeType.unknown`, rather than `BarcodeFormat.ean13` and `BarcodeType.text`.
   (thanks @navaronbracke !)
+* Fixed messages not being sent on the main thread for Android, iOS and MacOS. (thanks @navaronbracke !)
 
 ## 3.5.0
 New Features:
