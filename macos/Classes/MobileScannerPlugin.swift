@@ -144,7 +144,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 }
                             }
                         } else {
-                            self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                            DispatchQueue.main.async {
+                                self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                            }
                         }
                     })
                     if(self?.symbologies.isEmpty == false){
@@ -153,7 +155,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     }
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let e {
-                    self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                    DispatchQueue.main.async {
+                        self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                    }
                 }
             }
         }
@@ -276,6 +280,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 device.unlockForConfiguration()
             } catch {
                 result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+                return
             }
         }
         
@@ -288,6 +293,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             captureSession.addInput(input)
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            return
         }
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.

@@ -121,7 +121,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
 
         do {
             try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed) { parameters in
-                result(["textureId": parameters.textureId, "size": ["width": parameters.width, "height": parameters.height], "torchable": parameters.hasTorch])
+                DispatchQueue.main.async {
+                    result([
+                        "textureId": parameters.textureId,
+                        "size": ["width": parameters.width, "height": parameters.height],
+                        "torchable": parameters.hasTorch])
+                }
             }
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",
@@ -158,12 +163,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try mobileScanner.toggleTorch(call.arguments as? Int == 1 ? .on : .off)
+            result(nil)
         } catch {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called toggleTorch() while stopped!",
                                 details: nil))
         }
-        result(nil)
     }
     
     /// Toggles the zoomScale
@@ -177,6 +182,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         }
         do {
             try mobileScanner.setScale(scale!)
+            result(nil)
         } catch MobileScannerError.zoomWhenStopped {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called setScale() while stopped!",
@@ -190,13 +196,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: "Error while zooming.",
                                 details: nil))
         }
-        result(nil)
     }
 
     /// Reset the zoomScale
     private func resetScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         do {
             try mobileScanner.resetScale()
+            result(nil)
         } catch MobileScannerError.zoomWhenStopped {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called resetScale() while stopped!",
@@ -210,7 +216,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: "Error while zooming.",
                                 details: nil))
         }
-        result(nil)
     }
 
     /// Toggles the torch
@@ -247,16 +252,28 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         }
 
         mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { [self] barcodes, error in
-            if error == nil && barcodes != nil && !barcodes!.isEmpty {
+            if error != nil {
+                barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
+                
+                DispatchQueue.main.async {
+                    result(false)
+                }
+                
+                return
+            }
+            
+            if (barcodes == nil || barcodes!.isEmpty) {
+                DispatchQueue.main.async {
+                    result(false)
+                }
+            } else {
                 let barcodesMap: [Any?] = barcodes!.compactMap { barcode in barcode.data }
                 let event: [String: Any?] = ["name": "barcode", "data": barcodesMap]
                 barcodeHandler.publishEvent(event)
-                result(true)
-            } else {
-                if error != nil {
-                    barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
+                
+                DispatchQueue.main.async {
+                    result(true)
                 }
-                result(false)
             }
         })
     }
