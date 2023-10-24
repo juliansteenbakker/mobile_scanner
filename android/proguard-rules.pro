@@ -1,0 +1,3 @@
+-keep class com.google.mlkit.* { *; }
+-keep class com.google.android.libraries.barhopper.** { *; }
+-keep class com.google.photos.* { *; }
