@@ -1,7 +1,4 @@
 ## NEXT
-Breaking changes:
-* The internal `fromNative()` methods now accept a `Map<Object?, Object?>` instead of `Map<dynamic, dynamic>`.
-
 Improvements:
 * The `type` of an `Address` is now non-null.
 * The `type` of an `Email` is now non-null.
