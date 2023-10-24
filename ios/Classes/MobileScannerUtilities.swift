@@ -1,14 +1,6 @@
 import AVFoundation
-import Flutter
 import Foundation
 import MLKitBarcodeScanning
-
-extension Error {
-    func throwNative(_ result: FlutterResult) {
-        let error = FlutterError(code: localizedDescription, message: nil, details: nil)
-        result(error)
-    }
-}
 
 extension CVBuffer {
     var image: UIImage {
