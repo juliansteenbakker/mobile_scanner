@@ -144,7 +144,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 }
                             }
                         } else {
-                            self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                            DispatchQueue.main.async {
+                                self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                            }
                         }
                     })
                     if(self?.symbologies.isEmpty == false){
@@ -153,7 +155,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     }
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let e {
-                    self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                    DispatchQueue.main.async {
+                        self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                    }
                 }
             }
         }
