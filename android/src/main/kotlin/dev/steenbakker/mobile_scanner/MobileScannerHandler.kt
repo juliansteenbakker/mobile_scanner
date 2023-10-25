@@ -123,7 +123,7 @@ class MobileScannerHandler(
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
-            "updateScanWindow" -> updateScanWindow(call)
+            "updateScanWindow" -> updateScanWindow(call, result)
             else -> result.notImplemented()
         }
     }
@@ -263,7 +263,9 @@ class MobileScannerHandler(
         }
     }
 
-    private fun updateScanWindow(call: MethodCall) {
+    private fun updateScanWindow(call: MethodCall, result: MethodChannel.Result) {
         mobileScanner!!.scanWindow = call.argument<List<Float>?>("rect")
+
+        result.success(null)
     }
 }
