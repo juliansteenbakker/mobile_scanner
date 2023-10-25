@@ -1,3 +1,7 @@
+## NEXT
+Bugs fixed:
+* Fixed the `updateScanWindow()` function not completing on Android and MacOS. (thanks @navaronbracke !)
+
 ## 3.5.1
 Improvements:
 * The `type` of an `Address` is now non-null.

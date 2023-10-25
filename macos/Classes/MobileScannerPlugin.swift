@@ -66,7 +66,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         case "stop":
             stop(result)
         case "updateScanWindow":
-            updateScanWindow(call)
+            updateScanWindow(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -187,11 +187,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
 
-    func updateScanWindow(_ call: FlutterMethodCall) {
+    func updateScanWindow(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let scanWindowData: Array? = argReader.floatArray(key: "rect")
 
         if (scanWindowData == nil) {
+            result(nil)
             return
         }
 
@@ -202,6 +203,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let height = scanWindowData![3] - minY
 
         scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        result(nil)
     }
     
     func isBarCodeInScanWindow(_ scanWindow: CGRect, _ barcode: VNBarcodeObservation, _ inputImage: CGImage) -> Bool {
