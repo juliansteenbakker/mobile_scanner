@@ -28,7 +28,6 @@ import android.view.WindowManager
 import android.content.Context
 import android.os.Build
 
-
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
@@ -213,6 +212,7 @@ class MobileScanner(
         torchStateCallback: TorchStateCallback,
         zoomScaleStateCallback: ZoomScaleStateCallback,
         mobileScannerStartedCallback: MobileScannerStartedCallback,
+        mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
         cameraResolution: Size?
     ) {
@@ -221,7 +221,9 @@ class MobileScanner(
         this.returnImage = returnImage
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
-            throw AlreadyStarted()
+            mobileScannerErrorCallback(AlreadyStarted())
+
+            return
         }
 
         scanner = if (barcodeScannerOptions != null) {
@@ -237,7 +239,9 @@ class MobileScanner(
             cameraProvider = cameraProviderFuture.get()
 
             if (cameraProvider == null) {
-                throw CameraError()
+                mobileScannerErrorCallback(CameraError())
+
+                return@addListener
             }
 
             cameraProvider?.unbindAll()
@@ -292,12 +296,18 @@ class MobileScanner(
 
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
-            camera = cameraProvider!!.bindToLifecycle(
-                activity as LifecycleOwner,
-                cameraPosition,
-                preview,
-                analysis
-            )
+            try {
+                camera = cameraProvider?.bindToLifecycle(
+                    activity as LifecycleOwner,
+                    cameraPosition,
+                    preview,
+                    analysis
+                )
+            } catch(exception: Exception) {
+                mobileScannerErrorCallback(NoCamera())
+
+                return@addListener
+            }
 
             camera?.let {
                 // Register the torch listener
