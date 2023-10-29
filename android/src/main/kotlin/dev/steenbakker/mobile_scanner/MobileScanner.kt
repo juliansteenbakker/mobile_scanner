@@ -235,10 +235,12 @@ class MobileScanner(
 
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
+
             if (cameraProvider == null) {
                 throw CameraError()
             }
-            cameraProvider!!.unbindAll()
+
+            cameraProvider?.unbindAll()
             textureEntry = textureRegistry.createSurfaceTexture()
 
             // Preview
@@ -297,31 +299,34 @@ class MobileScanner(
                 analysis
             )
 
-            // Register the torch listener
-            camera!!.cameraInfo.torchState.observe(activity) { state ->
-                // TorchState.OFF = 0; TorchState.ON = 1
-                torchStateCallback(state)
+            camera?.let {
+                // Register the torch listener
+                it.cameraInfo.torchState.observe(activity as LifecycleOwner) { state ->
+                    // TorchState.OFF = 0; TorchState.ON = 1
+                    torchStateCallback(state)
+                }
+
+                // Register the zoom scale listener
+                it.cameraInfo.zoomState.observe(activity) { state ->
+                    zoomScaleStateCallback(state.linearZoom.toDouble())
+                }
+
+                // Enable torch if provided
+                if (it.cameraInfo.hasFlashUnit()) {
+                    it.cameraControl.enableTorch(torch)
+                }
             }
-
-            // Register the zoom scale listener
-            camera!!.cameraInfo.zoomState.observe(activity) { state ->
-                zoomScaleStateCallback(state.linearZoom.toDouble())
-            }
-
-
-            // Enable torch if provided
-            camera!!.cameraControl.enableTorch(torch)
 
             val resolution = analysis.resolutionInfo!!.resolution
-            val portrait = camera!!.cameraInfo.sensorRotationDegrees % 180 == 0
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
+            val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
 
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
-                    camera!!.cameraInfo.hasFlashUnit(),
+                    camera?.cameraInfo?.hasFlashUnit() ?: false,
                     textureEntry!!.id()
                 )
             )
@@ -363,7 +368,10 @@ class MobileScanner(
         if (camera == null) {
             throw TorchWhenStopped()
         }
-        camera!!.cameraControl.enableTorch(enableTorch)
+
+        if (camera?.cameraInfo?.hasFlashUnit() == true) {
+            camera?.cameraControl?.enableTorch(enableTorch)
+        }
     }
 
     /**
@@ -393,9 +401,9 @@ class MobileScanner(
      * Set the zoom rate of the camera.
      */
     fun setScale(scale: Double) {
-        if (camera == null) throw ZoomWhenStopped()
         if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
-        camera!!.cameraControl.setLinearZoom(scale.toFloat())
+        if (camera == null) throw ZoomWhenStopped()
+        camera?.cameraControl?.setLinearZoom(scale.toFloat())
     }
 
     /**
@@ -403,7 +411,7 @@ class MobileScanner(
      */
     fun resetScale() {
         if (camera == null) throw ZoomWhenStopped()
-        camera!!.cameraControl.setZoomRatio(1f)
+        camera?.cameraControl?.setZoomRatio(1f)
     }
 
 }
