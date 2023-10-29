@@ -305,7 +305,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Set the zoom factor of the camera
     func setScale(_ scale: CGFloat) throws {
         if (device == nil) {
-            throw MobileScannerError.torchWhenStopped
+            throw MobileScannerError.zoomWhenStopped
         }
         
         do {

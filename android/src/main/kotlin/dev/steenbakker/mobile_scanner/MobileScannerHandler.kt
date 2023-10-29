@@ -165,58 +165,60 @@ class MobileScannerHandler(
 
         val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
 
-        try {
-            mobileScanner!!.start(
-                barcodeScannerOptions,
-                returnImage, 
-                position,
-                torch,
-                detectionSpeed,
-                torchStateCallback,
-                zoomScaleStateCallback,
-                mobileScannerStartedCallback = {
-                    Handler(Looper.getMainLooper()).post {
-                        result.success(mapOf(
-                            "textureId" to it.id,
-                            "size" to mapOf("width" to it.width, "height" to it.height),
-                            "torchable" to it.hasFlashUnit
-                        ))
+        mobileScanner!!.start(
+            barcodeScannerOptions,
+            returnImage,
+            position,
+            torch,
+            detectionSpeed,
+            torchStateCallback,
+            zoomScaleStateCallback,
+            mobileScannerStartedCallback = {
+                Handler(Looper.getMainLooper()).post {
+                    result.success(mapOf(
+                        "textureId" to it.id,
+                        "size" to mapOf("width" to it.width, "height" to it.height),
+                        "torchable" to it.hasFlashUnit
+                    ))
+                }
+            },
+            mobileScannerErrorCallback = {
+                Handler(Looper.getMainLooper()).post {
+                    when (it) {
+                        is AlreadyStarted -> {
+                            result.error(
+                                "MobileScanner",
+                                "Called start() while already started",
+                                null
+                            )
+                        }
+                        is CameraError -> {
+                            result.error(
+                                "MobileScanner",
+                                "Error occurred when setting up camera!",
+                                null
+                            )
+                        }
+                        is NoCamera -> {
+                            result.error(
+                                "MobileScanner",
+                                "No camera found or failed to open camera!",
+                                null
+                            )
+                        }
+                        else -> {
+                            result.error(
+                                "MobileScanner",
+                                "Unknown error occurred.",
+                                null
+                            )
+                        }
                     }
-                },
-                timeout.toLong(),
-                cameraResolution,
-            )
-        } catch (e: AlreadyStarted) {
-            result.error(
-                "MobileScanner",
-                "Called start() while already started",
-                null
-            )
-        } catch (e: NoCamera) {
-            result.error(
-                "MobileScanner",
-                "No camera found or failed to open camera!",
-                null
-            )
-        } catch (e: TorchError) {
-            result.error(
-                "MobileScanner",
-                "Error occurred when setting torch!",
-                null
-            )
-        } catch (e: CameraError) {
-            result.error(
-                "MobileScanner",
-                "Error occurred when setting up camera!",
-                null
-            )
-        } catch (e: Exception) {
-            result.error(
-                "MobileScanner",
-                "Unknown error occurred..",
-                null
-            )
-        }
+                }
+            },
+            timeout.toLong(),
+            cameraResolution,
+        )
     }
 
     private fun stop(result: MethodChannel.Result) {
@@ -238,7 +240,7 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.toggleTorch(call.arguments == 1)
             result.success(null)
-        } catch (e: AlreadyStopped) {
+        } catch (e: TorchWhenStopped) {
             result.error("MobileScanner", "Called toggleTorch() while stopped!", null)
         }
     }
