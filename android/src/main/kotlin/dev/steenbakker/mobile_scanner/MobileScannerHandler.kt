@@ -238,7 +238,7 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.toggleTorch(call.arguments == 1)
             result.success(null)
-        } catch (e: AlreadyStopped) {
+        } catch (e: TorchWhenStopped) {
             result.error("MobileScanner", "Called toggleTorch() while stopped!", null)
         }
     }
