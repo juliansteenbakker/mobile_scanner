@@ -117,12 +117,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 imagesCurrentlyBeingProcessed = false
                 
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
-                    let newScannedBarcodes = barcodes?.map { barcode in
+                    let newScannedBarcodes = barcodes?.compactMap({ barcode in
                         return barcode.rawValue
-                    }
+                    }).sorted()
+                    
                     if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
                         return
-                    } else {
+                    } else if (newScannedBarcodes?.isEmpty == false) {
                         barcodesString = newScannedBarcodes
                     }
                 }
@@ -139,6 +140,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             throw MobileScannerError.alreadyStarted
         }
 
+        barcodesString = nil
         scanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
         captureSession = AVCaptureSession()
         textureId = registry?.register(self)
