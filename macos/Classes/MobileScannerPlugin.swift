@@ -274,15 +274,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         
-        // Enable the torch if parameter is set and torch is available
-        if (device.hasTorch) {
+        // Turn on the torch if requested.
+        if (torch) {
             do {
-                try device.lockForConfiguration()
-                device.torchMode = torch ? .on : .off
-                device.unlockForConfiguration()
+                try self.toggleTorchInternal(.on)
             } catch {
-                result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
-                return
+                // If the torch could not be turned on,
+                // continue the capture session.
             }
         }
         
@@ -294,7 +292,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             let input = try AVCaptureDeviceInput(device: device)
             captureSession.addInput(input)
         } catch {
-            result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
             return
         }
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
@@ -319,19 +317,34 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
         result(answer)
     }
-    
-    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if (device == nil) {
-            result(nil)
+
+    // TODO: this method should be removed when iOS and MacOS share their implementation.
+    private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
+        if (device == nil || !device.hasTorch) {
             return
         }
-        do {
+        
+        if #available(macOS 15.0, *) {
+            if(!device.isTorchAvailable) {
+                return
+            }
+        }
+
+        if (device.torchMode != torch) {
             try device.lockForConfiguration()
-            device.torchMode = call.arguments as! Int == 1 ? .on : .off
+            device.torchMode = torch
             device.unlockForConfiguration()
+        }
+    }
+    
+    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
+
+        do {
+            try self.toggleTorchInternal(requestedTorchMode)
             result(nil)
         } catch {
-            result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
         }
     }
 

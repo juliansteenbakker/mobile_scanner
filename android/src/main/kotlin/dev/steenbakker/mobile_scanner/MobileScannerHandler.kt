@@ -237,12 +237,8 @@ class MobileScannerHandler(
     }
 
     private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
-        try {
-            mobileScanner!!.toggleTorch(call.arguments == 1)
-            result.success(null)
-        } catch (e: TorchWhenStopped) {
-            result.error("MobileScanner", "Called toggleTorch() while stopped!", null)
-        }
+        mobileScanner!!.toggleTorch(call.arguments == 1)
+        result.success(null)
     }
 
     private fun setScale(call: MethodCall, result: MethodChannel.Result) {

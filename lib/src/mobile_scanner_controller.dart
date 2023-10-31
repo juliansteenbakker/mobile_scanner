@@ -282,9 +282,6 @@ class MobileScannerController {
 
     final hasTorch = startResult['torchable'] as bool? ?? false;
     hasTorchState.value = hasTorch;
-    if (hasTorch && torchEnabled) {
-      torchState.value = TorchState.on;
-    }
 
     final Size size;
 
@@ -314,11 +311,11 @@ class MobileScannerController {
 
   /// Stops the camera, but does not dispose this controller.
   Future<void> stop() async {
-    try {
-      await _methodChannel.invokeMethod('stop');
-    } catch (e) {
-      debugPrint('$e');
-    }
+    await _methodChannel.invokeMethod('stop');
+
+    // After the camera stopped, set the torch state to off,
+    // as the torch state callback is never called when the camera is stopped.
+    torchState.value = TorchState.off;
   }
 
   /// Switches the torch on or off.
@@ -333,14 +330,16 @@ class MobileScannerController {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
       );
-    } else if (!hasTorch) {
+    }
+
+    if (!hasTorch) {
       return;
     }
 
-    torchState.value =
+    final TorchState newState =
         torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
-    await _methodChannel.invokeMethod('torch', torchState.value.rawValue);
+    await _methodChannel.invokeMethod('torch', newState.rawValue);
   }
 
   /// Changes the state of the camera (front or back).

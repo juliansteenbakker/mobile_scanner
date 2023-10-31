@@ -120,7 +120,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed) { parameters in
+            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
                 DispatchQueue.main.async {
                     result([
                         "textureId": parameters.textureId,
@@ -136,17 +136,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             result(FlutterError(code: "MobileScanner",
                                 message: "No camera found or failed to open camera!",
                                 details: nil))
-        } catch MobileScannerError.torchError(let error) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error occured when setting torch!",
-                                details: error))
         } catch MobileScannerError.cameraError(let error) {
             result(FlutterError(code: "MobileScanner",
                                 message: "Error occured when setting up camera!",
                                 details: error))
         } catch {
             result(FlutterError(code: "MobileScanner",
-                                message: "Unknown error occured..",
+                                message: "Unknown error occured.",
                                 details: nil))
         }
     }
@@ -165,9 +161,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             try mobileScanner.toggleTorch(call.arguments as? Int == 1 ? .on : .off)
             result(nil)
         } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called toggleTorch() while stopped!",
-                                details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
         }
     }
     

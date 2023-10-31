@@ -376,7 +376,7 @@ class MobileScanner(
      */
     fun toggleTorch(enableTorch: Boolean) {
         if (camera == null) {
-            throw TorchWhenStopped()
+            return
         }
 
         if (camera?.cameraInfo?.hasFlashUnit() == true) {
