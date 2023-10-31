@@ -149,9 +149,10 @@ class MobileScannerWebPlugin {
       });
 
       final hasTorch = await barCodeReader.hasTorch();
+      final bool? enableTorch = arguments['torch'] as bool?;
 
-      if (hasTorch && arguments.containsKey('torch')) {
-        await barCodeReader.toggleTorch(enabled: arguments['torch'] as bool);
+      if (hasTorch && enableTorch != null) {
+        await barCodeReader.toggleTorch(enabled: enableTorch);
       }
 
       return {
