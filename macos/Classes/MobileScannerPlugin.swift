@@ -321,14 +321,20 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if (device == nil) {
+        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
             result(nil)
             return
         }
+
+        let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
+
         do {
-            try device.lockForConfiguration()
-            device.torchMode = call.arguments as! Int == 1 ? .on : .off
-            device.unlockForConfiguration()
+            if (device.torchMode != requestedTorchMode) {
+                try device.lockForConfiguration()
+                device.torchMode = requestedTorchMode
+                device.unlockForConfiguration()
+            }
+
             result(nil)
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
