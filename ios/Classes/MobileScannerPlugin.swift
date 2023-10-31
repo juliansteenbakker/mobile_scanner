@@ -120,7 +120,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch ? .on : .off, detectionSpeed: detectionSpeed) { parameters in
+            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
                 DispatchQueue.main.async {
                     result([
                         "textureId": parameters.textureId,

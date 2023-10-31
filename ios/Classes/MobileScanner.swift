@@ -133,7 +133,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: AVCaptureDevice.TorchMode, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Boolean, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
         self.detectionSpeed = detectionSpeed
         if (device != nil) {
             throw MobileScannerError.alreadyStarted
@@ -216,11 +216,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             
             // Turn on the flashlight if requested,
             // but after the capture session started.
-            do {
-                try self.toggleTorch(torch)
-            } catch {
-                // If the torch does not turn on,
-                // continue with the capture session anyway.
+            if (torch) {
+                do {
+                    try self.toggleTorch(.on)
+                } catch {
+                    // If the torch does not turn on,
+                    // continue with the capture session anyway.
+                }
             }
 
             do {
