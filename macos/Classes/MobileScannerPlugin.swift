@@ -279,8 +279,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             do {
                 self.toggleTorchInternal(.on)
             } catch {
-                result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
-                return
+                // If the torch could not be turned on,
+                // continue the capture session.
             }
         }
         
