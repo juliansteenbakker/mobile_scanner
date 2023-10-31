@@ -277,7 +277,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         // Turn on the torch if requested.
         if (torch) {
             do {
-                toggleTorchInternal(.on)
+                self.toggleTorchInternal(.on)
             } catch {
                 result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
                 return
@@ -335,7 +335,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
 
         do {
-            try toggleTorchInternal(requestedTorchMode)
+            try self.toggleTorchInternal(requestedTorchMode)
             result(nil)
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
