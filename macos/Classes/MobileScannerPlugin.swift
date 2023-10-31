@@ -274,12 +274,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         
-        // Enable the torch if parameter is set and torch is available
-        if (device.hasTorch) {
+        // Turn on the torch if requested.
+        if (torch) {
             do {
-                try device.lockForConfiguration()
-                device.torchMode = torch ? .on : .off
-                device.unlockForConfiguration()
+                toggleTorchInternal(.on)
             } catch {
                 result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
                 return
@@ -319,22 +317,25 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
         result(answer)
     }
-    
-    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+
+    // TODO: this method should be removed when iOS and MacOS share their implementation.
+    private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
         if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
-            result(nil)
             return
         }
 
+        if (device.torchMode != torch) {
+            device.lockForConfiguration()
+            device.torchMode = torch
+            device.unlockForConfiguration()
+        }
+    }
+    
+    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
 
         do {
-            if (device.torchMode != requestedTorchMode) {
-                try device.lockForConfiguration()
-                device.torchMode = requestedTorchMode
-                device.unlockForConfiguration()
-            }
-
+            try toggleTorchInternal(requestedTorchMode)
             result(nil)
         } catch {
             result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
