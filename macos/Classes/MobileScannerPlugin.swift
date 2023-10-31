@@ -279,7 +279,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             do {
                 self.toggleTorchInternal(.on)
             } catch {
-                result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+                result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
                 return
             }
         }
@@ -292,7 +292,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             let input = try AVCaptureDeviceInput(device: device)
             captureSession.addInput(input)
         } catch {
-            result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
             return
         }
         captureSession.sessionPreset = AVCaptureSession.Preset.photo
@@ -338,7 +338,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             try self.toggleTorchInternal(requestedTorchMode)
             result(nil)
         } catch {
-            result(FlutterError(code: error.localizedDescription, message: nil, details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
         }
     }
 

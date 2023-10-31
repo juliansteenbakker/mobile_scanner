@@ -146,7 +146,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: error))
         } catch {
             result(FlutterError(code: "MobileScanner",
-                                message: "Unknown error occured..",
+                                message: "Unknown error occured.",
                                 details: nil))
         }
     }
@@ -165,9 +165,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             try mobileScanner.toggleTorch(call.arguments as? Int == 1 ? .on : .off)
             result(nil)
         } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called toggleTorch() while stopped!",
-                                details: nil))
+            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
         }
     }
     
