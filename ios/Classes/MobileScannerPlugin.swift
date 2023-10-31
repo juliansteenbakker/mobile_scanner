@@ -136,10 +136,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             result(FlutterError(code: "MobileScanner",
                                 message: "No camera found or failed to open camera!",
                                 details: nil))
-        } catch MobileScannerError.torchError(let error) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error occured when setting torch!",
-                                details: error))
         } catch MobileScannerError.cameraError(let error) {
             result(FlutterError(code: "MobileScanner",
                                 message: "Error occured when setting up camera!",
