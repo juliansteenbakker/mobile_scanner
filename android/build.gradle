@@ -69,7 +69,7 @@ dependencies {
     def useUnbundled = project.findProperty('dev.steenbakker.mobile_scanner.useUnbundled') ?: false
     if (useUnbundled.toBoolean()) {
         // Dynamically downloaded model via Google Play Services
-        implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.1.0'
+        implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.0'
     } else {
         // Bundled model in app
         implementation 'com.google.mlkit:barcode-scanning:17.2.0'
