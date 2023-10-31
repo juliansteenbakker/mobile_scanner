@@ -213,18 +213,21 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         backgroundQueue.async {
             self.captureSession.startRunning()
-            // Enable the torch if parameter is set and torch is available
-            // torch should be set after 'startRunning' is called
+            
+            // Turn on the flashlight if requested,
+            // but after the capture session started.
             do {
                 try self.toggleTorch(torch)
             } catch {
-                print("Failed to set initial torch state.")
+                // If the torch does not turn on,
+                // continue with the capture session anyway.
             }
 
             do {
                 try self.resetScale()
             } catch {
-                print("Failed to reset zoom scale")
+                // If the zoom scale could not be reset,
+                // continue with the capture session anyway.
             }
             
             if let device = self.device {
