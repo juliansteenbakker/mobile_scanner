@@ -277,7 +277,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         // Turn on the torch if requested.
         if (torch) {
             do {
-                self.toggleTorchInternal(.on)
+                try self.toggleTorchInternal(.on)
             } catch {
                 // If the torch could not be turned on,
                 // continue the capture session.
@@ -320,12 +320,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // TODO: this method should be removed when iOS and MacOS share their implementation.
     private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
+        if (device == nil || !device.hasTorch) {
             return
+        }
+        
+        if #available(macOS 15.0, *) {
+            if(!device.isTorchAvailable) {
+                return
+            }
         }
 
         if (device.torchMode != torch) {
-            device.lockForConfiguration()
+            try device.lockForConfiguration()
             device.torchMode = torch
             device.unlockForConfiguration()
         }
