@@ -282,9 +282,6 @@ class MobileScannerController {
 
     final hasTorch = startResult['torchable'] as bool? ?? false;
     hasTorchState.value = hasTorch;
-    if (hasTorch && torchEnabled) {
-      torchState.value = TorchState.on;
-    }
 
     final Size size;
 
@@ -333,14 +330,15 @@ class MobileScannerController {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
       );
-    } else if (!hasTorch) {
+    }
+
+    if (!hasTorch) {
       return;
     }
 
-    torchState.value =
-        torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+    final TorchState newState = torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
-    await _methodChannel.invokeMethod('torch', torchState.value.rawValue);
+    await _methodChannel.invokeMethod('torch', newState.rawValue);
   }
 
   /// Changes the state of the camera (front or back).
