@@ -273,19 +273,16 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device = nil
     }
 
-    /// Toggle the flashlight between on and off
+    /// Toggle the flashlight between on and off.
     func toggleTorch(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil) {
-            throw MobileScannerError.torchWhenStopped
+        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
+            return
         }
-        if (device.hasTorch && device.isTorchAvailable) {
-            do {
-                try device.lockForConfiguration()
-                device.torchMode = torch
-                device.unlockForConfiguration()
-            } catch {
-                throw MobileScannerError.torchError(error)
-            }
+
+        if (device.torchMode != torch) {
+            device.lockForConfiguration()
+            device.torchMode = torch
+            device.unlockForConfiguration()
         }
     }
 
