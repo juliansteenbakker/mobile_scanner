@@ -336,7 +336,8 @@ class MobileScannerController {
       return;
     }
 
-    final TorchState newState = torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+    final TorchState newState =
+        torchState.value == TorchState.off ? TorchState.on : TorchState.off;
 
     await _methodChannel.invokeMethod('torch', newState.rawValue);
   }
