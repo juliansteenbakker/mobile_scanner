@@ -69,7 +69,7 @@ class MobileScanner(
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
                 if (detectionSpeed == DetectionSpeed.NO_DUPLICATES) {
-                    val newScannedBarcodes = barcodes.map { barcode -> barcode.rawValue }
+                    val newScannedBarcodes = barcodes.mapNotNull({ barcode -> barcode.rawValue }).sorted()
                     if (newScannedBarcodes == lastScanned) {
                         // New scanned is duplicate, returning
                         return@addOnSuccessListener
@@ -226,6 +226,7 @@ class MobileScanner(
             return
         }
 
+        lastScanned = null
         scanner = if (barcodeScannerOptions != null) {
             BarcodeScanning.getClient(barcodeScannerOptions)
         } else {
