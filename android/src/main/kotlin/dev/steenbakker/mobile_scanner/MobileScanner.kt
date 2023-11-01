@@ -115,7 +115,7 @@ class MobileScanner(
                         mobileScannerCallback(
                             barcodeMap,
                             byteArray,
-                            bmWidget,
+                            bmWidth,
                             bmHeight
                         )
 
