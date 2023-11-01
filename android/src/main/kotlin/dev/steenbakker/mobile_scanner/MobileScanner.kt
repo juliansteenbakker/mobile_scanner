@@ -107,14 +107,16 @@ class MobileScanner(
                         val stream = ByteArrayOutputStream()
                         bmResult.compress(Bitmap.CompressFormat.PNG, 100, stream)
                         val byteArray = stream.toByteArray()
+                        val bmWidth = bmResult.width
+                        val bmHeight = bmResult.height
                         bmResult.recycle()
 
 
                         mobileScannerCallback(
                             barcodeMap,
                             byteArray,
-                            bmResult.width,
-                            bmResult.height
+                            bmWidget,
+                            bmHeight
                         )
 
                     } else {
