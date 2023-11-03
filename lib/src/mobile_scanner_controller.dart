@@ -434,13 +434,18 @@ class MobileScannerController {
         final parsed = (data as List)
             .map((value) => Barcode.fromNative(value as Map))
             .toList();
+
+        final double? width = event['width'] as double?;
+        final double? height = event['height'] as double?;
+
         _barcodesController.add(
           BarcodeCapture(
             raw: data,
             barcodes: parsed,
             image: event['image'] as Uint8List?,
-            width: event['width'] as double?,
-            height: event['height'] as double?,
+            size: width == null || height == null
+                ? Size.zero
+                : Size(width, height),
           ),
         );
       case 'barcodeMac':

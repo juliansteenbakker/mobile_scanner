@@ -1,3 +1,8 @@
+## NEXT
+BREAKING CHANGES:
+* The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
+* The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
+
 ## 4.0.1
 Bugs fixed:
 * [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
