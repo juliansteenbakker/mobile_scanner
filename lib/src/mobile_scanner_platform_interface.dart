@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -42,6 +43,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('resetZoomScale() has not been implemented.');
   }
 
+  /// Set the torch state of the active camera.
+  Future<void> setTorchState(TorchState torchState) {
+    throw UnimplementedError('setTorchState() has not been implemented.');
+  }
+
   /// Set the zoom scale of the camera.
   ///
   /// The [zoomScale] must be between `0.0` and `1.0` (both inclusive).
@@ -63,18 +69,6 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Stop the camera.
   Future<void> stop() {
     throw UnimplementedError('stop() has not been implemented.');
-  }
-
-  /// Switch between the front and back camera.
-  Future<void> switchCamera() {
-    throw UnimplementedError('switchCamera() has not been implemented.');
-  }
-
-  /// Switch the torch on or off.
-  ///
-  /// Does nothing if the device has no torch.
-  Future<void> toggleTorch() {
-    throw UnimplementedError('toggleTorch() has not been implemented.');
   }
 
   /// Update the scan window to the given [window] rectangle.
