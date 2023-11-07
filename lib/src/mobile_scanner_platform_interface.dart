@@ -1,7 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
-import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// The platform interface for the `mobile_scanner` plugin.
@@ -34,7 +33,7 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   }
 
   /// Build the camera view for the barcode scanner.
-  Widget buildCameraView(covariant MobileScannerViewAttributes attributes) {
+  Widget buildCameraView() {
     throw UnimplementedError('buildCameraView() has not been implemented.');
   }
 
@@ -52,12 +51,12 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('setZoomScale() has not been implemented.');
   }
 
-  /// Start scanning for barcodes.
+  /// Start the barcode scanner and prepare a scanner view.
   ///
   /// Upon calling this method, the necessary camera permission will be requested.
   ///
-  /// Returns an instance of [MobileScannerViewAttributes].
-  Future<MobileScannerViewAttributes> start({CameraFacing? cameraDirection}) {
+  /// The given [cameraDirection] is used as the direction for the camera that needs to be set up.
+  Future<void> start(CameraFacing cameraDirection) {
     throw UnimplementedError('start() has not been implemented.');
   }
 
