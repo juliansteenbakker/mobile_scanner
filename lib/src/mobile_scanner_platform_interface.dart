@@ -38,11 +38,6 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('buildCameraView() has not been implemented.');
   }
 
-  /// Dispose of this [MobileScannerPlatform] instance.
-  void dispose() {
-    throw UnimplementedError('dispose() has not been implemented.');
-  }
-
   /// Reset the zoom scale, so that the camera is fully zoomed out.
   Future<void> resetZoomScale() {
     throw UnimplementedError('resetZoomScale() has not been implemented.');
@@ -90,5 +85,10 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// If [window] is `null`, the scan window will be reset to the full screen.
   Future<void> updateScanWindow(Rect? window) {
     throw UnimplementedError('updateScanWindow() has not been implemented.');
+  }
+
+  /// Dispose of this [MobileScannerPlatform] instance.
+  void dispose() {
+    throw UnimplementedError('dispose() has not been implemented.');
   }
 }
