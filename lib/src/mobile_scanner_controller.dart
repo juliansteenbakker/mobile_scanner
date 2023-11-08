@@ -225,6 +225,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         cameraDirection: effectiveDirection,
         isInitialized: true,
         size: viewAttributes.size,
+        // If the device has a flashlight, let the platform update the torch state.
+        // If it does not have one, provide the unavailable state directly.
+        torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
       );
     } on MobileScannerException catch (error) {
       if (!_isDisposed) {
