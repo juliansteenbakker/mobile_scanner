@@ -1,5 +1,13 @@
+import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+
 /// This enum defines the different error codes for the mobile scanner.
 enum MobileScannerErrorCode {
+  /// The controller was already started.
+  ///
+  /// The controller should be stopped using [MobileScannerController.stop],
+  /// before restarting it.
+  controllerAlreadyInitialized,
+
   /// The controller was used
   /// while it was not yet initialized using [MobileScannerController.start].
   controllerUninitialized,
