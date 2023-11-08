@@ -205,6 +205,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Future<void> stop() async {
     await methodChannel.invokeMethod<void>('stop');
+
+    _textureId = null;
   }
 
   @override
