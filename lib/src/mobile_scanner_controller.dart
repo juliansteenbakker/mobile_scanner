@@ -6,11 +6,13 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
+import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
+import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
+import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// The controller for the [MobileScanner] widget.
 class MobileScannerController extends ValueNotifier<MobileScannerState> {
@@ -94,7 +96,37 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Get the stream of scanned barcodes.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
+  StreamSubscription<BarcodeCapture?>? _barcodesSubscription;
+  StreamSubscription<TorchState>? _torchStateSubscription;
+  StreamSubscription<double>? _zoomScaleSubscription;
+
   bool _isDisposed = false;
+
+  void _disposeListeners() {
+    _barcodesSubscription?.cancel();
+    _torchStateSubscription?.cancel();
+    _zoomScaleSubscription?.cancel();
+
+    _barcodesSubscription = null;
+    _torchStateSubscription = null;
+    _zoomScaleSubscription = null;
+  }
+
+  void _setupListeners() {
+    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream.listen((BarcodeCapture? barcode) {
+      if (barcode != null) {
+        _barcodesController.add(barcode);
+      }
+    });
+
+    _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream.listen((TorchState torchState) {
+      value = value.copyWith(torchState: torchState);
+    });
+
+    _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream.listen((double zoomScale) {
+      value = value.copyWith(zoomScale: zoomScale);
+    });
+  }
 
   void _throwIfNotInitialized() {
     if (!value.isInitialized) {
@@ -142,6 +174,55 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     final double clampedZoomScale = zoomScale.clamp(0.0, 1.0);
 
     await MobileScannerPlatform.instance.setZoomScale(clampedZoomScale);
+  }
+
+  /// Start scanning for barcodes.
+  /// Upon calling this method, the necessary camera permission will be requested.
+  ///
+  /// Throws a [MobileScannerException] if starting the scanner failed.
+  Future<void> start({CameraFacing? cameraDirection}) async {
+    if (_isDisposed) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The MobileScannerController was used after it has been disposed.',
+        ),
+      );
+    }
+
+    final CameraFacing effectiveDirection = cameraDirection ?? facing;
+
+    final StartOptions options = StartOptions(
+      cameraDirection: effectiveDirection,
+      cameraResolution: cameraResolution,
+      detectionSpeed: detectionSpeed,
+      detectionTimeoutMs: detectionTimeoutMs,
+      formats: formats,
+      returnImage: returnImage,
+      torchEnabled: torchEnabled,
+    );
+
+    try {
+      _setupListeners();
+
+      final MobileScannerViewAttributes viewAttributes = await MobileScannerPlatform.instance.start(
+        options,
+      );
+
+      value = value.copyWith(
+        cameraDirection: effectiveDirection,
+        isInitialized: true,
+        size: viewAttributes.size,
+      );
+    } on MobileScannerException catch (error) {
+      if (!_isDisposed) {
+        value = value.copyWith(
+          cameraDirection: facing,
+          isInitialized: true,
+          error: error,
+        );
+      }
+    }
   }
 
   /// Stop the camera.
