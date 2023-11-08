@@ -2,6 +2,23 @@
 BREAKING CHANGES:
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
 * The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
+* The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
+* The `cameraFacingOverride` named argument for the `start()` method has been renamed to `cameraDirection`.
+* The `analyzeImage` function now correctly returns a `BarcodeCapture?` instead of a boolean.
+* The `formats` attribute of the `MobileScannerController` is now non-null.
+* The `MobileScannerState` enum has been renamed to `MobileScannerAuthorizationState`.
+* The various `ValueNotifier`s for the camera state have been removed. Use the `value` of the `MobileScannerController` instead.
+* The `hasTorch` getter has been removed. Instead, use the torch state of the controller's value.
+  The `TorchState` enum now provides a new value for unavailable flashlights.
+* The `autoStart` attribute has been removed from the `MobileScannerController`. The controller should be manually started on-demand.  
+* A controller is now required for the `MobileScanner` widget.
+* The  `onPremissionSet`, `onStart` and `onScannerStarted` methods have been removed from the `MobileScanner` widget. Instead, await `MobileScannerController.start()`.
+* The `startDelay` has been removed from the `MobileScanner` widget. Instead, use a delay between manual starts of one or more controllers.
+* The `onDetect` method has been removed from the `MobileScanner` widget. Instead, listen to `MobileScannerController.barcodes` directly.
+* The `overlay` widget of the `MobileScanner` has been replaced by a new property, `overlayBuilder`, which provides the constraints for the overlay.
+
+Improvements:
+* The `MobileScannerController` is now a ChangeNotifier, with `MobileScannerState` as its model.
 
 ## 4.0.1
 Bugs fixed:
