@@ -4,13 +4,15 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
+import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
+import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
@@ -29,8 +31,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   Stream<Map<Object?, Object?>>? _eventsStream;
 
   Stream<Map<Object?, Object?>> get eventsStream {
-    _eventsStream ??=
-        eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
+    _eventsStream ??= eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
 
     return _eventsStream!;
   }
@@ -200,7 +201,74 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<void> start(CameraFacing cameraDirection) {}
+  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    if (_textureId != null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The scanner was already started. Call stop() before calling start() again.',
+        ),
+      );
+    }
+
+    await _requestCameraPermission();
+
+    Map<String, Object?>? startResult;
+
+    try {
+      startResult = await methodChannel.invokeMapMethod<String, Object?>(
+        'start',
+        startOptions.toMap(),
+      );
+    } on PlatformException catch (error) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          code: error.code,
+          details: error.details as Object?,
+          message: error.message,
+        ),
+      );
+    }
+
+    if (startResult == null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The start method did not return a view configuration.',
+        ),
+      );
+    }
+
+    final int? textureId = startResult['textureId'] as int?;
+
+    if (textureId == null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The start method did not return a texture id.',
+        ),
+      );
+    }
+
+    _textureId = textureId;
+
+    final bool hasTorch = startResult['torchable'] as bool? ?? false;
+
+    final Map<Object?, Object?>? sizeInfo = startResult['size'] as Map<Object?, Object?>?;
+    final double? width = sizeInfo?['width'] as double?;
+    final double? height = sizeInfo?['height'] as double?;
+
+    final Size size;
+
+    if (width == null || height == null) {
+      size = Size.zero;
+    } else {
+      size = Size(width, height);
+    }
+
+    return MobileScannerViewAttributes(hasTorch: hasTorch, size: size);
+  }
 
   @override
   Future<void> stop() async {
