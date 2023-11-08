@@ -44,4 +44,4 @@ flutter:
         pluginClass: MobileScannerPlugin
       web:
         pluginClass: MobileScannerWebPlugin
-        fileName: mobile_scanner_web_plugin.dart
+        fileName: web/mobile_scanner_web.dart
