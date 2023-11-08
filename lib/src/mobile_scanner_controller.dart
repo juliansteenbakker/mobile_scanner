@@ -113,17 +113,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Set the zoom scale of the camera.
   ///
   /// The [zoomScale] must be between 0.0 and 1.0 (both inclusive).
+  ///
+  /// If the [zoomScale] is out of range,
+  /// it is adjusted to fit within the allowed range.
   Future<void> setZoomScale(double zoomScale) async {
-    if (zoomScale < 0 || zoomScale > 1) {
-      throw const MobileScannerException(
-        errorCode: MobileScannerErrorCode.genericError,
-        errorDetails: MobileScannerErrorDetails(
-          message: 'The zoomScale must be between 0.0 and 1.0',
-        ),
-      );
-    }
+    final double clampedZoomScale = zoomScale.clamp(0.0, 1.0);
 
-    await MobileScannerPlatform.instance.setZoomScale(zoomScale);
+    await MobileScannerPlatform.instance.setZoomScale(clampedZoomScale);
   }
 
   /// Stop the camera.
