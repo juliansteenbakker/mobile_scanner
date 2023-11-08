@@ -88,6 +88,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
+  Stream<BarcodeCapture?> get barcodesStream {
+    return eventsStream.where((event) => event['name'] == 'barcode').map((event) => _parseBarcode(event));
+  }
+
+  @override
   Stream<TorchState> get torchStateStream {
     return eventsStream
         .where((event) => event['name'] == 'torchState')
