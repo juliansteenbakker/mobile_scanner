@@ -287,9 +287,19 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<void> updateScanWindow(Rect? window) async {
+    if (_textureId == null) {
+      return;
+    }
+
+    List<double>? points;
+
+    if (window != null) {
+      points = [window.left, window.top, window.right, window.bottom];
+    }
+
     await methodChannel.invokeMethod<void>(
       'updateScanWindow',
-      {'rect': window},
+      {'rect': points},
     );
   }
 

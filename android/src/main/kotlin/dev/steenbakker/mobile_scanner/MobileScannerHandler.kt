@@ -269,7 +269,7 @@ class MobileScannerHandler(
     }
 
     private fun updateScanWindow(call: MethodCall, result: MethodChannel.Result) {
-        mobileScanner!!.scanWindow = call.argument<List<Float>?>("rect")
+        mobileScanner?.scanWindow = call.argument<List<Float>?>("rect")
 
         result.success(null)
     }

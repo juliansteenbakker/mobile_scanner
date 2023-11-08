@@ -288,6 +288,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     await MobileScannerPlatform.instance.setTorchState(newState);
   }
 
+  /// Update the scan window with the given [window] rectangle.
+  ///
+  /// If [window] is null, the scan window will be reset to the full camera preview.
+  Future<void> updateScanWindow(Rect? window) async {
+    await MobileScannerPlatform.instance.updateScanWindow(window);
+  }
+
   @override
   Future<void> dispose() async {
     if (_isDisposed) {
