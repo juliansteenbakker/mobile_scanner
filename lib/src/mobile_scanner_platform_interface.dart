@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
 /// The platform interface for the `mobile_scanner` plugin.
@@ -28,8 +29,10 @@ abstract class MobileScannerPlatform extends PlatformInterface {
 
   /// Analyze a local image file for barcodes.
   ///
-  /// Returns whether the file at the given [path] contains a barcode.
-  Future<bool> analyzeImage(String path) {
+  /// The [path] is the path to the file on disk.
+  ///
+  /// Returns the barcodes that were found in the image.
+  Future<BarcodeCapture?> analyzeImage(String path) {
     throw UnimplementedError('analyzeImage() has not been implemented.');
   }
 

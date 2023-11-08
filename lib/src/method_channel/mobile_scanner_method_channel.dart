@@ -1,10 +1,16 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
@@ -31,6 +37,56 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   int? _textureId;
 
+  /// Parse a [BarcodeCapture] from the given [event].
+  BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
+    if (event == null) {
+      return null;
+    }
+
+    final Object? data = event['data'];
+
+    if (data == null || data is! List<Object?>) {
+      return null;
+    }
+
+    final List<Map<Object?, Object?>> barcodes = data.cast<Map<Object?, Object?>>();
+
+    if (Platform.isMacOS) {
+      return BarcodeCapture(
+        raw: event,
+        barcodes: barcodes
+            .map(
+              (barcode) => Barcode(
+                rawValue: barcode['payload'] as String?,
+                format: BarcodeFormat.fromRawValue(
+                  barcode['symbology'] as int? ?? -1,
+                ),
+              ),
+            )
+            .toList(),
+      );
+    }
+
+    if (Platform.isAndroid || Platform.isIOS) {
+      final double? width = event['width'] as double?;
+      final double? height = event['height'] as double?;
+
+      return BarcodeCapture(
+        raw: data,
+        barcodes: barcodes.map(Barcode.fromNative).toList(),
+        image: event['image'] as Uint8List?,
+        size: width == null || height == null ? Size.zero : Size(width, height),
+      );
+    }
+
+    throw const MobileScannerException(
+      errorCode: MobileScannerErrorCode.genericError,
+      errorDetails: MobileScannerErrorDetails(
+        message: 'Only Android, iOS and macOS are supported.',
+      ),
+    );
+  }
+
   @override
   Stream<TorchState> get torchStateStream {
     return eventsStream
@@ -46,13 +102,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<bool> analyzeImage(String path) async {
-    final bool? result = await methodChannel.invokeMethod<bool>(
+  Future<BarcodeCapture?> analyzeImage(String path) async {
+    final Map<String, Object?>? result = await methodChannel.invokeMapMethod<String, Object?>(
       'analyzeImage',
       path,
     );
 
-    return result ?? false;
+    return _parseBarcode(result);
   }
 
   @override
