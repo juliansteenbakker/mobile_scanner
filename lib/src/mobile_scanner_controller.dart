@@ -241,40 +241,48 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// After calling this method, the camera can be restarted using [start].
   Future<void> stop() async {
+    _disposeListeners();
+
+    _throwIfNotInitialized();
+
     await MobileScannerPlatform.instance.stop();
 
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
-    torchState.value = TorchState.off;
+    value = value.copyWith(torchState: TorchState.off);
   }
 
   /// Switch between the front and back camera.
   Future<void> switchCamera() async {
-    await MobileScannerPlatform.instance.stop();
+    _throwIfNotInitialized();
 
-    final CameraFacing cameraDirection;
+    await stop();
 
-    // TODO: update the camera facing direction state
+    final CameraFacing cameraDirection = value.cameraDirection;
 
-    await start(cameraDirection: cameraDirection);
+    await start(
+      cameraDirection: cameraDirection == CameraFacing.front ? CameraFacing.back : CameraFacing.front,
+    );
   }
 
   /// Switches the flashlight on or off.
   ///
   /// Does nothing if the device has no torch.
   Future<void> toggleTorch() async {
-    final bool hasTorch;
+    _throwIfNotInitialized();
 
-    if (!hasTorch) {
+    final TorchState torchState = value.torchState;
+
+    if (torchState == TorchState.unavailable) {
       return;
     }
 
-    final TorchState newState = torchState.value == TorchState.off ? TorchState.on : TorchState.off;
+    final TorchState newState = torchState == TorchState.off ? TorchState.on : TorchState.off;
 
     // Update the torch state to the new state.
     // When the platform has updated the torch state,
     // it will send an update through the torch state event stream.
-    await MobileScannerPlatform.instance.setTorchState();
+    await MobileScannerPlatform.instance.setTorchState(newState);
   }
 
   @override
