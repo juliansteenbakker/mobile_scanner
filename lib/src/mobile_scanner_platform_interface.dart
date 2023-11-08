@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
+import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -80,7 +81,7 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Upon calling this method, the necessary camera permission will be requested.
   ///
   /// The given [cameraDirection] is used as the direction for the camera that needs to be set up.
-  Future<void> start(CameraFacing cameraDirection) {
+  Future<MobileScannerViewAttributes> start(CameraFacing cameraDirection) {
     throw UnimplementedError('start() has not been implemented.');
   }
 
