@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/enums/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
@@ -92,10 +92,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   ///
   /// Throws a [MobileScannerException] if the permission is not granted.
   Future<void> _requestCameraPermission() async {
-    final MobileScannerState authorizationState;
+    final MobileScannerAuthorizationState authorizationState;
 
     try {
-      authorizationState = MobileScannerState.fromRawValue(
+      authorizationState = MobileScannerAuthorizationState.fromRawValue(
         await methodChannel.invokeMethod<int>('state') ?? 0,
       );
     } on PlatformException catch (error) {
@@ -111,13 +111,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     switch (authorizationState) {
-      case MobileScannerState.denied:
+      case MobileScannerAuthorizationState.denied:
         throw const MobileScannerException(
           errorCode: MobileScannerErrorCode.permissionDenied,
         );
-      case MobileScannerState.authorized:
+      case MobileScannerAuthorizationState.authorized:
         return; // Already authorized.
-      case MobileScannerState.undetermined:
+      case MobileScannerAuthorizationState.undetermined:
         try {
           final bool permissionResult = await methodChannel.invokeMethod<bool>('request') ?? false;
 

@@ -1,5 +1,5 @@
 /// The authorization state of the scanner.
-enum MobileScannerState {
+enum MobileScannerAuthorizationState {
   /// The scanner has not yet requested the required permissions.
   undetermined(0),
 
@@ -9,16 +9,16 @@ enum MobileScannerState {
   /// The user denied the required permissions.
   denied(2);
 
-  const MobileScannerState(this.rawValue);
+  const MobileScannerAuthorizationState(this.rawValue);
 
-  factory MobileScannerState.fromRawValue(int value) {
+  factory MobileScannerAuthorizationState.fromRawValue(int value) {
     switch (value) {
       case 0:
-        return MobileScannerState.undetermined;
+        return MobileScannerAuthorizationState.undetermined;
       case 1:
-        return MobileScannerState.authorized;
+        return MobileScannerAuthorizationState.authorized;
       case 2:
-        return MobileScannerState.denied;
+        return MobileScannerAuthorizationState.denied;
       default:
         throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
