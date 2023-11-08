@@ -94,6 +94,28 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Get the stream of scanned barcodes.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
+  bool _isDisposed = false;
+
+  void _throwIfNotInitialized() {
+    if (!value.isInitialized) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerUninitialized,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The MobileScannerController has not been initialized.',
+        ),
+      );
+    }
+
+    if (_isDisposed) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The MobileScannerController was used after it has been disposed.',
+        ),
+      );
+    }
+  }
+
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
@@ -166,9 +188,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   @override
   Future<void> dispose() async {
+    if (_isDisposed) {
+      return;
+    }
+
     await MobileScannerPlatform.instance.dispose();
     unawaited(_barcodesController.close());
 
+    _isDisposed = true;
     super.dispose();
   }
 }
