@@ -192,6 +192,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<void> setTorchState(TorchState torchState) async {
+    if (torchState == TorchState.unavailable) {
+      return;
+    }
+
     await methodChannel.invokeMethod<void>('torch', torchState.rawValue);
   }
 
