@@ -292,6 +292,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If [window] is null, the scan window will be reset to the full camera preview.
   Future<void> updateScanWindow(Rect? window) async {
+    if (_isDisposed || !value.isInitialized) {
+      return;
+    }
+
     await MobileScannerPlatform.instance.updateScanWindow(window);
   }
 
