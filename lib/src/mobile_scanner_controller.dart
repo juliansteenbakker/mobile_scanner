@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
@@ -157,6 +156,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Returns the [BarcodeCapture] that was found in the image.
   Future<BarcodeCapture?> analyzeImage(String path) {
     return MobileScannerPlatform.instance.analyzeImage(path);
+  }
+
+  /// Build a camera preview widget.
+  Widget buildCameraView() {
+    _throwIfNotInitialized();
+
+    return MobileScannerPlatform.instance.buildCameraView();
   }
 
   /// Reset the zoom scale of the camera.
