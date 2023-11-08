@@ -138,7 +138,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                     }
 
                                     DispatchQueue.main.async {
-                                        self?.sink?(["name": "barcodeMac", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]] as [String : Any])
+                                        self?.sink?(["name": "barcode", "data" : ["payload": barcode.payloadStringValue, "symbology": barcode.symbology.toInt as Any?]] as [String : Any])
                                     }
                                     //                                   if barcodeType == "QR" {
                                     //                                        let image = CIImage(image: source)
