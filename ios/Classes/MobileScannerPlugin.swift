@@ -245,12 +245,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { [self] barcodes, error in
+        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { barcodes, error in
             if error != nil {
-                barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
-                
                 DispatchQueue.main.async {
-                    result(false)
+                    result(FlutterError(code: "MobileScanner",
+                                        message: error?.localizedDescription,
+                                        details: nil))
                 }
                 
                 return
@@ -258,15 +258,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             
             if (barcodes == nil || barcodes!.isEmpty) {
                 DispatchQueue.main.async {
-                    result(false)
+                    result(nil)
                 }
             } else {
                 let barcodesMap: [Any?] = barcodes!.compactMap { barcode in barcode.data }
-                let event: [String: Any?] = ["name": "barcode", "data": barcodesMap]
-                barcodeHandler.publishEvent(event)
                 
                 DispatchQueue.main.async {
-                    result(true)
+                    result(["name": "barcode", "data": barcodesMap])
                 }
             }
         })
