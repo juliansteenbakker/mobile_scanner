@@ -171,7 +171,18 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Widget buildCameraView() => Texture(textureId: _textureId!);
+  Widget buildCameraView() {
+    if (_textureId == null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerUninitialized,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The controller was not yet initialized. Call start() before calling buildCameraView().',
+        ),
+      );
+    }
+
+    return Texture(textureId: _textureId!);
+  }
 
   @override
   Future<void> resetZoomScale() async {
