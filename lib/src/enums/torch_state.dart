@@ -4,7 +4,10 @@ enum TorchState {
   off(0),
 
   /// The flashlight is on.
-  on(1);
+  on(1),
+
+  /// The flashlight is unavailable.
+  unavailable(2);
 
   const TorchState(this.rawValue);
 
@@ -14,6 +17,8 @@ enum TorchState {
         return TorchState.off;
       case 1:
         return TorchState.on;
+      case 2:
+        return TorchState.unavailable;
       default:
         throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
