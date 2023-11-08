@@ -87,6 +87,60 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     );
   }
 
+  /// Request permission to access the camera.
+  ///
+  /// Throws a [MobileScannerException] if the permission is not granted.
+  Future<void> _requestCameraPermission() async {
+    final MobileScannerState authorizationState;
+
+    try {
+      authorizationState = MobileScannerState.fromRawValue(
+        await methodChannel.invokeMethod<int>('state') ?? 0,
+      );
+    } on PlatformException catch (error) {
+      // If the permission state is invalid, that is an error.
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          code: error.code,
+          details: error.details as Object?,
+          message: error.message,
+        ),
+      );
+    }
+
+    switch (authorizationState) {
+      case MobileScannerState.denied:
+        throw const MobileScannerException(
+          errorCode: MobileScannerErrorCode.permissionDenied,
+        );
+      case MobileScannerState.authorized:
+        return; // Already authorized.
+      case MobileScannerState.undetermined:
+        try {
+          final bool permissionResult = await methodChannel.invokeMethod<bool>('request') ?? false;
+
+          if (permissionResult) {
+            return; // Authorization was granted.
+          }
+
+          throw const MobileScannerException(
+            errorCode: MobileScannerErrorCode.permissionDenied,
+          );
+        } on PlatformException catch (error) {
+          // If the permission state is invalid, that is an error.
+          throw MobileScannerException(
+            errorCode: MobileScannerErrorCode.genericError,
+            errorDetails: MobileScannerErrorDetails(
+              code: error.code,
+              details: error.details as Object?,
+              message: error.message,
+            ),
+          );
+        }
+    }
+  }
+
   @override
   Stream<BarcodeCapture?> get barcodesStream {
     return eventsStream.where((event) => event['name'] == 'barcode').map((event) => _parseBarcode(event));
