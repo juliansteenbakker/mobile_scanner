@@ -179,6 +179,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Start scanning for barcodes.
   /// Upon calling this method, the necessary camera permission will be requested.
   ///
+  /// The [cameraDirection] can be used to specify the camera direction.
+  /// If this is null, this defaults to the [facing] value.
+  ///
   /// Throws a [MobileScannerException] if starting the scanner failed.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
