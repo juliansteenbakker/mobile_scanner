@@ -27,6 +27,21 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     _instance = instance;
   }
 
+  /// Get the stream of barcode captures.
+  Stream<BarcodeCapture?> get barcodesStream {
+    throw UnimplementedError('barcodesStream has not been implemented.');
+  }
+
+  /// Get the stream of torch state changes.
+  Stream<TorchState> get torchStateStream {
+    throw UnimplementedError('torchStateStream has not been implemented.');
+  }
+
+  /// Get the stream of zoom scale changes.
+  Stream<double> get zoomScaleStateStream {
+    throw UnimplementedError('zoomScaleStateStream has not been implemented.');
+  }
+
   /// Analyze a local image file for barcodes.
   ///
   /// The [path] is the path to the file on disk.
