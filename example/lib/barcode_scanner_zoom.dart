@@ -13,8 +13,7 @@ class BarcodeScannerWithZoom extends StatefulWidget {
   State<BarcodeScannerWithZoom> createState() => _BarcodeScannerWithZoomState();
 }
 
-class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom>
-    with SingleTickerProviderStateMixin {
+class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
   BarcodeCapture? barcode;
 
   final MobileScannerController controller = MobileScannerController(

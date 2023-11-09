@@ -14,8 +14,7 @@ class BarcodeScannerWithController extends StatefulWidget {
 }
 
 class _BarcodeScannerWithControllerState
-    extends State<BarcodeScannerWithController>
-    with SingleTickerProviderStateMixin {
+    extends State<BarcodeScannerWithController> {
   BarcodeCapture? barcode;
 
   final MobileScannerController controller = MobileScannerController(
