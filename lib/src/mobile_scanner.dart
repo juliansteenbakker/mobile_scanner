@@ -64,12 +64,34 @@ class MobileScanner extends StatefulWidget {
   /// If this is not null, the barcode scanner will only scan barcodes
   /// which intersect this rectangle.
   ///
-  /// The rectangle is relative to the layout size of the *camera preview widget*,
-  /// rather than the actual camera preview size,
-  /// since the actual widget size might not be the same as the camera preview size.
+  /// This rectangle is relative to the layout size
+  /// of the *camera preview widget* in the widget tree,
+  /// rather than the actual size of the camera preview output.
+  /// This is because the size of the camera preview widget
+  /// might not be the same as the size of the camera output.
   ///
   /// For example, the applied [fit] has an effect on the size of the camera preview widget,
   /// while the camera preview size remains the same.
+  ///
+  /// The following example shows a scan window that is centered,
+  /// fills half the height and one third of the width of the layout:
+  ///
+  /// ```dart
+  /// LayoutBuider(
+  ///   builder: (BuildContext context, BoxConstraints constraints) {
+  ///     final Size layoutSize = constraints.biggest;
+  ///
+  ///     final double scanWindowWidth = layoutSize.width / 3;
+  ///     final double scanWindowHeight = layoutSize.height / 2;
+  ///
+  ///     final Rect scanWindow = Rect.fromCenter(
+  ///       center: layoutSize.center(Offset.zero),
+  ///       width: scanWindowWidth,
+  ///       height: scanWindowHeight,
+  ///     );
+  ///   }
+  /// );
+  /// ```
   final Rect? scanWindow;
 
   @override
@@ -80,7 +102,9 @@ class _MobileScannerState extends State<MobileScanner> {
   /// The current scan window.
   Rect? scanWindow;
 
-  /// Recalculate the scan window based on the updated [constraints].
+  /// Calculate the scan window based on the given [constraints].
+  ///
+  /// If the [scanWindow] is already set, this method does nothing.
   void _maybeUpdateScanWindow(
     MobileScannerState scannerState,
     BoxConstraints constraints,
