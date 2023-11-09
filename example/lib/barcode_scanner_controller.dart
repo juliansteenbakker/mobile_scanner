@@ -50,54 +50,49 @@ class _BarcodeScannerWithControllerState
     return Scaffold(
       appBar: AppBar(title: const Text('With controller')),
       backgroundColor: Colors.black,
-      body: Builder(
-        builder: (context) {
-          return Stack(
-            children: [
-              MobileScanner(
-                controller: controller,
-                errorBuilder: (context, error, child) {
-                  return ScannerErrorWidget(error: error);
-                },
-                fit: BoxFit.contain,
-              ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  alignment: Alignment.bottomCenter,
-                  height: 100,
-                  color: Colors.black.withOpacity(0.4),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ToggleFlashlightButton(controller: controller),
-                      StartStopMobileScannerButton(controller: controller),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 200,
-                          height: 50,
-                          child: FittedBox(
-                            child: Text(
-                              barcode?.barcodes.first.rawValue ??
-                                  'Scan something!',
-                              overflow: TextOverflow.fade,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineMedium!
-                                  .copyWith(color: Colors.white),
-                            ),
-                          ),
+      body: Stack(
+        children: [
+          MobileScanner(
+            controller: controller,
+            errorBuilder: (context, error, child) {
+              return ScannerErrorWidget(error: error);
+            },
+            fit: BoxFit.contain,
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              height: 100,
+              color: Colors.black.withOpacity(0.4),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ToggleFlashlightButton(controller: controller),
+                  StartStopMobileScannerButton(controller: controller),
+                  Center(
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width - 200,
+                      height: 50,
+                      child: FittedBox(
+                        child: Text(
+                          barcode?.barcodes.first.rawValue ?? 'Scan something!',
+                          overflow: TextOverflow.fade,
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium!
+                              .copyWith(color: Colors.white),
                         ),
                       ),
-                      SwitchCameraButton(controller: controller),
-                      AnalyzeImageFromGalleryButton(controller: controller),
-                    ],
+                    ),
                   ),
-                ),
+                  SwitchCameraButton(controller: controller),
+                  AnalyzeImageFromGalleryButton(controller: controller),
+                ],
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
