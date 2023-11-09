@@ -324,6 +324,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     await MobileScannerPlatform.instance.updateScanWindow(window);
   }
 
+  /// Dispose the controller.
+  ///
+  /// Once the controller is disposed, it cannot be used anymore.
   @override
   Future<void> dispose() async {
     if (_isDisposed) {
