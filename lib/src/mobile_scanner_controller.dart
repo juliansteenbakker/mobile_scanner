@@ -25,8 +25,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.returnImage = false,
     this.torchEnabled = false,
     this.useNewCameraSelector = false,
-  })  : detectionTimeoutMs = detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
-        assert(detectionTimeoutMs >= 0, 'The detection timeout must be greater than or equal to 0.'),
+  })  : detectionTimeoutMs =
+            detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
+        assert(
+          detectionTimeoutMs >= 0,
+          'The detection timeout must be greater than or equal to 0.',
+        ),
         super(MobileScannerState.uninitialized(facing));
 
   /// The desired resolution for the camera.
@@ -90,7 +94,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   final bool useNewCameraSelector;
 
   /// The internal barcode controller, that listens for detected barcodes.
-  final StreamController<BarcodeCapture> _barcodesController = StreamController.broadcast();
+  final StreamController<BarcodeCapture> _barcodesController =
+      StreamController.broadcast();
 
   /// Get the stream of scanned barcodes.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
@@ -112,17 +117,20 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   void _setupListeners() {
-    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream.listen((BarcodeCapture? barcode) {
+    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
+        .listen((BarcodeCapture? barcode) {
       if (barcode != null) {
         _barcodesController.add(barcode);
       }
     });
 
-    _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream.listen((TorchState torchState) {
+    _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
+        .listen((TorchState torchState) {
       value = value.copyWith(torchState: torchState);
     });
 
-    _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream.listen((double zoomScale) {
+    _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
+        .listen((double zoomScale) {
       value = value.copyWith(zoomScale: zoomScale);
     });
   }
@@ -141,7 +149,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The MobileScannerController was used after it has been disposed.',
+          message:
+              'The MobileScannerController was used after it has been disposed.',
         ),
       );
     }
@@ -203,7 +212,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The MobileScannerController was used after it has been disposed.',
+          message:
+              'The MobileScannerController was used after it has been disposed.',
         ),
       );
     }
@@ -223,7 +233,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     try {
       _setupListeners();
 
-      final MobileScannerViewAttributes viewAttributes = await MobileScannerPlatform.instance.start(
+      final MobileScannerViewAttributes viewAttributes =
+          await MobileScannerPlatform.instance.start(
         options,
       );
 
@@ -275,7 +286,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     final CameraFacing cameraDirection = value.cameraDirection;
 
     await start(
-      cameraDirection: cameraDirection == CameraFacing.front ? CameraFacing.back : CameraFacing.front,
+      cameraDirection: cameraDirection == CameraFacing.front
+          ? CameraFacing.back
+          : CameraFacing.front,
     );
   }
 
@@ -291,7 +304,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    final TorchState newState = torchState == TorchState.off ? TorchState.on : TorchState.off;
+    final TorchState newState =
+        torchState == TorchState.off ? TorchState.on : TorchState.off;
 
     // Update the torch state to the new state.
     // When the platform has updated the torch state,

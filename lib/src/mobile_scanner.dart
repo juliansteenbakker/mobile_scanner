@@ -81,7 +81,10 @@ class _MobileScannerState extends State<MobileScanner> {
   Rect? scanWindow;
 
   /// Recalculate the scan window based on the updated [constraints].
-  void _maybeUpdateScanWindow(MobileScannerState scannerState, BoxConstraints constraints) {
+  void _maybeUpdateScanWindow(
+    MobileScannerState scannerState,
+    BoxConstraints constraints,
+  ) {
     if (widget.scanWindow != null && scanWindow == null) {
       scanWindow = calculateScanWindowRelativeToTextureInPercentage(
         widget.fit,
@@ -102,7 +105,8 @@ class _MobileScannerState extends State<MobileScanner> {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
-          return widget.placeholderBuilder?.call(context, child) ?? defaultPlaceholder;
+          return widget.placeholderBuilder?.call(context, child) ??
+              defaultPlaceholder;
         }
 
         final MobileScannerException? error = value.error;
@@ -113,14 +117,16 @@ class _MobileScannerState extends State<MobileScanner> {
             child: Center(child: Icon(Icons.error, color: Colors.white)),
           );
 
-          return widget.errorBuilder?.call(context, error, child) ?? defaultError;
+          return widget.errorBuilder?.call(context, error, child) ??
+              defaultError;
         }
 
         return LayoutBuilder(
           builder: (context, constraints) {
             _maybeUpdateScanWindow(value, constraints);
 
-            final Widget? overlay = widget.overlayBuilder?.call(context, constraints);
+            final Widget? overlay =
+                widget.overlayBuilder?.call(context, constraints);
             final Size cameraPreviewSize = value.size;
 
             final Widget scannerWidget = ClipRect(

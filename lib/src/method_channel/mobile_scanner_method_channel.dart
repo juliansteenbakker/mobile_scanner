@@ -31,7 +31,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   Stream<Map<Object?, Object?>>? _eventsStream;
 
   Stream<Map<Object?, Object?>> get eventsStream {
-    _eventsStream ??= eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
+    _eventsStream ??=
+        eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
 
     return _eventsStream!;
   }
@@ -50,7 +51,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return null;
     }
 
-    final List<Map<Object?, Object?>> barcodes = data.cast<Map<Object?, Object?>>();
+    final List<Map<Object?, Object?>> barcodes =
+        data.cast<Map<Object?, Object?>>();
 
     if (Platform.isMacOS) {
       return BarcodeCapture(
@@ -119,7 +121,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         return; // Already authorized.
       case MobileScannerAuthorizationState.undetermined:
         try {
-          final bool permissionResult = await methodChannel.invokeMethod<bool>('request') ?? false;
+          final bool permissionResult =
+              await methodChannel.invokeMethod<bool>('request') ?? false;
 
           if (permissionResult) {
             return; // Authorization was granted.
@@ -144,7 +147,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Stream<BarcodeCapture?> get barcodesStream {
-    return eventsStream.where((event) => event['name'] == 'barcode').map((event) => _parseBarcode(event));
+    return eventsStream
+        .where((event) => event['name'] == 'barcode')
+        .map((event) => _parseBarcode(event));
   }
 
   @override
@@ -163,7 +168,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<BarcodeCapture?> analyzeImage(String path) async {
-    final Map<String, Object?>? result = await methodChannel.invokeMapMethod<String, Object?>(
+    final Map<String, Object?>? result =
+        await methodChannel.invokeMapMethod<String, Object?>(
       'analyzeImage',
       path,
     );
@@ -177,7 +183,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The controller was not yet initialized. Call start() before calling buildCameraView().',
+          message:
+              'The controller was not yet initialized. Call start() before calling buildCameraView().',
         ),
       );
     }
@@ -210,7 +217,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started. Call stop() before calling start() again.',
+          message:
+              'The scanner was already started. Call stop() before calling start() again.',
         ),
       );
     }
@@ -259,7 +267,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final bool hasTorch = startResult['torchable'] as bool? ?? false;
 
-    final Map<Object?, Object?>? sizeInfo = startResult['size'] as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? sizeInfo =
+        startResult['size'] as Map<Object?, Object?>?;
     final double? width = sizeInfo?['width'] as double?;
     final double? height = sizeInfo?['height'] as double?;
 
