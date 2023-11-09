@@ -29,6 +29,10 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom>
   void initState() {
     super.initState();
     _barcodesSubscription = controller.barcodes.listen((event) {
+      if (!context.mounted) {
+        return;
+      }
+
       setState(() {
         barcode = event;
       });
