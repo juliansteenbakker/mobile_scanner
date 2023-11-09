@@ -10,6 +10,7 @@ class MobileScannerState {
   const MobileScannerState({
     required this.cameraDirection,
     required this.isInitialized,
+    required this.isRunning,
     required this.size,
     required this.torchState,
     required this.zoomScale,
@@ -21,6 +22,7 @@ class MobileScannerState {
       : this(
           cameraDirection: facing,
           isInitialized: false,
+          isRunning: false,
           size: Size.zero,
           torchState: TorchState.unavailable,
           zoomScale: 1.0,
@@ -33,7 +35,14 @@ class MobileScannerState {
   final MobileScannerException? error;
 
   /// Whether the mobile scanner has initialized successfully.
+  ///
+  /// This is `true` if the camera is ready to be used.
   final bool isInitialized;
+
+  /// Whether the mobile scanner is currently running.
+  ///
+  /// This is `true` if the camera is active.
+  final bool isRunning;
 
   /// The size of the camera output.
   final Size size;
@@ -49,6 +58,7 @@ class MobileScannerState {
     CameraFacing? cameraDirection,
     MobileScannerException? error,
     bool? isInitialized,
+    bool? isRunning,
     Size? size,
     TorchState? torchState,
     double? zoomScale,
@@ -57,6 +67,7 @@ class MobileScannerState {
       cameraDirection: cameraDirection ?? this.cameraDirection,
       error: error,
       isInitialized: isInitialized ?? this.isInitialized,
+      isRunning: isRunning ?? this.isRunning,
       size: size ?? this.size,
       torchState: torchState ?? this.torchState,
       zoomScale: zoomScale ?? this.zoomScale,

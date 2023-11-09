@@ -230,12 +230,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       value = value.copyWith(
         cameraDirection: effectiveDirection,
         isInitialized: true,
+        isRunning: true,
         size: viewAttributes.size,
         // If the device has a flashlight, let the platform update the torch state.
         // If it does not have one, provide the unavailable state directly.
         torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
       );
     } on MobileScannerException catch (error) {
+      // The initialization finished with an error.
       if (!_isDisposed) {
         value = value.copyWith(
           cameraDirection: facing,
@@ -258,7 +260,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
-    value = value.copyWith(torchState: TorchState.off);
+    value = value.copyWith(
+      isRunning: false,
+      torchState: TorchState.off,
+    );
   }
 
   /// Switch between the front and back camera.
