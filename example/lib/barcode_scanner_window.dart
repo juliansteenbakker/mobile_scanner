@@ -139,15 +139,15 @@ class ScannerOverlay extends CustomPainter {
 class BarcodeOverlay extends CustomPainter {
   BarcodeOverlay({
     required this.barcode,
-    required this.arguments,
     required this.boxFit,
+    required this.cameraPreviewSize,
     required this.capture,
   });
 
-  final BarcodeCapture capture;
   final Barcode barcode;
-  final MobileScannerArguments arguments;
   final BoxFit boxFit;
+  final Size cameraPreviewSize;
+  final BarcodeCapture capture;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -155,7 +155,7 @@ class BarcodeOverlay extends CustomPainter {
       return;
     }
 
-    final adjustedSize = applyBoxFit(boxFit, arguments.size, size);
+    final adjustedSize = applyBoxFit(boxFit, cameraPreviewSize, size);
 
     double verticalPadding = size.height - adjustedSize.destination.height;
     double horizontalPadding = size.width - adjustedSize.destination.width;
@@ -178,8 +178,8 @@ class BarcodeOverlay extends CustomPainter {
       ratioWidth = capture.size.width / adjustedSize.destination.width;
       ratioHeight = capture.size.height / adjustedSize.destination.height;
     } else {
-      ratioWidth = arguments.size.width / adjustedSize.destination.width;
-      ratioHeight = arguments.size.height / adjustedSize.destination.height;
+      ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
+      ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
     }
 
     final List<Offset> adjustedOffset = [];
