@@ -107,10 +107,6 @@ class _MobileScannerState extends State<MobileScanner>
   /// when the application comes back to the foreground.
   bool _resumeFromBackground = false;
 
-  /// Whether the flash should be on when resume
-  /// when the application comes back to the foreground.
-  bool _checkFlash = false;
-
   MobileScannerException? _startException;
 
   Widget _buildPlaceholderOrError(BuildContext context, Widget? child) {
@@ -193,26 +189,20 @@ class _MobileScannerState extends State<MobileScanner>
       return;
     }
 
-    switch (state) {
-      case AppLifecycleState.resumed:
-        if (_resumeFromBackground && widget.autoLifecycle) {
-          _startScanner();
-        }
-
-        if (_checkFlash && !_controller.torchEnabled) {
-          _controller.toggleTorch();
-        }
-
-        break;
-      case AppLifecycleState.inactive:
-        _checkFlash = _controller.torchEnabled;
-        if (widget.autoLifecycle) {
+    if (widget.autoLifecycle) {
+      switch (state) {
+        case AppLifecycleState.resumed:
+          if (_resumeFromBackground) {
+            _startScanner();
+          }
+          break;
+        case AppLifecycleState.inactive:
           _resumeFromBackground = true;
           _controller.stop();
-        }
-        break;
-      default:
-        break;
+          break;
+        default:
+          break;
+      }
     }
   }
 
