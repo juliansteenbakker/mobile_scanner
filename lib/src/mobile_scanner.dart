@@ -65,6 +65,11 @@ class MobileScanner extends StatefulWidget {
   /// Default: false
   final bool startDelay;
 
+  /// Only set this to false if you are want to handel manual lifecycle of mobile_scanner
+  ///
+  /// Default: true
+  final bool autoLifecycle;
+
   /// The overlay which will be painted above the scanner when has started successful.
   /// Will no be pointed when an error occurs or the scanner hasn't been started yet.
   final Widget? overlay;
@@ -81,6 +86,7 @@ class MobileScanner extends StatefulWidget {
     this.placeholderBuilder,
     this.scanWindow,
     this.startDelay = false,
+    this.autoLifecycle = true,
     this.overlay,
     super.key,
   });
@@ -183,18 +189,20 @@ class _MobileScannerState extends State<MobileScanner>
       return;
     }
 
-    switch (state) {
-      case AppLifecycleState.resumed:
-        if (_resumeFromBackground) {
-          _startScanner();
-        }
-        break;
-      case AppLifecycleState.inactive:
-        _resumeFromBackground = true;
-        _controller.stop();
-        break;
-      default:
-        break;
+    if (widget.autoLifecycle) {
+      switch (state) {
+        case AppLifecycleState.resumed:
+          if (_resumeFromBackground) {
+            _startScanner();
+          }
+          break;
+        case AppLifecycleState.inactive:
+          _resumeFromBackground = true;
+          _controller.stop();
+          break;
+        default:
+          break;
+      }
     }
   }
 
