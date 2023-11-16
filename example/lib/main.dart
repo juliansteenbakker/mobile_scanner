@@ -64,7 +64,9 @@ class MyHome extends StatelessWidget {
                 ),
               );
             },
-            child: const Text('MobileScanner with Controller (returning image)'),
+            child: const Text(
+              'MobileScanner with Controller (returning image)',
+            ),
           ),
           ElevatedButton(
             onPressed: () {
