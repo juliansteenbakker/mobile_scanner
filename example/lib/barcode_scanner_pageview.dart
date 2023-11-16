@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerPageView extends StatefulWidget {
@@ -85,25 +86,7 @@ class _BarcodeScannerPage extends StatelessWidget {
             height: 100,
             color: Colors.black.withOpacity(0.4),
             child: Center(
-              child: StreamBuilder<BarcodeCapture>(
-                stream: controller.barcodes,
-                builder: (context, snapshot) {
-                  final barcodes = snapshot.data?.barcodes;
-
-                  if (barcodes == null || barcodes.isEmpty) {
-                    return const Text(
-                      'Scan Something!',
-                      style: TextStyle(color: Colors.white, fontSize: 20),
-                    );
-                  }
-
-                  return Text(
-                    barcodes.first.rawValue ?? 'No raw value',
-                    overflow: TextOverflow.fade,
-                    style: const TextStyle(color: Colors.white),
-                  );
-                },
-              ),
+              child: ScannedBarcodeLabel(barcodes: controller.barcodes),
             ),
           ),
         ),

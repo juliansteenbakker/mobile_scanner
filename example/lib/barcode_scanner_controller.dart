@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -15,8 +16,6 @@ class BarcodeScannerWithController extends StatefulWidget {
 
 class _BarcodeScannerWithControllerState
     extends State<BarcodeScannerWithController> {
-  BarcodeCapture? barcode;
-
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true, useNewCameraSelector: true,
     // formats: [BarcodeFormat.qrCode]
@@ -26,21 +25,9 @@ class _BarcodeScannerWithControllerState
     // returnImage: false,
   );
 
-  StreamSubscription<Object?>? _barcodesSubscription;
-
   @override
   void initState() {
     super.initState();
-    _barcodesSubscription = controller.barcodes.listen((event) {
-      if (!context.mounted) {
-        return;
-      }
-
-      setState(() {
-        barcode = event;
-      });
-    });
-
     controller.start();
   }
 
@@ -69,20 +56,9 @@ class _BarcodeScannerWithControllerState
                 children: [
                   ToggleFlashlightButton(controller: controller),
                   StartStopMobileScannerButton(controller: controller),
-                  Center(
-                    child: SizedBox(
-                      width: MediaQuery.of(context).size.width - 200,
-                      height: 50,
-                      child: FittedBox(
-                        child: Text(
-                          barcode?.barcodes.first.rawValue ?? 'Scan something!',
-                          overflow: TextOverflow.fade,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineMedium!
-                              .copyWith(color: Colors.white),
-                        ),
-                      ),
+                  Expanded(
+                    child: Center(
+                      child: ScannedBarcodeLabel(barcodes: controller.barcodes),
                     ),
                   ),
                   SwitchCameraButton(controller: controller),
@@ -98,7 +74,6 @@ class _BarcodeScannerWithControllerState
 
   @override
   Future<void> dispose() async {
-    _barcodesSubscription?.cancel();
     await controller.dispose();
     super.dispose();
   }

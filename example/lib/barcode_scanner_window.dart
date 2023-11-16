@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -117,33 +118,7 @@ class _BarcodeScannerWithScanWindowState
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               height: 100,
               color: Colors.black.withOpacity(0.4),
-              child: StreamBuilder<BarcodeCapture>(
-                stream: controller.barcodes,
-                builder: (context, snapshot) {
-                  final barcodeCapture = snapshot.data;
-
-                  String displayValue = 'Scan something!';
-
-                  if (barcodeCapture != null &&
-                      barcodeCapture.barcodes.isNotEmpty) {
-                    final String? value =
-                        barcodeCapture.barcodes.first.displayValue;
-
-                    if (value != null) {
-                      displayValue = value;
-                    }
-                  }
-
-                  return Text(
-                    displayValue,
-                    overflow: TextOverflow.fade,
-                    style: Theme.of(context)
-                        .textTheme
-                        .headlineMedium!
-                        .copyWith(color: Colors.white),
-                  );
-                },
-              ),
+              child: ScannedBarcodeLabel(barcodes: controller.barcodes),
             ),
           ),
         ],

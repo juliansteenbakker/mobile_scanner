@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -116,29 +117,8 @@ class _BarcodeScannerReturningImageState
                             ),
                             Expanded(
                               child: Center(
-                                child: StreamBuilder<BarcodeCapture>(
-                                  stream: controller.barcodes,
-                                  builder: (context, snapshot) {
-                                    final barcodes = snapshot.data?.barcodes;
-
-                                    if (barcodes == null || barcodes.isEmpty) {
-                                      return const Text(
-                                        'Scan something!',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 20,
-                                        ),
-                                      );
-                                    }
-
-                                    return Text(
-                                      barcodes.first.rawValue ?? 'No raw value',
-                                      overflow: TextOverflow.fade,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    );
-                                  },
+                                child: ScannedBarcodeLabel(
+                                  barcodes: controller.barcodes,
                                 ),
                               ),
                             ),

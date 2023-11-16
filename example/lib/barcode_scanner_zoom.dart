@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
@@ -14,29 +15,15 @@ class BarcodeScannerWithZoom extends StatefulWidget {
 }
 
 class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
-  BarcodeCapture? barcode;
-
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
   );
 
   double _zoomFactor = 0.0;
 
-  StreamSubscription<Object?>? _barcodesSubscription;
-
   @override
   void initState() {
     super.initState();
-    _barcodesSubscription = controller.barcodes.listen((event) {
-      if (!context.mounted) {
-        return;
-      }
-
-      setState(() {
-        barcode = event;
-      });
-    });
-
     controller.start();
   }
 
@@ -113,20 +100,10 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
                     children: [
                       ToggleFlashlightButton(controller: controller),
                       StartStopMobileScannerButton(controller: controller),
-                      Center(
-                        child: SizedBox(
-                          width: MediaQuery.of(context).size.width - 200,
-                          height: 50,
-                          child: FittedBox(
-                            child: Text(
-                              barcode?.barcodes.first.rawValue ??
-                                  'Scan something!',
-                              overflow: TextOverflow.fade,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headlineMedium!
-                                  .copyWith(color: Colors.white),
-                            ),
+                      Expanded(
+                        child: Center(
+                          child: ScannedBarcodeLabel(
+                            barcodes: controller.barcodes,
                           ),
                         ),
                       ),
@@ -145,7 +122,6 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
 
   @override
   Future<void> dispose() async {
-    _barcodesSubscription?.cancel();
     await controller.dispose();
     super.dispose();
   }
