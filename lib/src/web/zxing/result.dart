@@ -1,6 +1,9 @@
 import 'dart:js_interop';
+import 'dart:typed_data';
+import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 
 /// The JS static interop class for the Result class in the ZXing library.
 ///
@@ -73,5 +76,36 @@ extension ResultExt on Result {
       default:
         return BarcodeFormat.unknown;
     }
+  }
+
+  List<Offset> get resultPoints {
+    final JSArray? resultPoints = getResultPoints.callAsFunction() as JSArray?;
+
+    if (resultPoints == null) {
+      return [];
+    }
+
+    return resultPoints.toDart.cast<ResultPoint>().map((point) {
+      return Offset(point.x, point.y);
+    }).toList();
+  }
+
+  /// Get the raw bytes of the result.
+  Uint8List? get rawBytes {
+    final JSUint8Array? rawBytes = getRawBytes.callAsFunction() as JSUint8Array?;
+
+    return rawBytes?.toDart;
+  }
+
+  /// Get the text of the result.
+  String? get text {
+    return getText.callAsFunction() as String?;
+  }
+
+  /// Get the timestamp of the result.
+  int? get timestamp {
+    final JSNumber? timestamp = getTimestamp.callAsFunction() as JSNumber?;
+
+    return timestamp?.toDartInt;
   }
 }
