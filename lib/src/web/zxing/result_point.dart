@@ -5,9 +5,9 @@ import 'dart:js_interop';
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/ResultPoint.ts
 @JS()
 @staticInterop
-abstract class Result {}
+abstract class ResultPoint {}
 
-extension ResultPointExt on Result {
+extension ResultPointExt on ResultPoint {
   external JSFunction getX;
 
   external JSFunction getY;
