@@ -103,7 +103,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
-        self.mobileScanner.timeoutSeconds = Double(timeoutMs / 1000)
+        self.mobileScanner.timeoutSeconds = timeoutMs / Double(1000)
 
         let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
         var barcodeOptions: BarcodeScannerOptions? = nil
