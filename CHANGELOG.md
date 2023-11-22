@@ -1,3 +1,7 @@
+## 3.5.3
+Bugs fixed:
+* Fixed a bug with an implicit conversion to integer for the scan timeout for iOS. (thanks @EArminjon !)
+
 ## 3.5.2
 Improvements:
 * Updated to `play-services-mlkit-barcode-scanning` version 18.3.0
