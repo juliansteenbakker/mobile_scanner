@@ -78,6 +78,7 @@ extension ResultExt on Result {
     }
   }
 
+  /// Get the corner points of the result.
   List<Offset> get resultPoints {
     final JSArray? resultPoints = getResultPoints.callAsFunction() as JSArray?;
 
