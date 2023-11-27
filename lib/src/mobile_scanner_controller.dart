@@ -189,8 +189,9 @@ class MobileScannerController {
       final MobileScannerState state;
 
       try {
-        state = MobileScannerState
-            .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
+        state = MobileScannerState.fromRawValue(
+          await _methodChannel.invokeMethod('state') as int? ?? 0,
+        );
       } on PlatformException catch (error) {
         isStarting = false;
 

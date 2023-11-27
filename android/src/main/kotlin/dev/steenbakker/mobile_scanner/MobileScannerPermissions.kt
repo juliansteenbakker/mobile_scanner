@@ -45,7 +45,7 @@ class MobileScannerPermissions {
         return if (hasPermission) {
             1
         } else {
-            0
+            2
         }
     }
 
