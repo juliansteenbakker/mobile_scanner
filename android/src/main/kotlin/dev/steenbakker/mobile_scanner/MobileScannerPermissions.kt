@@ -70,6 +70,7 @@ class MobileScannerPermissions {
                 object: ResultCallback {
                     override fun onResult(errorCode: String?, errorDescription: String?) {
                         ongoing = false
+                        listener = null
                         callback.onResult(errorCode, errorDescription)
                     }
                 }
