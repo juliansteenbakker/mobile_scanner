@@ -1,6 +1,5 @@
 import 'dart:js_interop';
 
-import 'package:js/js.dart';
 import 'package:web/web.dart';
 
 /// The JS interop class for the ZXing BrowserMultiFormatReader.
@@ -22,13 +21,13 @@ class ZXingBrowserMultiFormatReader {
 }
 
 extension ZXingBrowserMultiFormatReaderExt on ZXingBrowserMultiFormatReader {
-  /// Set the source for the [HTMLVideoElement] that acts as input for the barcode reader.
+  /// Attach a [MediaStream] to a [HTMLVideoElement].
   ///
-  /// This function takes a [HTMLVideoElement], and a [MediaStream] as arguments,
-  /// and returns no result.
+  /// This function accepts a [MediaStream] and a [HTMLVideoElement] as arguments,
+  /// and returns a [JSPromise].
   ///
-  /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L1182
-  external JSFunction addVideoSource;
+  /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L406
+  external JSFunction attachStreamToVideo;
 
   /// Continuously decode barcodes from a [HTMLVideoElement].
   ///
@@ -45,15 +44,6 @@ extension ZXingBrowserMultiFormatReaderExt on ZXingBrowserMultiFormatReader {
   ///
   /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L458
   external JSFunction isVideoPlaying;
-
-  /// Prepare the video element for the barcode reader.
-  ///
-  /// This function takes a [HTMLVideoElement] as argument,
-  /// and returns the same [HTMLVideoElement],
-  /// after it was prepared for the barcode reader.
-  ///
-  /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L802
-  external JSFunction prepareVideoElement;
 
   /// Reset the barcode reader to it's initial state,
   /// and stop any ongoing barcode decoding.
