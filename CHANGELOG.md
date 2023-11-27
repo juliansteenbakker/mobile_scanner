@@ -1,3 +1,7 @@
+## 3.5.5
+Bugs fixed:
+* Fixed a bug where the scanner would get stuck after denying permissions on Android. (thanks @navaronbracke !)
+
 ## 3.5.4
 Bugs fixed:
 * Fixed a bug with an implicit conversion to integer for the scan timeout for iOS. (thanks @EArminjon !)
