@@ -113,18 +113,17 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     switch (authorizationState) {
-      case MobileScannerAuthorizationState.denied:
-        throw const MobileScannerException(
-          errorCode: MobileScannerErrorCode.permissionDenied,
-        );
       case MobileScannerAuthorizationState.authorized:
         return; // Already authorized.
+      // Android does not have an undetermined authorization state.
+      // So if the permission was denied, request it again.
+      case MobileScannerAuthorizationState.denied:
       case MobileScannerAuthorizationState.undetermined:
         try {
-          final bool permissionResult =
+          final bool granted =
               await methodChannel.invokeMethod<bool>('request') ?? false;
 
-          if (permissionResult) {
+          if (granted) {
             return; // Authorization was granted.
           }
 
