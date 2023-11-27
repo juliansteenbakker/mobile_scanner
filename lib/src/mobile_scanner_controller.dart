@@ -189,8 +189,9 @@ class MobileScannerController {
       final MobileScannerState state;
 
       try {
-        state = MobileScannerState
-            .values[await _methodChannel.invokeMethod('state') as int? ?? 0];
+        state = MobileScannerState.fromRawValue(
+          await _methodChannel.invokeMethod('state') as int? ?? 0,
+        );
       } on PlatformException catch (error) {
         isStarting = false;
 
@@ -205,32 +206,33 @@ class MobileScannerController {
       }
 
       switch (state) {
+        // Android does not have an undetermined permission state.
+        // So if the permission state is denied, just request it now.
         case MobileScannerState.undetermined:
-          bool result = false;
-
+        case MobileScannerState.denied:
           try {
-            result =
+            final bool granted =
                 await _methodChannel.invokeMethod('request') as bool? ?? false;
-          } catch (error) {
-            isStarting = false;
-            throw const MobileScannerException(
-              errorCode: MobileScannerErrorCode.genericError,
-            );
-          }
 
-          if (!result) {
+            if (!granted) {
+              isStarting = false;
+              throw const MobileScannerException(
+                errorCode: MobileScannerErrorCode.permissionDenied,
+              );
+            }
+          } on PlatformException catch (error) {
             isStarting = false;
-            throw const MobileScannerException(
-              errorCode: MobileScannerErrorCode.permissionDenied,
+            throw MobileScannerException(
+              errorCode: MobileScannerErrorCode.genericError,
+              errorDetails: MobileScannerErrorDetails(
+                code: error.code,
+                details: error.details as Object?,
+                message: error.message,
+              ),
             );
           }
 
           break;
-        case MobileScannerState.denied:
-          isStarting = false;
-          throw const MobileScannerException(
-            errorCode: MobileScannerErrorCode.permissionDenied,
-          );
         case MobileScannerState.authorized:
           break;
       }
