@@ -286,12 +286,18 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device = nil
     }
 
-    /// Toggle the flashlight between on and off.
+    /// Set the torch mode.
+    ///
+    /// This method should be called on the main DispatchQueue.
     func toggleTorch(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
+        guard let device = self.device else {
             return
         }
-
+        
+        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(torch)) {
+            return
+        }
+        
         if (device.torchMode != torch) {
             try device.lockForConfiguration()
             device.torchMode = torch
