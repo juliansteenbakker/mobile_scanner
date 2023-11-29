@@ -320,7 +320,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // TODO: this method should be removed when iOS and MacOS share their implementation.
     private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil || !device.hasTorch) {
+        guard let device = self.device else {
+            return
+        }
+        
+        if (!device.hasTorch || !device.isTorchModeSupported(torch)) {
             return
         }
         
@@ -337,7 +341,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
     
-    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
 
         do {
