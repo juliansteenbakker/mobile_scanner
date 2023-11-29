@@ -61,6 +61,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             start(call, result)
         case "torch":
             toggleTorch(call, result)
+        case "setScale":
+            setScale(call, result)
+        case "resetScale":
+            resetScale(call, result)
             //        case "analyze":
             //            switchAnalyzeMode(call, result)
         case "stop":
@@ -339,6 +343,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             device.torchMode = torch
             device.unlockForConfiguration()
         }
+    }
+    
+    /// Reset the zoom scale.
+    private func resetScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The zoom scale is not yet supported on MacOS.
+        result(nil)
+    }
+    
+    /// Set the zoom scale.
+    private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The zoom scale is not yet supported on MacOS.
+        result(nil)
     }
     
     private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
