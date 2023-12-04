@@ -24,6 +24,6 @@ class MobileScannerArguments {
     required this.hasTorch,
     this.textureId,
     this.webId,
-    this.nrOfCameras
+    this.nrOfCameras,
   });
 }

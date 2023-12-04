@@ -225,12 +225,22 @@ class _MobileScannerState extends State<MobileScanner>
               return Stack(
                 alignment: Alignment.center,
                 children: [
-                  _scanner(value.size, value.webId, value.textureId, value.nrOfCameras),
+                  _scanner(
+                    value.size,
+                    value.webId,
+                    value.textureId,
+                    value.nrOfCameras,
+                  ),
                   widget.overlay!,
                 ],
               );
             } else {
-              return _scanner(value.size, value.webId, value.textureId, value.nrOfCameras);
+              return _scanner(
+                value.size,
+                value.webId,
+                value.textureId,
+                value.nrOfCameras,
+              );
             }
           },
         );

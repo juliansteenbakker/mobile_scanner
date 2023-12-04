@@ -16,7 +16,7 @@ class _BarcodeScannerReturningImageState
     extends State<BarcodeScannerReturningImage>
     with SingleTickerProviderStateMixin {
   BarcodeCapture? barcode;
-  MobileScannerArguments? arguments;
+  // MobileScannerArguments? arguments;
 
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
