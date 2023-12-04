@@ -240,6 +240,7 @@ class MobileScanner(
 
         cameraProviderFuture.addListener({
             cameraProvider = cameraProviderFuture.get()
+            val nrOfCameras = cameraProvider?.availableCameraInfos?.size
 
             if (cameraProvider == null) {
                 mobileScannerErrorCallback(CameraError())
@@ -340,7 +341,8 @@ class MobileScanner(
                     if (portrait) width else height,
                     if (portrait) height else width,
                     camera?.cameraInfo?.hasFlashUnit() ?: false,
-                    textureEntry!!.id()
+                    textureEntry!!.id(),
+                    nrOfCameras ?: 0
                 )
             )
         }, executor)

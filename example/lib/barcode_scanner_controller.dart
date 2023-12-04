@@ -47,6 +47,8 @@ class _BarcodeScannerWithControllerState
     }
   }
 
+  int? nrOfCameras;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +59,12 @@ class _BarcodeScannerWithControllerState
           return Stack(
             children: [
               MobileScanner(
+                onScannerStarted: (arguments) {
+                  if (arguments?.nrOfCameras != null) {
+                    nrOfCameras = arguments!.nrOfCameras;
+                    setState(() {});
+                  }
+                },
                 controller: controller,
                 errorBuilder: (context, error, child) {
                   return ScannerErrorWidget(error: error);
@@ -146,7 +154,9 @@ class _BarcodeScannerWithControllerState
                           },
                         ),
                         iconSize: 32.0,
-                        onPressed: () => controller.switchCamera(),
+                        onPressed: nrOfCameras != null && nrOfCameras! < 2
+                            ? null
+                            : () => controller.switchCamera(),
                       ),
                       IconButton(
                         color: Colors.white,

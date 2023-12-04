@@ -304,6 +304,7 @@ class MobileScannerController {
 
     isStarting = false;
     return startArguments.value = MobileScannerArguments(
+      nrOfCameras: startResult['nrOfCameras'] as int?,
       size: size,
       hasTorch: hasTorch,
       textureId: kIsWeb ? null : startResult['textureId'] as int?,
