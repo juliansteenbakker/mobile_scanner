@@ -5,6 +5,7 @@ import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:web/web.dart';
 
@@ -20,6 +21,13 @@ abstract class BarcodeReader {
 
   /// The script url for the barcode library.
   String get scriptUrl;
+
+  /// Start detecting barcodes.
+  ///
+  /// The returned stream will emit a [BarcodeCapture] for each detected barcode.
+  Stream<BarcodeCapture> detectBarcodes() {
+    throw UnimplementedError('detectBarcodes() has not been implemented.');
+  }
 
   /// Load the barcode reader library.
   ///
