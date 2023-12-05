@@ -267,14 +267,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     _throwIfNotInitialized();
 
-    await MobileScannerPlatform.instance.stop();
-
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
     value = value.copyWith(
       isRunning: false,
       torchState: TorchState.off,
     );
+
+    await MobileScannerPlatform.instance.stop();
   }
 
   /// Switch between the front and back camera.
