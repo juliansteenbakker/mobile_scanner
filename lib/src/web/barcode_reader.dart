@@ -3,7 +3,6 @@ import 'dart:js_interop';
 
 import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
@@ -12,6 +11,9 @@ import 'package:web/web.dart';
 /// This class represents the base interface for a barcode reader implementation.
 abstract class BarcodeReader {
   const BarcodeReader();
+
+  /// Whether the scanner is currently scanning for barcodes.
+  bool get isScanning;
 
   /// The id for the script tag that loads the barcode library.
   ///
@@ -73,11 +75,6 @@ abstract class BarcodeReader {
     document.head!.appendChild(script);
 
     await completer.future;
-  }
-
-  /// Set the flashlight state for the device.
-  Future<void> setTorchState(TorchState torchState) {
-    throw UnimplementedError('setTorchState() has not been implemented.');
   }
 
   /// Start the barcode reader and initialize the video stream.
