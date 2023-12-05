@@ -61,6 +61,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             start(call, result)
         case "torch":
             toggleTorch(call, result)
+        case "setScale":
+            setScale(call, result)
+        case "resetScale":
+            resetScale(call, result)
             //        case "analyze":
             //            switchAnalyzeMode(call, result)
         case "stop":
@@ -320,7 +324,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // TODO: this method should be removed when iOS and MacOS share their implementation.
     private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil || !device.hasTorch) {
+        guard let device = self.device else {
+            return
+        }
+        
+        if (!device.hasTorch || !device.isTorchModeSupported(torch)) {
             return
         }
         
@@ -337,7 +345,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
     
-    func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    /// Reset the zoom scale.
+    private func resetScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The zoom scale is not yet supported on MacOS.
+        result(nil)
+    }
+    
+    /// Set the zoom scale.
+    private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The zoom scale is not yet supported on MacOS.
+        result(nil)
+    }
+    
+    private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
 
         do {

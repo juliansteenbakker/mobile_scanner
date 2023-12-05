@@ -215,26 +215,35 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
         backgroundQueue.async {
             self.captureSession.startRunning()
-            
-            // Turn on the flashlight if requested,
-            // but after the capture session started.
+
+            // After the capture session started, turn on the torch (if requested)
+            // and reset the zoom scale back to the default.
+            // Ensure that these adjustments are done on the main DispatchQueue,
+            // as they interact with the hardware camera.
             if (torch) {
+                DispatchQueue.main.async {
+                    do {
+                        try self.toggleTorch(.on)
+                    } catch {
+                        // If the torch does not turn on,
+                        // continue with the capture session anyway.
+                    }
+                }
+            }
+            
+            DispatchQueue.main.async {
                 do {
-                    try self.toggleTorch(.on)
+                    try self.resetScale()
                 } catch {
-                    // If the torch does not turn on,
+                    // If the zoom scale could not be reset,
                     // continue with the capture session anyway.
                 }
             }
 
-            do {
-                try self.resetScale()
-            } catch {
-                // If the zoom scale could not be reset,
-                // continue with the capture session anyway.
-            }
-            
             if let device = self.device {
+                // When querying the dimensions of the camera,
+                // stay on the background thread,
+                // as this does not change the configuration of the hardware camera.
                 let dimensions = CMVideoFormatDescriptionGetDimensions(
                     device.activeFormat.formatDescription)
                 let hasTorch = device.hasTorch
@@ -277,12 +286,18 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device = nil
     }
 
-    /// Toggle the flashlight between on and off.
+    /// Set the torch mode.
+    ///
+    /// This method should be called on the main DispatchQueue.
     func toggleTorch(_ torch: AVCaptureDevice.TorchMode) throws {
-        if (device == nil || !device.hasTorch || !device.isTorchAvailable) {
+        guard let device = self.device else {
             return
         }
-
+        
+        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(torch)) {
+            return
+        }
+        
         if (device.torchMode != torch) {
             try device.lockForConfiguration()
             device.torchMode = torch
