@@ -42,19 +42,20 @@ abstract class BarcodeReader {
 
     final Completer<void> completer = Completer();
 
-    final HTMLScriptElement script = (document.createElement('script') as HTMLScriptElement)
-      ..id = scriptId
-      ..async = true
-      ..defer = false
-      ..type = 'application/javascript'
-      ..lang = 'javascript'
-      ..crossOrigin = 'anonymous'
-      ..src = scriptUrl
-      ..onload = allowInterop((JSAny _) {
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      }).toJS;
+    final HTMLScriptElement script =
+        (document.createElement('script') as HTMLScriptElement)
+          ..id = scriptId
+          ..async = true
+          ..defer = false
+          ..type = 'application/javascript'
+          ..lang = 'javascript'
+          ..crossOrigin = 'anonymous'
+          ..src = scriptUrl
+          ..onload = allowInterop((JSAny _) {
+            if (!completer.isCompleted) {
+              completer.complete();
+            }
+          }).toJS;
 
     script.onerror = allowInterop((JSAny _) {
       if (!completer.isCompleted) {
@@ -65,7 +66,8 @@ abstract class BarcodeReader {
           const MobileScannerException(
             errorCode: MobileScannerErrorCode.genericError,
             errorDetails: MobileScannerErrorDetails(
-              message: 'Could not load the BarcodeReader script due to a network error.',
+              message:
+                  'Could not load the BarcodeReader script due to a network error.',
             ),
           ),
         );
@@ -81,7 +83,10 @@ abstract class BarcodeReader {
   ///
   /// The [options] are used to configure the barcode reader.
   /// The [containerElement] will become the parent of the video output element.
-  Future<void> start(StartOptions options, {required HTMLElement containerElement}) {
+  Future<void> start(
+    StartOptions options, {
+    required HTMLElement containerElement,
+  }) {
     throw UnimplementedError('start() has not been implemented.');
   }
 
