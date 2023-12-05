@@ -50,6 +50,9 @@ abstract class WebBarcodeReaderBase {
   /// Starts scanning QR codes or barcodes
   Stream<Barcode?> detectBarcodeContinuously();
 
+  /// Stops scanning QR codes or barcodes
+  Future<void> stopDetectBarcodeContinuously();
+
   /// Stops streaming video
   Future<void> stop();
 

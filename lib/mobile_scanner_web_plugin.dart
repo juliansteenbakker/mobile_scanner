@@ -186,7 +186,8 @@ class MobileScannerWebPlugin {
 
   /// Stops the video feed and analyzer
   Future<void> cancel() async {
-    barCodeReader.stop();
+    await barCodeReader.stop();
+    await barCodeReader.stopDetectBarcodeContinuously();
     await _barCodeStreamSubscription?.cancel();
     _barCodeStreamSubscription = null;
   }

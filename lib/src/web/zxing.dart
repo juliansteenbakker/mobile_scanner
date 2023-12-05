@@ -250,24 +250,30 @@ class ZXingBarcodeReader extends WebBarcodeReaderBase
     await videoSource.play();
   }
 
+  StreamController<Barcode?>? controller;
+
+  @override
+  Future<void> stopDetectBarcodeContinuously() async {
+    _reader?.stopContinuousDecode();
+    controller?.close();
+    controller = null;
+  }
+
   @override
   Stream<Barcode?> detectBarcodeContinuously() {
-    final controller = StreamController<Barcode?>();
-    controller.onListen = () async {
+    controller ??= StreamController<Barcode?>();
+    controller!.onListen = () async {
       _reader?.decodeContinuously(
         video,
         allowInterop((result, error) {
           if (result != null) {
-            controller.add(result.toBarcode());
+            controller?.add(result.toBarcode());
           }
         }),
       );
     };
-    controller.onCancel = () {
-      _reader?.stopContinuousDecode();
-      controller.close();
-    };
-    return controller.stream;
+    controller!.onCancel = () => stopDetectBarcodeContinuously();
+    return controller!.stream;
   }
 
   @override

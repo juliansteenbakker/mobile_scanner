@@ -83,6 +83,11 @@ class JsQrCodeReader extends WebBarcodeReaderBase
     });
   }
 
+  @override
+  Future<void> stopDetectBarcodeContinuously() async {
+    return;
+  }
+
   /// Captures a frame and analyzes it for QR codes
   Future<Code?> _captureFrame(VideoElement video) async {
     if (localMediaStream == null) return null;
