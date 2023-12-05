@@ -5,10 +5,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerReturningImage extends StatefulWidget {
-  const BarcodeScannerReturningImage({Key? key}) : super(key: key);
+  const BarcodeScannerReturningImage({super.key});
 
   @override
-  _BarcodeScannerReturningImageState createState() =>
+  State<BarcodeScannerReturningImage> createState() =>
       _BarcodeScannerReturningImageState();
 }
 
@@ -16,7 +16,7 @@ class _BarcodeScannerReturningImageState
     extends State<BarcodeScannerReturningImage>
     with SingleTickerProviderStateMixin {
   BarcodeCapture? barcode;
-  MobileScannerArguments? arguments;
+  // MobileScannerArguments? arguments;
 
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
@@ -101,16 +101,10 @@ class _BarcodeScannerReturningImageState
                           children: [
                             IconButton(
                               color: Colors.white,
-                              icon: ValueListenableBuilder(
+                              icon: ValueListenableBuilder<TorchState>(
                                 valueListenable: controller.torchState,
                                 builder: (context, state, child) {
-                                  if (state == null) {
-                                    return const Icon(
-                                      Icons.flash_off,
-                                      color: Colors.grey,
-                                    );
-                                  }
-                                  switch (state as TorchState) {
+                                  switch (state) {
                                     case TorchState.off:
                                       return const Icon(
                                         Icons.flash_off,
@@ -154,13 +148,10 @@ class _BarcodeScannerReturningImageState
                             ),
                             IconButton(
                               color: Colors.white,
-                              icon: ValueListenableBuilder(
+                              icon: ValueListenableBuilder<CameraFacing>(
                                 valueListenable: controller.cameraFacingState,
                                 builder: (context, state, child) {
-                                  if (state == null) {
-                                    return const Icon(Icons.camera_front);
-                                  }
-                                  switch (state as CameraFacing) {
+                                  switch (state) {
                                     case CameraFacing.front:
                                       return const Icon(Icons.camera_front);
                                     case CameraFacing.back:

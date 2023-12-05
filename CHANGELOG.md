@@ -1,5 +1,63 @@
+## 3.5.5
+Bugs fixed:
+* Fixed a bug where the scanner would get stuck after denying permissions on Android. (thanks @navaronbracke !)
+
+## 3.5.4
+Bugs fixed:
+* Fixed a bug with an implicit conversion to integer for the scan timeout for iOS. (thanks @EArminjon !)
+
+## 3.5.2
+Improvements:
+* Updated to `play-services-mlkit-barcode-scanning` version 18.3.0
+
+Bugs fixed:
+* Fixed the `updateScanWindow()` function not completing on Android and MacOS. (thanks @navaronbracke !)
+* Fixed some camera access issues, when the camera could have been null on Android. (thanks @navaronbracke !)
+* Fixed a crash on Android when there is no camera. (thanks @navaronbracke !)
+* Fixed a bug with the `noDuplicates` detection speed. (thanks @pgeof !)
+* Fixed a synchronization issue for the torch state. (thanks @navaronbracke !)
+
+## 3.5.1
+Improvements:
+* The `type` of an `Address` is now non-null.
+* The `type` of an `Email` is now non-null.
+* The `phoneNumber` of an `SMS` is now non-null.
+* The `latitude` and `longitude` of a `GeoPoint` are now non-null.
+* The `phones` and `urls` of `ContactInfo` are now non-null.
+* The `url` of a `UrlBookmark` is now non-null.
+* The `type` of `Phone` is now non-null.
+* The `width` and `height` of `BarcodeCapture` are now non-null.
+* The `BarcodeCapture` class now exposes a `size`.
+* The list of `corners` of a `Barcode` is now non-null.
+
+Bugs fixed:
+* Fixed the default values for the `format` and `type` arguments of the Barcode constructor.
+  These now use `BarcodeFormat.unknown` and `BarcodeType.unknown`, rather than `BarcodeFormat.ean13` and `BarcodeType.text`.
+  (thanks @navaronbracke !)
+* Fixed messages not being sent on the main thread for Android, iOS and MacOS. (thanks @navaronbracke !)
+
+## 3.5.0
+New Features:
+* Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
+* Added the option to specify the camera resolution for Android. (thanks @EArminjon !)
+* Added a sample with a scanner overlay. (thanks @Spyy004 !)
+
+Bugs fixed:
+* Fixed the scan window calculation taking into account the widget coordinates, instead of the screen coordinates. (thanks @jlin5 !)
+* Fixed the scan window calculation returning wrong results. (thanks @MBulli !)
+* Fixed the BarcodeCapture format on MacOS. (thanks @ryanduffyne !)
+* Fixed the timeout for scanning on MacOS. (thanks @ryanduffyne !)
+* Fixed Android builds failing by downgrading from Kotlin 1.9.10 to 1.7.22. (thanks @vbuberen !)
+* Fixed images on iOS being rotated, resulting in bad detection rates. (thanks @EArminjon !)
+* Fixed scan timeout not working on iOS. (thanks @navaronbracke !)
+* Fixed a crash on iOS when the device is nil. (thanks @navaronbracke !)
+* Fixed a case of an unhandled exception when starting the scanner. (thanks @navaronbracke !)
+
+Improvements:
+* Improved MacOS memory footprint by using a background queue. (thanks @ryanduffyne !)
+
 ## 3.4.1
-Change MediaQuery.sizeOf(context) to of(context).size for backwards compatibility
+* Changed MediaQuery.sizeOf(context) to of(context).size for compatibility with older Flutter versions.
 
 ## 3.4.0
 New Features:

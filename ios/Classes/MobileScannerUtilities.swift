@@ -1,27 +1,12 @@
-//
-//  Util.swift
-//  camerax
-//
-//  Created by 闫守旺 on 2021/2/6.
-//
-
 import AVFoundation
-import Flutter
 import Foundation
 import MLKitBarcodeScanning
-
-extension Error {
-    func throwNative(_ result: FlutterResult) {
-        let error = FlutterError(code: localizedDescription, message: nil, details: nil)
-        result(error)
-    }
-}
 
 extension CVBuffer {
     var image: UIImage {
         let ciImage = CIImage(cvPixelBuffer: self)
         let cgImage = CIContext().createCGImage(ciImage, from: ciImage.extent)
-        return UIImage(cgImage: cgImage!, scale: 1.0, orientation: UIImage.Orientation.left)
+        return UIImage(cgImage: cgImage!)
     }
     
     var image1: UIImage {

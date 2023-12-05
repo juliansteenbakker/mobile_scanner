@@ -1,22 +1,38 @@
 name: mobile_scanner_example
 description: Demonstrates how to use the mobile_scanner plugin.
+# The following line prevents the package from being accidentally published to
+# pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+version: 0.0.1
 
 environment:
-  sdk: ">=2.12.0 <4.0.0"
+  sdk: '>=2.18.0 <4.0.0'
 
+# Dependencies specify other packages that your package needs in order to work.
+# To automatically upgrade your package dependencies to the latest versions
+# consider running `flutter pub upgrade --major-versions`. Alternatively,
+# dependencies can be manually updated by changing the version numbers below to
+# the latest version available on pub.dev. To see which dependencies have newer
+# versions available, run `flutter pub outdated`.
 dependencies:
   flutter:
     sdk: flutter
-  image_picker: ^1.0.0
 
+  image_picker: ^1.0.4
   mobile_scanner:
+    # When depending on this package from a real application you should use:
+    #   mobile_scanner: ^x.y.z
+    # See https://dart.dev/tools/pub/dependencies#version-constraints
+    # The example app is bundled with the plugin so we use a path dependency on
+    # the parent directory to use the current plugin's version.
     path: ../
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lint: ^2.0.1
+  integration_test:
+    sdk: flutter
+  lint: ^2.1.2
 
 flutter:
   uses-material-design: true

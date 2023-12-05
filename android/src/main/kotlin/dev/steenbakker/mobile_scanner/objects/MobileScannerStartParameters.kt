@@ -4,5 +4,6 @@ class MobileScannerStartParameters(
     val width: Double = 0.0,
     val height: Double,
     val hasFlashUnit: Boolean,
-    val id: Long
+    val id: Long,
+    val nrOfCameras: Int
 )

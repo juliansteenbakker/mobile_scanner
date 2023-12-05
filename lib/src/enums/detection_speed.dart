@@ -3,18 +3,34 @@ enum DetectionSpeed {
   /// The scanner will only scan a barcode once, and never again until another
   /// barcode has been scanned.
   ///
-  /// NOTE: This mode does analyze every frame in order to check if the value
-  /// has changed.
-  noDuplicates,
+  /// Bear in mind that this mode analyzes every frame,
+  /// in order to check if the value has changed.
+  noDuplicates(0),
 
-  /// The barcode scanner will scan one barcode, and wait 250 Miliseconds before
-  /// scanning again. This will prevent memory issues on older devices.
-  ///
-  /// You can change the timeout duration with [detectionTimeout] parameter.
-  normal,
+  /// The barcode scanner will scan barcodes,
+  /// while respecting the configured scan timeout between individual scans.
+  normal(1),
 
-  /// Let the scanner detect barcodes without restriction.
+  /// The barcode scanner will scan barcodes, without any restrictions.
   ///
-  /// NOTE: This can cause memory issues with older devices.
-  unrestricted,
+  /// Bear in mind that this mode can cause memory issues on older devices.
+  unrestricted(2);
+
+  const DetectionSpeed(this.rawValue);
+
+  factory DetectionSpeed.fromRawValue(int value) {
+    switch (value) {
+      case 0:
+        return DetectionSpeed.noDuplicates;
+      case 1:
+        return DetectionSpeed.normal;
+      case 2:
+        return DetectionSpeed.unrestricted;
+      default:
+        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+    }
+  }
+
+  /// The raw value for the detection speed.
+  final int rawValue;
 }

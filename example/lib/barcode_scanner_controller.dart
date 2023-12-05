@@ -4,10 +4,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithController extends StatefulWidget {
-  const BarcodeScannerWithController({Key? key}) : super(key: key);
+  const BarcodeScannerWithController({super.key});
 
   @override
-  _BarcodeScannerWithControllerState createState() =>
+  State<BarcodeScannerWithController> createState() =>
       _BarcodeScannerWithControllerState();
 }
 
@@ -17,7 +17,7 @@ class _BarcodeScannerWithControllerState
   BarcodeCapture? barcode;
 
   final MobileScannerController controller = MobileScannerController(
-    torchEnabled: true,
+    torchEnabled: true, useNewCameraSelector: true,
     // formats: [BarcodeFormat.qrCode]
     // facing: CameraFacing.front,
     // detectionSpeed: DetectionSpeed.normal
@@ -47,6 +47,8 @@ class _BarcodeScannerWithControllerState
     }
   }
 
+  int? nrOfCameras;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -57,6 +59,12 @@ class _BarcodeScannerWithControllerState
           return Stack(
             children: [
               MobileScanner(
+                onScannerStarted: (arguments) {
+                  if (arguments?.nrOfCameras != null) {
+                    nrOfCameras = arguments!.nrOfCameras;
+                    setState(() {});
+                  }
+                },
                 controller: controller,
                 errorBuilder: (context, error, child) {
                   return ScannerErrorWidget(error: error);
@@ -85,16 +93,10 @@ class _BarcodeScannerWithControllerState
                           }
                           return IconButton(
                             color: Colors.white,
-                            icon: ValueListenableBuilder(
+                            icon: ValueListenableBuilder<TorchState>(
                               valueListenable: controller.torchState,
                               builder: (context, state, child) {
-                                if (state == null) {
-                                  return const Icon(
-                                    Icons.flash_off,
-                                    color: Colors.grey,
-                                  );
-                                }
-                                switch (state as TorchState) {
+                                switch (state) {
                                   case TorchState.off:
                                     return const Icon(
                                       Icons.flash_off,
@@ -140,13 +142,10 @@ class _BarcodeScannerWithControllerState
                       ),
                       IconButton(
                         color: Colors.white,
-                        icon: ValueListenableBuilder(
+                        icon: ValueListenableBuilder<CameraFacing>(
                           valueListenable: controller.cameraFacingState,
                           builder: (context, state, child) {
-                            if (state == null) {
-                              return const Icon(Icons.camera_front);
-                            }
-                            switch (state as CameraFacing) {
+                            switch (state) {
                               case CameraFacing.front:
                                 return const Icon(Icons.camera_front);
                               case CameraFacing.back:
@@ -155,7 +154,9 @@ class _BarcodeScannerWithControllerState
                           },
                         ),
                         iconSize: 32.0,
-                        onPressed: () => controller.switchCamera(),
+                        onPressed: nrOfCameras != null && nrOfCameras! < 2
+                            ? null
+                            : () => controller.switchCamera(),
                       ),
                       IconButton(
                         color: Colors.white,

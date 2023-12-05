@@ -1,15 +1,16 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithScanWindow extends StatefulWidget {
-  const BarcodeScannerWithScanWindow({Key? key}) : super(key: key);
+  const BarcodeScannerWithScanWindow({super.key});
 
   @override
-  _BarcodeScannerWithScanWindowState createState() =>
+  State<BarcodeScannerWithScanWindow> createState() =>
       _BarcodeScannerWithScanWindowState();
 }
 
@@ -150,7 +151,10 @@ class BarcodeOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcode.corners == null) return;
+    if (barcode.corners.isEmpty) {
+      return;
+    }
+
     final adjustedSize = applyBoxFit(boxFit, arguments.size, size);
 
     double verticalPadding = size.height - adjustedSize.destination.height;
@@ -167,15 +171,19 @@ class BarcodeOverlay extends CustomPainter {
       horizontalPadding = 0;
     }
 
-    final ratioWidth =
-        (Platform.isIOS ? capture.width! : arguments.size.width) /
-            adjustedSize.destination.width;
-    final ratioHeight =
-        (Platform.isIOS ? capture.height! : arguments.size.height) /
-            adjustedSize.destination.height;
+    final double ratioWidth;
+    final double ratioHeight;
+
+    if (!kIsWeb && Platform.isIOS) {
+      ratioWidth = capture.size.width / adjustedSize.destination.width;
+      ratioHeight = capture.size.height / adjustedSize.destination.height;
+    } else {
+      ratioWidth = arguments.size.width / adjustedSize.destination.width;
+      ratioHeight = arguments.size.height / adjustedSize.destination.height;
+    }
 
     final List<Offset> adjustedOffset = [];
-    for (final offset in barcode.corners!) {
+    for (final offset in barcode.corners) {
       adjustedOffset.add(
         Offset(
           offset.dx / ratioWidth + horizontalPadding,

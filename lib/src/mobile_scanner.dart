@@ -2,10 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_arguments.dart';
+import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 /// The function signature for the error builder.
 typedef MobileScannerErrorBuilder = Widget Function(
@@ -63,7 +66,7 @@ class MobileScanner extends StatefulWidget {
   final bool startDelay;
 
   /// The overlay which will be painted above the scanner when has started successful.
-  /// Will no be pointed when an error occurs or the scanner hasn't be started yet.
+  /// Will no be pointed when an error occurs or the scanner hasn't been started yet.
   final Widget? overlay;
 
   /// Create a new [MobileScanner] using the provided [controller]
@@ -137,11 +140,31 @@ class _MobileScannerState extends State<MobileScanner>
       widget.onStart?.call(arguments);
       widget.onScannerStarted?.call(arguments);
     }).catchError((error) {
-      if (mounted) {
-        setState(() {
-          _startException = error as MobileScannerException;
-        });
+      if (!mounted) {
+        return;
       }
+
+      if (error is MobileScannerException) {
+        _startException = error;
+      } else if (error is PlatformException) {
+        _startException = MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            code: error.code,
+            message: error.message,
+            details: error.details,
+          ),
+        );
+      } else {
+        _startException = MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            details: error,
+          ),
+        );
+      }
+
+      setState(() {});
     });
   }
 
@@ -175,75 +198,6 @@ class _MobileScannerState extends State<MobileScanner>
     }
   }
 
-  /// the [scanWindow] rect will be relative and scaled to the [widgetSize] not the texture. so it is possible,
-  /// depending on the [fit], for the [scanWindow] to partially or not at all overlap the [textureSize]
-  ///
-  /// since when using a [BoxFit] the content will always be centered on its parent. we can convert the rect
-  /// to be relative to the texture.
-  ///
-  /// since the textures size and the actuall image (on the texture size) might not be the same, we also need to
-  /// calculate the scanWindow in terms of percentages of the texture, not pixels.
-  Rect calculateScanWindowRelativeToTextureInPercentage(
-    BoxFit fit,
-    Rect scanWindow,
-    Size textureSize,
-    Size widgetSize,
-  ) {
-    double fittedTextureWidth;
-    double fittedTextureHeight;
-
-    switch (fit) {
-      case BoxFit.contain:
-        final widthRatio = widgetSize.width / textureSize.width;
-        final heightRatio = widgetSize.height / textureSize.height;
-        final scale = widthRatio < heightRatio ? widthRatio : heightRatio;
-        fittedTextureWidth = textureSize.width * scale;
-        fittedTextureHeight = textureSize.height * scale;
-        break;
-
-      case BoxFit.cover:
-        final widthRatio = widgetSize.width / textureSize.width;
-        final heightRatio = widgetSize.height / textureSize.height;
-        final scale = widthRatio > heightRatio ? widthRatio : heightRatio;
-        fittedTextureWidth = textureSize.width * scale;
-        fittedTextureHeight = textureSize.height * scale;
-        break;
-
-      case BoxFit.fill:
-        fittedTextureWidth = widgetSize.width;
-        fittedTextureHeight = widgetSize.height;
-        break;
-
-      case BoxFit.fitHeight:
-        final ratio = widgetSize.height / textureSize.height;
-        fittedTextureWidth = textureSize.width * ratio;
-        fittedTextureHeight = widgetSize.height;
-        break;
-
-      case BoxFit.fitWidth:
-        final ratio = widgetSize.width / textureSize.width;
-        fittedTextureWidth = widgetSize.width;
-        fittedTextureHeight = textureSize.height * ratio;
-        break;
-
-      case BoxFit.none:
-      case BoxFit.scaleDown:
-        fittedTextureWidth = textureSize.width;
-        fittedTextureHeight = textureSize.height;
-        break;
-    }
-
-    final offsetX = (widgetSize.width - fittedTextureWidth) / 2;
-    final offsetY = (widgetSize.height - fittedTextureHeight) / 2;
-
-    final left = (scanWindow.left - offsetX) / fittedTextureWidth;
-    final top = (scanWindow.top - offsetY) / fittedTextureHeight;
-    final right = (scanWindow.right - offsetX) / fittedTextureWidth;
-    final bottom = (scanWindow.bottom - offsetY) / fittedTextureHeight;
-
-    return Rect.fromLTRB(left, top, right, bottom);
-  }
-
   Rect? scanWindow;
 
   @override
@@ -261,8 +215,8 @@ class _MobileScannerState extends State<MobileScanner>
               scanWindow = calculateScanWindowRelativeToTextureInPercentage(
                 widget.fit,
                 widget.scanWindow!,
-                value.size,
-                Size(constraints.maxWidth, constraints.maxHeight),
+                textureSize: value.size,
+                widgetSize: constraints.biggest,
               );
 
               _controller.updateScanWindow(scanWindow);
@@ -271,12 +225,22 @@ class _MobileScannerState extends State<MobileScanner>
               return Stack(
                 alignment: Alignment.center,
                 children: [
-                  _scanner(value.size, value.webId, value.textureId),
+                  _scanner(
+                    value.size,
+                    value.webId,
+                    value.textureId,
+                    value.nrOfCameras,
+                  ),
                   widget.overlay!,
                 ],
               );
             } else {
-              return _scanner(value.size, value.webId, value.textureId);
+              return _scanner(
+                value.size,
+                value.webId,
+                value.textureId,
+                value.nrOfCameras,
+              );
             }
           },
         );
@@ -284,7 +248,7 @@ class _MobileScannerState extends State<MobileScanner>
     );
   }
 
-  Widget _scanner(Size size, String? webId, int? textureId) {
+  Widget _scanner(Size size, String? webId, int? textureId, int? nrOfCameras) {
     return ClipRect(
       child: LayoutBuilder(
         builder: (_, constraints) {

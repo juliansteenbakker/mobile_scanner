@@ -3,10 +3,10 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerPageView extends StatefulWidget {
-  const BarcodeScannerPageView({Key? key}) : super(key: key);
+  const BarcodeScannerPageView({super.key});
 
   @override
-  _BarcodeScannerPageViewState createState() => _BarcodeScannerPageViewState();
+  State<BarcodeScannerPageView> createState() => _BarcodeScannerPageViewState();
 }
 
 class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView>

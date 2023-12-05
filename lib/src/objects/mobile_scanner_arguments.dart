@@ -15,10 +15,15 @@ class MobileScannerArguments {
   /// The texture id of the capture used internally if device is web.
   final String? webId;
 
+  /// Indicates how many cameras are available.
+  /// Only available on Android
+  final int? nrOfCameras;
+
   MobileScannerArguments({
     required this.size,
     required this.hasTorch,
     this.textureId,
     this.webId,
+    this.nrOfCameras,
   });
 }

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:js/js.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/base.dart';
@@ -106,7 +107,7 @@ extension ZXingBarcodeFormat on BarcodeFormat {
     switch (this) {
       case BarcodeFormat.aztec:
         return 0;
-      case BarcodeFormat.codebar:
+      case BarcodeFormat.codabar:
         return 1;
       case BarcodeFormat.code39:
         return 2;
