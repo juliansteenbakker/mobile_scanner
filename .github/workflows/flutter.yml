@@ -41,6 +41,8 @@ jobs:
       - name: Version
         run: flutter doctor -v
       - name: Install dependencies
+        run: flutter pub get --directory ./example
+      - name: Install dependencies
         run: flutter pub get
       - name: Linter
         run: flutter analyze
