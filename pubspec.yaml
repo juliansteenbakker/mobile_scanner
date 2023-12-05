@@ -44,5 +44,5 @@ flutter:
       macos:
         pluginClass: MobileScannerPlugin
       web:
-        pluginClass: MobileScannerWebPlugin
+        pluginClass: MobileScannerWeb
         fileName: web/mobile_scanner_web.dart
