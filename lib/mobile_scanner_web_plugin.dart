@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:html' as html;
-import 'dart:ui' as ui;
+import 'dart:ui_web' as ui;
 
 import 'package:flutter/services.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
@@ -83,8 +83,6 @@ class MobileScannerWebPlugin {
       cameraFacing = CameraFacing.values[arguments['facing'] as int];
     }
 
-    // See https://github.com/flutter/flutter/issues/41563
-    // ignore: UNDEFINED_PREFIXED_NAME, avoid_dynamic_calls
     ui.platformViewRegistry.registerViewFactory(
       viewID,
       (int id) {
