@@ -3,6 +3,8 @@ import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/barcode_type.dart';
+import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 
 /// The JS static interop class for the Result class in the ZXing library.
@@ -108,5 +110,17 @@ extension ResultExt on Result {
     final JSNumber? timestamp = getTimestamp.callAsFunction() as JSNumber?;
 
     return timestamp?.toDartInt;
+  }
+
+  /// Convert this result to a [Barcode].
+  Barcode get toBarcode {
+    return Barcode(
+      corners: resultPoints,
+      format: barcodeFormat,
+      displayValue: text,
+      rawBytes: rawBytes,
+      rawValue: text,
+      type: BarcodeType.text,
+    );
   }
 }
