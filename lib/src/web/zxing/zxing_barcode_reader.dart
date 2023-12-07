@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:ui';
 
 import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
@@ -20,6 +21,20 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   @override
   bool get isScanning => _reader?.stream != null;
+
+  @override
+  Size get videoSize {
+    final web.HTMLVideoElement? videoElement = _reader?.videoElement;
+
+    if (videoElement == null) {
+      return Size.zero;
+    }
+
+    return Size(
+      videoElement.videoWidth.toDouble(),
+      videoElement.videoHeight.toDouble(),
+    );
+  }
 
   @override
   String get scriptUrl => 'https://unpkg.com/@zxing/library@0.19.1';
