@@ -59,4 +59,10 @@ extension ZXingBrowserMultiFormatReaderExt on ZXingBrowserMultiFormatReader {
   ///
   /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L396
   external JSFunction stopContinuousDecode;
+
+  /// Get the current MediaStream of the barcode reader.
+  external MediaStream? get stream;
+
+  /// Get the current HTMLVideoElement of the barcode reader.
+  external HTMLVideoElement? get videoElement;
 }
