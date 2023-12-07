@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:ui';
 
 import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
@@ -14,6 +15,9 @@ abstract class BarcodeReader {
 
   /// Whether the scanner is currently scanning for barcodes.
   bool get isScanning;
+
+  /// Get the size of the output of the video stream.
+  Size get videoSize;
 
   /// The id for the script tag that loads the barcode library.
   ///
