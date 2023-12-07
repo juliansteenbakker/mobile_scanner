@@ -125,7 +125,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       return MobileScannerViewAttributes(
         hasTorch: hasTorch,
-        size: _barcodeReader.outputSize,
+        size: _barcodeReader.videoSize,
       );
     } catch (error, stackTrace) {
       throw MobileScannerException(
@@ -167,7 +167,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     await stop();
-    await _barcodeReader.dispose();
     await _barcodesController.close();
   }
 }
