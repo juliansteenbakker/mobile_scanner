@@ -115,12 +115,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
         _barcodesController.add(barcode);
       });
 
-      final bool hasTorch = _barcodeReader.hasTorch;
+      final bool hasTorch = await _barcodeReader.hasTorch();
 
       if (hasTorch && startOptions.torchEnabled) {
-        await _barcodeReader.setTorchState(TorchState.on).catchError((_) {
-          // If the torch could not be turned on, continue the camera session anyway.
-        });
+        await _barcodeReader.setTorchState(TorchState.on);
       }
 
       return MobileScannerViewAttributes(
