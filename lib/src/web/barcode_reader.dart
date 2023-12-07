@@ -7,11 +7,15 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
+import 'package:mobile_scanner/src/web/flashlight_delegate.dart';
 import 'package:web/web.dart';
 
 /// This class represents the base interface for a barcode reader implementation.
 abstract class BarcodeReader {
   const BarcodeReader();
+
+  /// Get the flashlight delegate for the barcode reader.
+  FlashlightDelegate get flashlightDelegate => const FlashlightDelegate();
 
   /// Whether the scanner is currently scanning for barcodes.
   bool get isScanning {

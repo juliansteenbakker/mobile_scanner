@@ -7,6 +7,9 @@ import 'package:web/web.dart';
 ///
 /// It provides an interface to query and update the flashlight state of a [MediaStream].
 final class FlashlightDelegate {
+  /// Constructs a [FlashlightDelegate] instance.
+  const FlashlightDelegate();
+
   /// Returns a list of supported flashlight modes for the given [mediaStream].
   ///
   /// The [TorchState.off] mode is always supported, regardless of the return value.
