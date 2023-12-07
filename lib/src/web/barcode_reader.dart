@@ -14,10 +14,14 @@ abstract class BarcodeReader {
   const BarcodeReader();
 
   /// Whether the scanner is currently scanning for barcodes.
-  bool get isScanning;
+  bool get isScanning {
+    throw UnimplementedError('isScanning has not been implemented.');
+  }
 
   /// Get the size of the output of the video stream.
-  Size get videoSize;
+  Size get videoSize {
+    throw UnimplementedError('videoSize has not been implemented.');
+  }
 
   /// The id for the script tag that loads the barcode library.
   ///
@@ -26,7 +30,9 @@ abstract class BarcodeReader {
   String get scriptId => 'mobile-scanner-barcode-reader';
 
   /// The script url for the barcode library.
-  String get scriptUrl;
+  String get scriptUrl {
+    throw UnimplementedError('scriptUrl has not been implemented.');
+  }
 
   /// Start detecting barcodes.
   ///
