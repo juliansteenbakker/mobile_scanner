@@ -63,7 +63,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         self.barcodeHandler = barcodeHandler
         super.init()
     }
-    
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(name: "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger())
         let instance = MobileScannerPlugin(barcodeHandler: BarcodeHandler(registrar: registrar), registry: registrar.textures())
@@ -77,7 +77,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         case "request":
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         case "start":
-            start(call, result)
+            Task {
+                await start(call, result)
+            }
         case "stop":
             stop(result)
         case "torch":
@@ -94,9 +96,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-
-    /// Start the mobileScanner.
-    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+    
+    /// Parses all parameters and starts the mobileScanner
+    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) async {
         let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
@@ -120,13 +122,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
-                DispatchQueue.main.async {
-                    result([
-                        "textureId": parameters.textureId,
-                        "size": ["width": parameters.width, "height": parameters.height],
-                        "torchable": parameters.hasTorch])
-                }
+            let parameters = try await mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed)
+            DispatchQueue.main.async {
+                result([
+                    "textureId": parameters.textureId,
+                    "size": ["width": parameters.width, "height": parameters.height],
+                    "torchable": parameters.hasTorch] as [String : Any])
             }
         } catch MobileScannerError.alreadyStarted {
             result(FlutterError(code: "MobileScanner",
@@ -248,14 +249,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { [self] barcodes, error in
             if error != nil {
                 barcodeHandler.publishEvent(["name": "error", "message": error?.localizedDescription])
-                
+
                 DispatchQueue.main.async {
                     result(false)
                 }
-                
+
                 return
             }
-            
+
             if (barcodes == nil || barcodes!.isEmpty) {
                 DispatchQueue.main.async {
                     result(false)
@@ -264,7 +265,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 let barcodesMap: [Any?] = barcodes!.compactMap { barcode in barcode.data }
                 let event: [String: Any?] = ["name": "barcode", "data": barcodesMap]
                 barcodeHandler.publishEvent(event)
-                
+
                 DispatchQueue.main.async {
                     result(true)
                 }
