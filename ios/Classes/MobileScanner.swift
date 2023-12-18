@@ -69,6 +69,43 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         super.init()
     }
 
+    /// Get the default camera device for the given `position`.
+    ///
+    /// This function selects the most appropriate camera, when it is available.
+    private func getDefaultCameraDevice(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+        if #available(iOS 13.0, *) {
+            // Find the built-in Triple Camera, if it exists.
+            if let device = AVCaptureDevice.default(.builtInTripleCamera,
+                                                    for: .video,
+                                                    position: position) {
+                return device
+            }
+            
+            // Find the built-in Dual-Wide Camera, if it exists.
+            if let device = AVCaptureDevice.default(.builtInDualWideCamera,
+                                                    for: .video,
+                                                    position: position) {
+                return device
+            }
+        }
+        
+        // Find the built-in Dual Camera, if it exists.
+        if let device = AVCaptureDevice.default(.builtInDualCamera,
+                                                for: .video,
+                                                position: position) {
+            return device
+        }
+        
+        // Find the built-in Wide-Angle Camera, if it exists.
+        if let device = AVCaptureDevice.default(.builtInWideAngleCamera,
+                                                for: .video,
+                                                position: position) {
+            return device
+        }
+        
+        return nil
+    }
+    
     /// Check if we already have camera permission.
     func checkPermission() -> Int {
         let status = AVCaptureDevice.authorizationStatus(for: .video)
@@ -147,11 +184,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         textureId = registry?.register(self)
 
         // Open the camera device
-        if #available(iOS 13.0, *) {
-            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTripleCamera, .builtInDualWideCamera, .builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
-        } else {
-            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: cameraPosition).devices.first
-        }
+        device = getDefaultCameraDevice(position: cameraPosition)
 
         if (device == nil) {
             throw MobileScannerError.noCamera
