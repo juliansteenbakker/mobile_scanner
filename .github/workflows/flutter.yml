@@ -41,7 +41,7 @@ jobs:
       - name: Version
         run: flutter doctor -v
       - name: Install dependencies
-        run: flutter pub get
+        run: cd example && flutter pub get
       - name: Linter
         run: flutter analyze
   formatting:
