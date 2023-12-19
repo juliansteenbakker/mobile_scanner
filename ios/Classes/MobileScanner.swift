@@ -169,6 +169,136 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             }
         }
     }
+    
+    /// Start scanning for barcodes
+    @available(iOS 13.0.0, *)
+    func startAsync(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed) async throws -> MobileScannerStartParameters {
+        self.detectionSpeed = detectionSpeed
+        if (device != nil) {
+            throw MobileScannerError.alreadyStarted
+        }
+        
+        barcodesString = nil
+        scanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
+        captureSession = AVCaptureSession()
+        textureId = registry?.register(self)
+        
+        // Open the camera device
+        device = getDefaultCameraDevice(position: cameraPosition)
+        
+        if (device == nil) {
+            throw MobileScannerError.noCamera
+        }
+        
+        device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
+        device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor), options: .new, context: nil)
+        
+        // Check the zoom factor at switching from ultra wide camera to wide camera.
+        standardZoomFactor = 1
+//        if #available(iOS 13.0, *) {
+            for (index, actualDevice) in device.constituentDevices.enumerated() {
+                if (actualDevice.deviceType != .builtInUltraWideCamera) {
+                    if index > 0 && index <= device.virtualDeviceSwitchOverVideoZoomFactors.count {
+                        standardZoomFactor = CGFloat(truncating: device.virtualDeviceSwitchOverVideoZoomFactors[index - 1])
+                    }
+                    break
+                }
+            }
+//        }
+        
+        do {
+            try device.lockForConfiguration()
+            if device.isFocusModeSupported(.continuousAutoFocus) {
+                device.focusMode = .continuousAutoFocus
+            }
+            if #available(iOS 15.4, *) , device.isFocusModeSupported(.autoFocus){
+                device.automaticallyAdjustsFaceDrivenAutoFocusEnabled = false
+            }
+            device.unlockForConfiguration()
+        } catch {}
+        
+        captureSession.beginConfiguration()
+        
+        // Add device input
+        do {
+            let input = try AVCaptureDeviceInput(device: device)
+            captureSession.addInput(input)
+        } catch {
+            throw MobileScannerError.cameraError(error)
+        }
+        
+        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        // Add video output.
+        let videoOutput = AVCaptureVideoDataOutput()
+        
+        videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        videoOutput.alwaysDiscardsLateVideoFrames = true
+        
+        videoPosition = cameraPosition
+        // calls captureOutput()
+        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        
+        captureSession.addOutput(videoOutput)
+        for connection in videoOutput.connections {
+            connection.videoOrientation = .portrait
+            if cameraPosition == .front && connection.isVideoMirroringSupported {
+                connection.isVideoMirrored = true
+            }
+        }
+        captureSession.commitConfiguration()
+        
+        await withCheckedContinuation { continuation in
+            backgroundQueue.async {
+                self.captureSession.startRunning()
+                
+                // After the capture session started, turn on the torch (if requested)
+                // and reset the zoom scale back to the default.
+                // Ensure that these adjustments are done on the main DispatchQueue,
+                // as they interact with the hardware camera.
+                if (torch) {
+                    DispatchQueue.main.async {
+                        do {
+                            try self.toggleTorch(.on)
+                        } catch {
+                            // If the torch does not turn on,
+                            // continue with the capture session anyway.
+                        }
+                    }
+                }
+                
+                DispatchQueue.main.async {
+                    do {
+                        try self.resetScale()
+                    } catch {
+                        // If the zoom scale could not be reset,
+                        // continue with the capture session anyway.
+                    }
+                }
+                
+                continuation.resume()
+            }
+        }
+
+        if let device = self.device {
+            // When querying the dimensions of the camera,
+            // stay on the background thread,
+            // as this does not change the configuration of the hardware camera.
+            let dimensions = CMVideoFormatDescriptionGetDimensions(
+                device.activeFormat.formatDescription)
+            let hasTorch = device.hasTorch
+            
+            
+            return MobileScannerStartParameters(
+                    width: Double(dimensions.height),
+                    height: Double(dimensions.width),
+                    hasTorch: hasTorch,
+                    textureId: self.textureId ?? 0
+                )
+        }
+        return MobileScannerStartParameters()
+    }
+            
+    
 
     /// Start scanning for barcodes
     func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
