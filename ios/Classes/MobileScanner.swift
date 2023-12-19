@@ -56,9 +56,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     var standardZoomFactor: CGFloat = 1
 
     private var nextScanTime = 0.0
-
+    
     private var imagesCurrentlyBeingProcessed = false
-
+    
     public var timeoutSeconds: Double = 0
 
     init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
@@ -132,15 +132,15 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         latestBuffer = imageBuffer
         registry?.textureFrameAvailable(textureId)
-
+        
         let currentTime = Date().timeIntervalSince1970
         let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
-
+        
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
 
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
-
+            
             let ciImage = latestBuffer.image
 
             let image = VisionImage(image: ciImage)
@@ -152,12 +152,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
             scanner.process(image) { [self] barcodes, error in
                 imagesCurrentlyBeingProcessed = false
-
+                
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
                     let newScannedBarcodes = barcodes?.compactMap({ barcode in
                         return barcode.rawValue
                     }).sorted()
-
+                    
                     if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
                         return
                     } else if (newScannedBarcodes?.isEmpty == false) {
@@ -301,8 +301,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
 
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed) async throws -> MobileScannerStartParameters {
-//     func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
         self.detectionSpeed = detectionSpeed
         if (device != nil) {
             throw MobileScannerError.alreadyStarted
@@ -377,7 +376,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession.commitConfiguration()
 
-        await withCheckedContinuation { continuation  in
         backgroundQueue.async {
             self.captureSession.startRunning()
 
@@ -388,29 +386,22 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             if (torch) {
                 DispatchQueue.main.async {
                     do {
-                        try self.toggleTorch(torch)
+                        try self.toggleTorch(.on)
                     } catch {
                         // If the torch does not turn on,
                         // continue with the capture session anyway.
-                        print("Failed to set initial torch state.")
                     }
                 }
             }
-
+            
             DispatchQueue.main.async {
                 do {
                     try self.resetScale()
                 } catch {
                     // If the zoom scale could not be reset,
                     // continue with the capture session anyway.
-                    print("Failed to reset zoom scale")
                 }
             }
-        }
-
-//                 if self.device == nil {
-//                     throw MobileScannerError.noCamera
-//                 }
 
             if let device = self.device {
                 // When querying the dimensions of the camera,
@@ -419,22 +410,21 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 let dimensions = CMVideoFormatDescriptionGetDimensions(
                     device.activeFormat.formatDescription)
                 let hasTorch = device.hasTorch
-
-//                 completion(
-                    return MobileScannerStartParameters(
+                
+                completion(
+                    MobileScannerStartParameters(
                         width: Double(dimensions.height),
                         height: Double(dimensions.width),
                         hasTorch: hasTorch,
                         textureId: self.textureId ?? 0
                     )
-//                 )
-
-//                 return
+                )
+                
+                return
             }
-
-            return MobileScannerStartParameters()
-
-//             completion(MobileScannerStartParameters())
+            
+            completion(MobileScannerStartParameters())
+        }
     }
 
     /// Stop scanning for barcodes
@@ -466,11 +456,11 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         guard let device = self.device else {
             return
         }
-
+        
         if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(torch)) {
             return
         }
-
+        
         if (device.torchMode != torch) {
             try device.lockForConfiguration()
             device.torchMode = torch
@@ -598,4 +588,3 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         var textureId: Int64 = 0
     }
 }
-
