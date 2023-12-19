@@ -77,8 +77,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         case "request":
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         case "start":
-            Task {
-                await start(call, result)
+            if #available(iOS 13.0, *) {
+                Task {
+                    await startAsync(call, result)
+                }
+            } else {
+                start(call, result)
             }
         case "stop":
             stop(result)
@@ -96,9 +100,61 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             result(FlutterMethodNotImplemented)
         }
     }
-    
-    /// Parses all parameters and starts the mobileScanner
-    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) async {
+
+    @available(iOS 13.0.0, *)
+    private func startAsync(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) async {
+        let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false
+        let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
+        let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
+        let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
+        let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
+        let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
+        self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
+
+        let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
+        var barcodeOptions: BarcodeScannerOptions? = nil
+
+        if (formatList.count != 0) {
+            var barcodeFormats: BarcodeFormat = []
+            for index in formats {
+                barcodeFormats.insert(BarcodeFormat(rawValue: index))
+            }
+            barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
+        }
+
+        let position = facing == 0 ? AVCaptureDevice.Position.front : .back
+        let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
+
+        do {
+            let parameters = try await mobileScanner.startAsync(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed)
+
+            DispatchQueue.main.async {
+                result([
+                    "textureId": parameters.textureId,
+                    "size": ["width": parameters.width, "height": parameters.height],
+                    "torchable": parameters.hasTorch] as [String : Any])
+            }
+        } catch MobileScannerError.alreadyStarted {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Called start() while already started!",
+                                details: nil))
+        } catch MobileScannerError.noCamera {
+            result(FlutterError(code: "MobileScanner",
+                                message: "No camera found or failed to open camera!",
+                                details: nil))
+        } catch MobileScannerError.cameraError(let error) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Error occured when setting up camera!",
+                                details: error))
+        } catch {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Unknown error occured.",
+                                details: nil))
+        }
+    }
+
+    /// Start the mobileScanner.
+    private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
