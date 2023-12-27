@@ -133,6 +133,7 @@ extension ZXingBarcodeFormat on BarcodeFormat {
         return 15;
       case BarcodeFormat.unknown:
       case BarcodeFormat.all:
+      case default:
         return -1;
     }
   }
