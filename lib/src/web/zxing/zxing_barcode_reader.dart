@@ -75,6 +75,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
         return 15;
       case BarcodeFormat.unknown:
       case BarcodeFormat.all:
+      default:
         return -1;
     }
   }
