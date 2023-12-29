@@ -160,6 +160,9 @@ final class ZXingBarcodeReader extends BarcodeReader {
       );
     };
 
+    // The onCancel() method of the controller is called
+    // when the stream subscription returned by this method is cancelled in `MobileScannerWeb.stop()`.
+    // This avoids both leaving the barcode scanner running and a memory leak for the stream subscription.
     controller.onCancel = () async {
       _reader?.stopContinuousDecode.callAsFunction();
       _reader?.reset.callAsFunction();

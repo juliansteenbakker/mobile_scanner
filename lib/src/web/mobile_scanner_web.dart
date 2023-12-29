@@ -148,7 +148,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       return;
     }
 
-    _barcodesSubscription?.cancel();
+    // Ensure the barcode scanner is stopped, by cancelling the subscription.
+    await _barcodesSubscription?.cancel();
     _barcodesSubscription = null;
 
     await _barcodeReader.stop();
