@@ -10,9 +10,9 @@ final class MediaTrackConstraintsDelegate {
 
   /// Get the settings for the given [mediaStream].
   MediaTrackSettings? getSettings(MediaStream? mediaStream) {
-    final List<JSAny?> tracks = mediaStream?.getVideoTracks().toDart ?? const [];
+    final List<JSAny?>? tracks = mediaStream?.getVideoTracks().toDart;
 
-    if (tracks.isEmpty) {
+    if (tracks == null || tracks.isEmpty) {
       return null;
     }
 
@@ -24,7 +24,9 @@ final class MediaTrackConstraintsDelegate {
   /// Returns a list of supported flashlight modes for the given [mediaStream].
   ///
   /// The [TorchState.off] mode is always supported, regardless of the return value.
-  Future<List<TorchState>> getSupportedFlashlightModes(MediaStream? mediaStream) async {
+  Future<List<TorchState>> getSupportedFlashlightModes(
+    MediaStream? mediaStream,
+  ) async {
     if (mediaStream == null) {
       return [];
     }
@@ -61,7 +63,10 @@ final class MediaTrackConstraintsDelegate {
   }
 
   /// Set the flashlight state of the given [mediaStream] to the given [value].
-  Future<void> setFlashlightState(MediaStream? mediaStream, TorchState value) async {
+  Future<void> setFlashlightState(
+    MediaStream? mediaStream,
+    TorchState value,
+  ) async {
     if (mediaStream == null) {
       return;
     }

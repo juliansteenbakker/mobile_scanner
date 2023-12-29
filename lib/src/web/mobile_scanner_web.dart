@@ -23,7 +23,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   final BarcodeReader _barcodeReader = ZXingBarcodeReader();
 
   /// The stream controller for the barcode stream.
-  final StreamController<BarcodeCapture> _barcodesController = StreamController.broadcast();
+  final StreamController<BarcodeCapture> _barcodesController =
+      StreamController.broadcast();
 
   /// The subscription for the barcode stream.
   StreamSubscription<Object?>? _barcodesSubscription;
@@ -34,7 +35,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   HTMLDivElement? _divElement;
 
   /// The stream controller for the media track settings stream.
-  final StreamController<MediaTrackSettings> _settingsController = StreamController.broadcast();
+  final StreamController<MediaTrackSettings> _settingsController =
+      StreamController.broadcast();
 
   /// The view type for the platform view factory.
   final String _viewType = 'MobileScannerWeb';
@@ -70,7 +72,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The controller was not yet initialized. Call start() before calling buildCameraView().',
+          message:
+              'The controller was not yet initialized. Call start() before calling buildCameraView().',
         ),
       );
     }
@@ -98,7 +101,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started. Call stop() before calling start() again.',
+          message:
+              'The scanner was already started. Call stop() before calling start() again.',
         ),
       );
     }
@@ -108,7 +112,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       _barcodesController.add(const BarcodeCapture());
 
       // Listen for changes to the media track settings.
-      _barcodeReader.setMediaTrackSettingsListener(_handleMediaTrackSettingsChange);
+      _barcodeReader.setMediaTrackSettingsListener(
+        _handleMediaTrackSettingsChange,
+      );
 
       await _barcodeReader.start(
         startOptions,
@@ -120,7 +126,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
 
       if (error is DOMException) {
-        if (errorMessage.contains('NotFoundError') || errorMessage.contains('NotSupportedError')) {
+        if (errorMessage.contains('NotFoundError') ||
+            errorMessage.contains('NotSupportedError')) {
           errorCode = MobileScannerErrorCode.unsupported;
         } else if (errorMessage.contains('NotAllowedError')) {
           errorCode = MobileScannerErrorCode.permissionDenied;
@@ -137,13 +144,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
-      _barcodesSubscription = _barcodeReader.detectBarcodes().listen((BarcodeCapture barcode) {
-        if (_barcodesController.isClosed) {
-          return;
-        }
+      _barcodesSubscription = _barcodeReader.detectBarcodes().listen(
+        (BarcodeCapture barcode) {
+          if (_barcodesController.isClosed) {
+            return;
+          }
 
-        _barcodesController.add(barcode);
-      });
+          _barcodesController.add(barcode);
+        },
+      );
 
       final bool hasTorch = await _barcodeReader.hasTorch();
 

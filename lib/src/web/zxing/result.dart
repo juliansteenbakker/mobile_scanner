@@ -95,7 +95,8 @@ extension ResultExt on Result {
 
   /// Get the raw bytes of the result.
   Uint8List? get rawBytes {
-    final JSUint8Array? rawBytes = getRawBytes.callAsFunction() as JSUint8Array?;
+    final JSUint8Array? rawBytes =
+        getRawBytes.callAsFunction() as JSUint8Array?;
 
     return rawBytes?.toDart;
   }

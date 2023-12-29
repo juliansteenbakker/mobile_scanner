@@ -96,7 +96,9 @@ abstract class BarcodeReader {
   }
 
   /// Set a listener for the media stream settings.
-  void setMediaTrackSettingsListener(void Function(MediaTrackSettings) listener) {
+  void setMediaTrackSettingsListener(
+    void Function(MediaTrackSettings) listener,
+  ) {
     throw UnimplementedError(
       'setMediaTrackConstraintsListener() has not been implemented.',
     );
