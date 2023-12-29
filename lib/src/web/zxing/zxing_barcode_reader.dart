@@ -18,6 +18,9 @@ import 'package:web/web.dart' as web;
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
 
+  /// The listener for media track constraints changes.
+  void Function(web.MediaTrackConstraints)? _onMediaTrackConstraintsChanged;
+
   /// The internal media stream track constraints delegate.
   final MediaTrackConstraintsDelegate _mediaTrackConstraintsDelegate = const MediaTrackConstraintsDelegate();
 
@@ -184,6 +187,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
+  void setMediaTrackConstraintsListener(void Function(web.MediaTrackConstraints) listener) {
+    _onMediaTrackConstraintsChanged ??= listener;
+  }
+
+  @override
   Future<void> setTorchState(TorchState value) {
     switch (value) {
       case TorchState.unavailable:
@@ -234,6 +242,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   @override
   Future<void> stop() async {
+    _onMediaTrackConstraintsChanged = null;
     _reader?.stopContinuousDecode.callAsFunction();
     _reader?.reset.callAsFunction();
     _reader = null;
