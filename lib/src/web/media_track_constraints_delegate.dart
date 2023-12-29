@@ -3,12 +3,10 @@ import 'dart:js_interop';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:web/web.dart';
 
-/// This class represents a flashlight delegate for the web platform.
-///
-/// It provides an interface to query and update the flashlight state of a [MediaStream].
-final class FlashlightDelegate {
-  /// Constructs a [FlashlightDelegate] instance.
-  const FlashlightDelegate();
+/// This class represents a delegate that manages the constraints for a [MediaStreamTrack].
+final class MediaTrackConstraintsDelegate {
+  /// Constructs a [MediaTrackConstraintsDelegate] instance.
+  const MediaTrackConstraintsDelegate();
 
   /// Returns a list of supported flashlight modes for the given [mediaStream].
   ///

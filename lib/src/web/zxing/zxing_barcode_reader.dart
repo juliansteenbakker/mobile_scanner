@@ -9,7 +9,7 @@ import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
-import 'package:mobile_scanner/src/web/flashlight_delegate.dart';
+import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:web/web.dart' as web;
@@ -18,8 +18,8 @@ import 'package:web/web.dart' as web;
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
 
-  /// The internal flashlight delegate.
-  final FlashlightDelegate _flashlightDelegate = const FlashlightDelegate();
+  /// The internal media stream track constraints delegate.
+  final MediaTrackConstraintsDelegate _flashlightDelegate = const MediaTrackConstraintsDelegate();
 
   /// The internal barcode reader.
   ZXingBrowserMultiFormatReader? _reader;
