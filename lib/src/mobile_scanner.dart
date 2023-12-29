@@ -229,7 +229,7 @@ class _MobileScannerState extends State<MobileScanner>
                     value.size,
                     value.webId,
                     value.textureId,
-                    value.nrOfCameras,
+                    value.numberOfCameras,
                   ),
                   widget.overlay!,
                 ],
@@ -239,7 +239,7 @@ class _MobileScannerState extends State<MobileScanner>
                 value.size,
                 value.webId,
                 value.textureId,
-                value.nrOfCameras,
+                value.numberOfCameras,
               );
             }
           },
@@ -248,7 +248,12 @@ class _MobileScannerState extends State<MobileScanner>
     );
   }
 
-  Widget _scanner(Size size, String? webId, int? textureId, int? nrOfCameras) {
+  Widget _scanner(
+    Size size,
+    String? webId,
+    int? textureId,
+    int? numberOfCameras,
+  ) {
     return ClipRect(
       child: LayoutBuilder(
         builder: (_, constraints) {

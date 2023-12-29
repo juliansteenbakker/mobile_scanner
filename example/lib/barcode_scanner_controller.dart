@@ -47,7 +47,7 @@ class _BarcodeScannerWithControllerState
     }
   }
 
-  int? nrOfCameras;
+  int? numberOfCameras;
 
   @override
   Widget build(BuildContext context) {
@@ -60,8 +60,8 @@ class _BarcodeScannerWithControllerState
             children: [
               MobileScanner(
                 onScannerStarted: (arguments) {
-                  if (arguments?.nrOfCameras != null) {
-                    nrOfCameras = arguments!.nrOfCameras;
+                  if (mounted && arguments?.numberOfCameras != null) {
+                    numberOfCameras = arguments!.numberOfCameras;
                     setState(() {});
                   }
                 },
@@ -154,7 +154,7 @@ class _BarcodeScannerWithControllerState
                           },
                         ),
                         iconSize: 32.0,
-                        onPressed: nrOfCameras != null && nrOfCameras! < 2
+                        onPressed: (numberOfCameras ?? 0) < 2
                             ? null
                             : () => controller.switchCamera(),
                       ),
