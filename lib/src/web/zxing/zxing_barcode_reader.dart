@@ -19,7 +19,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
 
   /// The internal media stream track constraints delegate.
-  final MediaTrackConstraintsDelegate _flashlightDelegate = const MediaTrackConstraintsDelegate();
+  final MediaTrackConstraintsDelegate _mediaTrackConstraintsDelegate = const MediaTrackConstraintsDelegate();
 
   /// The internal barcode reader.
   ZXingBrowserMultiFormatReader? _reader;
@@ -180,7 +180,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
       return Future<bool>.value(false);
     }
 
-    return _flashlightDelegate.hasFlashlight(mediaStream);
+    return _mediaTrackConstraintsDelegate.hasFlashlight(mediaStream);
   }
 
   @override
@@ -196,7 +196,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
           return Future<void>.value();
         }
 
-        return _flashlightDelegate.setFlashlightState(mediaStream, value);
+        return _mediaTrackConstraintsDelegate.setFlashlightState(mediaStream, value);
     }
   }
 

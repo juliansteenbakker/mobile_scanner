@@ -95,6 +95,13 @@ abstract class BarcodeReader {
     await completer.future;
   }
 
+  /// Set a listener for the media stream constraints.
+  void setMediaTrackConstraintsListener(void Function(MediaTrackConstraints) listener) {
+    throw UnimplementedError(
+      'setMediaTrackConstraintsListener() has not been implemented.',
+    );
+  }
+
   /// Set the torch state for the active camera to the given [value].
   Future<void> setTorchState(TorchState value) {
     throw UnimplementedError('setTorchState() has not been implemented.');
