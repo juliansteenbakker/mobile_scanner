@@ -46,6 +46,16 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
 
+  @override
+  Stream<TorchState> get torchStateStream => _settingsController.stream.map(
+        (settings) => settings.torch ? TorchState.on : TorchState.off,
+      );
+
+  @override
+  Stream<double> get zoomScaleStateStream => _settingsController.stream.map(
+        (settings) => settings.zoom.toDouble(),
+      );
+
   void _handleMediaTrackSettingsChange(MediaTrackSettings settings) {
     if (_settingsController.isClosed) {
       return;
