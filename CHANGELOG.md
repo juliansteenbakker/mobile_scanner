@@ -1,13 +1,15 @@
-## NEXT
+## 3.5.6
+Bugs fixed:
+* [web] Fixed a crash with the ZXing barcode format (@thanks @hazzo!)
+* [web] Fixed stream controller not being closed on web.
+* [iOS] Fixed a crash with unsupported torch modes. (thanks @navaronbracke !)
+* [iOS] Fixed a crash with the camera discovery session. (thanks @navaronbracke !)
+
 Improvements:
-* Fixed stream controller not being closed on web.
 * Upgrade camera dependencies on Android.
-* Check if torch mode is supported on iOS
 * Upgrade compileSdk version to 34 on Android.
 * Add nrOfCameras parameter in MobileScannerArguments callback, which shows how many cameras there are available on Android. 
 * [Android] Migrated to ResolutionSelector with ResolutionStrategy. You can opt in into the new selector by setting [useNewCameraSelector] in the [MobileScannerController] to true.
-* [iOS] Added new CameraSelector 
-
 
 ## 3.5.5
 Bugs fixed:
