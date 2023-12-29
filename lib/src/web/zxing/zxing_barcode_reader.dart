@@ -138,6 +138,12 @@ final class ZXingBarcodeReader extends BarcodeReader {
       final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(null, stream, videoElement) as JSPromise?;
 
       await result?.toDart;
+
+      final web.MediaTrackConstraints? constraints = _mediaTrackConstraintsDelegate.getConstraints(stream);
+
+      if (constraints != null) {
+        _onMediaTrackConstraintsChanged?.call(constraints);
+      }
     }
   }
 
@@ -192,7 +198,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  Future<void> setTorchState(TorchState value) {
+  Future<void> setTorchState(TorchState value) async {
     switch (value) {
       case TorchState.unavailable:
         return Future<void>.value();
@@ -204,7 +210,13 @@ final class ZXingBarcodeReader extends BarcodeReader {
           return Future<void>.value();
         }
 
-        return _mediaTrackConstraintsDelegate.setFlashlightState(mediaStream, value);
+        await _mediaTrackConstraintsDelegate.setFlashlightState(mediaStream, value);
+
+        final web.MediaTrackConstraints? constraints = _mediaTrackConstraintsDelegate.getConstraints(mediaStream);
+
+        if (constraints != null) {
+          _onMediaTrackConstraintsChanged?.call(constraints);
+        }
     }
   }
 
