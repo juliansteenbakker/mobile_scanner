@@ -185,5 +185,22 @@ class MobileScannerWeb extends MobileScannerPlatform {
     await stop();
     await _barcodesController.close();
     await _constraintsController.close();
+
+    // Finally, remove the video element from the DOM.
+    try {
+      final HTMLCollection? divChildren = _divElement?.children;
+
+      if (divChildren != null) {
+        for (int i = 0; i < divChildren.length; i++) {
+          final Node? child = divChildren.item(i);
+
+          if (child != null) {
+            _divElement?.removeChild(child);
+          }
+        }
+      }
+    } catch (_) {
+      // The video element was no longer a child of the container element.
+    }
   }
 }
