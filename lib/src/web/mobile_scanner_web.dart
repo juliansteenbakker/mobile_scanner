@@ -33,8 +33,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// This container element is used by the barcode reader.
   HTMLDivElement? _divElement;
 
-  /// The stream controller for the media track constraints stream.
-  final StreamController<MediaTrackConstraints> _constraintsController = StreamController.broadcast();
+  /// The stream controller for the media track settings stream.
+  final StreamController<MediaTrackSettings> _settingsController = StreamController.broadcast();
 
   /// The view type for the platform view factory.
   final String _viewType = 'MobileScannerWeb';
@@ -46,12 +46,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
 
-  void _handleMediaTrackConstraintsChange(MediaTrackConstraints constraints) {
-    if (_constraintsController.isClosed) {
+  void _handleMediaTrackSettingsChange(MediaTrackSettings settings) {
+    if (_settingsController.isClosed) {
       return;
     }
 
-    _constraintsController.add(constraints);
+    _settingsController.add(settings);
   }
 
   @override
@@ -97,8 +97,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       // Clear the existing barcodes.
       _barcodesController.add(const BarcodeCapture());
 
-      // Listen for changes to the media track constraints.
-      _barcodeReader.setMediaTrackConstraintsListener(_handleMediaTrackConstraintsChange);
+      // Listen for changes to the media track settings.
+      _barcodeReader.setMediaTrackSettingsListener(_handleMediaTrackSettingsChange);
 
       await _barcodeReader.start(
         startOptions,
@@ -184,7 +184,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     await stop();
     await _barcodesController.close();
-    await _constraintsController.close();
+    await _settingsController.close();
 
     // Finally, remove the video element from the DOM.
     try {

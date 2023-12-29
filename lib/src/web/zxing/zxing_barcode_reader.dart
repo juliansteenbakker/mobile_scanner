@@ -18,8 +18,8 @@ import 'package:web/web.dart' as web;
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
 
-  /// The listener for media track constraints changes.
-  void Function(web.MediaTrackConstraints)? _onMediaTrackConstraintsChanged;
+  /// The listener for media track settings changes.
+  void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
 
   /// The internal media stream track constraints delegate.
   final MediaTrackConstraintsDelegate _mediaTrackConstraintsDelegate = const MediaTrackConstraintsDelegate();
@@ -139,10 +139,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
       await result?.toDart;
 
-      final web.MediaTrackConstraints? constraints = _mediaTrackConstraintsDelegate.getConstraints(stream);
+      final web.MediaTrackSettings? settings = _mediaTrackConstraintsDelegate.getSettings(stream);
 
-      if (constraints != null) {
-        _onMediaTrackConstraintsChanged?.call(constraints);
+      if (settings != null) {
+        _onMediaTrackSettingsChanged?.call(settings);
       }
     }
   }
@@ -193,8 +193,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  void setMediaTrackConstraintsListener(void Function(web.MediaTrackConstraints) listener) {
-    _onMediaTrackConstraintsChanged ??= listener;
+  void setMediaTrackSettingsListener(void Function(web.MediaTrackSettings) listener) {
+    _onMediaTrackSettingsChanged ??= listener;
   }
 
   @override
@@ -212,10 +212,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
         await _mediaTrackConstraintsDelegate.setFlashlightState(mediaStream, value);
 
-        final web.MediaTrackConstraints? constraints = _mediaTrackConstraintsDelegate.getConstraints(mediaStream);
+        final web.MediaTrackSettings? settings = _mediaTrackConstraintsDelegate.getSettings(mediaStream);
 
-        if (constraints != null) {
-          _onMediaTrackConstraintsChanged?.call(constraints);
+        if (settings != null) {
+          _onMediaTrackSettingsChanged?.call(settings);
         }
     }
   }
@@ -254,7 +254,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   @override
   Future<void> stop() async {
-    _onMediaTrackConstraintsChanged = null;
+    _onMediaTrackSettingsChanged = null;
     _reader?.stopContinuousDecode.callAsFunction();
     _reader?.reset.callAsFunction();
     _reader = null;

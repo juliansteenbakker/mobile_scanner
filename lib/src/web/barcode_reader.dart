@@ -95,8 +95,8 @@ abstract class BarcodeReader {
     await completer.future;
   }
 
-  /// Set a listener for the media stream constraints.
-  void setMediaTrackConstraintsListener(void Function(MediaTrackConstraints) listener) {
+  /// Set a listener for the media stream settings.
+  void setMediaTrackSettingsListener(void Function(MediaTrackSettings) listener) {
     throw UnimplementedError(
       'setMediaTrackConstraintsListener() has not been implemented.',
     );
