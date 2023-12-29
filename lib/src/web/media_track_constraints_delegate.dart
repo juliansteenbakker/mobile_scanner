@@ -8,6 +8,19 @@ final class MediaTrackConstraintsDelegate {
   /// Constructs a [MediaTrackConstraintsDelegate] instance.
   const MediaTrackConstraintsDelegate();
 
+  /// Get the constraints for the given [mediaStream].
+  MediaTrackConstraints? getConstraints(MediaStream? mediaStream) {
+    final List<JSAny?> tracks = mediaStream?.getVideoTracks().toDart ?? const [];
+
+    if (tracks.isEmpty) {
+      return null;
+    }
+
+    final MediaStreamTrack? track = tracks.first as MediaStreamTrack?;
+
+    return track?.getConstraints();
+  }
+
   /// Returns a list of supported flashlight modes for the given [mediaStream].
   ///
   /// The [TorchState.off] mode is always supported, regardless of the return value.
