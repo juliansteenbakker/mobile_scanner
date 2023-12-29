@@ -239,6 +239,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
 
       value = value.copyWith(
+        availableCameras: viewAttributes.numberOfCameras,
         cameraDirection: effectiveDirection,
         isInitialized: true,
         isRunning: true,

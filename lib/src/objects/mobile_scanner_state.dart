@@ -8,6 +8,7 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 class MobileScannerState {
   /// Create a new [MobileScannerState] instance.
   const MobileScannerState({
+    required this.availableCameras,
     required this.cameraDirection,
     required this.isInitialized,
     required this.isRunning,
@@ -20,6 +21,7 @@ class MobileScannerState {
   /// Create a new [MobileScannerState] instance that is uninitialized.
   const MobileScannerState.uninitialized(CameraFacing facing)
       : this(
+          availableCameras: null,
           cameraDirection: facing,
           isInitialized: false,
           isRunning: false,
@@ -27,6 +29,11 @@ class MobileScannerState {
           torchState: TorchState.unavailable,
           zoomScale: 1.0,
         );
+
+  /// The number of available cameras.
+  ///
+  /// This is null if the number of cameras is unknown.
+  final int? availableCameras;
 
   /// The facing direction of the camera.
   final CameraFacing cameraDirection;
@@ -55,6 +62,7 @@ class MobileScannerState {
 
   /// Create a copy of this state with the given parameters.
   MobileScannerState copyWith({
+    int? availableCameras,
     CameraFacing? cameraDirection,
     MobileScannerException? error,
     bool? isInitialized,
@@ -64,6 +72,7 @@ class MobileScannerState {
     double? zoomScale,
   }) {
     return MobileScannerState(
+      availableCameras: availableCameras ?? this.availableCameras,
       cameraDirection: cameraDirection ?? this.cameraDirection,
       error: error,
       isInitialized: isInitialized ?? this.isInitialized,

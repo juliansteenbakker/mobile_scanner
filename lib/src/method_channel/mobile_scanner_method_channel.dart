@@ -264,6 +264,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = textureId;
 
+    final int? numberOfCameras = startResult['numberOfCameras'] as int?;
     final bool hasTorch = startResult['torchable'] as bool? ?? false;
 
     final Map<Object?, Object?>? sizeInfo =
@@ -279,7 +280,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       size = Size(width, height);
     }
 
-    return MobileScannerViewAttributes(hasTorch: hasTorch, size: size);
+    return MobileScannerViewAttributes(
+      hasTorch: hasTorch,
+      numberOfCameras: numberOfCameras,
+      size: size,
+    );
   }
 
   @override
