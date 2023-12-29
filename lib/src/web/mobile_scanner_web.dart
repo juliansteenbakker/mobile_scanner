@@ -41,6 +41,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
+
+  @override
   Widget buildCameraView() {
     if (!_barcodeReader.isScanning) {
       throw const MobileScannerException(
@@ -80,6 +83,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
+      // Clear the existing barcodes.
+      _barcodesController.add(const BarcodeCapture());
+
       await _barcodeReader.start(
         startOptions,
         containerElement: _divElement!,
@@ -144,9 +150,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     _barcodesSubscription?.cancel();
     _barcodesSubscription = null;
-
-    // Clear the existing barcodes.
-    _barcodesController.add(const BarcodeCapture());
 
     await _barcodeReader.stop();
   }
