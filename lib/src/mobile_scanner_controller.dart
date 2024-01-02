@@ -248,11 +248,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     } on MobileScannerException catch (error) {
       // The initialization finished with an error.
+      // To avoid stale values, reset the output size,
+      // torch state and zoom scale to the defaults.
       if (!_isDisposed) {
         value = value.copyWith(
           cameraDirection: facing,
           isInitialized: true,
+          isRunning: false,
           error: error,
+          size: Size.zero,
+          torchState: TorchState.unavailable,
+          zoomScale: 1.0,
         );
       }
     }
