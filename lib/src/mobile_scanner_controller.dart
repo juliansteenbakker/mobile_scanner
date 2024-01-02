@@ -205,6 +205,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// The [cameraDirection] can be used to specify the camera direction.
   /// If this is null, this defaults to the [facing] value.
+  ///
+  /// Does nothing if the camera is already running.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw const MobileScannerException(
@@ -214,6 +216,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               'The MobileScannerController was used after it has been disposed.',
         ),
       );
+    }
+
+    // Do nothing if the camera is already running.
+    if (value.isRunning) {
+      return;
     }
 
     final CameraFacing effectiveDirection = cameraDirection ?? facing;
@@ -267,10 +274,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Stop the camera.
   ///
   /// After calling this method, the camera can be restarted using [start].
+  ///
+  /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    _disposeListeners();
-
     _throwIfNotInitialized();
+
+    // Do nothing if already stopped.
+    if (!value.isRunning) {
+      return;
+    }
+
+    _disposeListeners();
 
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
