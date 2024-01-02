@@ -205,8 +205,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// The [cameraDirection] can be used to specify the camera direction.
   /// If this is null, this defaults to the [facing] value.
-  ///
-  /// Throws a [MobileScannerException] if starting the scanner failed.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw const MobileScannerException(
