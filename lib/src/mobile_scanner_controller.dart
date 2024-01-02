@@ -175,8 +175,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   /// Reset the zoom scale of the camera.
+  ///
+  /// Does nothing if the camera is not running.
   Future<void> resetZoomScale() async {
     _throwIfNotInitialized();
+
+    if (!value.isRunning) {
+      return;
+    }
 
     // When the platform has updated the zoom scale,
     // it will send an update through the zoom scale state event stream.
@@ -189,8 +195,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If the [zoomScale] is out of range,
   /// it is adjusted to fit within the allowed range.
+  ///
+  /// Does nothing if the camera is not running.
   Future<void> setZoomScale(double zoomScale) async {
     _throwIfNotInitialized();
+
+    if (!value.isRunning) {
+      return;
+    }
 
     final double clampedZoomScale = zoomScale.clamp(0.0, 1.0);
 
@@ -313,9 +325,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Switches the flashlight on or off.
   ///
-  /// Does nothing if the device has no torch.
+  /// Does nothing if the device has no torch,
+  /// or if the camera is not running.
   Future<void> toggleTorch() async {
     _throwIfNotInitialized();
+
+    if (!value.isRunning) {
+      return;
+    }
 
     final TorchState torchState = value.torchState;
 
