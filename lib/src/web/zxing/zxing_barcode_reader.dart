@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:js';
 import 'dart:js_interop';
 import 'dart:ui';
 
-import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -161,13 +161,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
       _reader?.decodeContinuously.callAsFunction(
         null,
         _reader?.videoElement,
-        allowInterop((result, error) {
+        allowInterop((Result? result, JSAny? error) {
           if (!controller.isClosed && result != null) {
-            final barcode = (result as Result).toBarcode;
-
             controller.add(
               BarcodeCapture(
-                barcodes: [barcode],
+                barcodes: [result.toBarcode],
               ),
             );
           }

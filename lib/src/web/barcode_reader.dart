@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:js';
 import 'dart:js_interop';
 import 'dart:ui';
 
-import 'package:js/js.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';

@@ -11,32 +11,31 @@ import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 ///
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/Result.ts
 @JS()
+@anonymous
 @staticInterop
 abstract class Result {}
 
 extension ResultExt on Result {
-  /// Get the barcode format.
-  ///
-  /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
-  external JSFunction getBarcodeFormat;
+  @JS('barcodeFormat')
+  external JSNumber? get _barcodeFormat;
 
-  /// Get the raw bytes of the result.
-  external JSFunction getRawBytes;
+  @JS('text')
+  external JSString? get _text;
 
-  /// Get the points of the result.
-  external JSFunction getResultPoints;
+  @JS('rawBytes')
+  external JSUint8Array? get _rawBytes;
 
-  /// Get the text of the result.
-  external JSFunction getText;
+  @JS('resultPoints')
+  external JSArray? get _resultPoints;
 
-  /// Get the timestamp of the result.
-  external JSFunction getTimestamp;
+  @JS('timestamp')
+  external JSNumber? get _timestamp;
 
   /// Get the barcode format of the result.
+  ///
+  /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
   BarcodeFormat get barcodeFormat {
-    final JSNumber? format = getBarcodeFormat.callAsFunction() as JSNumber?;
-
-    switch (format?.toDartInt) {
+    switch (_barcodeFormat?.toDartInt) {
       case 0:
         return BarcodeFormat.aztec;
       case 1:
@@ -82,36 +81,25 @@ extension ResultExt on Result {
 
   /// Get the corner points of the result.
   List<Offset> get resultPoints {
-    final JSArray? resultPoints = getResultPoints.callAsFunction() as JSArray?;
+    final JSArray? points = _resultPoints;
 
-    if (resultPoints == null) {
+    if (points == null) {
       return [];
     }
 
-    return resultPoints.toDart.cast<ResultPoint>().map((point) {
+    return points.toDart.cast<ResultPoint>().map((point) {
       return Offset(point.x, point.y);
     }).toList();
   }
 
   /// Get the raw bytes of the result.
-  Uint8List? get rawBytes {
-    final JSUint8Array? rawBytes =
-        getRawBytes.callAsFunction() as JSUint8Array?;
-
-    return rawBytes?.toDart;
-  }
+  Uint8List? get rawBytes => _rawBytes?.toDart;
 
   /// Get the text of the result.
-  String? get text {
-    return getText.callAsFunction() as String?;
-  }
+  String? get text => _text?.toDart;
 
   /// Get the timestamp of the result.
-  int? get timestamp {
-    final JSNumber? timestamp = getTimestamp.callAsFunction() as JSNumber?;
-
-    return timestamp?.toDartInt;
-  }
+  int? get timestamp => _timestamp?.toDartInt;
 
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {

@@ -4,25 +4,20 @@ import 'dart:js_interop';
 ///
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/ResultPoint.ts
 @JS()
+@anonymous
 @staticInterop
 abstract class ResultPoint {}
 
 extension ResultPointExt on ResultPoint {
-  external JSFunction getX;
+  @JS('x')
+  external JSNumber get _x;
 
-  external JSFunction getY;
+  @JS('y')
+  external JSNumber get _y;
 
   /// The x coordinate of the point.
-  double get x {
-    final JSNumber? x = getX.callAsFunction() as JSNumber?;
-
-    return x?.toDartDouble ?? 0;
-  }
+  double get x => _x.toDartDouble;
 
   /// The y coordinate of the point.
-  double get y {
-    final JSNumber? y = getY.callAsFunction() as JSNumber?;
-
-    return y?.toDartDouble ?? 0;
-  }
+  double get y => _y.toDartDouble;
 }

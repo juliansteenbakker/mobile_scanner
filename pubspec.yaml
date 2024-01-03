@@ -24,7 +24,6 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
-  js: ^0.6.3
   plugin_platform_interface: ^2.0.2  
   web: ^0.3.0
 
@@ -45,4 +44,4 @@ flutter:
         pluginClass: MobileScannerPlugin
       web:
         pluginClass: MobileScannerWeb
-        fileName: web/mobile_scanner_web.dart
+        fileName: src/web/mobile_scanner_web.dart
