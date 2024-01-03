@@ -369,10 +369,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    await MobileScannerPlatform.instance.dispose();
-    unawaited(_barcodesController.close());
-
     _isDisposed = true;
+    unawaited(_barcodesController.close());
     super.dispose();
+
+    await MobileScannerPlatform.instance.dispose();
   }
 }

@@ -13,14 +13,14 @@ class BarcodeScannerPageView extends StatefulWidget {
 }
 
 class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
-  final MobileScannerController scannerController = MobileScannerController();
+  final MobileScannerController controller = MobileScannerController();
 
   final PageController pageController = PageController();
 
   @override
   void initState() {
     super.initState();
-    scannerController.start();
+    unawaited(controller.start());
   }
 
   @override
@@ -33,7 +33,7 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
         onPageChanged: (index) async {
           // Stop the camera view for the current page,
           // and then restart the camera for the new page.
-          await scannerController.stop();
+          await controller.stop();
 
           // When switching pages, add a delay to the next start call.
           // Otherwise the camera will start before the next page is displayed.
@@ -43,13 +43,13 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
             return;
           }
 
-          scannerController.start();
+          unawaited(controller.start());
         },
         children: [
-          _BarcodeScannerPage(controller: scannerController),
+          _BarcodeScannerPage(controller: controller),
           const SizedBox(),
-          _BarcodeScannerPage(controller: scannerController),
-          _BarcodeScannerPage(controller: scannerController),
+          _BarcodeScannerPage(controller: controller),
+          _BarcodeScannerPage(controller: controller),
         ],
       ),
     );
@@ -57,9 +57,9 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
 
   @override
   Future<void> dispose() async {
-    await scannerController.dispose();
     pageController.dispose();
     super.dispose();
+    await controller.dispose();
   }
 }
 

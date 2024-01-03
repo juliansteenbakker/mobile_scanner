@@ -293,9 +293,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return;
     }
 
-    await methodChannel.invokeMethod<void>('stop');
-
     _textureId = null;
+
+    await methodChannel.invokeMethod<void>('stop');
   }
 
   @override

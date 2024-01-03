@@ -107,7 +107,7 @@ class _BarcodeScannerListViewState extends State<BarcodeScannerListView> {
 
   @override
   Future<void> dispose() async {
-    await controller.dispose();
     super.dispose();
+    await controller.dispose();
   }
 }

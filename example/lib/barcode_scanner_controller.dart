@@ -74,7 +74,7 @@ class _BarcodeScannerWithControllerState
 
   @override
   Future<void> dispose() async {
-    await controller.dispose();
     super.dispose();
+    await controller.dispose();
   }
 }
