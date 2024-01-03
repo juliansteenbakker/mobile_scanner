@@ -93,7 +93,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       ui_web.platformViewRegistry.registerViewFactory(
         _viewType,
-        (int id) => _divElement,
+        (int id) => _divElement!,
       );
     }
 
