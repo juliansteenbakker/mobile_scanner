@@ -69,13 +69,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Widget buildCameraView() {
     if (!_barcodeReader.isScanning) {
-      throw const MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerUninitialized,
-        errorDetails: MobileScannerErrorDetails(
-          message:
-              'The controller was not yet initialized. Call start() before calling buildCameraView().',
-        ),
-      );
+      return const SizedBox();
     }
 
     return HtmlElementView(viewType: _viewType);

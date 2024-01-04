@@ -179,13 +179,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Widget buildCameraView() {
     if (_textureId == null) {
-      throw const MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerUninitialized,
-        errorDetails: MobileScannerErrorDetails(
-          message:
-              'The controller was not yet initialized. Call start() before calling buildCameraView().',
-        ),
-      );
+      return const SizedBox();
     }
 
     return Texture(textureId: _textureId!);
