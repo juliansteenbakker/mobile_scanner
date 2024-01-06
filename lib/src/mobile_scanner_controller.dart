@@ -119,18 +119,26 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   void _setupListeners() {
     _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
         .listen((BarcodeCapture? barcode) {
-      if (barcode != null) {
+      if (!_barcodesController.isClosed && barcode != null) {
         _barcodesController.add(barcode);
       }
     });
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
+      if (_isDisposed) {
+        return;
+      }
+
       value = value.copyWith(torchState: torchState);
     });
 
     _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
         .listen((double zoomScale) {
+      if (_isDisposed) {
+        return;
+      }
+
       value = value.copyWith(zoomScale: zoomScale);
     });
   }
