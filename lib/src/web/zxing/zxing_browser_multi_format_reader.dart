@@ -8,7 +8,7 @@ import 'package:web/web.dart';
 @JS('ZXing.BrowserMultiFormatReader')
 @staticInterop
 class ZXingBrowserMultiFormatReader {
-  /// Construct a new ZXingBrowserMultiFormatReader.
+  /// Construct a new `ZXing.BrowserMultiFormatReader`.
   ///
   /// The [hints] are the configuration options for the reader.
   /// The [timeBetweenScansMillis] is the allowed time between scans in milliseconds.
