@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:web/web.dart';
 
 /// The JS interop class for the ZXing BrowserMultiFormatReader.
@@ -15,8 +16,8 @@ class ZXingBrowserMultiFormatReader {
   ///
   /// See also: https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts
   external factory ZXingBrowserMultiFormatReader(
-    JSAny? hints,
-    int? timeBetweenScansMillis,
+    JsMap? hints,
+    JSNumber? timeBetweenScansMillis,
   );
 }
 

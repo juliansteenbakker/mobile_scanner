@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
+import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
@@ -82,6 +83,26 @@ final class ZXingBarcodeReader extends BarcodeReader {
       default:
         return -1;
     }
+  }
+
+  JsMap? _createReaderHints(List<BarcodeFormat> formats) {
+    if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {
+      return null;
+    }
+
+    final JsMap hints = JsMap();
+
+    // Set the formats hint.
+    // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45
+    hints.set(
+      2.toJS,
+      [
+        for (final BarcodeFormat format in formats)
+          getZXingBarcodeFormat(format).toJS,
+      ].toJS,
+    );
+
+    return hints;
   }
 
   /// Prepare the [web.MediaStream] for the barcode reader video input.
@@ -242,19 +263,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
       formats.removeWhere((element) => element == BarcodeFormat.unknown);
     }
 
-    final Map<Object?, Object?>? hints;
-
-    if (formats.isNotEmpty && !formats.contains(BarcodeFormat.all)) {
-      // Set the formats hint.
-      // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45
-      hints = {
-        2: formats.map(getZXingBarcodeFormat).toList(),
-      };
-    } else {
-      hints = null;
-    }
-
-    _reader = ZXingBrowserMultiFormatReader(hints.jsify(), detectionTimeoutMs);
+    _reader = ZXingBrowserMultiFormatReader(
+      _createReaderHints(formats),
+      detectionTimeoutMs.toJS,
+    );
 
     final web.HTMLVideoElement videoElement =
         web.document.createElement('video') as web.HTMLVideoElement;
