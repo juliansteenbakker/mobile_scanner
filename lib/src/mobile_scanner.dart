@@ -186,8 +186,8 @@ class _MobileScannerState extends State<MobileScanner> {
 
   @override
   void dispose() {
-    // When this widget is unmounted, reset the scan window.
-    widget.controller.updateScanWindow(null);
     super.dispose();
+    // When this widget is unmounted, reset the scan window.
+    unawaited(widget.controller.updateScanWindow(null));
   }
 }
