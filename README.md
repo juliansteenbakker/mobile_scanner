@@ -7,17 +7,15 @@
 
 A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
 
-
 ## Features Supported
 
 See the example app for detailed implementation information.
 
-| Features               | Android            | iOS                | macOS | Web |
-|------------------------|--------------------|--------------------|-------|-----|
-| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
-| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
-| scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
-| barcodeOverlay         | :heavy_check_mark: | :heavy_check_mark: | :x:   | :x: |
+| Features               | Android            | iOS                | macOS                | Web |
+|------------------------|--------------------|--------------------|----------------------|-----|
+| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
+| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
+| scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 
 ## Platform Support
 
@@ -26,6 +24,7 @@ See the example app for detailed implementation information.
 | ✔       | ✔   | ✔     | ✔   | :x:   | :x:     |
 
 ## Platform specific setup
+
 ### Android
 This package uses by default the **bundled version** of MLKit Barcode-scanning for Android. This version is immediately available to the device. But it will increase the size of the app by approximately 3 to 10 MB.
 
@@ -61,194 +60,101 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 <img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
 
 ## Web
-This package uses ZXing on web to read barcodes so it needs to be included in `index.html` as script.
+
+Include the `ZXing` library in the `<head>` of your `index.html` as a script.
+
 ```html
-<script src="https://unpkg.com/@zxing/library@0.19.1" type="application/javascript"></script>
+<head>
+  <!-- other things in the tag -->
+
+  <script src="https://unpkg.com/@zxing/library@0.19.1" type="application/javascript"></script>
+</head>
 ```
 
 ## Usage
 
-Import `package:mobile_scanner/mobile_scanner.dart`, and use the widget with or without the controller.
+Import the package with `package:mobile_scanner/mobile_scanner.dart`.
 
-If you don't provide a controller, you can't control functions like the torch(flash) or switching camera.
-
-If you don't set `detectionSpeed` to `DetectionSpeed.noDuplicates`, you can get multiple scans in a very short time, causing things like pop() to fire lots of times.
-
-Example without controller:
+Create a new `MobileScannerController` controller, using the required options.
+Provide a `StreamSubscription` for the barcode events.
 
 ```dart
-import 'package:mobile_scanner/mobile_scanner.dart';
+final MobileScannerController controller = MobileScannerController(
+  // required options for the scanner
+);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mobile Scanner')),
-      body: MobileScanner(
-        // fit: BoxFit.contain,
-        onDetect: (capture) {
-          final List<Barcode> barcodes = capture.barcodes;
-          final Uint8List? image = capture.image;
-          for (final barcode in barcodes) {
-            debugPrint('Barcode found! ${barcode.rawValue}');
-          }
-        },
-      ),
-    );
-  }
+StreamSubscription<Object?>? _subscription;
 ```
 
-Example with controller and initial values:
+Ensure that your `State` class mixes in `WidgetsBindingObserver`, to handle lifecyle changes:
 
 ```dart
-import 'package:mobile_scanner/mobile_scanner.dart';
+class MyState extends State<MyStatefulWidget> with WidgetsBindingObserver {
+  // ...
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mobile Scanner')),
-      body: MobileScanner(
-        // fit: BoxFit.contain,
-        controller: MobileScannerController(
-          detectionSpeed: DetectionSpeed.normal,
-          facing: CameraFacing.front,
-          torchEnabled: true,
-        ),
-        onDetect: (capture) {
-          final List<Barcode> barcodes = capture.barcodes;
-          final Uint8List? image = capture.image;
-          for (final barcode in barcodes) {
-            debugPrint('Barcode found! ${barcode.rawValue}');
-          }
-        },
-      ),
-    );
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        // Restart the scanner when the app is resumed.
+        // Don't forget to resume listening to the barcode events.
+        _subscription = controller.barcodes.listen(_handleBarcode);
+
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        // Stop the scanner when the app is paused.
+        // Also stop the barcode events subscription.
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
+    }
   }
+
+  // ...
+}
 ```
 
-Example with controller and torch & camera controls:
+Then, start the scanner in `void initState()`:
 
 ```dart
-import 'package:mobile_scanner/mobile_scanner.dart';
+@override
+void initState() {
+  super.initState();
+  // Start listening to lifecycle changes.
+  WidgetsBinding.instance.addObserver(this);
 
-  MobileScannerController cameraController = MobileScannerController();
+  // Start listening to the barcode events.
+  _subscription = controller.barcodes.listen(_handleBarcode);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: const Text('Mobile Scanner'),
-          actions: [
-            IconButton(
-              color: Colors.white,
-              icon: ValueListenableBuilder(
-                valueListenable: cameraController.torchState,
-                builder: (context, state, child) {
-                  switch (state as TorchState) {
-                    case TorchState.off:
-                      return const Icon(Icons.flash_off, color: Colors.grey);
-                    case TorchState.on:
-                      return const Icon(Icons.flash_on, color: Colors.yellow);
-                  }
-                },
-              ),
-              iconSize: 32.0,
-              onPressed: () => cameraController.toggleTorch(),
-            ),
-            IconButton(
-              color: Colors.white,
-              icon: ValueListenableBuilder(
-                valueListenable: cameraController.cameraFacingState,
-                builder: (context, state, child) {
-                  switch (state as CameraFacing) {
-                    case CameraFacing.front:
-                      return const Icon(Icons.camera_front);
-                    case CameraFacing.back:
-                      return const Icon(Icons.camera_rear);
-                  }
-                },
-              ),
-              iconSize: 32.0,
-              onPressed: () => cameraController.switchCamera(),
-            ),
-          ],
-        ),
-        body: MobileScanner(
-          // fit: BoxFit.contain,
-          controller: cameraController,
-          onDetect: (capture) {
-            final List<Barcode> barcodes = capture.barcodes;
-            final Uint8List? image = capture.image;
-            for (final barcode in barcodes) {
-              debugPrint('Barcode found! ${barcode.rawValue}');
-            }
-          },
-        ),
-    );
-  }
+  // Finally, start the scanner itself.
+  unawaited(controller.start());
+}
 ```
 
-Example with controller and returning images
+Finally, dispose of the the `MobileScannerController` when you are done with it.
 
 ```dart
-import 'package:mobile_scanner/mobile_scanner.dart';
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Mobile Scanner')),
-      body: MobileScanner(
-        fit: BoxFit.contain,
-        controller: MobileScannerController(
-          // facing: CameraFacing.back,
-          // torchEnabled: false,
-          returnImage: true,
-        ),
-        onDetect: (capture) {
-          final List<Barcode> barcodes = capture.barcodes;
-          final Uint8List? image = capture.image;
-          for (final barcode in barcodes) {
-            debugPrint('Barcode found! ${barcode.rawValue}');
-          }
-          if (image != null) {
-            showDialog(
-              context: context,
-              builder: (context) =>
-                  Image(image: MemoryImage(image)),
-            );
-            Future.delayed(const Duration(seconds: 5), () {
-              Navigator.pop(context);
-            });
-          }
-        },
-      ),
-    );
-  }
+@override
+Future<void> dispose() async {
+  // Stop listening to lifecycle changes.
+  WidgetsBinding.instance.removeObserver(this);
+  // Stop listening to the barcode events.
+  unawaited(_subscription?.cancel());
+  _subscription = null;
+  // Dispose the widget itself.
+  super.dispose();
+  // Finally, dispose of the controller.
+  await controller.dispose();
+}
 ```
 
-### BarcodeCapture
+To display the camera preview, pass the controller to a `MobileScanner` widget.
 
-The onDetect function returns a BarcodeCapture objects which contains the following items.
-
-| Property name | Type          | Description                       |
-|---------------|---------------|-----------------------------------|
-| barcodes      | List<Barcode> | A list with scanned barcodes.     |
-| image         | Uint8List?    | If enabled, an image of the scan. |
-
-You can use the following properties of the Barcode object.
-
-| Property name | Type           | Description                         |
-|---------------|----------------|-------------------------------------|
-| format        | BarcodeFormat  |                                     |
-| rawBytes      | Uint8List?     | binary scan result                  |
-| rawValue      | String?        | Value if barcode is in UTF-8 format |
-| displayValue  | String?        |                                     |
-| type          | BarcodeType    |                                     |
-| calendarEvent | CalendarEvent? |                                     |
-| contactInfo   | ContactInfo?   |                                     |
-| driverLicense | DriverLicense? |                                     |
-| email         | Email?         |                                     |
-| geoPoint      | GeoPoint?      |                                     |
-| phone         | Phone?         |                                     |
-| sms           | SMS?           |                                     |
-| url           | UrlBookmark?   |                                     |
-| wifi          | WiFi?          | WiFi Access-Point details           |
+See the examples for runnable examples of various usages,
+such as the basic usage, applying a scan window, or retrieving images from the barcodes.
