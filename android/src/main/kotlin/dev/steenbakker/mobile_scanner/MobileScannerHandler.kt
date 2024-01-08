@@ -180,7 +180,7 @@ class MobileScannerHandler(
                         "textureId" to it.id,
                         "size" to mapOf("width" to it.width, "height" to it.height),
                         "torchable" to it.hasFlashUnit,
-                        "nrOfCameras" to it.nrOfCameras
+                        "numberOfCameras" to it.numberOfCameras
                     ))
                 }
             },

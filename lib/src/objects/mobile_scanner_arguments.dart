@@ -16,14 +16,15 @@ class MobileScannerArguments {
   final String? webId;
 
   /// Indicates how many cameras are available.
-  /// Only available on Android
-  final int? nrOfCameras;
+  ///
+  /// Currently only supported on Android.
+  final int? numberOfCameras;
 
   MobileScannerArguments({
     required this.size,
     required this.hasTorch,
     this.textureId,
     this.webId,
-    this.nrOfCameras,
+    this.numberOfCameras,
   });
 }
