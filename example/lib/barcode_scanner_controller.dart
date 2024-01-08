@@ -71,7 +71,7 @@ class _BarcodeScannerWithControllerState
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription ??= controller.barcodes.listen(_handleBarcode);
+        _subscription = controller.barcodes.listen(_handleBarcode);
 
         unawaited(controller.start());
       case AppLifecycleState.inactive:

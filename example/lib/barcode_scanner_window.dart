@@ -90,7 +90,7 @@ class _BarcodeScannerWithScanWindowState
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.of(context).size.center(Offset.zero),
+      center: MediaQuery.sizeOf(context).center(Offset.zero),
       width: 200,
       height: 200,
     );
