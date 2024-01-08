@@ -62,6 +62,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('resetZoomScale() has not been implemented.');
   }
 
+  /// Set the source url for the barcode library.
+  ///
+  /// This is only supported on the web.
+  void setBarcodeLibraryScriptUrl(String scriptUrl) {}
+
   /// Set the torch state of the active camera.
   Future<void> setTorchState(TorchState torchState) {
     throw UnimplementedError('setTorchState() has not been implemented.');

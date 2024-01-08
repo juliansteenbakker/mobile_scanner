@@ -19,6 +19,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Constructs a [MobileScannerWeb] instance.
   MobileScannerWeb();
 
+  /// The alternate script url for the barcode library.
+  String? _alternateScriptUrl;
+
   /// The internal barcode reader.
   final BarcodeReader _barcodeReader = ZXingBarcodeReader();
 
@@ -76,8 +79,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  void setBarcodeLibraryScriptUrl(String scriptUrl) {
+    _alternateScriptUrl ??= scriptUrl;
+  }
+
+  @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    await _barcodeReader.maybeLoadLibrary();
+    await _barcodeReader.maybeLoadLibrary(
+      alternateScriptUrl: _alternateScriptUrl,
+    );
 
     // Setup the view factory & container element.
     if (_divElement == null) {

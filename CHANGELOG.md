@@ -22,6 +22,7 @@ BREAKING CHANGES:
 
 Improvements:
 * The `MobileScannerController` is now a ChangeNotifier, with `MobileScannerState` as its model.
+* The web implementation now supports alternate URLs for loading the barcode library.
 
 ## 4.0.1
 Bugs fixed:

@@ -61,14 +61,22 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 ## Web
 
-Include the `ZXing` library in the `<head>` of your `index.html` as a script.
+As of version 4.0.0 adding the library to the `index.html` is no longer required,
+as the library is automatically loaded on first use.
 
-```html
-<head>
-  <!-- other things in the tag -->
+### Providing a mirror for the barcode scanning library
 
-  <script src="https://unpkg.com/@zxing/library@0.19.1" type="application/javascript"></script>
-</head>
+If a different mirror is needed to load the barcode scanning library,
+the source URL can be set beforehand.
+
+```dart
+import 'package:flutter/foundation.dart';
+
+final String scriptUrl = // ...
+
+if (kIsWeb) {
+  MobileScannerPlatform.instance.setBarcodeLibraryScriptUrl(scriptUrl);
+}
 ```
 
 ## Usage

@@ -49,8 +49,11 @@ abstract class BarcodeReader {
 
   /// Load the barcode reader library.
   ///
+  /// If [alternateScriptUrl] is provided,
+  /// the script is loaded from that url instead.
+  ///
   /// Does nothing if the library is already loaded.
-  Future<void> maybeLoadLibrary() async {
+  Future<void> maybeLoadLibrary({String? alternateScriptUrl}) async {
     // Script already exists.
     if (document.querySelector('script#$scriptId') != null) {
       return;
@@ -66,7 +69,7 @@ abstract class BarcodeReader {
           ..type = 'application/javascript'
           ..lang = 'javascript'
           ..crossOrigin = 'anonymous'
-          ..src = scriptUrl
+          ..src = alternateScriptUrl ?? scriptUrl
           ..onload = allowInterop((JSAny _) {
             if (!completer.isCompleted) {
               completer.complete();
