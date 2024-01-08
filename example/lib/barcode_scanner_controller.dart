@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -15,7 +14,7 @@ class BarcodeScannerWithController extends StatefulWidget {
 }
 
 class _BarcodeScannerWithControllerState
-    extends State<BarcodeScannerWithController> {
+    extends State<BarcodeScannerWithController> with WidgetsBindingObserver {
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true, useNewCameraSelector: true,
     // formats: [BarcodeFormat.qrCode]
@@ -25,10 +24,61 @@ class _BarcodeScannerWithControllerState
     // returnImage: false,
   );
 
+  Barcode? _barcode;
+  StreamSubscription<Object?>? _subscription;
+
+  Widget _buildBarcode(Barcode? value) {
+    if (value == null) {
+      return const Text(
+        'Scan something!',
+        overflow: TextOverflow.fade,
+        style: TextStyle(color: Colors.white),
+      );
+    }
+
+    return Text(
+      value.displayValue ?? 'No display value.',
+      overflow: TextOverflow.fade,
+      style: const TextStyle(color: Colors.white),
+    );
+  }
+
+  void _handleBarcode(BarcodeCapture barcodes) {
+    if (mounted) {
+      setState(() {
+        _barcode = barcodes.barcodes.firstOrNull;
+      });
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-    controller.start();
+    WidgetsBinding.instance.addObserver(this);
+
+    _subscription = controller.barcodes.listen(_handleBarcode);
+
+    unawaited(controller.start());
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        _subscription ??= controller.barcodes.listen(_handleBarcode);
+
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
+    }
   }
 
   @override
@@ -56,11 +106,7 @@ class _BarcodeScannerWithControllerState
                 children: [
                   ToggleFlashlightButton(controller: controller),
                   StartStopMobileScannerButton(controller: controller),
-                  Expanded(
-                    child: Center(
-                      child: ScannedBarcodeLabel(barcodes: controller.barcodes),
-                    ),
-                  ),
+                  Expanded(child: Center(child: _buildBarcode(_barcode))),
                   SwitchCameraButton(controller: controller),
                   AnalyzeImageFromGalleryButton(controller: controller),
                 ],
@@ -74,6 +120,9 @@ class _BarcodeScannerWithControllerState
 
   @override
   Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
+    unawaited(_subscription?.cancel());
+    _subscription = null;
     super.dispose();
     await controller.dispose();
   }
