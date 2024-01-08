@@ -317,8 +317,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   /// Switch between the front and back camera.
+  ///
+  /// Does nothing if the device has less than 2 cameras.
   Future<void> switchCamera() async {
     _throwIfNotInitialized();
+
+    final int? availableCameras = value.availableCameras;
+
+    // Do nothing if the amount of cameras is less than 2 cameras.
+    // If the the current platform does not provide the amount of cameras,
+    // continue anyway.
+    if (availableCameras != null && availableCameras < 2) {
+      return;
+    }
 
     await stop();
 
