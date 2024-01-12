@@ -5,23 +5,23 @@ repository: https://github.com/juliansteenbakker/mobile_scanner
 
 screenshots:
 - description: 'Flutter Demo Home Page'
-  path: example\screenshots\flutter_01.png
+  path: example\screenshots\homepage.png
 - description: 'Mobile Scanner with List controller'
-  path: example\screenshots\flutter_02.png
+  path: example\screenshots\listController.png
 - description: 'Mobile Scanner with controller'
-  path: example\screenshots\flutter_03.png
+  path: example\screenshots\controller.png
 - description: 'Mobile Scanner with scan window'
-  path: example\screenshots\flutter_04.png
+  path: example\screenshots\scanWindow.png
 - description: 'Mobile Scanner with controller (returning image)'
-  path: example\screenshots\flutter_05.png
+  path: example\screenshots\returningImage.png
 - description: 'Mobile Scanner without controller'
-  path: example\screenshots\flutter_06.png
+  path: example\screenshots\withoutController.png
 - description: 'Mobile Scanner with zoom slider'
-  path: example\screenshots\flutter_07.png
+  path: example\screenshots\zoomSlider.png
 - description: 'Mobile Scanner pageView'
-  path: example\screenshots\flutter_08.png
+  path: example\screenshots\pageView.png
 - description: 'Mobile Scanner with overlay'
-  path: example\screenshots\flutter_09.png
+  path: example\screenshots\overlay.png
 
 environment:
   sdk: ">=2.17.0 <4.0.0"
