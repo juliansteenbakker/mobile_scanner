@@ -5,19 +5,17 @@ repository: https://github.com/juliansteenbakker/mobile_scanner
 
 screenshots:
 - description: 'Flutter Demo Home Page'
-  path: example\screenshots\homepage.png
+  path: .\example\screenshots\homepage.png
 - description: 'Mobile Scanner with controller'
-  path: example\screenshots\controller.png
-- description: 'Mobile Scanner with scan window'
-  path: example\screenshots\scanWindow.png
+  path: .\example\screenshots\controller.png
 - description: 'Mobile Scanner with controller (returning image)'
-  path: example\screenshots\returningImage.png
+  path: .\example\screenshots\returningImage.png
 - description: 'Mobile Scanner with zoom slider'
-  path: example\screenshots\zoomSlider.png
+  path: .\example\screenshots\zoomSlider.png
 - description: 'Mobile Scanner pageView'
-  path: example\screenshots\pageView.png
+  path: .\example\screenshots\pageView.png
 - description: 'Mobile Scanner with overlay'
-  path: example\screenshots\overlay.png
+  path: .\example\screenshots\overlay.png
 
 environment:
   sdk: ">=2.17.0 <4.0.0"
