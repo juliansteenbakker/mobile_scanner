@@ -6,16 +6,12 @@ repository: https://github.com/juliansteenbakker/mobile_scanner
 screenshots:
 - description: 'Flutter Demo Home Page'
   path: example\screenshots\homepage.png
-- description: 'Mobile Scanner with List controller'
-  path: example\screenshots\listController.png
 - description: 'Mobile Scanner with controller'
   path: example\screenshots\controller.png
 - description: 'Mobile Scanner with scan window'
   path: example\screenshots\scanWindow.png
 - description: 'Mobile Scanner with controller (returning image)'
   path: example\screenshots\returningImage.png
-- description: 'Mobile Scanner without controller'
-  path: example\screenshots\withoutController.png
 - description: 'Mobile Scanner with zoom slider'
   path: example\screenshots\zoomSlider.png
 - description: 'Mobile Scanner pageView'

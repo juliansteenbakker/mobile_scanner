@@ -51,14 +51,42 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom>
                   color: Colors.black.withOpacity(0.4),
                   child: Column(
                     children: [
-                      Slider(
-                        value: _zoomFactor,
-                        onChanged: (value) {
-                          setState(() {
-                            _zoomFactor = value;
-                            controller.setZoomScale(value);
-                          });
-                        },
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: Row(
+                          children: [
+                            Text(
+                              "0%",
+                              overflow: TextOverflow.fade,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium!
+                                  .copyWith(color: Colors.white),
+                            ),
+                            Expanded(
+                              child: Slider(
+                                max: 100,
+                                divisions: 100,
+                                value: _zoomFactor,
+                                label: "${_zoomFactor.round()} %",
+                                onChanged: (value) {
+                                  setState(() {
+                                    _zoomFactor = value;
+                                    controller.setZoomScale(value);
+                                  });
+                                },
+                              ),
+                            ),
+                            Text(
+                              "100%",
+                              overflow: TextOverflow.fade,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium!
+                                  .copyWith(color: Colors.white),
+                            ),
+                          ],
+                        ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
