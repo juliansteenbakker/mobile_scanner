@@ -37,7 +37,7 @@ class MobileScanner extends StatefulWidget {
   final BoxFit fit;
 
   /// The function that signals when new codes were detected by the [controller].
-  final void Function(BarcodeCapture barcodes) onDetect;
+  final void Function(BarcodeCapture barcodes)? onDetect;
 
   /// The function that signals when the barcode scanner is started.
   @Deprecated('Use onScannerStarted() instead.')
@@ -75,7 +75,7 @@ class MobileScanner extends StatefulWidget {
     this.controller,
     this.errorBuilder,
     this.fit = BoxFit.cover,
-    required this.onDetect,
+    this.onDetect,
     @Deprecated('Use onScannerStarted() instead.') this.onStart,
     this.onScannerStarted,
     this.placeholderBuilder,
