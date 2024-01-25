@@ -10,11 +10,11 @@ import 'dart:js_interop';
 /// Object literals can be made using [jsify].
 @JS('Map')
 @staticInterop
-class JsMap<K extends JSAny, V extends JSAny> implements JSAny {
-  external factory JsMap();
+class JSMap<K extends JSAny, V extends JSAny> {
+  external factory JSMap();
 }
 
-extension JsMapExtension<K extends JSAny, V extends JSAny> on JsMap<K, V> {
+extension JSMapExtension<K extends JSAny, V extends JSAny> on JSMap<K, V> {
   external V? get(K key);
   external JSVoid set(K key, V? value);
 }

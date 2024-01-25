@@ -85,12 +85,12 @@ final class ZXingBarcodeReader extends BarcodeReader {
     }
   }
 
-  JsMap? _createReaderHints(List<BarcodeFormat> formats) {
+  JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {
       return null;
     }
 
-    final JsMap hints = JsMap();
+    final JSMap hints = JSMap();
 
     // Set the formats hint.
     // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45

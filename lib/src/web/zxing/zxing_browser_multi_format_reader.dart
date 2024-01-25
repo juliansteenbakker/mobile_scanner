@@ -16,7 +16,7 @@ class ZXingBrowserMultiFormatReader {
   ///
   /// See also: https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts
   external factory ZXingBrowserMultiFormatReader(
-    JsMap? hints,
+    JSMap? hints,
     JSNumber? timeBetweenScansMillis,
   );
 }
