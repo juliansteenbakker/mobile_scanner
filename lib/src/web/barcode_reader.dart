@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 import 'dart:js_interop';
 import 'dart:ui';
 
@@ -70,13 +69,13 @@ abstract class BarcodeReader {
           ..lang = 'javascript'
           ..crossOrigin = 'anonymous'
           ..src = alternateScriptUrl ?? scriptUrl
-          ..onload = allowInterop((JSAny _) {
+          ..onload = (JSAny _) {
             if (!completer.isCompleted) {
               completer.complete();
             }
-          }).toJS;
+          }.toJS;
 
-    script.onerror = allowInterop((JSAny _) {
+    script.onerror = (JSAny _) {
       if (!completer.isCompleted) {
         // Remove the script if it did not load.
         document.head!.removeChild(script);
@@ -91,7 +90,7 @@ abstract class BarcodeReader {
           ),
         );
       }
-    }).toJS;
+    }.toJS;
 
     document.head!.appendChild(script);
 

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:js';
 import 'dart:js_interop';
 import 'dart:ui';
 
@@ -182,7 +181,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
       _reader?.decodeContinuously.callAsFunction(
         null,
         _reader?.videoElement,
-        allowInterop((Result? result, JSAny? error) {
+        (Result? result, JSAny? error) {
           if (!controller.isClosed && result != null) {
             controller.add(
               BarcodeCapture(
@@ -190,7 +189,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
               ),
             );
           }
-        }).toJS,
+        }.toJS,
       );
     };
 
