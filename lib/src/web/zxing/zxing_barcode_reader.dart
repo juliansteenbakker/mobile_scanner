@@ -14,6 +14,8 @@ import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:web/web.dart' as web;
 
+// TODO: remove the JSAny casts once upgraded to a package:web version that restores "implements JSAny"
+
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
@@ -110,7 +112,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   Future<web.MediaStream?> _prepareMediaStream(
     CameraFacing cameraDirection,
   ) async {
-    if (web.window.navigator.mediaDevices.isUndefinedOrNull) {
+    if ((web.window.navigator.mediaDevices as JSAny?).isUndefinedOrNull) {
       return null;
     }
 
@@ -119,7 +121,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     final web.MediaStreamConstraints constraints;
 
-    if (capabilities.isUndefinedOrNull || !capabilities.facingMode) {
+    if ((capabilities as JSAny).isUndefinedOrNull || !capabilities.facingMode) {
       constraints = web.MediaStreamConstraints(video: true.toJS);
     } else {
       final String facingMode = switch (cameraDirection) {
@@ -130,7 +132,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
       constraints = web.MediaStreamConstraints(
         video: web.MediaTrackConstraintSet(
           facingMode: facingMode.toJS,
-        ),
+        ) as JSAny,
       );
     }
 
@@ -159,8 +161,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
     final web.MediaStream? stream = await _prepareMediaStream(cameraDirection);
 
     if (stream != null) {
-      final JSPromise? result = _reader?.attachStreamToVideo
-          .callAsFunction(null, stream, videoElement) as JSPromise?;
+      final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
+        null,
+        stream as JSAny,
+        videoElement as JSAny,
+      ) as JSPromise?;
 
       await result?.toDart;
 
@@ -180,7 +185,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     controller.onListen = () {
       _reader?.decodeContinuously.callAsFunction(
         null,
-        _reader?.videoElement,
+        _reader?.videoElement as JSAny?,
         (Result? result, JSAny? error) {
           if (!controller.isClosed && result != null) {
             controller.add(
