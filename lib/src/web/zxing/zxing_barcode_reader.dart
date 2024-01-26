@@ -162,7 +162,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     if (stream != null) {
       final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
-        null,
+        _reader as JSAny?,
         stream as JSAny,
         videoElement as JSAny,
       ) as JSPromise?;
@@ -184,7 +184,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     controller.onListen = () {
       _reader?.decodeContinuously.callAsFunction(
-        null,
+        _reader as JSAny?,
         _reader?.videoElement as JSAny?,
         (Result? result, JSAny? error) {
           if (!controller.isClosed && result != null) {
@@ -202,8 +202,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
     // when the stream subscription returned by this method is cancelled in `MobileScannerWeb.stop()`.
     // This avoids both leaving the barcode scanner running and a memory leak for the stream subscription.
     controller.onCancel = () async {
-      _reader?.stopContinuousDecode.callAsFunction();
-      _reader?.reset.callAsFunction();
+      _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
+      _reader?.reset.callAsFunction(_reader as JSAny?);
       await controller.close();
     };
 
@@ -285,8 +285,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
-    _reader?.stopContinuousDecode.callAsFunction();
-    _reader?.reset.callAsFunction();
+    _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
+    _reader?.reset.callAsFunction(_reader as JSAny?);
     _reader = null;
   }
 }
