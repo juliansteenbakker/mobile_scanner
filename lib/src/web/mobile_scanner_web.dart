@@ -240,6 +240,18 @@ class MobileScannerWeb extends MobileScannerPlatform {
         _handleMediaTrackSettingsChange,
       );
 
+      final HTMLVideoElement videoElement;
+
+      // Attach the video element to the DOM, through its parent container.
+      // If a video element is already present, reuse it.
+      if (_divElement!.children.length == 0) {
+        videoElement = document.createElement('video') as HTMLVideoElement;
+
+        _divElement!.appendChild(videoElement);
+      } else {
+        videoElement = _divElement!.children.item(0)! as HTMLVideoElement;
+      }
+
       await _barcodeReader.start(
         startOptions,
         videoElement: videoElement,
