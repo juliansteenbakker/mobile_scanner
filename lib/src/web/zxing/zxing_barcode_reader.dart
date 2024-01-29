@@ -3,7 +3,6 @@ import 'dart:js_interop';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
@@ -106,43 +105,6 @@ final class ZXingBarcodeReader extends BarcodeReader {
     return hints;
   }
 
-  /// Prepare the [web.MediaStream] for the barcode reader video input.
-  ///
-  /// This method requests permission to use the camera.
-  Future<web.MediaStream?> _prepareMediaStream(
-    CameraFacing cameraDirection,
-  ) async {
-    if ((web.window.navigator.mediaDevices as JSAny?).isUndefinedOrNull) {
-      return null;
-    }
-
-    final capabilities =
-        web.window.navigator.mediaDevices.getSupportedConstraints();
-
-    final web.MediaStreamConstraints constraints;
-
-    if ((capabilities as JSAny).isUndefinedOrNull || !capabilities.facingMode) {
-      constraints = web.MediaStreamConstraints(video: true.toJS);
-    } else {
-      final String facingMode = switch (cameraDirection) {
-        CameraFacing.back => 'environment',
-        CameraFacing.front => 'user',
-      };
-
-      constraints = web.MediaStreamConstraints(
-        video: web.MediaTrackConstraintSet(
-          facingMode: facingMode.toJS,
-        ) as JSAny,
-      );
-    }
-
-    final JSAny? mediaStream = await web.window.navigator.mediaDevices
-        .getUserMedia(constraints)
-        .toDart;
-
-    return mediaStream as web.MediaStream?;
-  }
-
   /// Prepare the video element for the barcode reader.
   ///
   /// The given [videoElement] is attached to the DOM, by attaching it to the [containerElement].
@@ -150,31 +112,25 @@ final class ZXingBarcodeReader extends BarcodeReader {
   /// and the video element (to display the camera output).
   Future<void> _prepareVideoElement(
     web.HTMLVideoElement videoElement, {
-    required CameraFacing cameraDirection,
+    required web.MediaStream videoStream,
     required web.HTMLElement containerElement,
   }) async {
     // Attach the video element to the DOM, through its parent container.
     containerElement.appendChild(videoElement);
 
-    // Set up the camera output stream.
-    // This will request permission to use the camera.
-    final web.MediaStream? stream = await _prepareMediaStream(cameraDirection);
+    final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
+      _reader as JSAny?,
+      videoStream as JSAny,
+      videoElement as JSAny,
+    ) as JSPromise?;
 
-    if (stream != null) {
-      final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
-        _reader as JSAny?,
-        stream as JSAny,
-        videoElement as JSAny,
-      ) as JSPromise?;
+    await result?.toDart;
 
-      await result?.toDart;
+    final web.MediaTrackSettings? settings =
+        _mediaTrackConstraintsDelegate.getSettings(videoStream);
 
-      final web.MediaTrackSettings? settings =
-          _mediaTrackConstraintsDelegate.getSettings(stream);
-
-      if (settings != null) {
-        _onMediaTrackSettingsChanged?.call(settings);
-      }
+    if (settings != null) {
+      _onMediaTrackSettingsChanged?.call(settings);
     }
   }
 
@@ -261,6 +217,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   Future<void> start(
     StartOptions options, {
     required web.HTMLElement containerElement,
+    required web.MediaStream videoStream,
   }) async {
     final int detectionTimeoutMs = options.detectionTimeoutMs;
     final List<BarcodeFormat> formats = options.formats;
@@ -279,7 +236,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     await _prepareVideoElement(
       videoElement,
-      cameraDirection: options.cameraDirection,
+      videoStream: videoStream,
       containerElement: containerElement,
     );
   }

@@ -111,13 +111,15 @@ abstract class BarcodeReader {
     throw UnimplementedError('setTorchState() has not been implemented.');
   }
 
-  /// Start the barcode reader and initialize the video stream.
+  /// Start the barcode reader and initialize the [videoStream].
   ///
   /// The [options] are used to configure the barcode reader.
   /// The [containerElement] will become the parent of the video output element.
+  /// The [videoStream] is the input for the barcode reader and video preview element.
   Future<void> start(
     StartOptions options, {
     required HTMLElement containerElement,
+    required MediaStream videoStream,
   }) {
     throw UnimplementedError('start() has not been implemented.');
   }
