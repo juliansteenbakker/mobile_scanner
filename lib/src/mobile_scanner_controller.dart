@@ -290,6 +290,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           zoomScale: 1.0,
         );
       }
+    } on PermissionRequestPendingException catch (_) {
+      // If a permission request was already pending, do nothing.
     }
   }
 

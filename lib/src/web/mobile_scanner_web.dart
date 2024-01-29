@@ -39,6 +39,18 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// This container element is used by the barcode reader.
   HTMLDivElement? _divElement;
 
+  /// This [Completer] is used to prevent additional calls to the [start] method.
+  ///
+  /// To handle lifecycle changes properly,
+  /// the scanner is stopped when the application is inactive,
+  /// and restarted when the application gains focus.
+  ///
+  /// However, when the camera permission is requested,
+  /// the application is put in the inactive state due to the permission popup gaining focus.
+  /// Thus, as long as the permission status is not known,
+  /// any calls to the [start] method are ignored.
+  Completer<void>? _cameraPermissionCompleter;
+
   /// The stream controller for the media track settings stream.
   final StreamController<MediaTrackSettings> _settingsController =
       StreamController.broadcast();
@@ -48,6 +60,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
+  }
+
+  bool get _hasPendingPermissionRequest {
+    return _cameraPermissionCompleter != null &&
+        !_cameraPermissionCompleter!.isCompleted;
   }
 
   @override
@@ -174,6 +191,13 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    // If the permission request has not yet completed,
+    // the camera view is not ready yet.
+    // Prevent the permission popup from triggering a restart of the scanner.
+    if (_hasPendingPermissionRequest) {
+      throw PermissionRequestPendingException();
+    }
+
     await _barcodeReader.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
     );

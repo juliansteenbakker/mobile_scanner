@@ -11,7 +11,8 @@ export 'src/enums/phone_type.dart';
 export 'src/enums/torch_state.dart';
 export 'src/mobile_scanner.dart';
 export 'src/mobile_scanner_controller.dart';
-export 'src/mobile_scanner_exception.dart';
+export 'src/mobile_scanner_exception.dart'
+    hide PermissionRequestPendingException;
 export 'src/mobile_scanner_platform_interface.dart';
 export 'src/objects/address.dart';
 export 'src/objects/barcode.dart';
