@@ -297,10 +297,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    _throwIfNotInitialized();
-
-    // Do nothing if already stopped.
-    if (!value.isRunning) {
+    // Do nothing if not initialized or already stopped.
+    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
+    // due to the permission popup gaining focus.
+    // This would 'stop' the camera while it is not ready yet.
+    if (!value.isInitialized || !value.isRunning || _isDisposed) {
       return;
     }
 
