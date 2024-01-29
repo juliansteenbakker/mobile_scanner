@@ -1,3 +1,8 @@
+## 3.5.7
+Improvements:
+* Updated js dependency together with other dependencies.
+* Reverted compileSdk version to 33 on Android. This update will be released under version 4.0.0.
+
 ## 3.5.6
 Bugs fixed:
 * [web] Fixed a crash with the ZXing barcode format (thanks @hazzo!)
