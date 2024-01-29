@@ -1,3 +1,8 @@
+## 4.0.0
+BREAKING CHANGES:
+* [Android] compileSdk has been upgraded to version 34.
+* [Android] Java version has been upgraded to version 17.
+
 ## 3.5.7
 Improvements:
 * Updated js dependency together with other dependencies.
