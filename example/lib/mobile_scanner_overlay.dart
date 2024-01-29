@@ -125,10 +125,8 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                                     switch (value) {
                                       case TorchState.off:
                                         iconColor = Colors.black;
-                                        break;
                                       case TorchState.on:
                                         iconColor = Colors.yellow;
-                                        break;
                                     }
 
                                     return IconButton(

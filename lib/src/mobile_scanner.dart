@@ -188,11 +188,9 @@ class _MobileScannerState extends State<MobileScanner>
         if (_resumeFromBackground) {
           _startScanner();
         }
-        break;
       case AppLifecycleState.inactive:
         _resumeFromBackground = true;
         _controller.stop();
-        break;
       default:
         break;
     }
