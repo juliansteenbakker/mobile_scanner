@@ -114,11 +114,11 @@ abstract class BarcodeReader {
   /// Start the barcode reader and initialize the [videoStream].
   ///
   /// The [options] are used to configure the barcode reader.
-  /// The [containerElement] will become the parent of the video output element.
+  /// The [videoElement] will become the video output element.
   /// The [videoStream] is the input for the barcode reader and video preview element.
   Future<void> start(
     StartOptions options, {
-    required HTMLElement containerElement,
+    required HTMLVideoElement videoElement,
     required MediaStream videoStream,
   }) {
     throw UnimplementedError('start() has not been implemented.');

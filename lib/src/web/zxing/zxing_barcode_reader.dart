@@ -107,17 +107,13 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   /// Prepare the video element for the barcode reader.
   ///
-  /// The given [videoElement] is attached to the DOM, by attaching it to the [containerElement].
+  /// The given [videoElement] is assumed to already be attached to the DOM at this point.
   /// The camera video output is then attached to both the barcode reader (to detect barcodes),
   /// and the video element (to display the camera output).
   Future<void> _prepareVideoElement(
-    web.HTMLVideoElement videoElement, {
-    required web.MediaStream videoStream,
-    required web.HTMLElement containerElement,
-  }) async {
-    // Attach the video element to the DOM, through its parent container.
-    containerElement.appendChild(videoElement);
-
+    web.HTMLVideoElement videoElement,
+    web.MediaStream videoStream,
+  ) async {
     final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
       _reader as JSAny?,
       videoStream as JSAny,
@@ -216,7 +212,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> start(
     StartOptions options, {
-    required web.HTMLElement containerElement,
+    required web.HTMLVideoElement videoElement,
     required web.MediaStream videoStream,
   }) async {
     final int detectionTimeoutMs = options.detectionTimeoutMs;
@@ -231,14 +227,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
       detectionTimeoutMs.toJS,
     );
 
-    final web.HTMLVideoElement videoElement =
-        web.document.createElement('video') as web.HTMLVideoElement;
-
-    await _prepareVideoElement(
-      videoElement,
-      videoStream: videoStream,
-      containerElement: containerElement,
-    );
+    await _prepareVideoElement(videoElement, videoStream);
   }
 
   @override

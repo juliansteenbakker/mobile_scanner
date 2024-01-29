@@ -242,7 +242,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       await _barcodeReader.start(
         startOptions,
-        containerElement: _divElement!,
+        videoElement: videoElement,
         videoStream: videoStream,
       );
     } catch (error, stackTrace) {
@@ -321,7 +321,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
     try {
       final HTMLCollection? divChildren = _divElement?.children;
 
-      if (divChildren != null) {
+      // Since the exact element is unknown, remove all children.
+      // In practice, there should only be one child, the single video element.
+      if (divChildren != null && divChildren.length > 0) {
         for (int i = 0; i < divChildren.length; i++) {
           final Node? child = divChildren.item(i);
 
