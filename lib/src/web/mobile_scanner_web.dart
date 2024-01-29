@@ -56,7 +56,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       StreamController.broadcast();
 
   /// The view type for the platform view factory.
-  final String _viewType = 'MobileScannerWeb';
+  static const String _viewType = 'MobileScannerWeb';
 
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
@@ -181,7 +181,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       return const SizedBox();
     }
 
-    return HtmlElementView(viewType: _viewType);
+    return const HtmlElementView(viewType: _viewType);
   }
 
   @override
