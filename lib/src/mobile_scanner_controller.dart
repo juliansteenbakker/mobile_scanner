@@ -119,9 +119,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   void _setupListeners() {
     _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
         .listen((BarcodeCapture? barcode) {
-      if (!_barcodesController.isClosed && barcode != null) {
-        _barcodesController.add(barcode);
+      if (_barcodesController.isClosed || barcode == null) {
+        return;
       }
+
+      _barcodesController.add(barcode);
     });
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream

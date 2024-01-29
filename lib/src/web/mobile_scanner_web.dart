@@ -113,7 +113,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     try {
       // Clear the existing barcodes.
-      _barcodesController.add(const BarcodeCapture());
+      if (!_barcodesController.isClosed) {
+        _barcodesController.add(const BarcodeCapture());
+      }
 
       // Listen for changes to the media track settings.
       _barcodeReader.setMediaTrackSettingsListener(

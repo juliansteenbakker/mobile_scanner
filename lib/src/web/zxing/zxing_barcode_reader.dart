@@ -187,13 +187,15 @@ final class ZXingBarcodeReader extends BarcodeReader {
         _reader as JSAny?,
         _reader?.videoElement as JSAny?,
         (Result? result, JSAny? error) {
-          if (!controller.isClosed && result != null) {
-            controller.add(
-              BarcodeCapture(
-                barcodes: [result.toBarcode],
-              ),
-            );
+          if (controller.isClosed || result == null) {
+            return;
           }
+
+          controller.add(
+            BarcodeCapture(
+              barcodes: [result.toBarcode],
+            ),
+          );
         }.toJS,
       );
     };
