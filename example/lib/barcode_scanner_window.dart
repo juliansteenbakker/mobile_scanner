@@ -212,15 +212,14 @@ class BarcodeOverlay extends CustomPainter {
       ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
     }
 
-    final List<Offset> adjustedOffset = [];
-    for (final offset in barcodeCorners) {
-      adjustedOffset.add(
+    final List<Offset> adjustedOffset = [
+      for (final offset in barcodeCorners)
         Offset(
           offset.dx / ratioWidth + horizontalPadding,
           offset.dy / ratioHeight + verticalPadding,
         ),
-      );
-    }
+    ];
+
     final cutoutPath = Path()..addPolygon(adjustedOffset, true);
 
     final backgroundPaint = Paint()
