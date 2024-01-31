@@ -61,7 +61,7 @@ Bugs fixed:
 
 ## 3.5.0
 
-**NOTE: Since this release plugin requires your project to have compileSDK 34 (Android 14)**
+**NOTE: From this version onwards, `mobile_scanner` requires Android projects to have a `compileSdk` of 34 (Android 14) or higher**
 
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
