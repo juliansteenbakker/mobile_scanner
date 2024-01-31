@@ -5,15 +5,11 @@ BREAKING CHANGES:
 
 ## 3.5.7
 
-NOTE: This version requires your project to have compileSDK 34 on Android
-
 Improvements:
 * Updated js dependency together with other dependencies.
 * Reverted compileSdk version to 33 on Android. This update will be released under version 4.0.0.
 
 ## 3.5.6
-
-NOTE: This version requires your project to have compileSDK 34 on Android
 
 Bugs fixed:
 * [web] Fixed a crash with the ZXing barcode format (thanks @hazzo!)
@@ -29,21 +25,15 @@ Improvements:
 
 ## 3.5.5
 
-NOTE: This version requires your project to have compileSDK 34 on Android
-
 Bugs fixed:
 * Fixed a bug where the scanner would get stuck after denying permissions on Android. (thanks @navaronbracke !)
 
 ## 3.5.4
 
-NOTE: This version requires your project to have compileSDK 34 on Android
-
 Bugs fixed:
 * Fixed a bug with an implicit conversion to integer for the scan timeout for iOS. (thanks @EArminjon !)
 
 ## 3.5.2
-
-NOTE: This version requires your project to have compileSDK 34 on Android
 
 Improvements:
 * Updated to `play-services-mlkit-barcode-scanning` version 18.3.0
@@ -56,8 +46,6 @@ Bugs fixed:
 * Fixed a synchronization issue for the torch state. (thanks @navaronbracke !)
 
 ## 3.5.1
-
-NOTE: This version requires your project to have compileSDK 34 on Android
 
 Improvements:
 * The `type` of an `Address` is now non-null.
@@ -79,7 +67,7 @@ Bugs fixed:
 
 ## 3.5.0
 
-NOTE: This version requires your project to have compileSDK 34 on Android
+**NOTE: Since this release plugin requires your project to have compileSDK 34 (Android 14)**
 
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
