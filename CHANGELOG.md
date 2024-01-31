@@ -60,6 +60,9 @@ Bugs fixed:
 * Fixed messages not being sent on the main thread for Android, iOS and MacOS. (thanks @navaronbracke !)
 
 ## 3.5.0
+
+**NOTE: From this version onwards, `mobile_scanner` requires Android projects to have a `compileSdk` of 34 (Android 14) or higher**
+
 New Features:
 * Added the option to switch between bundled and unbundled MLKit for Android. (thanks @woolfred !)
 * Added the option to specify the camera resolution for Android. (thanks @EArminjon !)
