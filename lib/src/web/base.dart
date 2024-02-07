@@ -1,6 +1,5 @@
 import 'dart:html' as html;
 
-import 'package:flutter/material.dart';
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
