@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:mobile_scanner/src/auto_start_exception.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
@@ -128,11 +129,13 @@ class _MobileScannerState extends State<MobileScanner>
       widget.onDetect,
     );
 
+    /// Throws an [AutoStartDisabledException] if the autoStart property of the controller is set to false.
+    /// 
+    /// This exception is thrown when the scanner is not starting automatically because the autoStart property is set to false.
     if (!_controller.autoStart) {
-      debugPrint(
-        'mobile_scanner: not starting automatically because autoStart is set to false in the controller.',
+      throw AutoStartDisabledException(
+        'Scanner not starting automatically because autoStart is set to false in the controller.',
       );
-      return;
     }
 
     _controller.start().then((arguments) {
