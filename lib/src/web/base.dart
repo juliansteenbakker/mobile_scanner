@@ -111,7 +111,8 @@ mixin InternalStreamCreation on WebBarcodeReaderBase {
         }
       });
     } catch (e) {
-      debugPrint('Failed to stop stream: $e');
+      // Instead of just printing the error, rethrow it so that the caller can handle it
+      throw Exception('Failed to stop stream: $e');
     }
     video.srcObject = null;
     localMediaStream = null;
