@@ -9,6 +9,14 @@ enum MobileScannerErrorCode {
   /// This error code is used for all errors that do not have a specific error code.
   genericError,
 
+  /// The controller was starting
+  /// while it was already starting using [MobileScannerController.start].
+  controllerAlreadyStarting,
+
+  /// Auto-start is disabled.
+  /// and an attempt is made to start the scanner automatically.
+  autoStartDisabled,
+
   /// The permission to use the camera was denied.
   permissionDenied,
 
