@@ -184,15 +184,19 @@ class MobileScannerController {
   ///
   /// Returns an instance of [MobileScannerArguments]
   /// when the scanner was successfully started.
-  /// Returns null if the scanner is currently starting.
+  /// Returns exception if the scanner already started.
   ///
   /// Throws a [MobileScannerException] if starting the scanner failed.
   Future<MobileScannerArguments?> start({
     CameraFacing? cameraFacingOverride,
   }) async {
     if (isStarting) {
-      debugPrint("Called start() while starting.");
-      return null;
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerAlreadyStarting,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'Called start() while starting.',
+        ),
+      );
     }
 
     events ??= _eventChannel
