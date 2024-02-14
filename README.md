@@ -61,7 +61,7 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 ## Web
 
-As of version 4.0.0 adding the library to the `index.html` is no longer required,
+As of version 5.0.0 adding the library to the `index.html` is no longer required,
 as the library is automatically loaded on first use.
 
 ### Providing a mirror for the barcode scanning library
@@ -71,6 +71,7 @@ the source URL can be set beforehand.
 
 ```dart
 import 'package:flutter/foundation.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 final String scriptUrl = // ...
 
