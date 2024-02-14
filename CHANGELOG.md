@@ -1,5 +1,4 @@
 ## 5.0.0-beta.1
-* Flutter 3.16.0 is now required.
 
 BREAKING CHANGES:
 
