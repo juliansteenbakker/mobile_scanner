@@ -6,7 +6,8 @@ import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithOverlay extends StatefulWidget {
   @override
-  _BarcodeScannerWithOverlayState createState() => _BarcodeScannerWithOverlayState();
+  _BarcodeScannerWithOverlayState createState() =>
+      _BarcodeScannerWithOverlayState();
 }
 
 class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
@@ -58,7 +59,9 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
           ValueListenableBuilder(
             valueListenable: controller,
             builder: (context, value, child) {
-              if (!value.isInitialized || !value.isRunning || value.error != null) {
+              if (!value.isInitialized ||
+                  !value.isRunning ||
+                  value.error != null) {
                 return const SizedBox();
               }
 
@@ -151,6 +154,7 @@ class ScannerOverlay extends CustomPainter {
 
   @override
   bool shouldRepaint(ScannerOverlay oldDelegate) {
-    return scanWindow != oldDelegate.scanWindow || borderRadius != oldDelegate.borderRadius;
+    return scanWindow != oldDelegate.scanWindow ||
+        borderRadius != oldDelegate.borderRadius;
   }
 }

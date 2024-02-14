@@ -101,12 +101,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.unsupported,
         errorDetails: MobileScannerErrorDetails(
-          message: 'This browser does not support displaying video from the camera.',
+          message:
+              'This browser does not support displaying video from the camera.',
         ),
       );
     }
 
-    final MediaTrackSupportedConstraints capabilities = window.navigator.mediaDevices.getSupportedConstraints();
+    final MediaTrackSupportedConstraints capabilities =
+        window.navigator.mediaDevices.getSupportedConstraints();
 
     final MediaStreamConstraints constraints;
 
@@ -128,8 +130,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       // If the completer is not null, the permission was never requested before.
       _cameraPermissionCompleter ??= Completer<void>();
 
-      final MediaStream? videoStream =
-          await window.navigator.mediaDevices.getUserMedia(constraints).toDart as MediaStream?;
+      final MediaStream? videoStream = await window.navigator.mediaDevices
+          .getUserMedia(constraints)
+          .toDart as MediaStream?;
 
       // At this point the permission is granted.
       if (!_cameraPermissionCompleter!.isCompleted) {
@@ -140,7 +143,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
         throw const MobileScannerException(
           errorCode: MobileScannerErrorCode.genericError,
           errorDetails: MobileScannerErrorDetails(
-            message: 'Could not create a video stream from the camera with the given options. '
+            message:
+                'Could not create a video stream from the camera with the given options. '
                 'The browser might not support the given constraints.',
           ),
         );
@@ -159,7 +163,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
 
       // Handle both unsupported and permission errors from the web.
-      if (errorMessage.contains('NotFoundError') || errorMessage.contains('NotSupportedError')) {
+      if (errorMessage.contains('NotFoundError') ||
+          errorMessage.contains('NotSupportedError')) {
         errorCode = MobileScannerErrorCode.unsupported;
       } else if (errorMessage.contains('NotAllowedError')) {
         errorCode = MobileScannerErrorCode.permissionDenied;
