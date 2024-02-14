@@ -18,7 +18,22 @@ final class MediaTrackConstraintsDelegate {
 
     final MediaStreamTrack? track = tracks.first as MediaStreamTrack?;
 
-    return track?.getSettings();
+    if (track == null) {
+      return null;
+    }
+
+    final MediaTrackSettings settings = track.getSettings();
+
+    return MediaTrackSettings(
+      width: settings.width,
+      height: settings.height,
+      zoom: settings.zoomNullable ?? 1.0,
+      facingMode: settings.facingModeNullable ?? '',
+      focusMode: settings.focusModeNullable ?? 'none',
+      torch: settings.torchNullable ?? false,
+      focusDistance: settings.focusDistanceNullable ?? 0.0,
+      aspectRatio: settings.aspectRatio,
+    );
   }
 
   /// Returns a list of supported flashlight modes for the given [mediaStream].
@@ -94,4 +109,25 @@ final class MediaTrackConstraintsDelegate {
       await track?.applyConstraints(constraints).toDart;
     }
   }
+}
+
+// TODO: turn this extension into an extension type when Dart 3.3 releases.
+
+// This extension exists because the Web IDL bindings for MediaTrackSettings
+// do not account for unavailable properties.
+extension _NullableMediaTrackSettings on MediaTrackSettings {
+  @JS('facingMode')
+  external String? get facingModeNullable;
+
+  @JS('focusDistance')
+  external num? get focusDistanceNullable;
+
+  @JS('focusMode')
+  external String? get focusModeNullable;
+
+  @JS('torch')
+  external bool? get torchNullable;
+
+  @JS('zoom')
+  external num? get zoomNullable;
 }
