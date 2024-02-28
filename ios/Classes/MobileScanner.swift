@@ -17,7 +17,7 @@ typealias ZoomScaleChangeCallback = ((Double?) -> ())
 
 public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelegate, FlutterTexture {
     /// Capture session of the camera
-    var captureSession: AVCaptureSession!
+    var captureSession: AVCaptureSession?
 
     /// The selected camera
     var device: AVCaptureDevice!
@@ -173,7 +173,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Start scanning for barcodes
     func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
         self.detectionSpeed = detectionSpeed
-        if (device != nil) {
+        if (device != nil || captureSession != nil) {
             throw MobileScannerError.alreadyStarted
         }
 
@@ -216,17 +216,17 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             device.unlockForConfiguration()
         } catch {}
 
-        captureSession.beginConfiguration()
+        captureSession!.beginConfiguration()
 
         // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
-            captureSession.addInput(input)
+            captureSession!.addInput(input)
         } catch {
             throw MobileScannerError.cameraError(error)
         }
 
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        captureSession!.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
 
@@ -237,17 +237,21 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         // calls captureOutput()
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
 
-        captureSession.addOutput(videoOutput)
+        captureSession!.addOutput(videoOutput)
         for connection in videoOutput.connections {
             connection.videoOrientation = .portrait
             if cameraPosition == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
             }
         }
-        captureSession.commitConfiguration()
+        captureSession!.commitConfiguration()
 
         backgroundQueue.async {
-            self.captureSession.startRunning()
+            guard let captureSession = self.captureSession else {
+                return
+            }
+
+            captureSession.startRunning()
 
             // After the capture session started, turn on the torch (if requested)
             // and reset the zoom scale back to the default.
@@ -299,15 +303,16 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     /// Stop scanning for barcodes
     func stop() throws {
-        if (device == nil) {
+        if (device == nil || captureSession == nil) {
             throw MobileScannerError.alreadyStopped
         }
-        captureSession.stopRunning()
-        for input in captureSession.inputs {
-            captureSession.removeInput(input)
+        
+        captureSession!.stopRunning()
+        for input in captureSession!.inputs {
+            captureSession!.removeInput(input)
         }
-        for output in captureSession.outputs {
-            captureSession.removeOutput(output)
+        for output in captureSession!.outputs {
+            captureSession!.removeOutput(output)
         }
 
         latestBuffer = nil

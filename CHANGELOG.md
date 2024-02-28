@@ -1,3 +1,7 @@
+## 4.0.1
+Bugs fixed:
+* [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
+
 ## 4.0.0
 BREAKING CHANGES:
 * [Android] compileSdk has been upgraded to version 34.
