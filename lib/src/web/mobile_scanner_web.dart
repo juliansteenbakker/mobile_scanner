@@ -193,8 +193,32 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<void> resetZoomScale() {
+    throw UnsupportedError(
+      'Setting the zoom scale is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
+  }
+
+  @override
   void setBarcodeLibraryScriptUrl(String scriptUrl) {
     _alternateScriptUrl ??= scriptUrl;
+  }
+
+  @override
+  Future<void> setTorchState(TorchState torchState) {
+    throw UnsupportedError(
+      'Setting the torch state is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
+  }
+
+  @override
+  Future<void> setZoomScale(double zoomScale) {
+    throw UnsupportedError(
+      'Setting the zoom scale is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
   }
 
   @override
