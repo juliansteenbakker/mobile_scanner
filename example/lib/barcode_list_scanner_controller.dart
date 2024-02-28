@@ -154,7 +154,7 @@ class _BarcodeListScannerWithControllerState
                           );
                           if (image != null) {
                             if (await controller.analyzeImage(image.path)) {
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('Barcode found!'),
@@ -162,7 +162,7 @@ class _BarcodeListScannerWithControllerState
                                 ),
                               );
                             } else {
-                              if (!mounted) return;
+                              if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
                                   content: Text('No barcode found!'),

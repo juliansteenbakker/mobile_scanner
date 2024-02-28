@@ -15,7 +15,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var textureId: Int64!
 
     // Capture session of the camera
-    var captureSession: AVCaptureSession!
+    var captureSession: AVCaptureSession?
 
     // The selected camera
     weak var device: AVCaptureDevice!
@@ -239,7 +239,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if (device != nil) {
+        if (device != nil || captureSession != nil) {
             result(FlutterError(code: "MobileScanner",
                                 message: "Called start() while already started!",
                                 details: nil))
@@ -289,17 +289,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
-        captureSession.beginConfiguration()
+        captureSession!.beginConfiguration()
         
         // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
-            captureSession.addInput(input)
+            captureSession!.addInput(input)
         } catch {
             result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
             return
         }
-        captureSession.sessionPreset = AVCaptureSession.Preset.photo
+        captureSession!.sessionPreset = AVCaptureSession.Preset.photo
         // Add video output.
         let videoOutput = AVCaptureVideoDataOutput()
         
@@ -307,15 +307,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         videoOutput.alwaysDiscardsLateVideoFrames = true
         
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
-        captureSession.addOutput(videoOutput)
+        captureSession!.addOutput(videoOutput)
         for connection in videoOutput.connections {
             // connection.videoOrientation = .portrait
             if position == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
             }
         }
-        captureSession.commitConfiguration()
-        captureSession.startRunning()
+        captureSession!.commitConfiguration()
+        captureSession!.startRunning()
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
         let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
@@ -374,17 +374,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     //    }
 
     func stop(_ result: FlutterResult) {
-        if (device == nil) {
+        if (device == nil || captureSession == nil) {
             result(nil)
 
             return
         }
-        captureSession.stopRunning()
-        for input in captureSession.inputs {
-            captureSession.removeInput(input)
+        captureSession!.stopRunning()
+        for input in captureSession!.inputs {
+            captureSession!.removeInput(input)
         }
-        for output in captureSession.outputs {
-            captureSession.removeOutput(output)
+        for output in captureSession!.outputs {
+            captureSession!.removeOutput(output)
         }
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
