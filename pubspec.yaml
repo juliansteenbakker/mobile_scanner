@@ -12,8 +12,6 @@ screenshots:
   path: example/screenshots/returningImage.png
 - description: 'Mobile Scanner with zoom slider'
   path: example/screenshots/zoomSlider.png
-- description: 'Mobile Scanner pageView'
-  path: example/screenshots/pageView.gif
 - description: 'Mobile Scanner with overlay'
   path: example/screenshots/overlay.png
 
