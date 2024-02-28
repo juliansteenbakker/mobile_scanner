@@ -2,7 +2,7 @@
 
 BREAKING CHANGES:
 
-* Flutter 3.16.0 is now required.
+* Flutter 3.19.0 is now required.
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
 * The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
 * The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
