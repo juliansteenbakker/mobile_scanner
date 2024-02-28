@@ -52,6 +52,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Completer<void>? _cameraPermissionCompleter;
 
   /// The stream controller for the media track settings stream.
+  ///
+  /// Currently, only the facing mode setting can be supported,
+  /// because that is the only property for video tracks that can be observed.
+  ///
+  /// See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
   final StreamController<MediaTrackSettings> _settingsController =
       StreamController.broadcast();
 
@@ -71,14 +76,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
 
   @override
-  Stream<TorchState> get torchStateStream => _settingsController.stream.map(
-        (settings) => settings.torch ? TorchState.on : TorchState.off,
-      );
+  Stream<TorchState> get torchStateStream =>
+      _settingsController.stream.map((_) => TorchState.off);
 
   @override
-  Stream<double> get zoomScaleStateStream => _settingsController.stream.map(
-        (settings) => settings.zoom.toDouble(),
-      );
+  Stream<double> get zoomScaleStateStream =>
+      _settingsController.stream.map((_) => 1.0);
 
   void _handleMediaTrackSettingsChange(MediaTrackSettings settings) {
     if (_settingsController.isClosed) {
