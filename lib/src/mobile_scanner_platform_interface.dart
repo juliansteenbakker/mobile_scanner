@@ -85,7 +85,7 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   ///
   /// Upon calling this method, the necessary camera permission will be requested.
   ///
-  /// The given [cameraDirection] is used as the direction for the camera that needs to be set up.
+  /// The given [StartOptions.cameraDirection] is used as the direction for the camera that needs to be set up.
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) {
     throw UnimplementedError('start() has not been implemented.');
   }

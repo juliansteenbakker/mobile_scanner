@@ -184,6 +184,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<BarcodeCapture?> analyzeImage(String path) {
+    throw UnsupportedError('analyzeImage() is not supported on the web.');
+  }
+
+  @override
   Widget buildCameraView() {
     if (!_barcodeReader.isScanning) {
       return const SizedBox();
