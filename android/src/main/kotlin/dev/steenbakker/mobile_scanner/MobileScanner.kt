@@ -78,7 +78,7 @@ class MobileScanner(
         scanner.process(inputImage)
             .addOnSuccessListener { barcodes ->
                 if (detectionSpeed == DetectionSpeed.NO_DUPLICATES) {
-                    val newScannedBarcodes = barcodes.mapNotNull({ barcode -> barcode.rawValue }).sorted()
+                    val newScannedBarcodes = barcodes.mapNotNull { barcode -> barcode.rawValue }.sorted()
                     if (newScannedBarcodes == lastScanned) {
                         // New scanned is duplicate, returning
                         return@addOnSuccessListener
@@ -424,7 +424,7 @@ class MobileScanner(
     /**
      * Analyze a single image.
      */
-    fun analyzeImage(image: Uri, analyzerCallback: AnalyzerCallback) {
+    fun analyzeImage(image: Uri, onSuccess: AnalyzerSuccessCallback, onError: AnalyzerErrorCallback) {
         val inputImage = InputImage.fromFilePath(activity, image)
 
         scanner.process(inputImage)
@@ -432,15 +432,13 @@ class MobileScanner(
                 val barcodeMap = barcodes.map { barcode -> barcode.data }
 
                 if (barcodeMap.isNotEmpty()) {
-                    analyzerCallback(barcodeMap)
+                    onSuccess(barcodeMap)
                 } else {
-                    analyzerCallback(null)
+                    onSuccess(null)
                 }
             }
             .addOnFailureListener { e ->
-                mobileScannerErrorCallback(
-                    e.localizedMessage ?: e.toString()
-                )
+                onError(e.localizedMessage ?: e.toString())
             }
     }
 

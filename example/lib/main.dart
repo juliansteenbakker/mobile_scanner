@@ -1,14 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner_example/barcode_list_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
+import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_window.dart';
-import 'package:mobile_scanner_example/barcode_scanner_without_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 
-void main() => runApp(const MaterialApp(home: MyHome()));
+void main() {
+  runApp(
+    const MaterialApp(
+      title: 'Mobile Scanner Example',
+      home: MyHome(),
+    ),
+  );
+}
 
 class MyHome extends StatelessWidget {
   const MyHome({super.key});
@@ -16,23 +22,20 @@ class MyHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Demo Home Page')),
-      body: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        height: MediaQuery.of(context).size.height,
+      appBar: AppBar(title: const Text('Mobile Scanner Example')),
+      body: Center(
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) =>
-                        const BarcodeListScannerWithController(),
+                    builder: (context) => const BarcodeScannerListView(),
                   ),
                 );
               },
-              child: const Text('MobileScanner with List Controller'),
+              child: const Text('MobileScanner with ListView'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -62,19 +65,9 @@ class MyHome extends StatelessWidget {
                   ),
                 );
               },
-              child:
-                  const Text('MobileScanner with Controller (returning image)'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) =>
-                        const BarcodeScannerWithoutController(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner without Controller'),
+              child: const Text(
+                'MobileScanner with Controller (returning image)',
+              ),
             ),
             ElevatedButton(
               onPressed: () {

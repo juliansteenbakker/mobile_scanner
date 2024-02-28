@@ -6,38 +6,25 @@ import 'package:mobile_scanner/src/objects/barcode.dart';
 /// This class represents a scanned barcode.
 class BarcodeCapture {
   /// Create a new [BarcodeCapture] instance.
-  BarcodeCapture({
+  const BarcodeCapture({
     this.barcodes = const <Barcode>[],
-    double? height,
     this.image,
     this.raw,
-    double? width,
-  }) : size =
-            width == null && height == null ? Size.zero : Size(width!, height!);
+    this.size = Size.zero,
+  });
 
   /// The list of scanned barcodes.
   final List<Barcode> barcodes;
 
   /// The bytes of the image that is embedded in the barcode.
   ///
-  /// This null if [MobileScannerController.returnImage] is false.
+  /// This null if [MobileScannerController.returnImage] is false,
+  /// or if there is no available image.
   final Uint8List? image;
 
   /// The raw data of the scanned barcode.
-  final dynamic raw; // TODO: this should be `Object?` instead of dynamic
+  final Object? raw;
 
   /// The size of the scanned barcode.
   final Size size;
-
-  /// The width of the scanned barcode.
-  ///
-  /// Prefer using `size.width` instead,
-  /// as this getter will be removed in the future.
-  double get width => size.width;
-
-  /// The height of the scanned barcode.
-  ///
-  /// Prefer using `size.height` instead,
-  /// as this getter will be removed in the future.
-  double get height => size.height;
 }

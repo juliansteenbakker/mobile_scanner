@@ -1,9 +1,39 @@
+## 5.0.0-beta.1
+
+**BREAKING CHANGES:**
+
+* Flutter 3.19.0 is now required.
+* The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
+* The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
+* The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
+* The `cameraFacingOverride` named argument for the `start()` method has been renamed to `cameraDirection`.
+* The `analyzeImage` function now correctly returns a `BarcodeCapture?` instead of a boolean.
+* The `formats` attribute of the `MobileScannerController` is now non-null.
+* The `MobileScannerState` enum has been renamed to `MobileScannerAuthorizationState`.
+* The various `ValueNotifier`s for the camera state have been removed. Use the `value` of the `MobileScannerController` instead.
+* The `hasTorch` getter has been removed. Instead, use the torch state of the controller's value.
+  The `TorchState` enum now provides a new value for unavailable flashlights.
+* The `autoStart` attribute has been removed from the `MobileScannerController`. The controller should be manually started on-demand.  
+* A controller is now required for the `MobileScanner` widget.
+* The  `onPermissionSet`, `onStart` and `onScannerStarted` methods have been removed from the `MobileScanner` widget. Instead, await `MobileScannerController.start()`.
+* The `startDelay` has been removed from the `MobileScanner` widget. Instead, use a delay between manual starts of one or more controllers.
+* The `onDetect` method has been removed from the `MobileScanner` widget. Instead, listen to `MobileScannerController.barcodes` directly.
+* The `overlay` widget of the `MobileScanner` has been replaced by a new property, `overlayBuilder`, which provides the constraints for the overlay.
+* The torch can no longer be toggled on the web, as this is only available for image tracks and not video tracks. As a result the torch state for the web will always be `TorchState.unavailable`.
+* The zoom scale can no longer be modified on the web, as this is only available for image tracks and not video tracks. As a result, the zoom scale will always be `1.0`.
+
+Improvements:
+* The `MobileScannerController` is now a ChangeNotifier, with `MobileScannerState` as its model.
+* The web implementation now supports alternate URLs for loading the barcode library.
+
 ## 4.0.1
 Bugs fixed:
 * [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
 
 ## 4.0.0
-BREAKING CHANGES:
+
+**BREAKING CHANGES:**
+
 * [Android] compileSdk has been upgraded to version 34.
 * [Android] Java version has been upgraded to version 17.
 
@@ -186,7 +216,8 @@ Deprecated:
 * The `onStart` method has been renamed to `onScannerStarted`.
 * The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
 
-Breaking changes:
+**BREAKING CHANGES:**
+
 * `MobileScannerException` now uses an `errorCode` instead of a `message`.
 * `MobileScannerException` now contains additional details from the original error.
 * Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
@@ -223,7 +254,9 @@ Fixes:
 * [iOS] Fix crash when changing torch state
   
 ## 3.0.0-beta.2
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
 in the MobileScanner widget.
 * onDetect now returns the object BarcodeCapture, which contains a List of barcodes and, if enabled, an image.
@@ -243,7 +276,9 @@ Other improvements:
 * [iOS] Updated POD dependencies
 
 ## 3.0.0-beta.1
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 * [Android] SDK updated to SDK 33.
 
 Features:
@@ -259,7 +294,9 @@ Other changes:
 * Several minor code improvements
 
 ## 2.0.0
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 This version is only compatible with flutter 3.0.0 and later.
 
 ## 1.1.2-play-services
@@ -293,7 +330,9 @@ Bugfixes:
 * Upgraded several dependencies.
 
 ## 1.0.0
-BREAKING CHANGES:
+
+**BREAKING CHANGES:**
+
 This version adds a new allowDuplicates option which now defaults to FALSE. this means that it will only call onDetect once after a scan.
 If you still want duplicates, you can set allowDuplicates to true.
 This also means that you don't have to check for duplicates yourself anymore.

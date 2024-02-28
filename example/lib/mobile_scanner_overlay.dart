@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
+import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithOverlay extends StatefulWidget {
@@ -9,174 +11,105 @@ class BarcodeScannerWithOverlay extends StatefulWidget {
 }
 
 class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
-  String overlayText = "Please scan QR Code";
-  bool camStarted = false;
-
   final MobileScannerController controller = MobileScannerController(
     formats: const [BarcodeFormat.qrCode],
-    autoStart: false,
   );
 
   @override
-  void dispose() {
-    controller.dispose();
-    super.dispose();
-  }
-
-  void startCamera() {
-    if (camStarted) {
-      return;
-    }
-
-    controller.start().then((_) {
-      if (mounted) {
-        setState(() {
-          camStarted = true;
-        });
-      }
-    }).catchError((Object error, StackTrace stackTrace) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Something went wrong! $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    });
-  }
-
-  void onBarcodeDetect(BarcodeCapture barcodeCapture) {
-    final barcode = barcodeCapture.barcodes.last;
-    setState(() {
-      overlayText = barcodeCapture.barcodes.last.displayValue ??
-          barcode.rawValue ??
-          'Barcode has no displayable value';
-    });
+  void initState() {
+    super.initState();
+    controller.start();
   }
 
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.of(context).size.center(Offset.zero),
+      center: MediaQuery.sizeOf(context).center(Offset.zero),
       width: 200,
       height: 200,
     );
 
     return Scaffold(
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Scanner with Overlay Example app'),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Expanded(
-              child: camStarted
-                  ? Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        Center(
-                          child: MobileScanner(
-                            fit: BoxFit.contain,
-                            onDetect: onBarcodeDetect,
-                            overlay: Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Align(
-                                alignment: Alignment.bottomCenter,
-                                child: Opacity(
-                                  opacity: 0.7,
-                                  child: Text(
-                                    overlayText,
-                                    style: const TextStyle(
-                                      backgroundColor: Colors.black26,
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 24,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    maxLines: 1,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            controller: controller,
-                            scanWindow: scanWindow,
-                            errorBuilder: (context, error, child) {
-                              return ScannerErrorWidget(error: error);
-                            },
-                          ),
-                        ),
-                        CustomPaint(
-                          painter: ScannerOverlay(scanWindow),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(16.0),
-                          child: Align(
-                            alignment: Alignment.bottomCenter,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                              children: [
-                                ValueListenableBuilder<TorchState>(
-                                  valueListenable: controller.torchState,
-                                  builder: (context, value, child) {
-                                    final Color iconColor;
-
-                                    switch (value) {
-                                      case TorchState.off:
-                                        iconColor = Colors.black;
-                                      case TorchState.on:
-                                        iconColor = Colors.yellow;
-                                    }
-
-                                    return IconButton(
-                                      onPressed: () => controller.toggleTorch(),
-                                      icon: Icon(
-                                        Icons.flashlight_on,
-                                        color: iconColor,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  onPressed: () => controller.switchCamera(),
-                                  icon: const Icon(
-                                    Icons.cameraswitch_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
-                    )
-                  : const Center(
-                      child: Text("Tap on Camera to activate QR Scanner"),
-                    ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Center(
+            child: MobileScanner(
+              fit: BoxFit.contain,
+              controller: controller,
+              scanWindow: scanWindow,
+              errorBuilder: (context, error, child) {
+                return ScannerErrorWidget(error: error);
+              },
+              overlayBuilder: (context, constraints) {
+                return Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: ScannedBarcodeLabel(barcodes: controller.barcodes),
+                  ),
+                );
+              },
             ),
-          ],
-        ),
+          ),
+          ValueListenableBuilder(
+            valueListenable: controller,
+            builder: (context, value, child) {
+              if (!value.isInitialized ||
+                  !value.isRunning ||
+                  value.error != null) {
+                return const SizedBox();
+              }
+
+              return CustomPaint(
+                painter: ScannerOverlay(scanWindow: scanWindow),
+              );
+            },
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  ToggleFlashlightButton(controller: controller),
+                  SwitchCameraButton(controller: controller),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
-      floatingActionButton: camStarted
-          ? null
-          : FloatingActionButton(
-              onPressed: startCamera,
-              child: const Icon(Icons.camera_alt),
-            ),
     );
+  }
+
+  @override
+  Future<void> dispose() async {
+    super.dispose();
+    await controller.dispose();
   }
 }
 
 class ScannerOverlay extends CustomPainter {
-  ScannerOverlay(this.scanWindow);
+  const ScannerOverlay({
+    required this.scanWindow,
+    this.borderRadius = 12.0,
+  });
 
   final Rect scanWindow;
-  final double borderRadius = 12.0;
+  final double borderRadius;
 
   @override
   void paint(Canvas canvas, Size size) {
+    // TODO: use `Offset.zero & size` instead of Rect.largest
+    // we need to pass the size to the custom paint widget
     final backgroundPath = Path()..addRect(Rect.largest);
+
     final cutoutPath = Path()
       ..addRRect(
         RRect.fromRectAndCorners(
@@ -199,14 +132,11 @@ class ScannerOverlay extends CustomPainter {
       cutoutPath,
     );
 
-    // Create a Paint object for the white border
     final borderPaint = Paint()
       ..color = Colors.white
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 4.0; // Adjust the border width as needed
+      ..strokeWidth = 4.0;
 
-    // Calculate the border rectangle with rounded corners
-// Adjust the radius as needed
     final borderRect = RRect.fromRectAndCorners(
       scanWindow,
       topLeft: Radius.circular(borderRadius),
@@ -215,13 +145,16 @@ class ScannerOverlay extends CustomPainter {
       bottomRight: Radius.circular(borderRadius),
     );
 
-    // Draw the white border
+    // First, draw the background,
+    // with a cutout area that is a bit larger than the scan window.
+    // Finally, draw the scan window itself.
     canvas.drawPath(backgroundWithCutout, backgroundPaint);
     canvas.drawRRect(borderRect, borderPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+  bool shouldRepaint(ScannerOverlay oldDelegate) {
+    return scanWindow != oldDelegate.scanWindow ||
+        borderRadius != oldDelegate.borderRadius;
   }
 }

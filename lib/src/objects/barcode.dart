@@ -147,7 +147,9 @@ class Barcode {
   /// The SMS message that is embedded in the barcode.
   final SMS? sms;
 
-  /// The type of the [format] of the barcode.
+  /// The contextual type of the [format] of the barcode.
+  ///
+  /// For example: TYPE_TEXT, TYPE_PRODUCT, TYPE_URL, etc.
   ///
   /// For types that are recognized,
   /// but could not be parsed correctly, [BarcodeType.text] will be returned.

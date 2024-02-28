@@ -26,16 +26,19 @@ class MobileScannerHandler(
     private val addPermissionListener: (RequestPermissionsResultListener) -> Unit,
     textureRegistry: TextureRegistry): MethodChannel.MethodCallHandler {
 
-    private val analyzerCallback: AnalyzerCallback = { barcodes: List<Map<String, Any?>>?->
-        if (barcodes != null) {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes
-            ))
-        }
-
+    private val analyzeImageErrorCallback: AnalyzerErrorCallback = {
         Handler(Looper.getMainLooper()).post {
-            analyzerResult?.success(barcodes != null)
+            analyzerResult?.error("MobileScanner", it, null)
+            analyzerResult = null
+        }
+    }
+
+    private val analyzeImageSuccessCallback: AnalyzerSuccessCallback = {
+        Handler(Looper.getMainLooper()).post {
+            analyzerResult?.success(mapOf(
+                "name" to "barcode",
+                "data" to it
+            ))
             analyzerResult = null
         }
     }
@@ -236,7 +239,8 @@ class MobileScannerHandler(
     private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
         analyzerResult = result
         val uri = Uri.fromFile(File(call.arguments.toString()))
-        mobileScanner!!.analyzeImage(uri, analyzerCallback)
+
+        mobileScanner!!.analyzeImage(uri, analyzeImageSuccessCallback, analyzeImageErrorCallback)
     }
 
     private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
@@ -265,7 +269,7 @@ class MobileScannerHandler(
     }
 
     private fun updateScanWindow(call: MethodCall, result: MethodChannel.Result) {
-        mobileScanner!!.scanWindow = call.argument<List<Float>?>("rect")
+        mobileScanner?.scanWindow = call.argument<List<Float>?>("rect")
 
         result.success(null)
     }
