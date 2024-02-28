@@ -1,6 +1,6 @@
 ## 5.0.0-beta.1
 
-BREAKING CHANGES:
+**BREAKING CHANGES:**
 
 * Flutter 3.19.0 is now required.
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
@@ -31,7 +31,9 @@ Bugs fixed:
 * [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
 
 ## 4.0.0
-BREAKING CHANGES:
+
+**BREAKING CHANGES:**
+
 * [Android] compileSdk has been upgraded to version 34.
 * [Android] Java version has been upgraded to version 17.
 
@@ -214,7 +216,8 @@ Deprecated:
 * The `onStart` method has been renamed to `onScannerStarted`.
 * The `onPermissionSet` argument of the `MobileScannerController` is now deprecated.
 
-Breaking changes:
+**BREAKING CHANGES:**
+
 * `MobileScannerException` now uses an `errorCode` instead of a `message`.
 * `MobileScannerException` now contains additional details from the original error.
 * Refactored `MobileScannerController.start()` to throw `MobileScannerException`s
@@ -251,7 +254,9 @@ Fixes:
 * [iOS] Fix crash when changing torch state
   
 ## 3.0.0-beta.2
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 * The arguments parameter of onDetect is removed. The data is now returned by the onStart callback
 in the MobileScanner widget.
 * onDetect now returns the object BarcodeCapture, which contains a List of barcodes and, if enabled, an image.
@@ -271,7 +276,9 @@ Other improvements:
 * [iOS] Updated POD dependencies
 
 ## 3.0.0-beta.1
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 * [Android] SDK updated to SDK 33.
 
 Features:
@@ -287,7 +294,9 @@ Other changes:
 * Several minor code improvements
 
 ## 2.0.0
-Breaking changes:
+
+**BREAKING CHANGES:**
+
 This version is only compatible with flutter 3.0.0 and later.
 
 ## 1.1.2-play-services
@@ -321,7 +330,9 @@ Bugfixes:
 * Upgraded several dependencies.
 
 ## 1.0.0
-BREAKING CHANGES:
+
+**BREAKING CHANGES:**
+
 This version adds a new allowDuplicates option which now defaults to FALSE. this means that it will only call onDetect once after a scan.
 If you still want duplicates, you can set allowDuplicates to true.
 This also means that you don't have to check for duplicates yourself anymore.
