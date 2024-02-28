@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanned_barcode_label.dart';
@@ -94,7 +95,7 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
               color: Colors.black.withOpacity(0.4),
               child: Column(
                 children: [
-                  _buildZoomScaleSlider(),
+                  if (!kIsWeb) _buildZoomScaleSlider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
