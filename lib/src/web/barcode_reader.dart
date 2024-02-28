@@ -43,7 +43,9 @@ abstract class BarcodeReader {
 
   /// Check whether the active camera has a flashlight.
   Future<bool> hasTorch() {
-    throw UnimplementedError('hasTorch() has not been implemented.');
+    // The torch of a media stream is not available for video tracks.
+    // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+    return Future<bool>.value(false);
   }
 
   /// Load the barcode reader library.
@@ -108,7 +110,10 @@ abstract class BarcodeReader {
 
   /// Set the torch state for the active camera to the given [value].
   Future<void> setTorchState(TorchState value) {
-    throw UnimplementedError('setTorchState() has not been implemented.');
+    throw UnsupportedError(
+      'Setting the torch state is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
   }
 
   /// Start the barcode reader and initialize the [videoStream].

@@ -3,7 +3,6 @@ import 'dart:js_interop';
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
@@ -165,48 +164,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  Future<bool> hasTorch() {
-    final web.MediaStream? mediaStream = _reader?.stream;
-
-    if (mediaStream == null) {
-      return Future<bool>.value(false);
-    }
-
-    return _mediaTrackConstraintsDelegate.hasFlashlight(mediaStream);
-  }
-
-  @override
   void setMediaTrackSettingsListener(
     void Function(web.MediaTrackSettings) listener,
   ) {
     _onMediaTrackSettingsChanged ??= listener;
-  }
-
-  @override
-  Future<void> setTorchState(TorchState value) async {
-    switch (value) {
-      case TorchState.unavailable:
-        return Future<void>.value();
-      case TorchState.off:
-      case TorchState.on:
-        final web.MediaStream? mediaStream = _reader?.stream;
-
-        if (mediaStream == null) {
-          return Future<void>.value();
-        }
-
-        await _mediaTrackConstraintsDelegate.setFlashlightState(
-          mediaStream,
-          value,
-        );
-
-        final web.MediaTrackSettings? settings =
-            _mediaTrackConstraintsDelegate.getSettings(mediaStream);
-
-        if (settings != null) {
-          _onMediaTrackSettingsChanged?.call(settings);
-        }
-    }
   }
 
   @override

@@ -77,7 +77,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Stream<TorchState> get torchStateStream =>
-      _settingsController.stream.map((_) => TorchState.off);
+      _settingsController.stream.map((_) => TorchState.unavailable);
 
   @override
   Stream<double> get zoomScaleStateStream =>
