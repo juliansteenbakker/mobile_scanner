@@ -1,3 +1,8 @@
+## NEXT
+
+Bugs fixed:
+* Fixed an issue where the scan window was not updated when its size was changed. (thanks @navaronbracke !)
+
 ## 5.0.0-beta.1
 
 **BREAKING CHANGES:**
