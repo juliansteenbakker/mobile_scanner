@@ -7,8 +7,7 @@ import 'package:web/web.dart';
 ///
 /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserMultiFormatReader.ts
 @JS('ZXing.BrowserMultiFormatReader')
-@staticInterop
-class ZXingBrowserMultiFormatReader {
+extension type ZXingBrowserMultiFormatReader._(JSObject _) implements JSObject {
   /// Construct a new `ZXing.BrowserMultiFormatReader`.
   ///
   /// The [hints] are the configuration options for the reader.
@@ -17,11 +16,9 @@ class ZXingBrowserMultiFormatReader {
   /// See also: https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts
   external factory ZXingBrowserMultiFormatReader(
     JSMap? hints,
-    JSNumber? timeBetweenScansMillis,
+    int timeBetweenScansMillis,
   );
-}
 
-extension ZXingBrowserMultiFormatReaderExt on ZXingBrowserMultiFormatReader {
   /// Attach a [MediaStream] to a [HTMLVideoElement].
   ///
   /// This function accepts a [MediaStream] and a [HTMLVideoElement] as arguments,
