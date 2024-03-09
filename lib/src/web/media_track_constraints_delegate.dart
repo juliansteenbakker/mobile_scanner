@@ -9,24 +9,28 @@ final class MediaTrackConstraintsDelegate {
 
   /// Get the settings for the given [mediaStream].
   MediaTrackSettings? getSettings(MediaStream? mediaStream) {
-    final List<JSAny?>? tracks = mediaStream?.getVideoTracks().toDart;
+    final List<MediaStreamTrack>? tracks = mediaStream?.getVideoTracks().toDart;
 
     if (tracks == null || tracks.isEmpty) {
       return null;
     }
 
-    final MediaStreamTrack? track = tracks.first as MediaStreamTrack?;
-
-    if (track == null) {
-      return null;
-    }
-
+    final MediaStreamTrack track = tracks.first;
     final MediaTrackSettings settings = track.getSettings();
+
+    String facingMode;
+    try {
+      // In web 0.5.0 series, there is a mistake in specifying nullable,
+      // so it is executed with try-catch as a workaround.
+      facingMode = settings.facingMode;
+    } catch (e) {
+      facingMode = '';
+    }
 
     return MediaTrackSettings(
       width: settings.width,
       height: settings.height,
-      facingMode: settings.facingMode,
+      facingMode: facingMode,
       aspectRatio: settings.aspectRatio,
     );
   }
