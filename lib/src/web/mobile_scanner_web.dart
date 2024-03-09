@@ -241,7 +241,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     // Setup the view factory & container element.
     if (_divElement == null) {
-      _divElement = (document.createElement('div') as HTMLDivElement)
+      _divElement = HTMLDivElement()
         ..style.width = '100%'
         ..style.height = '100%';
 
@@ -282,7 +282,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       // Attach the video element to the DOM, through its parent container.
       // If a video element is already present, reuse it.
       if (_divElement!.children.length == 0) {
-        videoElement = document.createElement('video') as HTMLVideoElement;
+        videoElement = HTMLVideoElement();
 
         _divElement!.appendChild(videoElement);
       } else {
