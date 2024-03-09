@@ -10,32 +10,27 @@ import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 /// The JS static interop class for the Result class in the ZXing library.
 ///
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/Result.ts
-@JS()
-@anonymous
-@staticInterop
-abstract class Result {}
-
-extension ResultExt on Result {
+extension type Result(JSObject _) implements JSObject {
   @JS('barcodeFormat')
-  external JSNumber? get _barcodeFormat;
+  external int? get _barcodeFormat;
 
-  @JS('text')
-  external JSString? get _text;
+  /// Get the text of the result.
+  external String? get text;
 
   @JS('rawBytes')
   external JSUint8Array? get _rawBytes;
 
   @JS('resultPoints')
-  external JSArray? get _resultPoints;
+  external JSArray<ResultPoint>? get _resultPoints;
 
-  @JS('timestamp')
-  external JSNumber? get _timestamp;
+  /// Get the timestamp of the result.
+  external int? get timestamp;
 
   /// Get the barcode format of the result.
   ///
   /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
   BarcodeFormat get barcodeFormat {
-    switch (_barcodeFormat?.toDartInt) {
+    switch (_barcodeFormat) {
       case 0:
         return BarcodeFormat.aztec;
       case 1:
@@ -79,27 +74,21 @@ extension ResultExt on Result {
     }
   }
 
-  /// Get the corner points of the result.
-  List<Offset> get resultPoints {
-    final JSArray? points = _resultPoints;
-
-    if (points == null) {
-      return [];
-    }
-
-    return points.toDart.cast<ResultPoint>().map((point) {
-      return Offset(point.x, point.y);
-    }).toList();
-  }
-
   /// Get the raw bytes of the result.
   Uint8List? get rawBytes => _rawBytes?.toDart;
 
-  /// Get the text of the result.
-  String? get text => _text?.toDart;
+  /// Get the corner points of the result.
+  List<Offset> get resultPoints {
+    final JSArray<ResultPoint>? points = _resultPoints;
 
-  /// Get the timestamp of the result.
-  int? get timestamp => _timestamp?.toDartInt;
+    if (points == null) {
+      return const [];
+    }
+
+    return points.toDart.map((point) {
+      return Offset(point.x, point.y);
+    }).toList();
+  }
 
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {
