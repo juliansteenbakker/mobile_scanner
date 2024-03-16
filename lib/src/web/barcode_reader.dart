@@ -62,20 +62,19 @@ abstract class BarcodeReader {
 
     final Completer<void> completer = Completer();
 
-    final HTMLScriptElement script =
-        (document.createElement('script') as HTMLScriptElement)
-          ..id = scriptId
-          ..async = true
-          ..defer = false
-          ..type = 'application/javascript'
-          ..lang = 'javascript'
-          ..crossOrigin = 'anonymous'
-          ..src = alternateScriptUrl ?? scriptUrl
-          ..onload = (JSAny _) {
-            if (!completer.isCompleted) {
-              completer.complete();
-            }
-          }.toJS;
+    final HTMLScriptElement script = HTMLScriptElement()
+      ..id = scriptId
+      ..async = true
+      ..defer = false
+      ..type = 'application/javascript'
+      ..lang = 'javascript'
+      ..crossOrigin = 'anonymous'
+      ..src = alternateScriptUrl ?? scriptUrl
+      ..onload = (JSAny _) {
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      }.toJS;
 
     script.onerror = (JSAny _) {
       if (!completer.isCompleted) {
