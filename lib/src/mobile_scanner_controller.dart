@@ -166,6 +166,25 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
+  void _stop() {
+    // Do nothing if not initialized or already stopped.
+    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
+    // due to the permission popup gaining focus.
+    // This would 'stop' the camera while it is not ready yet.
+    if (!value.isInitialized || !value.isRunning || _isDisposed) {
+      return;
+    }
+
+    _disposeListeners();
+
+    // After the camera stopped, set the torch state to off,
+    // as the torch state callback is never called when the camera is stopped.
+    value = value.copyWith(
+      isRunning: false,
+      torchState: TorchState.off,
+    );
+  }
+
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
@@ -301,24 +320,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    // Do nothing if not initialized or already stopped.
-    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
-    // due to the permission popup gaining focus.
-    // This would 'stop' the camera while it is not ready yet.
-    if (!value.isInitialized || !value.isRunning || _isDisposed) {
-      return;
-    }
-
-    _disposeListeners();
-
-    // After the camera stopped, set the torch state to off,
-    // as the torch state callback is never called when the camera is stopped.
-    value = value.copyWith(
-      isRunning: false,
-      torchState: TorchState.off,
-    );
-
+    _stop();
     await MobileScannerPlatform.instance.stop();
+  }
+
+  /// Pause the camera.
+  ///
+  /// This method stops to update camera frame and scan barcodes.
+  /// After calling this method, the camera can be restarted using [start].
+  ///
+  /// Does nothing if the camera is already paused or stopped.
+  Future<void> pause() async {
+    _stop();
+    await MobileScannerPlatform.instance.pause();
   }
 
   /// Switch between the front and back camera.

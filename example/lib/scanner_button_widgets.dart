@@ -166,3 +166,30 @@ class ToggleFlashlightButton extends StatelessWidget {
     );
   }
 }
+
+class PauseMobileScannerButton extends StatelessWidget {
+  const PauseMobileScannerButton({required this.controller, super.key});
+
+  final MobileScannerController controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: controller,
+      builder: (context, state, child) {
+        if (!state.isInitialized || !state.isRunning) {
+          return const SizedBox.shrink();
+        }
+
+        return IconButton(
+          color: Colors.white,
+          iconSize: 32.0,
+          icon: const Icon(Icons.pause),
+          onPressed: () async {
+            await controller.pause();
+          },
+        );
+      },
+    );
+  }
+}
