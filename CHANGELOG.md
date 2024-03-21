@@ -1,4 +1,8 @@
-## NEXT
+## 5.0.0-beta.2
+
+**BREAKING CHANGES:**
+
+* Flutter 3.16.0 is now required.
 
 Bugs fixed:
 * Fixed an issue where the scan window was not updated when its size was changed. (thanks @navaronbracke !)
@@ -7,7 +11,6 @@ Bugs fixed:
 
 **BREAKING CHANGES:**
 
-* Flutter 3.19.0 is now required.
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
 * The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
 * The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
