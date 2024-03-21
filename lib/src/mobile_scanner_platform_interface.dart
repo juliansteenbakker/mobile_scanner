@@ -95,6 +95,12 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('stop() has not been implemented.');
   }
 
+  /// Pause the camera.
+  Future<void> pause() {
+    throw UnimplementedError('pause() has not been implemented.');
+  }
+
+
   /// Update the scan window to the given [window] rectangle.
   ///
   /// Any barcodes that do not intersect with the given [window] will be ignored.

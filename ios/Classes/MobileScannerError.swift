@@ -10,6 +10,7 @@ enum MobileScannerError: Error {
     case noCamera
     case alreadyStarted
     case alreadyStopped
+    case alreadyPaused
     case cameraError(_ error: Error)
     case zoomWhenStopped
     case zoomError(_ error: Error)
