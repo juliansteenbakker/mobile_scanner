@@ -192,6 +192,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
+  Future<void> pause() async {
+    _reader?.videoElement?.pause();
+  }
+
+  @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
     _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);

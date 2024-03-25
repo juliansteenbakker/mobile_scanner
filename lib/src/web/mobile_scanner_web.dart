@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:developer';
+import 'dart:html';
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
@@ -235,6 +237,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw PermissionRequestPendingException();
     }
 
+    // If the previous state is a pause, reset scanner.
+    if (_barcodesSubscription != null && _barcodesSubscription!.isPaused) {
+      await stop();
+    }
+
     await _barcodeReader.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
     );
@@ -334,6 +341,13 @@ class MobileScannerWeb extends MobileScannerPlatform {
         ),
       );
     }
+  }
+
+
+  @override
+  Future<void> pause() async {
+    _barcodesSubscription?.pause();
+    await _barcodeReader.pause();
   }
 
   @override
