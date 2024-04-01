@@ -36,6 +36,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
+    private var stopped: Bool {
+        return device == nil || captureSession == nil
+    }
+    
+    private var paused: Bool {
+        return stopped && textureId != nil
+    }
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = MobileScannerPlugin(registrar.textures)
         let method = FlutterMethodChannel(name:
@@ -67,6 +75,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             resetScale(call, result)
             //        case "analyze":
             //            switchAnalyzeMode(call, result)
+        case "pause":
+            pause(result)
         case "stop":
             stop(result)
         case "updateScanWindow":
@@ -254,7 +264,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
 
-        textureId = registry.register(self)
+        textureId = textureId ?? registry.register(self)
         captureSession = AVCaptureSession()
 
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
@@ -380,30 +390,49 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     //        analyzeMode = call.arguments as! Int
     //        result(nil)
     //    }
+    
+    func pause(_ result: FlutterResult) {
+        if (paused || stopped) {
+            result(nil)
+            
+            return
+        }
+        releaseCamera()
+    }
 
     func stop(_ result: FlutterResult) {
-        if (device == nil || captureSession == nil) {
+        if (!paused && stopped) {
             result(nil)
 
             return
         }
-        captureSession!.stopRunning()
-        for input in captureSession!.inputs {
-            captureSession!.removeInput(input)
-        }
-        for output in captureSession!.outputs {
-            captureSession!.removeOutput(output)
-        }
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
-        registry.unregisterTexture(textureId)
-        
-        //        analyzeMode = 0
-        latestBuffer = nil
-        captureSession = nil
-        device = nil
-        textureId = nil
+        releaseCamera()
+        releaseTexture()
         
         result(nil)
+    }
+    
+    private func releaseCamera() {
+        guard let captureSession = captureSession else {
+            return
+        }
+        
+        captureSession.stopRunning()
+        for input in captureSession.inputs {
+            captureSession.removeInput(input)
+        }
+        for output in captureSession.outputs {
+            captureSession.removeOutput(output)
+        }
+        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+        latestBuffer = nil
+        self.captureSession = nil
+        device = nil
+    }
+    
+    private func releaseTexture() {
+        registry.unregisterTexture(textureId)
+        textureId = nil
     }
     
     // Observer for torch state
