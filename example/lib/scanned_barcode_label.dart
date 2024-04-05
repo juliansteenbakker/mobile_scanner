@@ -13,8 +13,8 @@ class ScannedBarcodeLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     return StreamBuilder(
       stream: barcodes,
-      builder: (context, snaphot) {
-        final scannedBarcodes = snaphot.data?.barcodes ?? [];
+      builder: (context, snapshot) {
+        final scannedBarcodes = snapshot.data?.barcodes ?? [];
 
         if (scannedBarcodes.isEmpty) {
           return const Text(
