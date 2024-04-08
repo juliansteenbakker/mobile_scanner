@@ -21,13 +21,20 @@ final class MediaTrackConstraintsDelegate {
       return null;
     }
 
+    final MediaTrackCapabilities capabilities = track.getCapabilities();
     final MediaTrackSettings settings = track.getSettings();
+
+    if (capabilities.facingMode.toDart.isEmpty) {
+      return MediaTrackSettings(
+        width: settings.width,
+        height: settings.height,
+      );
+    }
 
     return MediaTrackSettings(
       width: settings.width,
       height: settings.height,
       facingMode: settings.facingMode,
-      aspectRatio: settings.aspectRatio,
     );
   }
 }
