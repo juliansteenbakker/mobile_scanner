@@ -39,17 +39,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// This container element is used by the barcode reader.
   HTMLDivElement? _divElement;
 
-  /// This [Completer] is used to prevent additional calls to the [start] method.
+  /// The flag that keeps track of whether a permission request is in progress.
   ///
-  /// To handle lifecycle changes properly,
-  /// the scanner is stopped when the application is inactive,
-  /// and restarted when the application gains focus.
-  ///
-  /// However, when the camera permission is requested,
-  /// the application is put in the inactive state due to the permission popup gaining focus.
-  /// Thus, as long as the permission status is not known,
-  /// any calls to the [start] method are ignored.
-  Completer<void>? _cameraPermissionCompleter;
+  /// On the web, a permission request triggers a dialog, that in turn triggers a lifecycle change.
+  /// While the permission request is in progress, any attempts at (re)starting the camera should be ignored.
+  bool _permissionRequestInProgress = false;
 
   /// The stream controller for the media track settings stream.
   ///
@@ -65,11 +59,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
-  }
-
-  bool get _hasPendingPermissionRequest {
-    return _cameraPermissionCompleter != null &&
-        !_cameraPermissionCompleter!.isCompleted;
   }
 
   @override
@@ -129,18 +118,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
-      // Retrieving the video track requests the camera permission.
-      // If the completer is not null, the permission was never requested before.
-      _cameraPermissionCompleter ??= Completer<void>();
+      // Retrieving the media devices requests the camera permission.
+      _permissionRequestInProgress = true;
 
       final MediaStream? videoStream = await window.navigator.mediaDevices
           .getUserMedia(constraints)
           .toDart as MediaStream?;
 
       // At this point the permission is granted.
-      if (!_cameraPermissionCompleter!.isCompleted) {
-        _cameraPermissionCompleter!.complete();
-      }
+      _permissionRequestInProgress = false;
 
       if (videoStream == null) {
         throw const MobileScannerException(
@@ -155,12 +141,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       return videoStream;
     } on DOMException catch (error, stackTrace) {
-      // At this point the permission request completed, although with an error,
-      // but the error is irrelevant for the completer.
-      if (!_cameraPermissionCompleter!.isCompleted) {
-        _cameraPermissionCompleter!.complete();
-      }
-
       final String errorMessage = error.toString();
 
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
@@ -172,6 +152,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
       } else if (errorMessage.contains('NotAllowedError')) {
         errorCode = MobileScannerErrorCode.permissionDenied;
       }
+
+      // At this point the permission request completed, although with an error,
+      // but the error is irrelevant.
+      _permissionRequestInProgress = false;
 
       throw MobileScannerException(
         errorCode: errorCode,
@@ -231,7 +215,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     // If the permission request has not yet completed,
     // the camera view is not ready yet.
     // Prevent the permission popup from triggering a restart of the scanner.
-    if (_hasPendingPermissionRequest) {
+    if (_permissionRequestInProgress) {
       throw PermissionRequestPendingException();
     }
 
