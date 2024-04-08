@@ -1,8 +1,10 @@
-## 5.0.0-beta.2
+## 5.0.0-beta.3
 
 **BREAKING CHANGES:**
 
-* Flutter 3.16.0 is now required.
+* Flutter 3.19.0 is now required.
+
+## 5.0.0-beta.2
 
 Bugs fixed:
 * Fixed an issue where the scan window was not updated when its size was changed. (thanks @navaronbracke !)
