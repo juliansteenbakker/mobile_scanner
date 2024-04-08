@@ -223,12 +223,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   /// Start scanning for barcodes.
-  /// Upon calling this method, the necessary camera permission will be requested.
   ///
   /// The [cameraDirection] can be used to specify the camera direction.
   /// If this is null, this defaults to the [facing] value.
   ///
   /// Does nothing if the camera is already running.
+  /// Upon calling this method, the necessary camera permission will be requested.
+  ///
+  /// If the permission is denied on iOS, MacOS or Web, there is no way to request it again.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw const MobileScannerException(
@@ -238,6 +240,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               'The MobileScannerController was used after it has been disposed.',
         ),
       );
+    }
+
+    // Permission was denied, do nothing.
+    // When the controller is stopped,
+    // the error is reset so the permission can be requested again if possible.
+    if (value.error?.errorCode == MobileScannerErrorCode.permissionDenied) {
+      return;
     }
 
     // Do nothing if the camera is already running.
