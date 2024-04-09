@@ -121,23 +121,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
       // Retrieving the media devices requests the camera permission.
       _permissionRequestInProgress = true;
 
-      final MediaStream? videoStream = await window.navigator.mediaDevices
-          .getUserMedia(constraints)
-          .toDart as MediaStream?;
+      final MediaStream videoStream =
+          await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
 
       // At this point the permission is granted.
       _permissionRequestInProgress = false;
-
-      if (videoStream == null) {
-        throw const MobileScannerException(
-          errorCode: MobileScannerErrorCode.genericError,
-          errorDetails: MobileScannerErrorDetails(
-            message:
-                'Could not create a video stream from the camera with the given options. '
-                'The browser might not support the given constraints.',
-          ),
-        );
-      }
 
       return videoStream;
     } on DOMException catch (error, stackTrace) {
