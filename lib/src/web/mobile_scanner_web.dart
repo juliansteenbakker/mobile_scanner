@@ -353,10 +353,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<void> stop() async {
-    if (_barcodesController.isClosed) {
-      return;
-    }
-
     // Ensure the barcode scanner is stopped, by cancelling the subscription.
     await _barcodesSubscription?.cancel();
     _barcodesSubscription = null;
@@ -374,12 +370,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<void> dispose() async {
-    if (_barcodesController.isClosed) {
-      return;
-    }
-
+    // The `_barcodesController` and `_settingsController`
+    // are not closed, as these have the same lifetime as the plugin.
     await stop();
-    await _barcodesController.close();
-    await _settingsController.close();
   }
 }
