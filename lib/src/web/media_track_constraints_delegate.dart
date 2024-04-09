@@ -9,17 +9,13 @@ final class MediaTrackConstraintsDelegate {
 
   /// Get the settings for the given [mediaStream].
   MediaTrackSettings? getSettings(MediaStream? mediaStream) {
-    final List<JSAny?>? tracks = mediaStream?.getVideoTracks().toDart;
+    final List<MediaStreamTrack>? tracks = mediaStream?.getVideoTracks().toDart;
 
     if (tracks == null || tracks.isEmpty) {
       return null;
     }
 
-    final MediaStreamTrack? track = tracks.first as MediaStreamTrack?;
-
-    if (track == null) {
-      return null;
-    }
+    final MediaStreamTrack track = tracks.first;
 
     final MediaTrackCapabilities capabilities = track.getCapabilities();
     final MediaTrackSettings settings = track.getSettings();

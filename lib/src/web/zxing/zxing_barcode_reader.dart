@@ -115,8 +115,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
   ) async {
     final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
       _reader as JSAny?,
-      videoStream as JSAny,
-      videoElement as JSAny,
+      videoStream,
+      videoElement,
     ) as JSPromise?;
 
     await result?.toDart;
@@ -136,7 +136,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     controller.onListen = () {
       _reader?.decodeContinuously.callAsFunction(
         _reader as JSAny?,
-        _reader?.videoElement as JSAny?,
+        _reader?.videoElement,
         (Result? result, JSAny? error) {
           if (controller.isClosed || result == null) {
             return;
