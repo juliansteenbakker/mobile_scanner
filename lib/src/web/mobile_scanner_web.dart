@@ -339,24 +339,5 @@ class MobileScannerWeb extends MobileScannerPlatform {
     await stop();
     await _barcodesController.close();
     await _settingsController.close();
-
-    // Finally, remove the video element from the DOM.
-    try {
-      final HTMLCollection? divChildren = _divElement?.children;
-
-      // Since the exact element is unknown, remove all children.
-      // In practice, there should only be one child, the single video element.
-      if (divChildren != null && divChildren.length > 0) {
-        for (int i = 0; i < divChildren.length; i++) {
-          final Node? child = divChildren.item(i);
-
-          if (child != null) {
-            _divElement?.removeChild(child);
-          }
-        }
-      }
-    } catch (_) {
-      // The video element was no longer a child of the container element.
-    }
   }
 }
