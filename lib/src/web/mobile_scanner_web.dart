@@ -89,7 +89,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Future<MediaStream> _prepareVideoStream(
     CameraFacing cameraDirection,
   ) async {
-    if ((window.navigator.mediaDevices as JSAny?).isUndefinedOrNull) {
+    if (window.navigator.mediaDevices.isUndefinedOrNull) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.unsupported,
         errorDetails: MobileScannerErrorDetails(
@@ -104,7 +104,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     final MediaStreamConstraints constraints;
 
-    if ((capabilities as JSAny).isUndefinedOrNull || !capabilities.facingMode) {
+    if (capabilities.isUndefinedOrNull || !capabilities.facingMode) {
       constraints = MediaStreamConstraints(video: true.toJS);
     } else {
       final String facingMode = switch (cameraDirection) {
@@ -113,7 +113,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       };
 
       constraints = MediaStreamConstraints(
-        video: MediaTrackConstraintSet(facingMode: facingMode.toJS) as JSAny,
+        video: MediaTrackConstraintSet(
+          facingMode: facingMode.toJS,
+        ),
       );
     }
 
