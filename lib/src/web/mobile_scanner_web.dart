@@ -35,9 +35,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   StreamSubscription<Object?>? _barcodesSubscription;
 
   /// The container div element for the camera view.
-  ///
-  /// This container element is used by the barcode reader.
-  HTMLDivElement? _divElement;
+  late HTMLDivElement _divElement;
 
   /// The flag that keeps track of whether a permission request is in progress.
   ///
@@ -54,8 +52,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
   final StreamController<MediaTrackSettings> _settingsController =
       StreamController.broadcast();
 
-  /// The view type for the platform view factory.
-  static const String _viewType = 'mobile-scanner-view';
+  /// The texture ID for the camera view.
+  int _textureId = 1;
+
+  /// The video element for the camera view.
+  late HTMLVideoElement _videoElement;
+
+  /// Get the view type for the platform view factory.
+  String _getViewType(int textureId) => 'mobile-scanner-view-$textureId';
 
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
@@ -72,12 +76,65 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Stream<double> get zoomScaleStateStream =>
       _settingsController.stream.map((_) => 1.0);
 
+  /// Create the [HTMLVideoElement] along with its parent container [HTMLDivElement].
+  HTMLVideoElement _createVideoElement(int textureId) {
+    final HTMLVideoElement videoElement = HTMLVideoElement();
+
+    videoElement.style
+      ..height = '100%'
+      ..width = '100%'
+      ..objectFit = 'cover'
+      ..transformOrigin = 'center'
+      ..pointerEvents = 'none';
+
+    // Attach the video element to its parent container
+    // and setup the PlatformView factory for this `textureId`.
+    _divElement = HTMLDivElement()
+      ..style.objectFit = 'cover'
+      ..style.height = '100%'
+      ..style.width = '100%'
+      ..append(videoElement);
+
+    ui_web.platformViewRegistry.registerViewFactory(
+      _getViewType(textureId),
+      (_) => _divElement,
+    );
+
+    return videoElement;
+  }
+
   void _handleMediaTrackSettingsChange(MediaTrackSettings settings) {
     if (_settingsController.isClosed) {
       return;
     }
 
     _settingsController.add(settings);
+  }
+
+  /// Flip the [videoElement] horizontally,
+  /// if the [videoStream] indicates that is facing the user.
+  void _maybeFlipVideoPreview(
+    HTMLVideoElement videoElement,
+    MediaStream videoStream,
+  ) {
+    final List<MediaStreamTrack> tracks = videoStream.getVideoTracks().toDart;
+
+    if (tracks.isEmpty) {
+      return;
+    }
+
+    final MediaStreamTrack videoTrack = tracks.first;
+    final MediaTrackCapabilities capabilities = videoTrack.getCapabilities();
+
+    // TODO: this is empty on MacOS, where there is no facing mode, but one, user facing camera.
+    // Facing mode is not supported by this track, do nothing.
+    if (capabilities.facingMode.toDart.isEmpty) {
+      return;
+    }
+
+    if (videoTrack.getSettings().facingMode == 'user') {
+      videoElement.style.transform = 'scaleX(-1)';
+    }
   }
 
   /// Prepare a [MediaStream] for the video output.
@@ -168,7 +225,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       return const SizedBox();
     }
 
-    return const HtmlElementView(viewType: _viewType);
+    return HtmlElementView(viewType: _getViewType(_textureId));
   }
 
   @override
@@ -213,18 +270,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
       alternateScriptUrl: _alternateScriptUrl,
     );
 
-    // Setup the view factory & container element.
-    if (_divElement == null) {
-      _divElement = (document.createElement('div') as HTMLDivElement)
-        ..style.width = '100%'
-        ..style.height = '100%';
-
-      ui_web.platformViewRegistry.registerViewFactory(
-        _viewType,
-        (int id) => _divElement!,
-      );
-    }
-
     if (_barcodeReader.isScanning) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
@@ -251,21 +296,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
         _handleMediaTrackSettingsChange,
       );
 
-      final HTMLVideoElement videoElement;
+      _textureId += 1; // Request a new texture.
 
-      // Attach the video element to the DOM, through its parent container.
-      // If a video element is already present, reuse it.
-      if (_divElement!.children.length == 0) {
-        videoElement = document.createElement('video') as HTMLVideoElement;
+      _videoElement = _createVideoElement(_textureId);
 
-        _divElement!.appendChild(videoElement);
-      } else {
-        videoElement = _divElement!.children.item(0)! as HTMLVideoElement;
-      }
+      _maybeFlipVideoPreview(_videoElement, videoStream);
 
       await _barcodeReader.start(
         startOptions,
-        videoElement: videoElement,
+        videoElement: _videoElement,
         videoStream: videoStream,
       );
     } catch (error, stackTrace) {
