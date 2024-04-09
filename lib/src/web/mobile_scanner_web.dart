@@ -25,7 +25,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   String? _alternateScriptUrl;
 
   /// The internal barcode reader.
-  final BarcodeReader _barcodeReader = ZXingBarcodeReader();
+  BarcodeReader? _barcodeReader;
 
   /// The stream controller for the barcode stream.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -221,11 +221,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Widget buildCameraView() {
-    if (!_barcodeReader.isScanning) {
-      return const SizedBox();
+    if (_barcodeReader?.isScanning ?? false) {
+      return HtmlElementView(viewType: _getViewType(_textureId));
     }
 
-    return HtmlElementView(viewType: _getViewType(_textureId));
+    return const SizedBox();
   }
 
   @override
@@ -266,11 +266,13 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw PermissionRequestPendingException();
     }
 
-    await _barcodeReader.maybeLoadLibrary(
+    _barcodeReader = ZXingBarcodeReader();
+
+    await _barcodeReader?.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
     );
 
-    if (_barcodeReader.isScanning) {
+    if (_barcodeReader?.isScanning ?? false) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
@@ -292,7 +294,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       // Listen for changes to the media track settings.
-      _barcodeReader.setMediaTrackSettingsListener(
+      _barcodeReader?.setMediaTrackSettingsListener(
         _handleMediaTrackSettingsChange,
       );
 
@@ -302,7 +304,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       _maybeFlipVideoPreview(_videoElement, videoStream);
 
-      await _barcodeReader.start(
+      await _barcodeReader?.start(
         startOptions,
         videoElement: _videoElement,
         videoStream: videoStream,
@@ -318,7 +320,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
-      _barcodesSubscription = _barcodeReader.detectBarcodes().listen(
+      _barcodesSubscription = _barcodeReader?.detectBarcodes().listen(
         (BarcodeCapture barcode) {
           if (_barcodesController.isClosed) {
             return;
@@ -328,15 +330,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
         },
       );
 
-      final bool hasTorch = await _barcodeReader.hasTorch();
+      final bool hasTorch = await _barcodeReader?.hasTorch() ?? false;
 
       if (hasTorch && startOptions.torchEnabled) {
-        await _barcodeReader.setTorchState(TorchState.on);
+        await _barcodeReader?.setTorchState(TorchState.on);
       }
 
       return MobileScannerViewAttributes(
         hasTorch: hasTorch,
-        size: _barcodeReader.videoSize,
+        size: _barcodeReader?.videoSize ?? Size.zero,
       );
     } catch (error, stackTrace) {
       throw MobileScannerException(
@@ -359,7 +361,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
     await _barcodesSubscription?.cancel();
     _barcodesSubscription = null;
 
-    await _barcodeReader.stop();
+    await _barcodeReader?.stop();
+    _barcodeReader = null;
   }
 
   @override
