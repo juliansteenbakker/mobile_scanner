@@ -4,6 +4,9 @@
 
 * Flutter 3.19.0 is now required.
 
+Bugs fixed:
+* Fixed an issue where the camera preview and barcode scanner did not work the second time on web.
+
 ## 5.0.0-beta.2
 
 Bugs fixed:
