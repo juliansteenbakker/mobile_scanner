@@ -37,3 +37,7 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+# mobile_scanner:
+#   android:
+#     useUnbundled: true

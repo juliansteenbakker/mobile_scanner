@@ -37,6 +37,21 @@ To use the **unbundled version** of the MLKit Barcode-scanning, add the followin
 dev.steenbakker.mobile_scanner.useUnbundled=true
 ```
 
+or
+
+add the following line to your `pubspec.yaml` file:
+
+```yaml
+dependencies:
+  mobile_scanner: ^${latestTag}
+
+# mobile_scanner android setting
+mobile_scanner:
+  android:
+    useUnbundled: true
+```
+
+
 ### iOS
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.

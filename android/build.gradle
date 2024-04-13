@@ -11,6 +11,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath 'org.yaml:snakeyaml:1.17'
     }
 }
 
@@ -66,7 +67,10 @@ android {
 dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 
-    def useUnbundled = project.findProperty('dev.steenbakker.mobile_scanner.useUnbundled') ?: false
+    def yamlMap = new org.yaml.snakeyaml.Yaml().load(new File(rootProject.projectDir.parentFile, 'pubspec.yaml').text)
+    def fUseUnbundled = yamlMap.mobile_scanner?.android?.useUnbundled ?: false
+
+    def useUnbundled = project.findProperty('dev.steenbakker.mobile_scanner.useUnbundled') ?: fUseUnbundled
     if (useUnbundled.toBoolean()) {
         // Dynamically downloaded model via Google Play Services
         implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.0'
