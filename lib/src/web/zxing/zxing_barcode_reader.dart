@@ -12,8 +12,6 @@ import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:web/web.dart' as web;
 
-// TODO: remove the JSAny casts once upgraded to a package:web version that restores "implements JSAny"
-
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
@@ -77,7 +75,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     web.MediaStream videoStream,
   ) async {
     final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
-      _reader as JSAny?,
+      _reader,
       videoStream,
       videoElement,
     ) as JSPromise?;
@@ -98,7 +96,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     controller.onListen = () {
       _reader?.decodeContinuously.callAsFunction(
-        _reader as JSAny?,
+        _reader,
         _reader?.videoElement,
         (Result? result, JSAny? error) {
           if (controller.isClosed || result == null) {
@@ -118,8 +116,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
     // when the stream subscription returned by this method is cancelled in `MobileScannerWeb.stop()`.
     // This avoids both leaving the barcode scanner running and a memory leak for the stream subscription.
     controller.onCancel = () async {
-      _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
-      _reader?.reset.callAsFunction(_reader as JSAny?);
+      _reader?.stopContinuousDecode.callAsFunction(_reader);
+      _reader?.reset.callAsFunction(_reader);
       await controller.close();
     };
 
@@ -157,8 +155,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
-    _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
-    _reader?.reset.callAsFunction(_reader as JSAny?);
+    _reader?.stopContinuousDecode.callAsFunction(_reader);
+    _reader?.reset.callAsFunction(_reader);
     _reader = null;
   }
 }
