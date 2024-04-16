@@ -9,6 +9,9 @@
 Bugs fixed:
 * Fixed an issue where the camera preview and barcode scanner did not work the second time on web.
 
+Improvements:
+* [web] Migrates to extension types. (thanks @koji-1009 !)
+
 ## 5.0.0-beta.2
 
 Bugs fixed:
