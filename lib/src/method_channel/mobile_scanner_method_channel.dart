@@ -94,12 +94,29 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   ///
   /// Throws a [MobileScannerException] if the permission is not granted.
   Future<void> _requestCameraPermission() async {
-    final MobileScannerAuthorizationState authorizationState;
-
     try {
-      authorizationState = MobileScannerAuthorizationState.fromRawValue(
+      final MobileScannerAuthorizationState authorizationState =
+          MobileScannerAuthorizationState.fromRawValue(
         await methodChannel.invokeMethod<int>('state') ?? 0,
       );
+
+      switch (authorizationState) {
+        // Authorization was already granted, no need to request it again.
+        case MobileScannerAuthorizationState.authorized:
+          return;
+        // Android does not have an undetermined authorization state.
+        // So if the permission was denied, request it again.
+        case MobileScannerAuthorizationState.denied:
+        case MobileScannerAuthorizationState.undetermined:
+          final bool permissionGranted =
+              await methodChannel.invokeMethod<bool>('request') ?? false;
+
+          if (!permissionGranted) {
+            throw const MobileScannerException(
+              errorCode: MobileScannerErrorCode.permissionDenied,
+            );
+          }
+      }
     } on PlatformException catch (error) {
       // If the permission state is invalid, that is an error.
       throw MobileScannerException(
@@ -110,37 +127,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
           message: error.message,
         ),
       );
-    }
-
-    switch (authorizationState) {
-      case MobileScannerAuthorizationState.authorized:
-        return; // Already authorized.
-      // Android does not have an undetermined authorization state.
-      // So if the permission was denied, request it again.
-      case MobileScannerAuthorizationState.denied:
-      case MobileScannerAuthorizationState.undetermined:
-        try {
-          final bool granted =
-              await methodChannel.invokeMethod<bool>('request') ?? false;
-
-          if (granted) {
-            return; // Authorization was granted.
-          }
-
-          throw const MobileScannerException(
-            errorCode: MobileScannerErrorCode.permissionDenied,
-          );
-        } on PlatformException catch (error) {
-          // If the permission state is invalid, that is an error.
-          throw MobileScannerException(
-            errorCode: MobileScannerErrorCode.genericError,
-            errorDetails: MobileScannerErrorDetails(
-              code: error.code,
-              details: error.details as Object?,
-              message: error.message,
-            ),
-          );
-        }
     }
   }
 
