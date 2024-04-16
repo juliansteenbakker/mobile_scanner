@@ -165,21 +165,24 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
 extension on BarcodeFormat {
   /// Get the barcode format from the ZXing library.
-  JSNumber get toJS => switch (this) {
-        BarcodeFormat.aztec => 0,
-        BarcodeFormat.codabar => 1,
-        BarcodeFormat.code39 => 2,
-        BarcodeFormat.code93 => 3,
-        BarcodeFormat.code128 => 4,
-        BarcodeFormat.dataMatrix => 5,
-        BarcodeFormat.ean8 => 6,
-        BarcodeFormat.ean13 => 7,
-        BarcodeFormat.itf => 8,
-        BarcodeFormat.pdf417 => 10,
-        BarcodeFormat.qrCode => 11,
-        BarcodeFormat.upcA => 14,
-        BarcodeFormat.upcE => 15,
-        BarcodeFormat.unknown || BarcodeFormat.all || _ => -1,
-      }
-          .toJS;
+  JSNumber get toJS {
+    final int zxingFormat = switch (this) {
+      BarcodeFormat.aztec => 0,
+      BarcodeFormat.codabar => 1,
+      BarcodeFormat.code39 => 2,
+      BarcodeFormat.code93 => 3,
+      BarcodeFormat.code128 => 4,
+      BarcodeFormat.dataMatrix => 5,
+      BarcodeFormat.ean8 => 6,
+      BarcodeFormat.ean13 => 7,
+      BarcodeFormat.itf => 8,
+      BarcodeFormat.pdf417 => 10,
+      BarcodeFormat.qrCode => 11,
+      BarcodeFormat.upcA => 14,
+      BarcodeFormat.upcE => 15,
+      BarcodeFormat.unknown || BarcodeFormat.all || _ => -1,
+    };
+
+    return zxingFormat.toJS;
+  }
 }

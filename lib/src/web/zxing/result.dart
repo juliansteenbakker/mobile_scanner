@@ -10,6 +10,7 @@ import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 /// The JS static interop class for the Result class in the ZXing library.
 ///
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/Result.ts
+@JS()
 extension type Result(JSObject _) implements JSObject {
   @JS('barcodeFormat')
   external int? get _barcodeFormat;
@@ -30,48 +31,30 @@ extension type Result(JSObject _) implements JSObject {
   ///
   /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
   BarcodeFormat get barcodeFormat {
-    switch (_barcodeFormat) {
-      case 0:
-        return BarcodeFormat.aztec;
-      case 1:
-        return BarcodeFormat.codabar;
-      case 2:
-        return BarcodeFormat.code39;
-      case 3:
-        return BarcodeFormat.code93;
-      case 4:
-        return BarcodeFormat.code128;
-      case 5:
-        return BarcodeFormat.dataMatrix;
-      case 6:
-        return BarcodeFormat.ean8;
-      case 7:
-        return BarcodeFormat.ean13;
-      case 8:
-        return BarcodeFormat.itf;
-      case 9:
-        // Maxicode
-        return BarcodeFormat.unknown;
-      case 10:
-        return BarcodeFormat.pdf417;
-      case 11:
-        return BarcodeFormat.qrCode;
-      case 12:
-        // RSS 14
-        return BarcodeFormat.unknown;
-      case 13:
-        // RSS EXPANDED
-        return BarcodeFormat.unknown;
-      case 14:
-        return BarcodeFormat.upcA;
-      case 15:
-        return BarcodeFormat.upcE;
-      case 16:
-        // UPC/EAN extension
-        return BarcodeFormat.unknown;
-      default:
-        return BarcodeFormat.unknown;
-    }
+    return switch (_barcodeFormat) {
+      0 => BarcodeFormat.aztec,
+      1 => BarcodeFormat.codabar,
+      2 => BarcodeFormat.code39,
+      3 => BarcodeFormat.code93,
+      4 => BarcodeFormat.code128,
+      5 => BarcodeFormat.dataMatrix,
+      6 => BarcodeFormat.ean8,
+      7 => BarcodeFormat.ean13,
+      8 => BarcodeFormat.itf,
+      // Maxicode
+      9 => BarcodeFormat.unknown,
+      10 => BarcodeFormat.pdf417,
+      11 => BarcodeFormat.qrCode,
+      // RSS 14
+      12 => BarcodeFormat.unknown,
+      // RSS EXPANDED
+      13 => BarcodeFormat.unknown,
+      14 => BarcodeFormat.upcA,
+      15 => BarcodeFormat.upcE,
+      // UPC/EAN extension
+      16 => BarcodeFormat.unknown,
+      _ => BarcodeFormat.unknown
+    };
   }
 
   /// Get the raw bytes of the result.
