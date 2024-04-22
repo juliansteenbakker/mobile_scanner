@@ -1,3 +1,10 @@
+## 5.0.0
+
+This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:
+
+Improvements:
+- [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
+
 ## 5.0.0-beta.3
 
 **BREAKING CHANGES:**

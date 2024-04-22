@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:web/web.dart';
 
 /// This class represents a delegate that manages the constraints for a [MediaStreamTrack].
@@ -17,10 +18,18 @@ final class MediaTrackConstraintsDelegate {
 
     final MediaStreamTrack track = tracks.first;
 
-    final MediaTrackCapabilities capabilities = track.getCapabilities();
-    final MediaTrackSettings settings = track.getSettings();
+    final MediaTrackCapabilities capabilities;
 
-    if (capabilities.facingMode.toDart.isEmpty) {
+    if (track.getCapabilitiesNullable != null) {
+      capabilities = track.getCapabilities();
+    } else {
+      capabilities = MediaTrackCapabilities();
+    }
+
+    final MediaTrackSettings settings = track.getSettings();
+    final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
+
+    if (facingModes == null || facingModes.toDart.isEmpty) {
       return MediaTrackSettings(
         width: settings.width,
         height: settings.height,

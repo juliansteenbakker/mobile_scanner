@@ -2,7 +2,6 @@ group 'dev.steenbakker.mobile_scanner'
 version '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = '1.7.22'
     repositories {
         google()
         mavenCentral()
@@ -10,7 +9,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:8.3.2'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.22"
     }
 }
 
@@ -64,8 +63,6 @@ android {
 }
 
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-
     def useUnbundled = project.findProperty('dev.steenbakker.mobile_scanner.useUnbundled') ?: false
     if (useUnbundled.toBoolean()) {
         // Dynamically downloaded model via Google Play Services
