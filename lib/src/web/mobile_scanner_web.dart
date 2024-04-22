@@ -13,6 +13,7 @@ import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
+import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
 
@@ -125,10 +126,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     final MediaStreamTrack videoTrack = tracks.first;
     final MediaTrackCapabilities capabilities = videoTrack.getCapabilities();
+    final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 
-    // TODO: this is empty on MacOS, where there is no facing mode, but one, user facing camera.
+    // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
     // Facing mode is not supported by this track, do nothing.
-    if (capabilities.facingMode.toDart.isEmpty) {
+    if (facingModes == null || facingModes.toDart.isEmpty) {
       return;
     }
 
