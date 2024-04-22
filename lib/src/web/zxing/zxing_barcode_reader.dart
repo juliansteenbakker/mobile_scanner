@@ -12,8 +12,6 @@ import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:web/web.dart' as web;
 
-// TODO: remove the JSAny casts once upgraded to a package:web version that restores "implements JSAny"
-
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
@@ -48,42 +46,6 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   String get scriptUrl => 'https://unpkg.com/@zxing/library@0.19.1';
 
-  /// Get the barcode format from the ZXing library, for the given [format].
-  static int getZXingBarcodeFormat(BarcodeFormat format) {
-    switch (format) {
-      case BarcodeFormat.aztec:
-        return 0;
-      case BarcodeFormat.codabar:
-        return 1;
-      case BarcodeFormat.code39:
-        return 2;
-      case BarcodeFormat.code93:
-        return 3;
-      case BarcodeFormat.code128:
-        return 4;
-      case BarcodeFormat.dataMatrix:
-        return 5;
-      case BarcodeFormat.ean8:
-        return 6;
-      case BarcodeFormat.ean13:
-        return 7;
-      case BarcodeFormat.itf:
-        return 8;
-      case BarcodeFormat.pdf417:
-        return 10;
-      case BarcodeFormat.qrCode:
-        return 11;
-      case BarcodeFormat.upcA:
-        return 14;
-      case BarcodeFormat.upcE:
-        return 15;
-      case BarcodeFormat.unknown:
-      case BarcodeFormat.all:
-      default:
-        return -1;
-    }
-  }
-
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {
       return null;
@@ -96,8 +58,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     hints.set(
       2.toJS,
       [
-        for (final BarcodeFormat format in formats)
-          getZXingBarcodeFormat(format).toJS,
+        for (final BarcodeFormat format in formats) format.toJS,
       ].toJS,
     );
 
@@ -114,9 +75,9 @@ final class ZXingBarcodeReader extends BarcodeReader {
     web.MediaStream videoStream,
   ) async {
     final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
-      _reader as JSAny?,
-      videoStream as JSAny,
-      videoElement as JSAny,
+      _reader,
+      videoStream,
+      videoElement,
     ) as JSPromise?;
 
     await result?.toDart;
@@ -135,8 +96,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     controller.onListen = () {
       _reader?.decodeContinuously.callAsFunction(
-        _reader as JSAny?,
-        _reader?.videoElement as JSAny?,
+        _reader,
+        _reader?.videoElement,
         (Result? result, JSAny? error) {
           if (controller.isClosed || result == null) {
             return;
@@ -155,8 +116,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
     // when the stream subscription returned by this method is cancelled in `MobileScannerWeb.stop()`.
     // This avoids both leaving the barcode scanner running and a memory leak for the stream subscription.
     controller.onCancel = () async {
-      _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
-      _reader?.reset.callAsFunction(_reader as JSAny?);
+      _reader?.stopContinuousDecode.callAsFunction(_reader);
+      _reader?.reset.callAsFunction(_reader);
       await controller.close();
     };
 
@@ -185,7 +146,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
     _reader = ZXingBrowserMultiFormatReader(
       _createReaderHints(formats),
-      detectionTimeoutMs.toJS,
+      detectionTimeoutMs,
     );
 
     await _prepareVideoElement(videoElement, videoStream);
@@ -194,8 +155,32 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
-    _reader?.stopContinuousDecode.callAsFunction(_reader as JSAny?);
-    _reader?.reset.callAsFunction(_reader as JSAny?);
+    _reader?.stopContinuousDecode.callAsFunction(_reader);
+    _reader?.reset.callAsFunction(_reader);
     _reader = null;
+  }
+}
+
+extension on BarcodeFormat {
+  /// Get the barcode format from the ZXing library.
+  JSNumber get toJS {
+    final int zxingFormat = switch (this) {
+      BarcodeFormat.aztec => 0,
+      BarcodeFormat.codabar => 1,
+      BarcodeFormat.code39 => 2,
+      BarcodeFormat.code93 => 3,
+      BarcodeFormat.code128 => 4,
+      BarcodeFormat.dataMatrix => 5,
+      BarcodeFormat.ean8 => 6,
+      BarcodeFormat.ean13 => 7,
+      BarcodeFormat.itf => 8,
+      BarcodeFormat.pdf417 => 10,
+      BarcodeFormat.qrCode => 11,
+      BarcodeFormat.upcA => 14,
+      BarcodeFormat.upcE => 15,
+      BarcodeFormat.unknown || BarcodeFormat.all || _ => -1,
+    };
+
+    return zxingFormat.toJS;
   }
 }

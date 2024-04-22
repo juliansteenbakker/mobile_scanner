@@ -9,25 +9,28 @@ final class MediaTrackConstraintsDelegate {
 
   /// Get the settings for the given [mediaStream].
   MediaTrackSettings? getSettings(MediaStream? mediaStream) {
-    final List<JSAny?>? tracks = mediaStream?.getVideoTracks().toDart;
+    final List<MediaStreamTrack>? tracks = mediaStream?.getVideoTracks().toDart;
 
     if (tracks == null || tracks.isEmpty) {
       return null;
     }
 
-    final MediaStreamTrack? track = tracks.first as MediaStreamTrack?;
+    final MediaStreamTrack track = tracks.first;
 
-    if (track == null) {
-      return null;
-    }
-
+    final MediaTrackCapabilities capabilities = track.getCapabilities();
     final MediaTrackSettings settings = track.getSettings();
+
+    if (capabilities.facingMode.toDart.isEmpty) {
+      return MediaTrackSettings(
+        width: settings.width,
+        height: settings.height,
+      );
+    }
 
     return MediaTrackSettings(
       width: settings.width,
       height: settings.height,
       facingMode: settings.facingMode,
-      aspectRatio: settings.aspectRatio,
     );
   }
 }

@@ -11,95 +11,67 @@ import 'package:mobile_scanner/src/web/zxing/result_point.dart';
 ///
 /// See also: https://github.com/zxing-js/library/blob/master/src/core/Result.ts
 @JS()
-@anonymous
-@staticInterop
-abstract class Result {}
-
-extension ResultExt on Result {
+extension type Result(JSObject _) implements JSObject {
   @JS('barcodeFormat')
-  external JSNumber? get _barcodeFormat;
+  external int? get _barcodeFormat;
 
-  @JS('text')
-  external JSString? get _text;
+  /// Get the text of the result.
+  external String? get text;
 
   @JS('rawBytes')
   external JSUint8Array? get _rawBytes;
 
   @JS('resultPoints')
-  external JSArray? get _resultPoints;
+  external JSArray<ResultPoint>? get _resultPoints;
 
-  @JS('timestamp')
-  external JSNumber? get _timestamp;
+  /// Get the timestamp of the result.
+  external int? get timestamp;
 
   /// Get the barcode format of the result.
   ///
   /// See also https://github.com/zxing-js/library/blob/master/src/core/BarcodeFormat.ts
   BarcodeFormat get barcodeFormat {
-    switch (_barcodeFormat?.toDartInt) {
-      case 0:
-        return BarcodeFormat.aztec;
-      case 1:
-        return BarcodeFormat.codabar;
-      case 2:
-        return BarcodeFormat.code39;
-      case 3:
-        return BarcodeFormat.code93;
-      case 4:
-        return BarcodeFormat.code128;
-      case 5:
-        return BarcodeFormat.dataMatrix;
-      case 6:
-        return BarcodeFormat.ean8;
-      case 7:
-        return BarcodeFormat.ean13;
-      case 8:
-        return BarcodeFormat.itf;
-      case 9:
-        // Maxicode
-        return BarcodeFormat.unknown;
-      case 10:
-        return BarcodeFormat.pdf417;
-      case 11:
-        return BarcodeFormat.qrCode;
-      case 12:
-        // RSS 14
-        return BarcodeFormat.unknown;
-      case 13:
-        // RSS EXPANDED
-        return BarcodeFormat.unknown;
-      case 14:
-        return BarcodeFormat.upcA;
-      case 15:
-        return BarcodeFormat.upcE;
-      case 16:
-        // UPC/EAN extension
-        return BarcodeFormat.unknown;
-      default:
-        return BarcodeFormat.unknown;
-    }
-  }
-
-  /// Get the corner points of the result.
-  List<Offset> get resultPoints {
-    final JSArray? points = _resultPoints;
-
-    if (points == null) {
-      return [];
-    }
-
-    return points.toDart.cast<ResultPoint>().map((point) {
-      return Offset(point.x, point.y);
-    }).toList();
+    return switch (_barcodeFormat) {
+      0 => BarcodeFormat.aztec,
+      1 => BarcodeFormat.codabar,
+      2 => BarcodeFormat.code39,
+      3 => BarcodeFormat.code93,
+      4 => BarcodeFormat.code128,
+      5 => BarcodeFormat.dataMatrix,
+      6 => BarcodeFormat.ean8,
+      7 => BarcodeFormat.ean13,
+      8 => BarcodeFormat.itf,
+      // Maxicode
+      9 => BarcodeFormat.unknown,
+      10 => BarcodeFormat.pdf417,
+      11 => BarcodeFormat.qrCode,
+      // RSS 14
+      12 => BarcodeFormat.unknown,
+      // RSS EXPANDED
+      13 => BarcodeFormat.unknown,
+      14 => BarcodeFormat.upcA,
+      15 => BarcodeFormat.upcE,
+      // UPC/EAN extension
+      16 => BarcodeFormat.unknown,
+      _ => BarcodeFormat.unknown
+    };
   }
 
   /// Get the raw bytes of the result.
   Uint8List? get rawBytes => _rawBytes?.toDart;
 
-  /// Get the text of the result.
-  String? get text => _text?.toDart;
+  /// Get the corner points of the result.
+  List<Offset> get resultPoints {
+    final JSArray<ResultPoint>? points = _resultPoints;
 
-  /// Get the timestamp of the result.
-  int? get timestamp => _timestamp?.toDartInt;
+    if (points == null) {
+      return const [];
+    }
+
+    return points.toDart.map((point) {
+      return Offset(point.x, point.y);
+    }).toList();
+  }
 
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {
