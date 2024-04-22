@@ -18,7 +18,14 @@ final class MediaTrackConstraintsDelegate {
 
     final MediaStreamTrack track = tracks.first;
 
-    final MediaTrackCapabilities capabilities = track.getCapabilities();
+    final MediaTrackCapabilities capabilities;
+
+    if (track.getCapabilitiesNullable != null) {
+      capabilities = track.getCapabilities();
+    } else {
+      capabilities = MediaTrackCapabilities();
+    }
+
     final MediaTrackSettings settings = track.getSettings();
     final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 

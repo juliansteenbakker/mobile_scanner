@@ -125,7 +125,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     final MediaStreamTrack videoTrack = tracks.first;
-    final MediaTrackCapabilities capabilities = videoTrack.getCapabilities();
+    final MediaTrackCapabilities capabilities;
+
+    if (videoTrack.getCapabilitiesNullable != null) {
+      capabilities = videoTrack.getCapabilities();
+    } else {
+      capabilities = MediaTrackCapabilities();
+    }
+
     final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 
     // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
