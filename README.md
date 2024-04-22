@@ -165,5 +165,5 @@ Future<void> dispose() async {
 
 To display the camera preview, pass the controller to a `MobileScanner` widget.
 
-See the examples for runnable examples of various usages,
+See the [examples](example/README.md) for runnable examples of various usages,
 such as the basic usage, applying a scan window, or retrieving images from the barcodes.
