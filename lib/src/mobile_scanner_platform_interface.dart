@@ -92,6 +92,7 @@ abstract class MobileScannerPlatform extends PlatformInterface {
 
   /// Stop the camera.
   Future<void> stop() {
+    print('stop() has not been implemented.');
     throw UnimplementedError('stop() has not been implemented.');
   }
 
