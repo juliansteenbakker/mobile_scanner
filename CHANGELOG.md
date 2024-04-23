@@ -1,7 +1,7 @@
 ## 5.0.1
 
 Improvements:
-* Change platform OS detection pattern. According to the official Dart documentation, the `dart:io.Platform` object should only be used directly when it's critical to detect the actual current platform, without allowing overrides (for example, when calling native system APIs). With this change, we can override the platform in test code.
+* Adjusted the platform checks to use the defaultTargetPlatform API, so that tests can use the correct platform overrides.
 
 ## 5.0.0
 
