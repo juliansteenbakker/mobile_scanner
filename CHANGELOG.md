@@ -1,3 +1,8 @@
+## 5.0.1
+
+Improvements:
+* Adjusted the platform checks to use the defaultTargetPlatform API, so that tests can use the correct platform overrides.
+
 ## 5.0.0
 
 This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:

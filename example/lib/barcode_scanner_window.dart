@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -204,7 +202,7 @@ class BarcodeOverlay extends CustomPainter {
     final double ratioWidth;
     final double ratioHeight;
 
-    if (!kIsWeb && Platform.isIOS) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       ratioWidth = barcodeSize.width / adjustedSize.destination.width;
       ratioHeight = barcodeSize.height / adjustedSize.destination.height;
     } else {
