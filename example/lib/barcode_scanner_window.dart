@@ -204,7 +204,7 @@ class BarcodeOverlay extends CustomPainter {
     final double ratioWidth;
     final double ratioHeight;
 
-    if (!kIsWeb && Platform.isIOS) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       ratioWidth = barcodeSize.width / adjustedSize.destination.width;
       ratioHeight = barcodeSize.height / adjustedSize.destination.height;
     } else {
