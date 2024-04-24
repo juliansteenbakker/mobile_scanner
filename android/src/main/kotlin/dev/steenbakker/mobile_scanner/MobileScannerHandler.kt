@@ -74,6 +74,7 @@ class MobileScannerHandler(
     private var mobileScanner: MobileScanner? = null
 
     private val torchStateCallback: TorchStateCallback = {state: Int ->
+        // Off = 0, On = 1
         barcodeHandler.publishEvent(mapOf("name" to "torchState", "data" to state))
     }
 

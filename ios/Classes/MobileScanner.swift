@@ -347,7 +347,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
-            // off = 0; on = 1; auto = 2
+            // Off = 0, On = 1, Auto = 2
             let state = change?[.newKey] as? Int
             torchModeChangeCallback(state)
         case "videoZoomFactor":
