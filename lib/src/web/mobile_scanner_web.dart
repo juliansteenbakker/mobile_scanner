@@ -346,7 +346,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return MobileScannerViewAttributes(
-        hasTorch: hasTorch,
+        // The torch of a media stream is not available for video tracks.
+        // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+        currentTorchMode: TorchState.unavailable,
         size: _barcodeReader?.videoSize ?? Size.zero,
       );
     } catch (error, stackTrace) {

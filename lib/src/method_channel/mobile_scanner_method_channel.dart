@@ -246,7 +246,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = textureId;
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
-    final bool hasTorch = startResult['torchable'] as bool? ?? false;
+    final TorchState currentTorchState = TorchState.fromRawValue(
+      startResult['currentTorchState'] as int? ?? -1,
+    );
 
     final Map<Object?, Object?>? sizeInfo =
         startResult['size'] as Map<Object?, Object?>?;
@@ -262,7 +264,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     return MobileScannerViewAttributes(
-      hasTorch: hasTorch,
+      currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,
     );
