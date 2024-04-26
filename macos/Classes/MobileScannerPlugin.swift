@@ -326,7 +326,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         captureSession!.startRunning()
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
-        let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
+
+        let answer: [String : Any?] = [
+            "textureId": textureId,
+            "size": size,
+            "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
+        ]
         result(answer)
     }
 

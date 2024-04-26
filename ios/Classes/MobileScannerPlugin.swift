@@ -125,7 +125,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                     result([
                         "textureId": parameters.textureId,
                         "size": ["width": parameters.width, "height": parameters.height],
-                        "torchable": parameters.hasTorch])
+                        "currentTorchState": parameters.currentTorchState,
+                    ])
                 }
             }
         } catch MobileScannerError.alreadyStarted {

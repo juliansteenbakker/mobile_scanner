@@ -283,13 +283,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 // as this does not change the configuration of the hardware camera.
                 let dimensions = CMVideoFormatDescriptionGetDimensions(
                     device.activeFormat.formatDescription)
-                let hasTorch = device.hasTorch
                 
                 completion(
                     MobileScannerStartParameters(
                         width: Double(dimensions.height),
                         height: Double(dimensions.width),
-                        hasTorch: hasTorch,
+                        currentTorchState: device.hasTorch ? device.torchMode.rawValue : -1,
                         textureId: self.textureId ?? 0
                     )
                 )
@@ -459,7 +458,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     struct MobileScannerStartParameters {
         var width: Double = 0.0
         var height: Double = 0.0
-        var hasTorch = false
+        var currentTorchState: Int = -1
         var textureId: Int64 = 0
     }
 }
