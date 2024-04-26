@@ -368,11 +368,22 @@ class MobileScanner(
             val height = resolution.height.toDouble()
             val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
 
+            // Start with 'unavailable' torch state.
+            var currentTorchState: Int = -1
+
+            camera?.cameraInfo?.let {
+                if (!it.hasFlashUnit()) {
+                    return@let
+                }
+
+                currentTorchState = it.torchState.value ?: -1
+            }
+
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
-                    camera?.cameraInfo?.hasFlashUnit() ?: false,
+                    currentTorchState,
                     textureEntry!!.id(),
                     numberOfCameras ?: 0
                 )
