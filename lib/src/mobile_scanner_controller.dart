@@ -313,11 +313,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     _disposeListeners();
 
+    final TorchState oldTorchState = value.torchState;
+
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
+    // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: TorchState.off,
+      torchState: oldTorchState == TorchState.unavailable
+          ? TorchState.unavailable
+          : TorchState.off,
     );
 
     await MobileScannerPlatform.instance.stop();
