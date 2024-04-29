@@ -63,7 +63,9 @@ class _BarcodeScannerWithControllerState
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
+    if (!controller.value.isInitialized) {
+      return;
+    }
 
     switch (state) {
       case AppLifecycleState.detached:

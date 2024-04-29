@@ -2,6 +2,10 @@
 
 Bugs fixed:
 * Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
+* Fixed an issue that causes the initial torch state to be out of sync.
+
+Improvements:
+* Updated the lifeycle code sample to handle not-initialized controllers.
 
 ## 5.0.1
 
