@@ -38,12 +38,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// The container div element for the camera view.
   late HTMLDivElement _divElement;
 
-  /// The flag that keeps track of whether a permission request is in progress.
-  ///
-  /// On the web, a permission request triggers a dialog, that in turn triggers a lifecycle change.
-  /// While the permission request is in progress, any attempts at (re)starting the camera should be ignored.
-  bool _permissionRequestInProgress = false;
-
   /// The stream controller for the media track settings stream.
   ///
   /// Currently, only the facing mode setting can be supported,
@@ -187,13 +181,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     try {
       // Retrieving the media devices requests the camera permission.
-      _permissionRequestInProgress = true;
-
       final MediaStream videoStream =
           await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
-
-      // At this point the permission is granted.
-      _permissionRequestInProgress = false;
 
       return videoStream;
     } on DOMException catch (error, stackTrace) {
@@ -208,10 +197,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
       } else if (errorMessage.contains('NotAllowedError')) {
         errorCode = MobileScannerErrorCode.permissionDenied;
       }
-
-      // At this point the permission request completed, although with an error,
-      // but the error is irrelevant.
-      _permissionRequestInProgress = false;
 
       throw MobileScannerException(
         errorCode: errorCode,
@@ -268,13 +253,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    // If the permission request has not yet completed,
-    // the camera view is not ready yet.
-    // Prevent the permission popup from triggering a restart of the scanner.
-    if (_permissionRequestInProgress) {
-      throw PermissionRequestPendingException();
-    }
-
     _barcodeReader = ZXingBarcodeReader();
 
     await _barcodeReader?.maybeLoadLibrary(
