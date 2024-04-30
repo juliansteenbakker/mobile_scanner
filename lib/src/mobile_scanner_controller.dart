@@ -274,16 +274,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         options,
       );
 
-      value = value.copyWith(
-        availableCameras: viewAttributes.numberOfCameras,
-        cameraDirection: effectiveDirection,
-        isInitialized: true,
-        isRunning: true,
-        size: viewAttributes.size,
-        // If the device has a flashlight, let the platform update the torch state.
-        // If it does not have one, provide the unavailable state directly.
-        torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
-      );
+      if (!_isDisposed) {
+        value = value.copyWith(
+          availableCameras: viewAttributes.numberOfCameras,
+          cameraDirection: effectiveDirection,
+          isInitialized: true,
+          isRunning: true,
+          size: viewAttributes.size,
+          // If the device has a flashlight, let the platform update the torch state.
+          // If it does not have one, provide the unavailable state directly.
+          torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
+        );
+      }
     } on MobileScannerException catch (error) {
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
