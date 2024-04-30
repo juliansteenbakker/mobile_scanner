@@ -19,6 +19,7 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -422,13 +423,16 @@ class MobileScanner(
     /**
      * Toggles the flash light on or off.
      */
-    fun toggleTorch(enableTorch: Boolean) {
-        if (camera == null) {
-            return
-        }
+    fun toggleTorch() {
+        camera?.let {
+            if (!it.cameraInfo.hasFlashUnit()) {
+                return@let
+            }
 
-        if (camera?.cameraInfo?.hasFlashUnit() == true) {
-            camera?.cameraControl?.enableTorch(enableTorch)
+            when(it.cameraInfo.torchState.value) {
+                TorchState.OFF -> it.cameraControl.enableTorch(true)
+                TorchState.ON -> it.cameraControl.enableTorch(false)
+            }
         }
     }
 

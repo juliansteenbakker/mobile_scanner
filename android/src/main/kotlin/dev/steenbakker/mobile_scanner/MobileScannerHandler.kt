@@ -122,8 +122,8 @@ class MobileScannerHandler(
                     }
                 })
             "start" -> start(call, result)
-            "torch" -> toggleTorch(call, result)
             "stop" -> stop(result)
+            "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
@@ -168,7 +168,7 @@ class MobileScannerHandler(
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
+        val detectionSpeed: DetectionSpeed = DetectionSpeed.entries.first { it.intValue == speed}
 
         mobileScanner!!.start(
             barcodeScannerOptions,
@@ -244,8 +244,8 @@ class MobileScannerHandler(
         mobileScanner!!.analyzeImage(uri, analyzeImageSuccessCallback, analyzeImageErrorCallback)
     }
 
-    private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
-        mobileScanner!!.toggleTorch(call.arguments == 1)
+    private fun toggleTorch(result: MethodChannel.Result) {
+        mobileScanner?.toggleTorch()
         result.success(null)
     }
 
