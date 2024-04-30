@@ -374,13 +374,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    final TorchState newState =
-        torchState == TorchState.off ? TorchState.on : TorchState.off;
-
-    // Update the torch state to the new state.
+    // Request the torch state to be switched to the opposite state.
     // When the platform has updated the torch state,
     // it will send an update through the torch state event stream.
-    await MobileScannerPlatform.instance.setTorchState(newState);
+    await MobileScannerPlatform.instance.toggleTorch();
   }
 
   /// Update the scan window with the given [window] rectangle.

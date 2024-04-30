@@ -177,14 +177,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     await methodChannel.invokeMethod<void>('resetScale');
   }
 
-  @override
-  Future<void> setTorchState(TorchState torchState) async {
-    if (torchState == TorchState.unavailable) {
-      return;
-    }
-
-    await methodChannel.invokeMethod<void>('torch', torchState.rawValue);
-  }
+  // TODO: remove the 'torch' function from native
 
   @override
   Future<void> setZoomScale(double zoomScale) async {

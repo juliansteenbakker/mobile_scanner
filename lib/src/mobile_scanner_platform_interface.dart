@@ -67,11 +67,6 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// This is only supported on the web.
   void setBarcodeLibraryScriptUrl(String scriptUrl) {}
 
-  /// Set the torch state of the active camera.
-  Future<void> setTorchState(TorchState torchState) {
-    throw UnimplementedError('setTorchState() has not been implemented.');
-  }
-
   /// Set the zoom scale of the camera.
   ///
   /// The [zoomScale] must be between `0.0` and `1.0` (both inclusive).
