@@ -144,8 +144,6 @@ class ToggleFlashlightButton extends StatelessWidget {
               iconSize: 32.0,
               icon: const Icon(Icons.flash_auto),
               onPressed: () async {
-                // This button only turns off the auto mode.
-                // Perhaps we can switch between on / off / auto?
                 await controller.toggleTorch();
               },
             );

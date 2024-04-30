@@ -361,6 +361,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the device has no torch,
   /// or if the camera is not running.
+  ///
+  /// If the current torch state is [TorchState.auto],
+  /// the torch is turned on or off depending on its actual current state.
   Future<void> toggleTorch() async {
     _throwIfNotInitialized();
 
