@@ -1,7 +1,7 @@
 ## 5.0.2
 
 Bugs fixed:
-* Catch an exception that could appear if MobileScannerController is disposed during start(). [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
+* Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
 
 ## 5.0.1
 
