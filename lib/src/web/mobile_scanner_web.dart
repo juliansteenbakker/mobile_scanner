@@ -186,17 +186,17 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
-      // Retrieving the media devices requests the camera permission.
       _permissionRequestInProgress = true;
 
+      // Retrieving the media devices requests the camera permission.
       final MediaStream videoStream =
           await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
 
-      // At this point the permission is granted.
       _permissionRequestInProgress = false;
 
       return videoStream;
     } on DOMException catch (error, stackTrace) {
+      _permissionRequestInProgress = false;
       final String errorMessage = error.toString();
 
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
@@ -208,10 +208,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
       } else if (errorMessage.contains('NotAllowedError')) {
         errorCode = MobileScannerErrorCode.permissionDenied;
       }
-
-      // At this point the permission request completed, although with an error,
-      // but the error is irrelevant.
-      _permissionRequestInProgress = false;
 
       throw MobileScannerException(
         errorCode: errorCode,
@@ -248,14 +244,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   void setBarcodeLibraryScriptUrl(String scriptUrl) {
     _alternateScriptUrl ??= scriptUrl;
-  }
-
-  @override
-  Future<void> setTorchState(TorchState torchState) {
-    throw UnsupportedError(
-      'Setting the torch state is not supported for video tracks on the web.\n'
-      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
-    );
   }
 
   @override
@@ -346,7 +334,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return MobileScannerViewAttributes(
-        hasTorch: hasTorch,
+        // The torch of a media stream is not available for video tracks.
+        // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+        currentTorchMode: TorchState.unavailable,
         size: _barcodeReader?.videoSize ?? Size.zero,
       );
     } catch (error, stackTrace) {
@@ -368,6 +358,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     await _barcodeReader?.stop();
     _barcodeReader = null;
+  }
+
+  @override
+  Future<void> toggleTorch() {
+    throw UnsupportedError(
+      'Setting the torch state is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
   }
 
   @override

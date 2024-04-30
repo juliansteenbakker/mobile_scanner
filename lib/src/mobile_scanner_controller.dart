@@ -281,9 +281,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           isInitialized: true,
           isRunning: true,
           size: viewAttributes.size,
-          // If the device has a flashlight, let the platform update the torch state.
-          // If it does not have one, provide the unavailable state directly.
-          torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
+          // Provide the current torch state.
+          // Updates are provided by the `torchStateStream`.
+          torchState: viewAttributes.currentTorchMode,
         );
       }
     } on MobileScannerException catch (error) {
@@ -322,11 +322,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     _disposeListeners();
 
+    final TorchState oldTorchState = value.torchState;
+
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
+    // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: TorchState.off,
+      torchState: oldTorchState == TorchState.unavailable
+          ? TorchState.unavailable
+          : TorchState.off,
     );
 
     await MobileScannerPlatform.instance.stop();
@@ -362,6 +367,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the device has no torch,
   /// or if the camera is not running.
+  ///
+  /// If the current torch state is [TorchState.auto],
+  /// the torch is turned on or off depending on its actual current state.
   Future<void> toggleTorch() async {
     _throwIfNotInitialized();
 
@@ -375,13 +383,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    final TorchState newState =
-        torchState == TorchState.off ? TorchState.on : TorchState.off;
-
-    // Update the torch state to the new state.
+    // Request the torch state to be switched to the opposite state.
     // When the platform has updated the torch state,
     // it will send an update through the torch state event stream.
-    await MobileScannerPlatform.instance.setTorchState(newState);
+    await MobileScannerPlatform.instance.toggleTorch();
   }
 
   /// Update the scan window with the given [window] rectangle.

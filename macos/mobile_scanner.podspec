@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'mobile_scanner'
-  s.version          = '5.0.0'
+  s.version          = '5.0.2'
   s.summary          = 'An universal scanner for Flutter based on MLKit.'
   s.description      = <<-DESC
 An universal scanner for Flutter based on MLKit.

@@ -178,15 +178,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<void> setTorchState(TorchState torchState) async {
-    if (torchState == TorchState.unavailable) {
-      return;
-    }
-
-    await methodChannel.invokeMethod<void>('torch', torchState.rawValue);
-  }
-
-  @override
   Future<void> setZoomScale(double zoomScale) async {
     await methodChannel.invokeMethod<void>('setScale', zoomScale);
   }
@@ -246,7 +237,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = textureId;
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
-    final bool hasTorch = startResult['torchable'] as bool? ?? false;
+    final TorchState currentTorchState = TorchState.fromRawValue(
+      startResult['currentTorchState'] as int? ?? -1,
+    );
 
     final Map<Object?, Object?>? sizeInfo =
         startResult['size'] as Map<Object?, Object?>?;
@@ -262,7 +255,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     return MobileScannerViewAttributes(
-      hasTorch: hasTorch,
+      currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,
     );
@@ -277,6 +270,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = null;
 
     await methodChannel.invokeMethod<void>('stop');
+  }
+
+  @override
+  Future<void> toggleTorch() async {
+    await methodChannel.invokeMethod<void>('toggleTorch');
   }
 
   @override

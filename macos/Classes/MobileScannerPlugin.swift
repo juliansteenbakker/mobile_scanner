@@ -59,8 +59,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             requestPermission(call, result)
         case "start":
             start(call, result)
-        case "torch":
-            toggleTorch(call, result)
+        case "toggleTorch":
+            toggleTorch(result)
         case "setScale":
             setScale(call, result)
         case "resetScale":
@@ -288,12 +288,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         // Turn on the torch if requested.
         if (torch) {
-            do {
-                try self.toggleTorchInternal(.on)
-            } catch {
-                // If the torch could not be turned on,
-                // continue the capture session.
-            }
+            self.turnTorchOn()
         }
         
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
@@ -326,17 +321,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         captureSession!.startRunning()
         let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
         let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
-        let answer: [String : Any?] = ["textureId": textureId, "size": size, "torchable": device.hasTorch]
+
+        let answer: [String : Any?] = [
+            "textureId": textureId,
+            "size": size,
+            "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
+        ]
         result(answer)
     }
 
     // TODO: this method should be removed when iOS and MacOS share their implementation.
-    private func toggleTorchInternal(_ torch: AVCaptureDevice.TorchMode) throws {
+    private func toggleTorchInternal() {
         guard let device = self.device else {
             return
         }
         
-        if (!device.hasTorch || !device.isTorchModeSupported(torch)) {
+        if (!device.hasTorch) {
             return
         }
         
@@ -345,12 +345,57 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 return
             }
         }
-
-        if (device.torchMode != torch) {
-            try device.lockForConfiguration()
-            device.torchMode = torch
-            device.unlockForConfiguration()
+        
+        var newTorchMode: AVCaptureDevice.TorchMode = device.torchMode
+        
+        switch(device.torchMode) {
+        case AVCaptureDevice.TorchMode.auto:
+            if #available(macOS 10.15, *) {
+                newTorchMode = device.isTorchActive ? AVCaptureDevice.TorchMode.off : AVCaptureDevice.TorchMode.on
+            }
+            break;
+        case AVCaptureDevice.TorchMode.off:
+            newTorchMode = AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.on:
+            newTorchMode = AVCaptureDevice.TorchMode.off
+            break;
+        default:
+            return;
         }
+        
+        if (!device.isTorchModeSupported(newTorchMode) || device.torchMode == newTorchMode) {
+            return;
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = newTorchMode
+            device.unlockForConfiguration()
+        } catch(_) {}
+    }
+    
+    /// Turn the torch on.
+    private func turnTorchOn() {
+        guard let device = self.device else {
+            return
+        }
+        
+        if (!device.hasTorch || !device.isTorchModeSupported(.on) || device.torchMode == .on) {
+            return
+        }
+        
+        if #available(macOS 15.0, *) {
+            if(!device.isTorchAvailable) {
+                return
+            }
+        }
+        
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = .on
+            device.unlockForConfiguration()
+        } catch(_) {}
     }
     
     /// Reset the zoom scale.
@@ -365,15 +410,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
     
-    private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        let requestedTorchMode: AVCaptureDevice.TorchMode = call.arguments as! Int == 1 ? .on : .off
-
-        do {
-            try self.toggleTorchInternal(requestedTorchMode)
-            result(nil)
-        } catch {
-            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
-        }
+    private func toggleTorch(_ result: @escaping FlutterResult) {
+        self.toggleTorchInternal()
+        result(nil)
     }
 
     //    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -410,7 +449,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
-            // off = 0 on = 1 auto = 2
+            // Off = 0, On = 1, Auto = 2
             let state = change?[.newKey] as? Int
             let event: [String: Any?] = ["name": "torchState", "data": state]
             sink?(event)

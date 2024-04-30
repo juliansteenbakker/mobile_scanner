@@ -80,8 +80,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             start(call, result)
         case "stop":
             stop(result)
-        case "torch":
-            toggleTorch(call, result)
+        case "toggleTorch":
+            toggleTorch(result)
         case "analyzeImage":
             analyzeImage(call, result)
         case "setScale":
@@ -125,7 +125,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                     result([
                         "textureId": parameters.textureId,
                         "size": ["width": parameters.width, "height": parameters.height],
-                        "torchable": parameters.hasTorch])
+                        "currentTorchState": parameters.currentTorchState,
+                    ])
                 }
             }
         } catch MobileScannerError.alreadyStarted {
@@ -156,13 +157,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     }
 
     /// Toggles the torch.
-    private func toggleTorch(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        do {
-            try mobileScanner.toggleTorch(call.arguments as? Int == 1 ? .on : .off)
-            result(nil)
-        } catch {
-            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
-        }
+    private func toggleTorch(_ result: @escaping FlutterResult) {
+        mobileScanner.toggleTorch()
+        result(nil)
     }
     
     /// Sets the zoomScale.

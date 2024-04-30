@@ -259,12 +259,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             // as they interact with the hardware camera.
             if (torch) {
                 DispatchQueue.main.async {
-                    do {
-                        try self.toggleTorch(.on)
-                    } catch {
-                        // If the torch does not turn on,
-                        // continue with the capture session anyway.
-                    }
+                    self.turnTorchOn()
                 }
             }
             
@@ -283,13 +278,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 // as this does not change the configuration of the hardware camera.
                 let dimensions = CMVideoFormatDescriptionGetDimensions(
                     device.activeFormat.formatDescription)
-                let hasTorch = device.hasTorch
                 
                 completion(
                     MobileScannerStartParameters(
                         width: Double(dimensions.height),
                         height: Double(dimensions.width),
-                        hasTorch: hasTorch,
+                        currentTorchState: device.hasTorch ? device.torchMode.rawValue : -1,
                         textureId: self.textureId ?? 0
                     )
                 )
@@ -324,30 +318,67 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device = nil
     }
 
-    /// Set the torch mode.
+    /// Toggle the torch.
     ///
     /// This method should be called on the main DispatchQueue.
-    func toggleTorch(_ torch: AVCaptureDevice.TorchMode) throws {
+    func toggleTorch() {
         guard let device = self.device else {
             return
         }
         
-        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(torch)) {
+        if (!device.hasTorch || !device.isTorchAvailable) {
             return
         }
         
-        if (device.torchMode != torch) {
-            try device.lockForConfiguration()
-            device.torchMode = torch
-            device.unlockForConfiguration()
+        var newTorchMode: AVCaptureDevice.TorchMode = device.torchMode
+        
+        switch(device.torchMode) {
+        case AVCaptureDevice.TorchMode.auto:
+            newTorchMode = device.isTorchActive ? AVCaptureDevice.TorchMode.off : AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.off:
+            newTorchMode = AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.on:
+            newTorchMode = AVCaptureDevice.TorchMode.off
+            break;
+        default:
+            return;
         }
+        
+        if (!device.isTorchModeSupported(newTorchMode) || device.torchMode == newTorchMode) {
+            return;
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = newTorchMode
+            device.unlockForConfiguration()
+        } catch(_) {}
+    }
+    
+    /// Turn the torch on.
+    private func turnTorchOn() {
+        guard let device = self.device else {
+            return
+        }
+        
+        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(.on) || device.torchMode == .on) {
+            return
+        }
+        
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = .on
+            device.unlockForConfiguration()
+        } catch(_) {}
     }
 
     // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
         case "torchMode":
-            // off = 0; on = 1; auto = 2
+            // Off = 0, On = 1, Auto = 2
             let state = change?[.newKey] as? Int
             torchModeChangeCallback(state)
         case "videoZoomFactor":
@@ -459,7 +490,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     struct MobileScannerStartParameters {
         var width: Double = 0.0
         var height: Double = 0.0
-        var hasTorch = false
+        var currentTorchState: Int = -1
         var textureId: Int64 = 0
     }
 }
