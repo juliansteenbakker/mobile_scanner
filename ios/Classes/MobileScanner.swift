@@ -259,12 +259,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             // as they interact with the hardware camera.
             if (torch) {
                 DispatchQueue.main.async {
-                    do {
-                        try self.toggleTorch(.on)
-                    } catch {
-                        // If the torch does not turn on,
-                        // continue with the capture session anyway.
-                    }
+                    self.turnTorchOn()
                 }
             }
             
@@ -323,23 +318,60 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device = nil
     }
 
-    /// Set the torch mode.
+    /// Toggle the torch.
     ///
     /// This method should be called on the main DispatchQueue.
-    func toggleTorch(_ torch: AVCaptureDevice.TorchMode) throws {
+    func toggleTorch() {
         guard let device = self.device else {
             return
         }
         
-        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(torch)) {
+        if (!device.hasTorch || !device.isTorchAvailable) {
             return
         }
         
-        if (device.torchMode != torch) {
-            try device.lockForConfiguration()
-            device.torchMode = torch
-            device.unlockForConfiguration()
+        var newTorchMode: AVCaptureDevice.TorchMode = device.torchMode
+        
+        switch(device.torchMode) {
+        case AVCaptureDevice.TorchMode.auto:
+            newTorchMode = device.isTorchActive ? AVCaptureDevice.TorchMode.off : AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.off:
+            newTorchMode = AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.on:
+            newTorchMode = AVCaptureDevice.TorchMode.off
+            break;
+        default:
+            return;
         }
+        
+        if (!device.isTorchModeSupported(newTorchMode) || device.torchMode == newTorchMode) {
+            return;
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = newTorchMode
+            device.unlockForConfiguration()
+        } catch(_) {}
+    }
+    
+    /// Turn the torch on.
+    private func turnTorchOn() {
+        guard let device = self.device else {
+            return
+        }
+        
+        if (!device.hasTorch || !device.isTorchAvailable || !device.isTorchModeSupported(.on) || device.torchMode == .on) {
+            return
+        }
+        
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = .on
+            device.unlockForConfiguration()
+        } catch(_) {}
     }
 
     // Observer for torch state
