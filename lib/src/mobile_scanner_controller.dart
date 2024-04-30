@@ -242,6 +242,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
+    // Permission was denied, do nothing.
+    // When the controller is stopped,
+    // the error is reset so the permission can be requested again if possible.
+    if (value.error?.errorCode == MobileScannerErrorCode.permissionDenied) {
+      return;
+    }
+
     // Do nothing if the camera is already running.
     if (value.isRunning) {
       return;
@@ -280,9 +287,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
       }
     } on MobileScannerException catch (error) {
-      // TODO: if the error code is `controllerAlreadyInitialized` ignore the error
-      // TODO: update the error reporting from the native side to report proper error codes.
-
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
       // torch state and zoom scale to the defaults.
@@ -297,6 +301,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           zoomScale: 1.0,
         );
       }
+    } on PermissionRequestPendingException catch (_) {
+      // If a permission request was already pending, do nothing.
     }
   }
 

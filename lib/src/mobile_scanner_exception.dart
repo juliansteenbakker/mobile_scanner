@@ -39,3 +39,10 @@ class MobileScannerErrorDetails {
   /// The error message from the [PlatformException].
   final String? message;
 }
+
+/// This class represents an exception that is thrown
+/// when the scanner was (re)started while a permission request was pending.
+///
+/// This exception type is only used internally,
+/// and is not part of the public API.
+class PermissionRequestPendingException implements Exception {}
