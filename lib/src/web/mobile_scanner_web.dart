@@ -253,6 +253,17 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    // TODO: ignore double starts in the controller.
+    if (_barcodeReader != null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
+        errorDetails: MobileScannerErrorDetails(
+          message:
+              'The scanner was already started. Call stop() before calling start() again.',
+        ),
+      );
+    }
+
     _barcodeReader = ZXingBarcodeReader();
 
     await _barcodeReader?.maybeLoadLibrary(
@@ -260,6 +271,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     );
 
     if (_barcodeReader?.isScanning ?? false) {
+      // TODO: ignore double starts in the controller.
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(

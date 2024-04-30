@@ -280,6 +280,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
       }
     } on MobileScannerException catch (error) {
+      // TODO: if the error code is `controllerAlreadyInitialized` ignore the error
+      // TODO: update the error reporting from the native side to report proper error codes.
+
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
       // torch state and zoom scale to the defaults.
