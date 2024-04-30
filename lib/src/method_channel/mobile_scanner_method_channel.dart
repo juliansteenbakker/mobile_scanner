@@ -177,8 +177,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     await methodChannel.invokeMethod<void>('resetScale');
   }
 
-  // TODO: remove the 'torch' function from native
-
   @override
   Future<void> setZoomScale(double zoomScale) async {
     await methodChannel.invokeMethod<void>('setScale', zoomScale);
@@ -272,6 +270,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = null;
 
     await methodChannel.invokeMethod<void>('stop');
+  }
+
+  @override
+  Future<void> toggleTorch() async {
+    await methodChannel.invokeMethod<void>('toggleTorch');
   }
 
   @override

@@ -355,6 +355,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<void> toggleTorch() {
+    throw UnsupportedError(
+      'Setting the torch state is not supported for video tracks on the web.\n'
+      'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
+    );
+  }
+
+  @override
   Future<void> updateScanWindow(Rect? window) {
     // A scan window is not supported on the web,
     // because the scanner does not expose size information for the barcodes.

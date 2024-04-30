@@ -90,6 +90,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('stop() has not been implemented.');
   }
 
+  /// Toggle the torch on the active camera on or off.
+  Future<void> toggleTorch() {
+    throw UnimplementedError('toggleTorch() has not been implemented.');
+  }
+
   /// Update the scan window to the given [window] rectangle.
   ///
   /// Any barcodes that do not intersect with the given [window] will be ignored.
