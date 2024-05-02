@@ -34,7 +34,7 @@ class MobileScanner extends StatefulWidget {
   final MobileScannerController? controller;
 
   /// The function that signals when new codes were detected by the [controller].
-  /// If null, use the contrller.barcodes stream directly to capture barcodes.
+  /// If null, use the controller.barcodes stream directly to capture barcodes.
   final void Function(BarcodeCapture barcodes)? onDetect;
 
   /// The error builder for the camera preview.
@@ -242,12 +242,12 @@ class _MobileScannerState extends State<MobileScanner> {
     );
   }
 
-  StreamSubscription? barcodeSubscription;
+  StreamSubscription? _barcodeSubscription;
 
   @override
   void initState() {
     if (widget.onDetect != null) {
-      barcodeSubscription = controller.barcodes.listen(widget.onDetect);
+      _barcodeSubscription = controller.barcodes.listen(widget.onDetect);
     }
     if (controller.autoStart) {
       controller.start();
@@ -258,9 +258,9 @@ class _MobileScannerState extends State<MobileScanner> {
   @override
   void dispose() {
     super.dispose();
-    if (barcodeSubscription != null) {
-      barcodeSubscription!.cancel();
-      barcodeSubscription = null;
+    if (_barcodeSubscription != null) {
+      _barcodeSubscription!.cancel();
+      _barcodeSubscription = null;
     }
 
     if (controller.autoStart) {
