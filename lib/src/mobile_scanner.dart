@@ -120,6 +120,7 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner> {
   late final controller = widget.controller ?? MobileScannerController();
+
   /// The current scan window.
   Rect? scanWindow;
 
