@@ -168,7 +168,8 @@ class MobileScannerHandler(
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = DetectionSpeed.entries.first { it.intValue == speed}
+        val detectionSpeed: DetectionSpeed = if (speed == 0) DetectionSpeed.NO_DUPLICATES
+        else if (speed ==1) DetectionSpeed.NORMAL else DetectionSpeed.UNRESTRICTED
 
         mobileScanner!!.start(
             barcodeScannerOptions,
