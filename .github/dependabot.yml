@@ -18,15 +18,15 @@ updates:
     commit-message:
       prefix: "chore"
       include: "scope"
-  - package-ecosystem: gradle
-    directory: "/example/android"
-    schedule:
-      interval: "weekly"
-    reviewers:
-      - "juliansteenbakker"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
+#  - package-ecosystem: gradle
+#    directory: "/example/android"
+#    schedule:
+#      interval: "weekly"
+#    reviewers:
+#      - "juliansteenbakker"
+#    commit-message:
+#      prefix: "chore"
+#      include: "scope"
   - package-ecosystem: "pub"
     directory: "/"
     schedule:
