@@ -118,7 +118,8 @@ class MobileScanner extends StatefulWidget {
   State<MobileScanner> createState() => _MobileScannerState();
 }
 
-class _MobileScannerState extends State<MobileScanner> {
+class _MobileScannerState extends State<MobileScanner>
+    with WidgetsBindingObserver {
   late final controller = widget.controller ?? MobileScannerController();
 
   /// The current scan window.
@@ -242,12 +243,13 @@ class _MobileScannerState extends State<MobileScanner> {
     );
   }
 
-  StreamSubscription? _barcodeSubscription;
+  StreamSubscription? _subscription;
 
   @override
   void initState() {
     if (widget.onDetect != null) {
-      _barcodeSubscription = controller.barcodes.listen(widget.onDetect);
+      WidgetsBinding.instance.addObserver(this);
+      _subscription = controller.barcodes.listen(widget.onDetect);
     }
     if (controller.autoStart) {
       controller.start();
@@ -258,9 +260,10 @@ class _MobileScannerState extends State<MobileScanner> {
   @override
   void dispose() {
     super.dispose();
-    if (_barcodeSubscription != null) {
-      _barcodeSubscription!.cancel();
-      _barcodeSubscription = null;
+
+    if (_subscription != null) {
+      _subscription!.cancel();
+      _subscription = null;
     }
 
     if (controller.autoStart) {
@@ -272,6 +275,30 @@ class _MobileScannerState extends State<MobileScanner> {
     // Dispose default controller if not provided by user
     if (widget.controller == null) {
       controller.dispose();
+      WidgetsBinding.instance.removeObserver(this);
+    }
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.controller != null) return;
+    if (!controller.value.isInitialized) {
+      return;
+    }
+
+    switch (state) {
+      case AppLifecycleState.detached:
+      case AppLifecycleState.hidden:
+      case AppLifecycleState.paused:
+        return;
+      case AppLifecycleState.resumed:
+        _subscription = controller.barcodes.listen(widget.onDetect);
+
+        unawaited(controller.start());
+      case AppLifecycleState.inactive:
+        unawaited(_subscription?.cancel());
+        _subscription = null;
+        unawaited(controller.stop());
     }
   }
 }
