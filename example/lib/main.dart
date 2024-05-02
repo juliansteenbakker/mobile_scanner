@@ -3,6 +3,7 @@ import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
+import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
 import 'package:mobile_scanner_example/barcode_scanner_window.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
@@ -27,6 +28,16 @@ class MyHome extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BarcodeScannerSimple(),
+                  ),
+                );
+              },
+              child: const Text('MobileScanner Simple'),
+            ),
             ElevatedButton(
               onPressed: () {
                 Navigator.of(context).push(

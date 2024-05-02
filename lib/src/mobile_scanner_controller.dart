@@ -17,6 +17,7 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Construct a new [MobileScannerController] instance.
   MobileScannerController({
+    this.autoStart = true,
     this.cameraResolution,
     this.detectionSpeed = DetectionSpeed.normal,
     int detectionTimeoutMs = 250,
@@ -46,6 +47,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Currently only supported on Android.
   final Size? cameraResolution;
+
+  /// Automatically start the scanner on initialization.
+  final bool autoStart;
 
   /// The detection speed for the scanner.
   ///

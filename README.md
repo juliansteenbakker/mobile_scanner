@@ -7,6 +7,10 @@
 
 A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
 
+## Breaking Changes V5.0.0
+
+Version 5.0.0 brings some breaking changes. Please see the changelog for an overview.
+
 ## Features Supported
 
 See the example app for detailed implementation information.

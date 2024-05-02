@@ -1,3 +1,19 @@
+## 5.1.0
+
+This updates reverts a few breaking changes made in v5.0.0 in order to keep things simple.
+
+* The `onDetect` method has been reinstated in the `MobileScanner` widget, but is nullable. You can
+still listen to `MobileScannerController.barcodes` directly by passing null to this parameter.
+* The `autoStart` attribute has been reinstated in the `MobileScannerController` and defaults to true. However, if you want
+to control which camera is used on start, or you want to manage the lifecycle yourself, you should set
+autoStart to false and manually call `MobileScannerController.start({CameraFacing? cameraDirection})`.
+* The `controller` is no longer required in the `MobileScanner` widget. However if provided, the user should take care 
+of disposing it.
+* [Android] Revert Gradle 8 back to Gradle 7, to be inline with most Flutter plugins and prevent build issues.
+* [Android] Revert Kotlin back from 1.9 to 1.7 to be inline with most Flutter plugins. Special 1.9 functionality
+has been refactored to be compatible with 1.7.
+
+
 ## 5.0.2
 
 Bugs fixed:

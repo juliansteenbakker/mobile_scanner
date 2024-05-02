@@ -13,7 +13,8 @@ class BarcodeScannerPageView extends StatefulWidget {
 }
 
 class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
-  final MobileScannerController controller = MobileScannerController();
+  final MobileScannerController controller =
+      MobileScannerController(autoStart: false);
 
   final PageController pageController = PageController();
 

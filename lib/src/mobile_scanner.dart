@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
+import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
@@ -18,7 +19,8 @@ typedef MobileScannerErrorBuilder = Widget Function(
 class MobileScanner extends StatefulWidget {
   /// Create a new [MobileScanner] using the provided [controller].
   const MobileScanner({
-    required this.controller,
+    this.controller,
+    this.onDetect,
     this.fit = BoxFit.cover,
     this.errorBuilder,
     this.overlayBuilder,
@@ -29,7 +31,11 @@ class MobileScanner extends StatefulWidget {
   });
 
   /// The controller for the camera preview.
-  final MobileScannerController controller;
+  final MobileScannerController? controller;
+
+  /// The function that signals when new codes were detected by the [controller].
+  /// If null, use the contrller.barcodes stream directly to capture barcodes.
+  final void Function(BarcodeCapture barcodes)? onDetect;
 
   /// The error builder for the camera preview.
   ///
@@ -113,6 +119,7 @@ class MobileScanner extends StatefulWidget {
 }
 
 class _MobileScannerState extends State<MobileScanner> {
+  late final controller = widget.controller ?? MobileScannerController();
   /// The current scan window.
   Rect? scanWindow;
 
@@ -139,7 +146,7 @@ class _MobileScannerState extends State<MobileScanner> {
     if (scanWindow == null) {
       scanWindow = newScanWindow;
 
-      unawaited(widget.controller.updateScanWindow(scanWindow));
+      unawaited(controller.updateScanWindow(scanWindow));
 
       return;
     }
@@ -154,7 +161,7 @@ class _MobileScannerState extends State<MobileScanner> {
     if (widget.scanWindowUpdateThreshold == 0.0) {
       scanWindow = newScanWindow;
 
-      unawaited(widget.controller.updateScanWindow(scanWindow));
+      unawaited(controller.updateScanWindow(scanWindow));
 
       return;
     }
@@ -167,14 +174,14 @@ class _MobileScannerState extends State<MobileScanner> {
         dy >= widget.scanWindowUpdateThreshold) {
       scanWindow = newScanWindow;
 
-      unawaited(widget.controller.updateScanWindow(scanWindow));
+      unawaited(controller.updateScanWindow(scanWindow));
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<MobileScannerState>(
-      valueListenable: widget.controller,
+      valueListenable: controller,
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
@@ -234,10 +241,36 @@ class _MobileScannerState extends State<MobileScanner> {
     );
   }
 
+  StreamSubscription? barcodeSubscription;
+
+  @override
+  void initState() {
+    if (widget.onDetect != null) {
+      barcodeSubscription = controller.barcodes.listen(widget.onDetect);
+    }
+    if (controller.autoStart) {
+      controller.start();
+    }
+    super.initState();
+  }
+
   @override
   void dispose() {
     super.dispose();
+    if (barcodeSubscription != null) {
+      barcodeSubscription!.cancel();
+      barcodeSubscription = null;
+    }
+
+    if (controller.autoStart) {
+      controller.stop();
+    }
     // When this widget is unmounted, reset the scan window.
-    unawaited(widget.controller.updateScanWindow(null));
+    unawaited(controller.updateScanWindow(null));
+
+    // Dispose default controller if not provided by user
+    if (widget.controller == null) {
+      controller.dispose();
+    }
   }
 }
