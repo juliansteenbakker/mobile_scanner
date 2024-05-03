@@ -1,5 +1,4 @@
 ## 5.1.0
-
 This updates reverts a few breaking changes made in v5.0.0 in order to keep things simple.
 
 * The `onDetect` method has been reinstated in the `MobileScanner` widget, but is nullable. You can
@@ -15,7 +14,6 @@ has been refactored to be compatible with 1.7.
 
 
 ## 5.0.2
-
 Bugs fixed:
 * Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
 * Fixed an issue that causes the initial torch state to be out of sync.
@@ -24,19 +22,16 @@ Improvements:
 * Updated the lifeycle code sample to handle not-initialized controllers.
 
 ## 5.0.1
-
 Improvements:
 * Adjusted the platform checks to use the defaultTargetPlatform API, so that tests can use the correct platform overrides.
 
 ## 5.0.0
-
 This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:
 
 Improvements:
 - [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
 
 ## 5.0.0-beta.3
-
 **BREAKING CHANGES:**
 
 * Flutter 3.19.0 is now required.
@@ -50,12 +45,10 @@ Improvements:
 * [web] Migrates to extension types. (thanks @koji-1009 !)
 
 ## 5.0.0-beta.2
-
 Bugs fixed:
 * Fixed an issue where the scan window was not updated when its size was changed. (thanks @navaronbracke !)
 
 ## 5.0.0-beta.1
-
 **BREAKING CHANGES:**
 
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
@@ -86,7 +79,6 @@ Bugs fixed:
 * [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
 
 ## 4.0.0
-
 **BREAKING CHANGES:**
 
 * [Android] compileSdk has been upgraded to version 34.
