@@ -15,19 +15,7 @@ class BarcodeScannerListView extends StatefulWidget {
 class _BarcodeScannerListViewState extends State<BarcodeScannerListView> {
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
-    // formats: [BarcodeFormat.qrCode]
-    // facing: CameraFacing.front,
-    // detectionSpeed: DetectionSpeed.normal
-    // detectionTimeoutMs: 1000,
-    // returnImage: false,
   );
-
-  @override
-  void initState() {
-    super.initState();
-
-    controller.start();
-  }
 
   Widget _buildBarcodesListView() {
     return StreamBuilder<BarcodeCapture>(

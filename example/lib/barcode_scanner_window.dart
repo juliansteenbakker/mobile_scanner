@@ -17,13 +17,6 @@ class _BarcodeScannerWithScanWindowState
     extends State<BarcodeScannerWithScanWindow> {
   final MobileScannerController controller = MobileScannerController();
 
-  @override
-  void initState() {
-    super.initState();
-
-    controller.start();
-  }
-
   Widget _buildBarcodeOverlay() {
     return ValueListenableBuilder(
       valueListenable: controller,

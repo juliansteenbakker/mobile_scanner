@@ -16,12 +16,6 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
   );
 
   @override
-  void initState() {
-    super.initState();
-    controller.start();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
       center: MediaQuery.sizeOf(context).center(Offset.zero),

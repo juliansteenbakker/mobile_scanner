@@ -13,16 +13,9 @@ class BarcodeScannerPageView extends StatefulWidget {
 }
 
 class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
-  final MobileScannerController controller =
-      MobileScannerController(autoStart: false);
+  final MobileScannerController controller = MobileScannerController();
 
   final PageController pageController = PageController();
-
-  @override
-  void initState() {
-    super.initState();
-    unawaited(controller.start());
-  }
 
   @override
   Widget build(BuildContext context) {
