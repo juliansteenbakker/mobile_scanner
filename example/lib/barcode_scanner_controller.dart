@@ -16,12 +16,9 @@ class BarcodeScannerWithController extends StatefulWidget {
 class _BarcodeScannerWithControllerState
     extends State<BarcodeScannerWithController> with WidgetsBindingObserver {
   final MobileScannerController controller = MobileScannerController(
-    torchEnabled: true, useNewCameraSelector: true,
-    // formats: [BarcodeFormat.qrCode]
-    // facing: CameraFacing.front,
-    // detectionSpeed: DetectionSpeed.normal
-    // detectionTimeoutMs: 1000,
-    // returnImage: false,
+    autoStart: false,
+    torchEnabled: true,
+    useNewCameraSelector: true,
   );
 
   Barcode? _barcode;

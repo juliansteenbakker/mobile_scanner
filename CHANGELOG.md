@@ -1,3 +1,6 @@
+## 5.1.1
+* This release fixes an issue with automatic starts in the examples.
+
 ## 5.1.0
 This updates reverts a few breaking changes made in v5.0.0 in order to keep things simple.
 

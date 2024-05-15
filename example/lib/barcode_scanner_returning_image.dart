@@ -18,18 +18,8 @@ class _BarcodeScannerReturningImageState
     extends State<BarcodeScannerReturningImage> {
   final MobileScannerController controller = MobileScannerController(
     torchEnabled: true,
-    // formats: [BarcodeFormat.qrCode]
-    // facing: CameraFacing.front,
-    // detectionSpeed: DetectionSpeed.normal
-    // detectionTimeoutMs: 1000,
     returnImage: true,
   );
-
-  @override
-  void initState() {
-    super.initState();
-    controller.start();
-  }
 
   @override
   Widget build(BuildContext context) {
