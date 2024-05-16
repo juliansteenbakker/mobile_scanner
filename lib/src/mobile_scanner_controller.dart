@@ -25,6 +25,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
+    this.invertImage = false,
     this.useNewCameraSelector = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
@@ -87,6 +88,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Defaults to false.
   final bool torchEnabled;
+
+  /// Whether the image should be inverted before scanning.
+  ///
+  /// Defaults to false.
+  final bool invertImage;
 
   /// Use the new resolution selector.
   ///
@@ -268,6 +274,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
+      invertImage: invertImage,
     );
 
     try {

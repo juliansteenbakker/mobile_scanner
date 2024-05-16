@@ -14,6 +14,7 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
+    required this.invertImage,
   });
 
   /// The direction for the camera.
@@ -37,6 +38,9 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
+  /// Whether the image should be inverted.
+  final bool invertImage;
+
   Map<String, Object?> toMap() {
     return <String, Object?>{
       if (cameraResolution != null)
@@ -51,6 +55,7 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
+      'invertImage': invertImage,
     };
   }
 }

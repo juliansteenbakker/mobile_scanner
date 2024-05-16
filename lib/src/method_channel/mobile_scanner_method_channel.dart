@@ -296,6 +296,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
+  Future<void> setInvertImage(bool invertImage) async {
+    await methodChannel.invokeMethod<void>(
+      'setInvertImage',
+      {'invertImage': invertImage},
+    );
+  }
+
+  @override
   Future<void> dispose() async {
     await stop();
   }

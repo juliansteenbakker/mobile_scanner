@@ -36,7 +36,12 @@ import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
 import kotlin.math.roundToInt
-
+import com.google.mlkit.vision.common.internal.ImageConvertUtils
+import org.opencv.core.Mat
+import org.opencv.core.CvType
+import org.opencv.core.Core
+import org.opencv.android.Utils
+import org.opencv.android.OpenCVLoader
 
 class MobileScanner(
     private val activity: Activity,
@@ -57,6 +62,7 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
+    var invertImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
@@ -67,7 +73,12 @@ class MobileScanner(
     @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
-        val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        var inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+        // Invert
+        if (invertImage) {
+            inputImage = invertInputImage(inputImage)
+        }
 
         if (detectionSpeed == DetectionSpeed.NORMAL && scannerTimeout) {
             imageProxy.close()
@@ -218,6 +229,7 @@ class MobileScanner(
     fun start(
         barcodeScannerOptions: BarcodeScannerOptions?,
         returnImage: Boolean,
+        invertImage: Boolean,
         cameraPosition: CameraSelector,
         torch: Boolean,
         detectionSpeed: DetectionSpeed,
@@ -229,9 +241,13 @@ class MobileScanner(
         cameraResolution: Size?,
         newCameraResolutionSelector: Boolean
     ) {
+
+        OpenCVLoader.initDebug()
+            
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
+        this.invertImage = invertImage
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
             mobileScannerErrorCallback(AlreadyStarted())
@@ -473,5 +489,16 @@ class MobileScanner(
         if (camera == null) throw ZoomWhenStopped()
         camera?.cameraControl?.setZoomRatio(1f)
     }
-
+    /**
+     * Invert the input image.
+     */
+    fun invertInputImage(image: InputImage): InputImage {
+        val bitmap = ImageConvertUtils.getInstance().getUpRightBitmap(image);
+        val tmp = Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC1);
+        Utils.bitmapToMat(bitmap, tmp);
+        Core.bitwise_not(tmp, tmp);
+        Utils.matToBitmap(tmp, bitmap);
+        val newImage = InputImage.fromBitmap(bitmap, 0);
+        return newImage
+    }
 }

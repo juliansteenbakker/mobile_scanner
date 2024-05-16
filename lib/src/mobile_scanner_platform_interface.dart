@@ -104,6 +104,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('updateScanWindow() has not been implemented.');
   }
 
+  /// Set inverting image colors (for negative Data Matrixes).
+  Future<void> setInvertImage(bool invert) {
+    throw UnimplementedError('setInvertImage() has not been implemented.');
+  }
+
   /// Dispose of this [MobileScannerPlatform] instance.
   Future<void> dispose() {
     throw UnimplementedError('dispose() has not been implemented.');
