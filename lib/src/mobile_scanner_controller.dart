@@ -17,6 +17,7 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Construct a new [MobileScannerController] instance.
   MobileScannerController({
+    this.autoStart = true,
     this.cameraResolution,
     this.detectionSpeed = DetectionSpeed.normal,
     int detectionTimeoutMs = 250,
@@ -46,6 +47,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Currently only supported on Android.
   final Size? cameraResolution;
+
+  /// Automatically start the scanner on initialization.
+  final bool autoStart;
 
   /// The detection speed for the scanner.
   ///
@@ -177,11 +181,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     _disposeListeners();
 
+    final TorchState oldTorchState = value.torchState;
+
     // After the camera stopped, set the torch state to off,
     // as the torch state callback is never called when the camera is stopped.
+    // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: TorchState.off,
+      torchState: oldTorchState == TorchState.unavailable
+          ? TorchState.unavailable
+          : TorchState.off,
     );
   }
 
@@ -242,12 +251,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   /// Start scanning for barcodes.
-  /// Upon calling this method, the necessary camera permission will be requested.
   ///
   /// The [cameraDirection] can be used to specify the camera direction.
   /// If this is null, this defaults to the [facing] value.
   ///
   /// Does nothing if the camera is already running.
+  /// Upon calling this method, the necessary camera permission will be requested.
+  ///
+  /// If the permission is denied on iOS, MacOS or Web, there is no way to request it again.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw const MobileScannerException(
@@ -257,6 +268,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               'The MobileScannerController was used after it has been disposed.',
         ),
       );
+    }
+
+    // Permission was denied, do nothing.
+    // When the controller is stopped,
+    // the error is reset so the permission can be requested again if possible.
+    if (value.error?.errorCode == MobileScannerErrorCode.permissionDenied) {
+      return;
     }
 
     // Do nothing if the camera is already running.
@@ -284,16 +302,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         options,
       );
 
-      value = value.copyWith(
-        availableCameras: viewAttributes.numberOfCameras,
-        cameraDirection: effectiveDirection,
-        isInitialized: true,
-        isRunning: true,
-        size: viewAttributes.size,
-        // If the device has a flashlight, let the platform update the torch state.
-        // If it does not have one, provide the unavailable state directly.
-        torchState: viewAttributes.hasTorch ? null : TorchState.unavailable,
-      );
+      if (!_isDisposed) {
+        value = value.copyWith(
+          availableCameras: viewAttributes.numberOfCameras,
+          cameraDirection: effectiveDirection,
+          isInitialized: true,
+          isRunning: true,
+          size: viewAttributes.size,
+          // Provide the current torch state.
+          // Updates are provided by the `torchStateStream`.
+          torchState: viewAttributes.currentTorchMode,
+        );
+      }
     } on MobileScannerException catch (error) {
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
@@ -365,6 +385,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the device has no torch,
   /// or if the camera is not running.
+  ///
+  /// If the current torch state is [TorchState.auto],
+  /// the torch is turned on or off depending on its actual current state.
   Future<void> toggleTorch() async {
     _throwIfNotInitialized();
 
@@ -378,13 +401,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    final TorchState newState =
-        torchState == TorchState.off ? TorchState.on : TorchState.off;
-
-    // Update the torch state to the new state.
+    // Request the torch state to be switched to the opposite state.
     // When the platform has updated the torch state,
     // it will send an update through the torch state event stream.
-    await MobileScannerPlatform.instance.setTorchState(newState);
+    await MobileScannerPlatform.instance.toggleTorch();
   }
 
   /// Update the scan window with the given [window] rectangle.

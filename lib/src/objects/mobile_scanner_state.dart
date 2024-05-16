@@ -38,7 +38,7 @@ class MobileScannerState {
   /// The facing direction of the camera.
   final CameraFacing cameraDirection;
 
-  /// The error that occurred while setting up or using the canera.
+  /// The error that occurred while setting up or using the camera.
   final MobileScannerException? error;
 
   /// Whether the mobile scanner has initialized successfully.

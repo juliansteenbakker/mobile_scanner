@@ -1,38 +1,38 @@
-version: 2
-updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    reviewers:
-      - "juliansteenbakker"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-  - package-ecosystem: gradle
-    directory: "/android"
-    schedule:
-      interval: "weekly"
-    reviewers:
-      - "juliansteenbakker"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-  - package-ecosystem: gradle
-    directory: "/example/android"
-    schedule:
-      interval: "weekly"
-    reviewers:
-      - "juliansteenbakker"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-  - package-ecosystem: "pub"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-    commit-message:
-      prefix: "chore"
-      include: "scope"
-    reviewers:
-      - "juliansteenbakker"
+# version: 2
+# updates:
+#   - package-ecosystem: "github-actions"
+#     directory: "/"
+#     schedule:
+#       interval: "weekly"
+#     reviewers:
+#       - "juliansteenbakker"
+#     commit-message:
+#       prefix: "chore"
+#       include: "scope"
+#   - package-ecosystem: gradle
+#     directory: "/android"
+#     schedule:
+#       interval: "weekly"
+#     reviewers:
+#       - "juliansteenbakker"
+#     commit-message:
+#       prefix: "chore"
+#       include: "scope"
+# #  - package-ecosystem: gradle
+# #    directory: "/example/android"
+# #    schedule:
+# #      interval: "weekly"
+# #    reviewers:
+# #      - "juliansteenbakker"
+# #    commit-message:
+# #      prefix: "chore"
+# #      include: "scope"
+#   - package-ecosystem: "pub"
+#     directory: "/"
+#     schedule:
+#       interval: "weekly"
+#     commit-message:
+#       prefix: "chore"
+#       include: "scope"
+#     reviewers:
+#       - "juliansteenbakker"

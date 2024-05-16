@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -18,13 +16,6 @@ class BarcodeScannerWithScanWindow extends StatefulWidget {
 class _BarcodeScannerWithScanWindowState
     extends State<BarcodeScannerWithScanWindow> {
   final MobileScannerController controller = MobileScannerController();
-
-  @override
-  void initState() {
-    super.initState();
-
-    controller.start();
-  }
 
   Widget _buildBarcodeOverlay() {
     return ValueListenableBuilder(
@@ -204,7 +195,7 @@ class BarcodeOverlay extends CustomPainter {
     final double ratioWidth;
     final double ratioHeight;
 
-    if (!kIsWeb && Platform.isIOS) {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
       ratioWidth = barcodeSize.width / adjustedSize.destination.width;
       ratioHeight = barcodeSize.height / adjustedSize.destination.height;
     } else {

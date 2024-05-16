@@ -22,12 +22,6 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
 
   double _zoomFactor = 0.0;
 
-  @override
-  void initState() {
-    super.initState();
-    controller.start();
-  }
-
   Widget _buildZoomScaleSlider() {
     return ValueListenableBuilder(
       valueListenable: controller,

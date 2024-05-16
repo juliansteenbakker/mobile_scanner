@@ -1,6 +1,6 @@
 import 'dart:async';
-import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
@@ -55,7 +55,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     final List<Map<Object?, Object?>> barcodes =
         data.cast<Map<Object?, Object?>>();
 
-    if (Platform.isMacOS) {
+    if (defaultTargetPlatform == TargetPlatform.macOS) {
       return BarcodeCapture(
         raw: event,
         barcodes: barcodes
@@ -71,7 +71,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
-    if (Platform.isAndroid || Platform.isIOS) {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS) {
       final double? width = event['width'] as double?;
       final double? height = event['height'] as double?;
 
@@ -95,12 +96,29 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   ///
   /// Throws a [MobileScannerException] if the permission is not granted.
   Future<void> _requestCameraPermission() async {
-    final MobileScannerAuthorizationState authorizationState;
-
     try {
-      authorizationState = MobileScannerAuthorizationState.fromRawValue(
+      final MobileScannerAuthorizationState authorizationState =
+          MobileScannerAuthorizationState.fromRawValue(
         await methodChannel.invokeMethod<int>('state') ?? 0,
       );
+
+      switch (authorizationState) {
+        // Authorization was already granted, no need to request it again.
+        case MobileScannerAuthorizationState.authorized:
+          return;
+        // Android does not have an undetermined authorization state.
+        // So if the permission was denied, request it again.
+        case MobileScannerAuthorizationState.denied:
+        case MobileScannerAuthorizationState.undetermined:
+          final bool permissionGranted =
+              await methodChannel.invokeMethod<bool>('request') ?? false;
+
+          if (!permissionGranted) {
+            throw const MobileScannerException(
+              errorCode: MobileScannerErrorCode.permissionDenied,
+            );
+          }
+      }
     } on PlatformException catch (error) {
       // If the permission state is invalid, that is an error.
       throw MobileScannerException(
@@ -111,37 +129,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
           message: error.message,
         ),
       );
-    }
-
-    switch (authorizationState) {
-      case MobileScannerAuthorizationState.authorized:
-        return; // Already authorized.
-      // Android does not have an undetermined authorization state.
-      // So if the permission was denied, request it again.
-      case MobileScannerAuthorizationState.denied:
-      case MobileScannerAuthorizationState.undetermined:
-        try {
-          final bool granted =
-              await methodChannel.invokeMethod<bool>('request') ?? false;
-
-          if (granted) {
-            return; // Authorization was granted.
-          }
-
-          throw const MobileScannerException(
-            errorCode: MobileScannerErrorCode.permissionDenied,
-          );
-        } on PlatformException catch (error) {
-          // If the permission state is invalid, that is an error.
-          throw MobileScannerException(
-            errorCode: MobileScannerErrorCode.genericError,
-            errorDetails: MobileScannerErrorDetails(
-              code: error.code,
-              details: error.details as Object?,
-              message: error.message,
-            ),
-          );
-        }
     }
   }
 
@@ -189,15 +176,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Future<void> resetZoomScale() async {
     await methodChannel.invokeMethod<void>('resetScale');
-  }
-
-  @override
-  Future<void> setTorchState(TorchState torchState) async {
-    if (torchState == TorchState.unavailable) {
-      return;
-    }
-
-    await methodChannel.invokeMethod<void>('torch', torchState.rawValue);
   }
 
   @override
@@ -260,7 +238,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = textureId;
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
-    final bool hasTorch = startResult['torchable'] as bool? ?? false;
+    final TorchState currentTorchState = TorchState.fromRawValue(
+      startResult['currentTorchState'] as int? ?? -1,
+    );
 
     final Map<Object?, Object?>? sizeInfo =
         startResult['size'] as Map<Object?, Object?>?;
@@ -278,7 +258,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _pausing = false;
 
     return MobileScannerViewAttributes(
-      hasTorch: hasTorch,
+      currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,
     );
@@ -306,6 +286,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _pausing = true;
 
     await methodChannel.invokeMethod<void>('pause');
+  }
+
+  @override
+  Future<void> toggleTorch() async {
+    await methodChannel.invokeMethod<void>('toggleTorch');
   }
 
   @override

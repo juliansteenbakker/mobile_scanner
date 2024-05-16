@@ -74,6 +74,7 @@ class MobileScannerHandler(
     private var mobileScanner: MobileScanner? = null
 
     private val torchStateCallback: TorchStateCallback = {state: Int ->
+        // Off = 0, On = 1
         barcodeHandler.publishEvent(mapOf("name" to "torchState", "data" to state))
     }
 
@@ -121,9 +122,9 @@ class MobileScannerHandler(
                     }
                 })
             "start" -> start(call, result)
-            "torch" -> toggleTorch(call, result)
             "pause" -> pause(result)
             "stop" -> stop(result)
+            "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
@@ -168,7 +169,8 @@ class MobileScannerHandler(
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = DetectionSpeed.values().first { it.intValue == speed}
+        val detectionSpeed: DetectionSpeed = if (speed == 0) DetectionSpeed.NO_DUPLICATES
+        else if (speed ==1) DetectionSpeed.NORMAL else DetectionSpeed.UNRESTRICTED
 
         mobileScanner!!.start(
             barcodeScannerOptions,
@@ -183,7 +185,7 @@ class MobileScannerHandler(
                     result.success(mapOf(
                         "textureId" to it.id,
                         "size" to mapOf("width" to it.width, "height" to it.height),
-                        "torchable" to it.hasFlashUnit,
+                        "currentTorchState" to it.currentTorchState,
                         "numberOfCameras" to it.numberOfCameras
                     ))
                 }
@@ -256,8 +258,8 @@ class MobileScannerHandler(
         mobileScanner!!.analyzeImage(uri, analyzeImageSuccessCallback, analyzeImageErrorCallback)
     }
 
-    private fun toggleTorch(call: MethodCall, result: MethodChannel.Result) {
-        mobileScanner!!.toggleTorch(call.arguments == 1)
+    private fun toggleTorch(result: MethodChannel.Result) {
+        mobileScanner?.toggleTorch()
         result.success(null)
     }
 

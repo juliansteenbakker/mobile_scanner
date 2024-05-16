@@ -18,12 +18,6 @@ class _BarcodeScannerPageViewState extends State<BarcodeScannerPageView> {
   final PageController pageController = PageController();
 
   @override
-  void initState() {
-    super.initState();
-    unawaited(controller.start());
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('With PageView')),

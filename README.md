@@ -7,6 +7,28 @@
 
 A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
 
+## Breaking Changes v5.0.0
+Version 5.0.0 brings some breaking changes. However, some are reverted in version 5.1.0. Please see the list below for all breaking changes, and Changelog.md for a more detailed list.
+
+* ~~The `autoStart` attribute has been removed from the `MobileScannerController`. The controller should be manually started on-demand.~~ (Reverted in version 5.1.0)
+* ~~A controller is now required for the `MobileScanner` widget.~~ (Reverted in version 5.1.0)
+* ~~The `onDetect` method has been removed from the `MobileScanner` widget. Instead, listen to `MobileScannerController.barcodes` directly.~~ (Reverted in version 5.1.0)
+* The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
+* The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
+* The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
+* The `cameraFacingOverride` named argument for the `start()` method has been renamed to `cameraDirection`.
+* The `analyzeImage` function now correctly returns a `BarcodeCapture?` instead of a boolean.
+* The `formats` attribute of the `MobileScannerController` is now non-null.
+* The `MobileScannerState` enum has been renamed to `MobileScannerAuthorizationState`.
+* The various `ValueNotifier`s for the camera state have been removed. Use the `value` of the `MobileScannerController` instead.
+* The `hasTorch` getter has been removed. Instead, use the torch state of the controller's value.
+* The `TorchState` enum now provides a new value for unavailable flashlights.
+* The  `onPermissionSet`, `onStart` and `onScannerStarted` methods have been removed from the `MobileScanner` widget. Instead, await `MobileScannerController.start()`.
+* The `startDelay` has been removed from the `MobileScanner` widget. Instead, use a delay between manual starts of one or more controllers.
+* The `overlay` widget of the `MobileScanner` has been replaced by a new property, `overlayBuilder`, which provides the constraints for the overlay.
+* The torch can no longer be toggled on the web, as this is only available for image tracks and not video tracks. As a result the torch state for the web will always be `TorchState.unavailable`.
+* The zoom scale can no longer be modified on the web, as this is only available for image tracks and not video tracks. As a result, the zoom scale will always be `1.0`.
+
 ## Features Supported
 
 See the example app for detailed implementation information.
@@ -103,7 +125,11 @@ class MyState extends State<MyStatefulWidget> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    super.didChangeAppLifecycleState(state);
+    // If the controller is not ready, do not try to start or stop it.
+    // Permission dialogs can trigger lifecycle changes before the controller is ready.
+    if (!controller.value.isInitialized) {
+      return;
+    }
 
     switch (state) {
       case AppLifecycleState.detached:
@@ -165,5 +191,5 @@ Future<void> dispose() async {
 
 To display the camera preview, pass the controller to a `MobileScanner` widget.
 
-See the examples for runnable examples of various usages,
+See the [examples](example/README.md) for runnable examples of various usages,
 such as the basic usage, applying a scan window, or retrieving images from the barcodes.

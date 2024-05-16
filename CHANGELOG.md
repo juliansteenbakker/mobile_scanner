@@ -1,14 +1,57 @@
-## 5.0.0-beta.2
+## 5.1.1
+* This release fixes an issue with automatic starts in the examples.
 
+## 5.1.0
+This updates reverts a few breaking changes made in v5.0.0 in order to keep things simple.
+
+* The `onDetect` method has been reinstated in the `MobileScanner` widget, but is nullable. You can
+still listen to `MobileScannerController.barcodes` directly by passing null to this parameter.
+* The `autoStart` attribute has been reinstated in the `MobileScannerController` and defaults to true. However, if you want
+to control which camera is used on start, or you want to manage the lifecycle yourself, you should set
+autoStart to false and manually call `MobileScannerController.start({CameraFacing? cameraDirection})`.
+* The `controller` is no longer required in the `MobileScanner` widget. However if provided, the user should take care 
+of disposing it.
+* [Android] Revert Gradle 8 back to Gradle 7, to be inline with most Flutter plugins and prevent build issues.
+* [Android] Revert Kotlin back from 1.9 to 1.7 to be inline with most Flutter plugins. Special 1.9 functionality
+has been refactored to be compatible with 1.7.
+
+
+## 5.0.2
+Bugs fixed:
+* Fixed a crash when the controller is disposed while it is still starting. [#1036](https://github.com/juliansteenbakker/mobile_scanner/pull/1036) (thanks @EArminjon !)
+* Fixed an issue that causes the initial torch state to be out of sync.
+
+Improvements:
+* Updated the lifeycle code sample to handle not-initialized controllers.
+
+## 5.0.1
+Improvements:
+* Adjusted the platform checks to use the defaultTargetPlatform API, so that tests can use the correct platform overrides.
+
+## 5.0.0
+This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:
+
+Improvements:
+- [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
+
+## 5.0.0-beta.3
 **BREAKING CHANGES:**
 
-* Flutter 3.16.0 is now required.
+* Flutter 3.19.0 is now required.
+* [iOS] iOS 12.0 is now the minimum supported iOS version.
+* [iOS] Adds a Privacy Manifest.
 
+Bugs fixed:
+* Fixed an issue where the camera preview and barcode scanner did not work the second time on web.
+
+Improvements:
+* [web] Migrates to extension types. (thanks @koji-1009 !)
+
+## 5.0.0-beta.2
 Bugs fixed:
 * Fixed an issue where the scan window was not updated when its size was changed. (thanks @navaronbracke !)
 
 ## 5.0.0-beta.1
-
 **BREAKING CHANGES:**
 
 * The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
@@ -39,7 +82,6 @@ Bugs fixed:
 * [iOS] Fixed a crash with a nil capture session when starting the camera. (thanks @navaronbracke !)
 
 ## 4.0.0
-
 **BREAKING CHANGES:**
 
 * [Android] compileSdk has been upgraded to version 34.
