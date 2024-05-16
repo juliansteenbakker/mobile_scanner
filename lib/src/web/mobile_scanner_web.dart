@@ -1,6 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
-import 'dart:html';
 import 'dart:js_interop';
 import 'dart:ui_web' as ui_web;
 
@@ -357,11 +355,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
   }
 
-
   @override
   Future<void> pause() async {
     _barcodesSubscription?.pause();
-    await _barcodeReader.pause();
+    await _barcodeReader?.pause();
   }
 
   @override

@@ -276,7 +276,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     await methodChannel.invokeMethod<void>('stop');
   }
 
-
   @override
   Future<void> pause() async {
     if (_pausing) {
