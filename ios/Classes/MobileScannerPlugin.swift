@@ -84,6 +84,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             toggleTorch(result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "setInvertImage":
+            setInvertImage(call, result)
         case "setScale":
             setScale(call, result)
         case "resetScale":
@@ -101,6 +103,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
+        let invertImage: Bool = (call.arguments as! Dictionary<String, Any?>)["invertImage"] as? Bool ?? false
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
@@ -162,6 +165,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
     
+    
+    /// Sets the zoomScale.
+    private func setInvertImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let invert = call.arguments as? Bool
+        if (invert == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "You must provide a invert (bool) when calling setInvertImage",
+                                details: nil))
+            return
+        }
+        do {
+            try mobileScanner.setInvertImage(scale!)
+            result(nil)
+        } catch MobileScannerError.zoomWhenStopped {
+            result(FlutterError(code: "MobileScanner",
+                                message: "Called setInvertImage() while stopped!",
+                                details: nil))
+        }
+    }
+
     /// Sets the zoomScale.
     private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let scale = call.arguments as? CGFloat
