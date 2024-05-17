@@ -144,7 +144,14 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
             
-            let ciImage = latestBuffer.image
+            let ciImage
+            if (invertImage) {
+                image = self.invertImage(image: latestBuffer.image)
+            }
+            else
+            {
+                ciImage = latestBuffer.image
+            }
 
             var image = VisionImage(image: ciImage)
             image.orientation = imageOrientation(
@@ -153,9 +160,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 position: videoPosition
             )
 
-            if (invertImage) {
-                image = self.invertImage(image: image)
-            }
 
             scanner.process(image) { [self] barcodes, error in
                 imagesCurrentlyBeingProcessed = false
