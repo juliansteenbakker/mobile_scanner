@@ -146,7 +146,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             
             let ciImage = latestBuffer.image
 
-            let image = VisionImage(image: ciImage)
+            var image = VisionImage(image: ciImage)
             image.orientation = imageOrientation(
                 deviceOrientation: UIDevice.current.orientation,
                 defaultOrientation: .portrait,
