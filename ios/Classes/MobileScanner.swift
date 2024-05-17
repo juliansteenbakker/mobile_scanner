@@ -146,8 +146,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             
             let ciImage : CIImage
             if (invertImage) {
-                image = self.invertImage(image: latestBuffer.image)
-                ciImage = CIImage(image: image)
+                let temp_image = self.invertImage(image: latestBuffer.image)
+                ciImage = CIImage(image: temp_image)
             }
             else
             {
