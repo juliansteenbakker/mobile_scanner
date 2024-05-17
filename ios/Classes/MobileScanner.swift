@@ -144,9 +144,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
             
-            let ciImage
+            let ciImage : CIImage
             if (invertImage) {
                 image = self.invertImage(image: latestBuffer.image)
+                ciImage = CIImage(image: image)
             }
             else
             {
