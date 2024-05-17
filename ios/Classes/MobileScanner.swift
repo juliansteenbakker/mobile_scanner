@@ -28,6 +28,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Return image buffer with the Barcode event
     var returnImage: Bool = false
 
+    /// Analyze inverted image (useful for scanning white barcodes on black background)
+    var invertImage: Bool = false
+
     /// Default position of camera
     var videoPosition: AVCaptureDevice.Position = AVCaptureDevice.Position.back
 
@@ -149,6 +152,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 defaultOrientation: .portrait,
                 position: videoPosition
             )
+
+            if (invertImage) {
+                image = self.invertImage(image: image)
+            }
 
             scanner.process(image) { [self] barcodes, error in
                 imagesCurrentlyBeingProcessed = false
@@ -390,6 +397,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
     
+    func setInvertImage(_ invertImage: Bool) {
+        self.invertImage = invertImage
+    }
+
     /// Set the zoom factor of the camera
     func setScale(_ scale: CGFloat) throws {
         if (device == nil) {
@@ -440,8 +451,18 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             defaultOrientation: .portrait,
             position: position
         )
-
+        if (invertImage) {
+            image = self.invertImage(image: image)
+        }
         scanner.process(image, completion: callback)
+    }
+
+    func invertImage(image: UIImage) -> UIImage {
+        let ciImage = CIImage(image: image)
+        let filter = CIFilter(name: "CIColorInvert")
+        filter?.setValue(ciImage, forKey: kCIInputImageKey)
+        let outputImage = filter?.outputImage
+        return UIImage(ciImage: outputImage!, orientation: image.imageOrientation, scale: image.scale)
     }
 
     var barcodesString: Array<String?>?
