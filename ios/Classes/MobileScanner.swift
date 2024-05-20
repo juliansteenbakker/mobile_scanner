@@ -127,6 +127,14 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
     
+    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
+            return cgImage
+        }
+        return nil
+    }
+    
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
@@ -183,13 +191,14 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, invertImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
         self.detectionSpeed = detectionSpeed
         if (device != nil || captureSession != nil) {
             throw MobileScannerError.alreadyStarted
         }
 
         barcodesString = nil
+        self.invertImage = invertImage
         scanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
         captureSession = AVCaptureSession()
         textureId = registry?.register(self)
@@ -454,7 +463,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         if (invertImage) {
             uiimage = self.invertImage(image: uiimage)
         }
-        var visImage = VisionImage(image: uiimage)
+        let visImage = VisionImage(image: uiimage)
         visImage.orientation = imageOrientation(
             deviceOrientation: UIDevice.current.orientation,
             defaultOrientation: .portrait,
@@ -468,7 +477,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         let filter = CIFilter(name: "CIColorInvert")
         filter?.setValue(ciImage, forKey: kCIInputImageKey)
         let outputImage = filter?.outputImage
-        return UIImage(ciImage: outputImage!, scale: image.scale, orientation: image.imageOrientation)
+        let cgImage = convertCIImageToCGImage(inputImage: outputImage!)
+        
+        return UIImage(cgImage: cgImage!, scale: image.scale, orientation: image.imageOrientation)
     }
 
     var barcodesString: Array<String?>?
