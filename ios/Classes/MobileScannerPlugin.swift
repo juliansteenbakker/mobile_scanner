@@ -175,14 +175,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: nil))
             return
         }
-        do {
-            try mobileScanner.setInvertImage(scale!)
-            result(nil)
-        } catch MobileScannerError.zoomWhenStopped {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called setInvertImage() while stopped!",
-                                details: nil))
-        }
+        mobileScanner.setInvertImage(invert!)
+        result(nil)
     }
 
     /// Sets the zoomScale.
