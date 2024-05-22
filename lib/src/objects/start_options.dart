@@ -14,6 +14,7 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
+    required this.useNewCameraSelector,
   });
 
   /// The direction for the camera.
@@ -37,6 +38,11 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
+  /// Whether the new resolution selector should be used.
+  ///
+  /// This option is only supported on Android. Other platforms will ignore this option.
+  final bool useNewCameraSelector;
+
   Map<String, Object?> toMap() {
     return <String, Object?>{
       if (cameraResolution != null)
@@ -51,6 +57,7 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
+      'useNewCameraSelector': useNewCameraSelector,
     };
   }
 }

@@ -268,6 +268,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
+      useNewCameraSelector: useNewCameraSelector,
     );
 
     try {
