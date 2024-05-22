@@ -38,8 +38,9 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
-  /// Only supported on Android.
   /// Whether the new resolution selector should be used.
+  ///
+  /// This option is only supported on Android. Other platforms will ignore this option.
   final bool useNewCameraSelector;
 
   Map<String, Object?> toMap() {
