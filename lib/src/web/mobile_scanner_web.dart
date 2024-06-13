@@ -263,6 +263,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw PermissionRequestPendingException();
     }
 
+    // If the previous state is a pause, reset scanner.
+    if (_barcodesSubscription != null && _barcodesSubscription!.isPaused) {
+      await stop();
+    }
+
     _barcodeReader = ZXingBarcodeReader();
 
     await _barcodeReader?.maybeLoadLibrary(
@@ -348,6 +353,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
         ),
       );
     }
+  }
+
+  @override
+  Future<void> pause() async {
+    _barcodesSubscription?.pause();
+    await _barcodeReader?.pause();
   }
 
   @override
