@@ -5,7 +5,7 @@ Demonstrates how to use the mobile_scanner plugin.
 ## Run Examples
 
 1. `git clone https://github.com/juliansteenbakker/mobile_scanner.git`
-2. `cd mobile_scanner/examples/lib`
+2. `cd mobile_scanner/example/lib`
 3. `flutter pub get`
 4. `flutter run`
 
