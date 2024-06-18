@@ -29,7 +29,7 @@ class MobileScannerHandler(
 
     private val analyzeImageErrorCallback: AnalyzerErrorCallback = {
         Handler(Looper.getMainLooper()).post {
-            analyzerResult?.error(MobileScannerErrorCodes.GENERIC_ERROR, it, null)
+            analyzerResult?.error(MobileScannerErrorCodes.BARCODE_ERROR, it, null)
             analyzerResult = null
         }
     }

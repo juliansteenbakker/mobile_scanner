@@ -164,21 +164,30 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
   }) async {
-    final Map<Object?, Object?>? result =
-        await methodChannel.invokeMapMethod<Object?, Object?>(
-      'analyzeImage',
-      {
-        'filePath': path,
-        'formats': formats.isEmpty
-            ? null
-            : [
-                for (final BarcodeFormat format in formats)
-                  if (format != BarcodeFormat.unknown) format.rawValue,
-              ],
-      },
-    );
+    try {
+      final Map<Object?, Object?>? result =
+          await methodChannel.invokeMapMethod<Object?, Object?>(
+        'analyzeImage',
+        {
+          'filePath': path,
+          'formats': formats.isEmpty
+              ? null
+              : [
+                  for (final BarcodeFormat format in formats)
+                    if (format != BarcodeFormat.unknown) format.rawValue,
+                ],
+        },
+      );
 
-    return _parseBarcode(result);
+      return _parseBarcode(result);
+    } on PlatformException catch (error) {
+      // Handle any errors from analyze image requests.
+      if (error.code == kBarcodeErrorEventName) {
+        throw MobileScannerBarcodeException(error.message);
+      }
+
+      return null;
+    }
   }
 
   @override

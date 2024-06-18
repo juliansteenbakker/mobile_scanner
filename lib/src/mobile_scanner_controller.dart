@@ -191,6 +191,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// This is only supported on Android, iOS and MacOS.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
+  ///
+  /// If an error occurred during the analysis of the image,
+  /// a [MobileScannerBarcodeException] error is thrown.
   Future<BarcodeCapture?> analyzeImage(String path) {
     return MobileScannerPlatform.instance.analyzeImage(path);
   }
