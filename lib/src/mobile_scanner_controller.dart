@@ -102,6 +102,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       StreamController.broadcast();
 
   /// Get the stream of scanned barcodes.
+  ///
+  /// If an error occurred during the detection of a barcode,
+  /// an [MobileScannerBarcodeException] error is emitted to the stream.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   StreamSubscription<BarcodeCapture?>? _barcodesSubscription;

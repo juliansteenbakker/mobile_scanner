@@ -16,6 +16,10 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
+  /// The name of the error event that is sent when a barcode scan error occurs.
+  @visibleForTesting
+  static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -40,9 +44,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   int? _textureId;
 
   /// Parse a [BarcodeCapture] from the given [event].
+  ///
+  /// If the event name is [kBarcodeErrorEventName],
+  /// a [MobileScannerBarcodeException] is thrown.
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
     if (event == null) {
       return null;
+    }
+
+    if (event
+        case {
+          'name': kBarcodeErrorEventName,
+          'data': final String? errorDescription
+        }) {
+      throw MobileScannerBarcodeException(errorDescription);
     }
 
     final Object? data = event['data'];
@@ -121,9 +136,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Stream<BarcodeCapture?> get barcodesStream {
-    return eventsStream
-        .where((event) => event['name'] == 'barcode')
-        .map((event) => _parseBarcode(event));
+    // Handle both incoming barcode events and barcode error events.
+    return eventsStream.where(
+      (event) {
+        return event['name'] == 'barcode' ||
+            event['name'] == kBarcodeErrorEventName;
+      },
+    ).map((event) => _parseBarcode(event));
   }
 
   @override
