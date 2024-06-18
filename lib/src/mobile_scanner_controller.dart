@@ -124,14 +124,25 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   void _setupListeners() {
-    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
-        .listen((BarcodeCapture? barcode) {
-      if (_barcodesController.isClosed || barcode == null) {
-        return;
-      }
+    _barcodesSubscription =
+        MobileScannerPlatform.instance.barcodesStream.listen(
+      (BarcodeCapture? barcode) {
+        if (_barcodesController.isClosed || barcode == null) {
+          return;
+        }
 
-      _barcodesController.add(barcode);
-    });
+        _barcodesController.add(barcode);
+      },
+      onError: (Object error) {
+        if (_barcodesController.isClosed) {
+          return;
+        }
+
+        _barcodesController.addError(error);
+      },
+      // Errors are handled gracefully by forwarding them.
+      cancelOnError: false,
+    );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
