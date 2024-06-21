@@ -436,8 +436,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   void addBarcode(BarcodeCapture? barcode) {
-    if (!_barcodesController.isClosed && barcode != null) {
-      _barcodesController.add(barcode);
+    if (_barcodesController.isClosed || barcode == null) {
+      return;
     }
+
+    _barcodesController.add(barcode);
   }
 }
