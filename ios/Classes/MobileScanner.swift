@@ -51,8 +51,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
-    private let backgroundQueue = DispatchQueue(label: "camera-handling")
-
     var standardZoomFactor: CGFloat = 1
 
     private var nextScanTime = 0.0
@@ -246,7 +244,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession!.commitConfiguration()
 
-        backgroundQueue.async {
+        DispatchQueue.global(qos: .userInitiated).async {
             guard let captureSession = self.captureSession else {
                 return
             }

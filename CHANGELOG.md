@@ -1,3 +1,6 @@
+## 5.1.2
+* [iOS] Fixes an issue with priorities for the iOS scanner background thread.
+
 ## 5.1.1
 * This release fixes an issue with automatic starts in the examples.
 
