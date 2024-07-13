@@ -244,7 +244,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
         captureSession!.commitConfiguration()
 
-        DispatchQueue.global(qos: .userInitiated).async {
+        DispatchQueue.global(qos: .userInteractive).async {
             guard let captureSession = self.captureSession else {
                 return
             }
