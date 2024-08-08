@@ -13,6 +13,7 @@ import android.os.Looper
 import android.util.Size
 import android.view.Surface
 import android.view.WindowManager
+import androidx.annotation.VisibleForTesting
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
@@ -41,7 +42,7 @@ class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
-    private val mobileScannerErrorCallback: MobileScannerErrorCallback
+    private val mobileScannerErrorCallback: MobileScannerErrorCallback,
 ) {
 
     /// Internal variables
@@ -159,6 +160,15 @@ class MobileScanner(
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
+    /**
+     * Create a barcode scanner from the given options.
+     *
+     * Can be overridden in tests.
+     */
+    @VisibleForTesting
+    fun createBarcodeScanner(options: BarcodeScannerOptions?) : BarcodeScanner {
+        return if (options == null) BarcodeScanning.getClient() else BarcodeScanning.getClient(options)
+    }
 
     // scales the scanWindow to the provided inputImage and checks if that scaled
     // scanWindow contains the barcode
@@ -238,11 +248,7 @@ class MobileScanner(
         }
 
         lastScanned = null
-        scanner = if (barcodeScannerOptions != null) {
-            BarcodeScanning.getClient(barcodeScannerOptions)
-        } else {
-            BarcodeScanning.getClient()
-        }
+        scanner = createBarcodeScanner(barcodeScannerOptions)
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         val executor = ContextCompat.getMainExecutor(activity)
