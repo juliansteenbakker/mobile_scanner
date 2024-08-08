@@ -472,4 +472,11 @@ class MobileScanner(
         camera?.cameraControl?.setZoomRatio(1f)
     }
 
+    /**
+     * Dispose of this scanner instance.
+     */
+    fun dispose() {
+        scanner?.close()
+        scanner = null
+    }
 }

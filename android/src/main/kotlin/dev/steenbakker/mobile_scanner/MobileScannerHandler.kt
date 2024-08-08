@@ -92,6 +92,7 @@ class MobileScannerHandler(
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
+        mobileScanner?.dispose()
         mobileScanner = null
 
         val listener: RequestPermissionsResultListener? = permissions.getPermissionListener()
