@@ -43,6 +43,7 @@ class MobileScanner(
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
+    private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
 
     /// Internal variables
@@ -60,6 +61,15 @@ class MobileScanner(
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
+
+    companion object {
+        /**
+         * Create a barcode scanner from the given options.
+         */
+        fun defaultBarcodeScannerFactory(options: BarcodeScannerOptions?) : BarcodeScanner {
+            return if (options == null) BarcodeScanning.getClient() else BarcodeScanning.getClient(options)
+        }
+    }
 
     /**
      * callback for the camera. Every frame is passed through this function.
@@ -248,7 +258,7 @@ class MobileScanner(
         }
 
         lastScanned = null
-        scanner = createBarcodeScanner(barcodeScannerOptions)
+        scanner = barcodeScannerFactory(barcodeScannerOptions)
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
         val executor = ContextCompat.getMainExecutor(activity)
@@ -451,7 +461,7 @@ class MobileScanner(
         val inputImage = InputImage.fromFilePath(activity, image)
 
         // Use a short lived scanner instance, which is closed when the analysis is done.
-        val barcodeScanner: BarcodeScanner = createBarcodeScanner(scannerOptions)
+        val barcodeScanner: BarcodeScanner = barcodeScannerFactory(scannerOptions)
 
         barcodeScanner.process(inputImage).addOnSuccessListener { barcodes ->
             val barcodeMap = barcodes.map { barcode -> barcode.data }
