@@ -1,5 +1,6 @@
 ## NEXT
-* Fixed a leak of the barcode scanner on Android.
+* [Android] Fixed a leak of the barcode scanner.
+* [Android] Fixed a crash when encountering invalid numbers for the scan window.
 
 ## 5.1.1
 * This release fixes an issue with automatic starts in the examples.
