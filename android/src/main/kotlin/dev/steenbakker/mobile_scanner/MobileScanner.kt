@@ -170,25 +170,35 @@ class MobileScanner(
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
-    // scales the scanWindow to the provided inputImage and checks if that scaled
-    // scanWindow contains the barcode
-    private fun isBarcodeInScanWindow(
+    // Scales the scanWindow to the provided inputImage and checks if that scaled
+    // scanWindow contains the barcode.
+    @VisibleForTesting
+    fun isBarcodeInScanWindow(
         scanWindow: List<Float>,
         barcode: Barcode,
         inputImage: ImageProxy
     ): Boolean {
+        // TODO: use `cornerPoints` instead, since the bounding box is not bound to the coordinate system of the input image
+        // On iOS we do this correctly, so the calculation should match that.
         val barcodeBoundingBox = barcode.boundingBox ?: return false
 
-        val imageWidth = inputImage.height
-        val imageHeight = inputImage.width
+        try {
+            val imageWidth = inputImage.height
+            val imageHeight = inputImage.width
 
-        val left = (scanWindow[0] * imageWidth).roundToInt()
-        val top = (scanWindow[1] * imageHeight).roundToInt()
-        val right = (scanWindow[2] * imageWidth).roundToInt()
-        val bottom = (scanWindow[3] * imageHeight).roundToInt()
+            val left = (scanWindow[0] * imageWidth).roundToInt()
+            val top = (scanWindow[1] * imageHeight).roundToInt()
+            val right = (scanWindow[2] * imageWidth).roundToInt()
+            val bottom = (scanWindow[3] * imageHeight).roundToInt()
 
-        val scaledScanWindow = Rect(left, top, right, bottom)
-        return scaledScanWindow.contains(barcodeBoundingBox)
+            val scaledScanWindow = Rect(left, top, right, bottom)
+
+            return scaledScanWindow.contains(barcodeBoundingBox)
+        } catch (exception: IllegalArgumentException) {
+            // Rounding of the scan window dimensions can fail, due to encountering NaN.
+            // If we get NaN, rather than give a false positive, just return false.
+            return false
+        }
     }
 
     // Return the best resolution for the actual device orientation.
