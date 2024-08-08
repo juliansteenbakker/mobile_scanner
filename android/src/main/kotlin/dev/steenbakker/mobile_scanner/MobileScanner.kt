@@ -443,22 +443,29 @@ class MobileScanner(
     /**
      * Analyze a single image.
      */
-    fun analyzeImage(image: Uri, onSuccess: AnalyzerSuccessCallback, onError: AnalyzerErrorCallback) {
+    fun analyzeImage(
+        image: Uri,
+        scannerOptions: BarcodeScannerOptions?,
+        onSuccess: AnalyzerSuccessCallback,
+        onError: AnalyzerErrorCallback) {
         val inputImage = InputImage.fromFilePath(activity, image)
 
-        scanner.process(inputImage)
-            .addOnSuccessListener { barcodes ->
-                val barcodeMap = barcodes.map { barcode -> barcode.data }
+        // Use a short lived scanner instance, which is closed when the analysis is done.
+        val barcodeScanner: BarcodeScanner = createBarcodeScanner(scannerOptions)
 
-                if (barcodeMap.isNotEmpty()) {
-                    onSuccess(barcodeMap)
-                } else {
-                    onSuccess(null)
-                }
+        barcodeScanner.process(inputImage).addOnSuccessListener { barcodes ->
+            val barcodeMap = barcodes.map { barcode -> barcode.data }
+
+            if (barcodeMap.isEmpty()) {
+                onSuccess(null)
+            } else {
+                onSuccess(barcodeMap)
             }
-            .addOnFailureListener { e ->
-                onError(e.localizedMessage ?: e.toString())
-            }
+        }.addOnFailureListener { e ->
+            onError(e.localizedMessage ?: e.toString())
+        }.addOnCompleteListener {
+            barcodeScanner.close()
+        }
     }
 
     /**
