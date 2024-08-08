@@ -92,6 +92,7 @@ class MobileScannerHandler(
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
+        mobileScanner?.dispose()
         mobileScanner = null
 
         val listener: RequestPermissionsResultListener? = permissions.getPermissionListener()
@@ -242,7 +243,13 @@ class MobileScannerHandler(
         analyzerResult = result
         val uri = Uri.fromFile(File(call.arguments.toString()))
 
-        mobileScanner!!.analyzeImage(uri, analyzeImageSuccessCallback, analyzeImageErrorCallback)
+        // TODO: parse options from the method call
+        // See https://github.com/juliansteenbakker/mobile_scanner/issues/1069
+        mobileScanner!!.analyzeImage(
+            uri,
+            null,
+            analyzeImageSuccessCallback,
+            analyzeImageErrorCallback)
     }
 
     private fun toggleTorch(result: MethodChannel.Result) {

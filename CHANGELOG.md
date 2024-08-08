@@ -1,3 +1,6 @@
+## NEXT
+* Fixed a leak of the barcode scanner on Android.
+
 ## 5.1.1
 * This release fixes an issue with automatic starts in the examples.
 
