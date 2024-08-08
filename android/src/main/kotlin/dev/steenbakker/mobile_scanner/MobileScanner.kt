@@ -422,14 +422,27 @@ class MobileScanner(
         }
 
         val owner = activity as LifecycleOwner
-        camera?.cameraInfo?.torchState?.removeObservers(owner)
+        // Release the camera observers first.
+        camera?.cameraInfo?.let {
+            it.torchState.removeObservers(owner)
+            it.zoomState.removeObservers(owner)
+            it.cameraState.removeObservers(owner)
+        }
+        // Unbind the camera use cases, the preview is a use case.
+        // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
-        textureEntry?.release()
-
+        cameraProvider = null
         camera = null
         preview = null
+
+        // Release the texture for the preview.
+        textureEntry?.release()
         textureEntry = null
-        cameraProvider = null
+
+        // Release the scanner.
+        scanner?.close()
+        scanner = null
+        lastScanned = null
     }
 
     private fun isStopped() = camera == null && preview == null
