@@ -170,16 +170,6 @@ class MobileScanner(
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
-    /**
-     * Create a barcode scanner from the given options.
-     *
-     * Can be overridden in tests.
-     */
-    @VisibleForTesting
-    fun createBarcodeScanner(options: BarcodeScannerOptions?) : BarcodeScanner {
-        return if (options == null) BarcodeScanning.getClient() else BarcodeScanning.getClient(options)
-    }
-
     // scales the scanWindow to the provided inputImage and checks if that scaled
     // scanWindow contains the barcode
     private fun isBarcodeInScanWindow(
@@ -512,7 +502,10 @@ class MobileScanner(
      * Dispose of this scanner instance.
      */
     fun dispose() {
-        scanner?.close()
-        scanner = null
+        if (isStopped()) {
+            return
+        }
+
+        stop() // Defer to the stop method, which disposes all resources anyway.
     }
 }
