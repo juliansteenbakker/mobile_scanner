@@ -26,5 +26,6 @@ export 'src/objects/mobile_scanner_state.dart';
 export 'src/objects/person_name.dart';
 export 'src/objects/phone.dart';
 export 'src/objects/sms.dart';
+export 'src/objects/start_options.dart';
 export 'src/objects/url_bookmark.dart';
 export 'src/objects/wifi.dart';
