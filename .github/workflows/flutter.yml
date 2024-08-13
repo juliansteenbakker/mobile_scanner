@@ -36,7 +36,7 @@ jobs:
       - uses: subosito/flutter-action@v2.12.0
         with:
           cache: true
-          flutter-version: '3.19'
+          flutter-version: '3.22'
           channel: 'stable'
       - name: Version
         run: flutter doctor -v
