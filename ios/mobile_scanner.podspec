@@ -13,7 +13,7 @@ An universal scanner for Flutter based on MLKit.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Julian Steenbakker' => 'juliansteenbakker@outlook.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'mobile_scanner/Sources/mobile_scanner**/*.swift'
   s.dependency 'Flutter'
   s.dependency 'GoogleMLKit/BarcodeScanning', '~> 6.0.0'
   s.platform = :ios, '12.0'
@@ -21,5 +21,5 @@ An universal scanner for Flutter based on MLKit.
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
-  s.resource_bundles = { 'mobile_scanner_privacy' => ['Resources/PrivacyInfo.xcprivacy'] }
+  s.resource_bundles = {'mobile_scanner_privacy' => ['mobile_scanner/Sources/mobile_scanner/PrivacyInfo.xcprivacy']}
 end
