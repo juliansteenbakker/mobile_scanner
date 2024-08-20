@@ -25,6 +25,9 @@ let package = Package(
                 // For more information, see:
                 // https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
                  .process("PrivacyInfo.xcprivacy"),
+                 
+                 // To add other resources, see the instructions at
+                 // https://developer.apple.com/documentation/xcode/bundling-resources-with-a-swift-package
             ]
         )
     ]

@@ -20,7 +20,10 @@ let package = Package(
         .target(
             name: "mobile_scanner",
             dependencies: [],
-            resources: []
+            resources: [
+                // To add other resources, see the instructions at
+                // https://developer.apple.com/documentation/xcode/bundling-resources-with-a-swift-package
+            ]
         )
     ]
 )
