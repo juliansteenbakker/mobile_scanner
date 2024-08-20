@@ -1,5 +1,10 @@
+## 5.2.1
+
+* Updates the `package:web` dependency to use a version range.
+
 ## 5.2.0
-* This release requires Flutter 3.22.0 and Dart 3.4.
+
+This release requires Flutter 3.22.0 and Dart 3.4.
 
 * [Android] Fixed a leak of the barcode scanner.
 * [Android] Fixed a crash when encountering invalid numbers for the scan window.
