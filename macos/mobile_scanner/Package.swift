@@ -8,10 +8,10 @@ let package = Package(
     platforms: [
         // If your plugin only supports iOS, remove `.macOS(...)`.
         // If your plugin only supports macOS, remove `.iOS(...)`.
-        .iOS("12.0"),
         .macOS("10.14")
     ],
     products: [
+
         // If the plugin name contains "_", replace with "-" for the library name.
         .library(name: "mobile-scanner", targets: ["mobile_scanner"])
     ],
@@ -20,13 +20,7 @@ let package = Package(
         .target(
             name: "mobile_scanner",
             dependencies: [],
-            resources: [
-                // (e.g. if it uses any required reason APIs), update the PrivacyInfo.xcprivacy file
-                // to describe your plugin's privacy impact, and then uncomment this line.
-                // For more information, see:
-                // https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
-                 .process("PrivacyInfo.xcprivacy"),
-            ]
+            resources: []
         )
     ]
 )
