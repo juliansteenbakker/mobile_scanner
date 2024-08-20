@@ -1,3 +1,7 @@
+## 5.2.1
+
+* Updates the `package:web` dependency to use a version range.
+
 ## 5.2.0
 * This release requires Flutter 3.22.0 and Dart 3.4.
 
