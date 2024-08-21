@@ -6,13 +6,10 @@ import PackageDescription
 let package = Package(
     name: "mobile_scanner",
     platforms: [
-        // If your plugin only supports iOS, remove `.macOS(...)`.
-        // If your plugin only supports macOS, remove `.iOS(...)`.
         .macOS("10.14")
     ],
     products: [
 
-        // If the plugin name contains "_", replace with "-" for the library name.
         .library(name: "mobile-scanner", targets: ["mobile_scanner"])
     ],
     dependencies: [],
