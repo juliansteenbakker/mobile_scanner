@@ -9,7 +9,6 @@ let package = Package(
         .macOS("10.14")
     ],
     products: [
-
         .library(name: "mobile-scanner", targets: ["mobile_scanner"])
     ],
     dependencies: [],
