@@ -13,7 +13,7 @@ An universal scanner for Flutter based on MLKit.
   s.license          = { :file => '../LICENSE' }
   s.author           = { 'Julian Steenbakker' => 'juliansteenbakker@outlook.com' }
   s.source           = { :path => '.' }
-  s.source_files = 'mobile_scanner/Sources/mobile_scanner**/*.swift'
+  s.source_files = 'mobile_scanner/Sources/mobile_scanner/**/*.swift'
   s.dependency 'Flutter'
   s.dependency 'GoogleMLKit/BarcodeScanning', '~> 6.0.0'
   s.platform = :ios, '12.0'
