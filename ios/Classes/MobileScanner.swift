@@ -127,7 +127,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
             return
         }
         latestBuffer = imageBuffer
@@ -160,7 +159,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                     
                     if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
                         return
-                    } else if (newScannedBarcodes?.isEmpty == false) {
+                    }
+                    
+                    if (newScannedBarcodes?.isEmpty == false) {
                         barcodesString = newScannedBarcodes
                     }
                 }
@@ -445,17 +446,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     var barcodesString: Array<String?>?
-
-    //    /// Convert image buffer to jpeg
-    //    private func ciImageToJpeg(ciImage: CIImage) -> Data {
-    //
-    //        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
-    //        let context:CIContext = CIContext.init(options: nil)
-    //        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
-    //        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
-    //
-    //        return uiImage.jpegData(compressionQuality: 0.8)!
-    //    }
 
     /// Rotates images accordingly
     func imageOrientation(
