@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -54,24 +53,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     final List<Map<Object?, Object?>> barcodes =
         data.cast<Map<Object?, Object?>>();
 
-    if (defaultTargetPlatform == TargetPlatform.macOS) {
-      return BarcodeCapture(
-        raw: event,
-        barcodes: barcodes
-            .map(
-              (barcode) => Barcode(
-                rawValue: barcode['payload'] as String?,
-                format: BarcodeFormat.fromRawValue(
-                  barcode['symbology'] as int? ?? -1,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    }
-
     if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
       final Map<String, Object?>? imageData =
           event['image'] as Map<String, Object?>?;
       final Uint8List? image = imageData?['bytes'] as Uint8List?;
