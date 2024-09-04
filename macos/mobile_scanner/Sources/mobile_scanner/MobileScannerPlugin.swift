@@ -126,42 +126,54 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 do {
                     let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
                         self?.imagesCurrentlyBeingProcessed = false
-                        if error == nil {
-                            if let results = request.results as? [VNBarcodeObservation] {
-                                for barcode in results {
-                                    if self?.scanWindow != nil && cgImage != nil {
-                                        let match = self?.isBarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!) ?? false
-                                        if (!match) {
-                                            continue
-                                        }
-                                    }
-
-                                    DispatchQueue.main.async {
-                                        self?.sink?([
-                                            "name": "barcode",
-                                            "data": [
-                                                [
-                                                    "payload": barcode.payloadStringValue ?? "",
-                                                    "symbology": barcode.symbology.toInt ?? -1,
-                                                ],
-                                            ],
-                                        ])
-                                    }
-                                    //                                   if barcodeType == "QR" {
-                                    //                                        let image = CIImage(image: source)
-                                    //                                        image?.cropping(to: barcode.boundingBox)
-                                    //                                        self.qrCodeDescriptor(qrCode: barcode, qrCodeImage: image!)
-                                    //                                    }
-                                }
-                            }
-                        } else {
+                        
+                        if error != nil {
                             DispatchQueue.main.async {
                                 self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
                             }
+                            return
+                        }
+                        
+                        guard let results: [VNBarcodeObservation] = request.results as? [VNBarcodeObservation] else {
+                            return
+                        }
+                        
+                        if results.isEmpty {
+                            return
+                        }
+                        
+                        let barcodes: [VNBarcodeObservation] = results.compactMap({ barcode in
+                            // If there is a scan window, check if the barcode is within said scan window.
+                            if self?.scanWindow != nil && cgImage != nil && !(self?.isBarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!) ?? false) {
+                                return nil
+                            }
+                            
+                            return barcode
+                        })
+                        
+                        DispatchQueue.main.async {
+                            if (!MobileScannerPlugin.returnImage) {
+                                self?.sink?([
+                                    "name": "barcode",
+                                    "data": barcodes.map({ $0.toMap() }),
+                                ])
+                                return
+                            }
+                                                        
+                            self?.sink?([
+                                "name": "barcode",
+                                "data": barcodes.map({ $0.toMap() }),
+                                "image": cgImage == nil ? nil : [
+                                    "bytes": FlutterStandardTypedData(bytes: cgImage!.jpegData(compressionQuality: 0.8)!),
+                                    "width": cgImage!.width,
+                                    "height": cgImage!.height,
+                                ],
+                            ])
                         }
                     })
-                    if(self?.symbologies.isEmpty == false){
-                        // add the symbologies the user wishes to support
+                    
+                    if self?.symbologies.isEmpty == false {
+                        // Add the symbologies the user wishes to support.
                         barcodeRequest.symbologies = self!.symbologies
                     }
 

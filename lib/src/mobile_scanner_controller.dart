@@ -80,7 +80,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If this is false, [BarcodeCapture.image] will always be null.
   ///
-  /// Defaults to false, and is only supported on iOS and Android.
+  /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
   /// Whether the flashlight should be turned on when the camera is started.
