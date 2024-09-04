@@ -29,8 +29,27 @@ extension UIDeviceOrientation {
 
 extension Barcode {
     var data: [String: Any?] {
-        let corners = cornerPoints?.map({$0.cgPointValue.data})
-        return ["corners": corners, "format": format.rawValue, "rawBytes": rawData, "rawValue": rawValue, "type": valueType.rawValue, "calendarEvent": calendarEvent?.data, "contactInfo": contactInfo?.data, "driverLicense": driverLicense?.data, "email": email?.data, "geoPoint": geoPoint?.data, "phone": phone?.data, "sms": sms?.data, "url": url?.data, "wifi": wifi?.data, "displayValue": displayValue]
+        return [
+            "calendarEvent": calendarEvent?.data,
+            "contactInfo": contactInfo?.data,
+            "corners": cornerPoints?.map({$0.cgPointValue.data}),
+            "displayValue": displayValue,
+            "driverLicense": driverLicense?.data,
+            "email": email?.data,
+            "format": format.rawValue,
+            "geoPoint": geoPoint?.data,
+            "phone": phone?.data,
+            "rawBytes": rawData,
+            "rawValue": rawValue,
+            "size": frame.isNull ? nil : [
+                "width": frame.width,
+                "height": frame.height,
+            ],
+            "sms": sms?.data,
+            "type": valueType.rawValue,
+            "url": url?.data,
+            "wifi": wifi?.data,
+        ]
     }
 }
 
