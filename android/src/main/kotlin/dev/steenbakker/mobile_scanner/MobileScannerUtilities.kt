@@ -28,12 +28,22 @@ fun Image.toByteArray(): ByteArray {
 
 val Barcode.data: Map<String, Any?>
     get() = mapOf(
-        "corners" to cornerPoints?.map { corner -> corner.data }, "format" to format,
-        "rawBytes" to rawBytes, "rawValue" to rawValue, "type" to valueType,
-        "calendarEvent" to calendarEvent?.data, "contactInfo" to contactInfo?.data,
-        "driverLicense" to driverLicense?.data, "email" to email?.data,
-        "geoPoint" to geoPoint?.data, "phone" to phone?.data, "sms" to sms?.data,
-        "url" to url?.data, "wifi" to wifi?.data, "displayValue" to displayValue
+        "calendarEvent" to calendarEvent?.data,
+        "contactInfo" to contactInfo?.data,
+        "corners" to cornerPoints?.map { corner -> corner.data },
+        "displayValue" to displayValue,
+        "driverLicense" to driverLicense?.data,
+        "email" to email?.data,
+        "format" to format,
+        "geoPoint" to geoPoint?.data,
+        "phone" to phone?.data,
+        "rawBytes" to rawBytes,
+        "rawValue" to rawValue,
+        "size" to boundingBox?.size,
+        "sms" to sms?.data,
+        "type" to valueType,
+        "url" to url?.data,
+        "wifi" to wifi?.data,
     )
 
 private val Point.data: Map<String, Double>
@@ -93,3 +103,13 @@ private val Barcode.UrlBookmark.data: Map<String, Any?>
 
 private val Barcode.WiFi.data: Map<String, Any?>
     get() = mapOf("encryptionType" to encryptionType, "password" to password, "ssid" to ssid)
+
+private val Rect.size: Map<String, Any?>
+    get() {
+        // Rect.isValid can't be accessed for some reason, so just do the check manually.
+        if (left <= right && top <= bottom) {
+            return mapOf("width" to width().toDouble(), "height" to height().toDouble())
+        }
+
+        return emptyMap()
+    }
