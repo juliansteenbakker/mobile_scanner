@@ -50,9 +50,11 @@ class MobileScannerHandler(
             barcodeHandler.publishEvent(mapOf(
                 "name" to "barcode",
                 "data" to barcodes,
-                "image" to image,
-                "width" to width!!.toDouble(),
-                "height" to height!!.toDouble()
+                "image" to mapOf(
+                    "bytes" to image,
+                    "width" to width!!.toDouble(),
+                    "height" to height!!.toDouble(),
+                )
             ))
         } else {
             barcodeHandler.publishEvent(mapOf(
