@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+library;
+
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -16,15 +19,21 @@ class BarcodeCapture {
   /// The list of scanned barcodes.
   final List<Barcode> barcodes;
 
-  /// The bytes of the image that is embedded in the barcode.
+  /// The input image of the barcode capture.
   ///
-  /// This null if [MobileScannerController.returnImage] is false,
-  /// or if there is no available image.
+  /// This is the image that was used to detect the available [barcodes],
+  /// not the image from a specific barcode.
+  ///
+  /// This is always null if [MobileScannerController.returnImage] is false.
   final Uint8List? image;
 
-  /// The raw data of the scanned barcode.
+  /// The raw data of the barcode scan.
+  ///
+  /// This is the data that was used to detect the available [barcodes], the input [image] and the [size].
   final Object? raw;
 
-  /// The size of the scanned barcode.
+  /// The size of the input [image].
+  ///
+  /// If [image] is null, this will be [Size.zero].
   final Size size;
 }
