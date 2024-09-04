@@ -25,6 +25,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // optional window to limit scan search
     var scanWindow: CGRect?
+    
+    /// Whether to return the input image with the barcode event.
+    /// This is static to avoid accessing `self` in the `VNDetectBarcodesRequest` callback.
+    private static var returnImage: Bool = false
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
@@ -261,6 +265,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let speed:Int = argReader.int(key: "speed") ?? 0
         let timeoutMs:Int = argReader.int(key: "timeout") ?? 0
         symbologies = argReader.toSymbology()
+        MobileScannerPlugin.returnImage = argReader.bool(key: "returnImage") ?? false
 
         timeoutSeconds = Double(timeoutMs) / 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
