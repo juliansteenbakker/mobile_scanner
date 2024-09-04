@@ -79,7 +79,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       final double? height = imageData?['height'] as double?;
 
       return BarcodeCapture(
-        raw: data,
+        raw: event,
         barcodes: barcodes.map(Barcode.fromNative).toList(),
         image: image,
         size: width == null || height == null ? Size.zero : Size(width, height),
