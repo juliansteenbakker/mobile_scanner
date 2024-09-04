@@ -58,7 +58,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 if (MobileScannerPlugin.isBarcodeInScanWindow(barcode: barcode, imageSize: image.size)) {
                     return barcode.data
                 }
-                
+
                 return nil
             }
             

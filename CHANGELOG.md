@@ -1,3 +1,15 @@
+## 5.2.2
+
+Improvements:
+* [MacOS] Adds Swift Package Manager support.
+* [MacOS] Adds support for `returnImage`.
+* Added a new `size` property to `Barcode`, that denotes the bounding box of the barcode.
+
+Bugs fixed:
+* Fixed some documentation errors for the `size` and `image` of `BarcodeCapture`.
+* [iOS] Fixed a bug with `returnImage`.
+* [Android/iOS] Adjusted the raw barcode scan value to pass the raw event data, like on MacOS.
+
 ## 5.2.1
 
 * Updates the `package:web` dependency to use a version range.
@@ -44,7 +56,7 @@ Improvements:
 This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:
 
 Improvements:
-- [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
+* [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
 
 ## 5.0.0-beta.3
 **BREAKING CHANGES:**
