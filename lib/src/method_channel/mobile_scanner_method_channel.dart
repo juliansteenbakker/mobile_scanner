@@ -72,13 +72,16 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS) {
-      final double? width = event['width'] as double?;
-      final double? height = event['height'] as double?;
+      final Map<String, Object?>? imageData =
+          event['image'] as Map<String, Object?>?;
+      final Uint8List? image = imageData?['bytes'] as Uint8List?;
+      final double? width = imageData?['width'] as double?;
+      final double? height = imageData?['height'] as double?;
 
       return BarcodeCapture(
         raw: data,
         barcodes: barcodes.map(Barcode.fromNative).toList(),
-        image: event['image'] as Uint8List?,
+        image: image,
         size: width == null || height == null ? Size.zero : Size(width, height),
       );
     }
