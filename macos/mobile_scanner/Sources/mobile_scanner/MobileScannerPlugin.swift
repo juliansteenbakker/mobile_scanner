@@ -494,6 +494,45 @@ class MapArgumentReader {
 
 }
 
+extension CGImage {
+    public func jpegData(compressionQuality: CGFloat) -> Data? {
+        let mutableData = CFDataCreateMutable(nil, 0)
+        
+        let formatHint: CFString
+        
+        if #available(macOS 11.0, *) {
+            formatHint = UTType.jpeg.identifier as CFString
+        } else {
+            formatHint = kUTTypeJPEG
+        }
+        
+        guard let destination = CGImageDestinationCreateWithData(mutableData!, formatHint, 1, nil) else {
+            return nil
+        }
+        
+        let options: NSDictionary = [
+            kCGImageDestinationLossyCompressionQuality: compressionQuality,
+        ]
+        
+        CGImageDestinationAddImage(destination, self, options)
+        
+        if !CGImageDestinationFinalize(destination) {
+            return nil
+        }
+        
+        return mutableData as Data?
+    }
+}
+
+extension VNBarcodeObservation {
+    public func toMap() -> [String: Any?] {
+        return [
+            "rawValue": self.payloadStringValue ?? "",
+            "format": self.symbology.toInt ?? -1,
+        ]
+    }
+}
+
 extension VNBarcodeSymbology {
     static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
         if #available(macOS 12.0, *) {
