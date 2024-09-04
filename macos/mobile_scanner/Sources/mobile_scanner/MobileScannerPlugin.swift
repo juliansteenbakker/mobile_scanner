@@ -32,8 +32,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     var symbologies:[VNBarcodeSymbology] = []
     
-    //    var analyzeMode: Int = 0
-    var analyzing: Bool = false
     var position = AVCaptureDevice.Position.back
     
     public static func register(with registrar: FlutterPluginRegistrar) {
@@ -65,8 +63,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             setScale(call, result)
         case "resetScale":
             resetScale(call, result)
-            //        case "analyze":
-            //            switchAnalyzeMode(call, result)
         case "stop":
             stop(result)
         case "updateScanWindow":
@@ -101,12 +97,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        // Ignore invalid textureId
+        // Ignore invalid texture id.
         if textureId == nil {
             return
         }
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
             return
         }
         latestBuffer = imageBuffer
@@ -118,7 +113,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                if(self!.latestBuffer == nil){
+                if self!.latestBuffer == nil {
                     return
                 }
                 var cgImage: CGImage?
@@ -165,6 +160,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         // add the symbologies the user wishes to support
                         barcodeRequest.symbologies = self!.symbologies
                     }
+
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let e {
                     DispatchQueue.main.async {
@@ -415,11 +411,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
-    //    func switchAnalyzeMode(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-    //        analyzeMode = call.arguments as! Int
-    //        result(nil)
-    //    }
-
     func stop(_ result: FlutterResult) {
         if (device == nil || captureSession == nil) {
             result(nil)
@@ -436,7 +427,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         registry.unregisterTexture(textureId)
         
-        //        analyzeMode = 0
         latestBuffer = nil
         captureSession = nil
         device = nil
