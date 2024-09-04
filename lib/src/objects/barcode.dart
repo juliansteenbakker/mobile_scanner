@@ -28,6 +28,7 @@ class Barcode {
     this.phone,
     this.rawBytes,
     this.rawValue,
+    this.size = Size.zero,
     this.sms,
     this.type = BarcodeType.unknown,
     this.url,
@@ -38,9 +39,9 @@ class Barcode {
   factory Barcode.fromNative(Map<Object?, Object?> data) {
     final Map<Object?, Object?>? calendarEvent =
         data['calendarEvent'] as Map<Object?, Object?>?;
-    final List<Object?>? corners = data['corners'] as List<Object?>?;
     final Map<Object?, Object?>? contactInfo =
         data['contactInfo'] as Map<Object?, Object?>?;
+    final List<Object?>? corners = data['corners'] as List<Object?>?;
     final Map<Object?, Object?>? driverLicense =
         data['driverLicense'] as Map<Object?, Object?>?;
     final Map<Object?, Object?>? email =
@@ -50,8 +51,12 @@ class Barcode {
     final Map<Object?, Object?>? phone =
         data['phone'] as Map<Object?, Object?>?;
     final Map<Object?, Object?>? sms = data['sms'] as Map<Object?, Object?>?;
+    final Map<Object?, Object?>? size = data['size'] as Map<Object?, Object?>?;
     final Map<Object?, Object?>? url = data['url'] as Map<Object?, Object?>?;
     final Map<Object?, Object?>? wifi = data['wifi'] as Map<Object?, Object?>?;
+
+    final double? barcodeWidth = size?['width'] as double?;
+    final double? barcodeHeight = size?['height'] as double?;
 
     return Barcode(
       calendarEvent: calendarEvent == null
@@ -81,6 +86,9 @@ class Barcode {
       phone: phone == null ? null : Phone.fromNative(phone),
       rawBytes: data['rawBytes'] as Uint8List?,
       rawValue: data['rawValue'] as String?,
+      size: barcodeWidth == null || barcodeHeight == null
+          ? Size.zero
+          : Size(barcodeWidth, barcodeHeight),
       sms: sms == null ? null : SMS.fromNative(sms),
       type: BarcodeType.fromRawValue(data['type'] as int? ?? 0),
       url: url == null ? null : UrlBookmark.fromNative(url),
@@ -143,6 +151,11 @@ class Barcode {
   ///
   /// This is null if the raw value is not available.
   final String? rawValue;
+
+  /// The size of the barcode bounding box.
+  ///
+  /// If the bounding box is unavailable, this will be [Size.zero].
+  final Size size;
 
   /// The SMS message that is embedded in the barcode.
   final SMS? sms;
