@@ -165,8 +165,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 "data": barcodes.map({ $0.toMap() }),
                                 "image": cgImage == nil ? nil : [
                                     "bytes": FlutterStandardTypedData(bytes: cgImage!.jpegData(compressionQuality: 0.8)!),
-                                    "width": cgImage!.width,
-                                    "height": cgImage!.height,
+                                    "width": Double(cgImage!.width),
+                                    "height": Double(cgImage!.height),
                                 ],
                             ])
                         }

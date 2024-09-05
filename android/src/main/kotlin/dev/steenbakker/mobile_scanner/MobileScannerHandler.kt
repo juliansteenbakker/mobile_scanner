@@ -52,8 +52,8 @@ class MobileScannerHandler(
                 "data" to barcodes,
                 "image" to mapOf(
                     "bytes" to image,
-                    "width" to width!!.toDouble(),
-                    "height" to height!!.toDouble(),
+                    "width" to width?.toDouble(),
+                    "height" to height?.toDouble(),
                 )
             ))
         } else {
