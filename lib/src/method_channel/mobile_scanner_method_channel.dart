@@ -56,8 +56,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      final Map<String, Object?>? imageData =
-          event['image'] as Map<String, Object?>?;
+      final Map<Object?, Object?>? imageData =
+          event['image'] as Map<Object?, Object?>?;
       final Uint8List? image = imageData?['bytes'] as Uint8List?;
       final double? width = imageData?['width'] as double?;
       final double? height = imageData?['height'] as double?;
@@ -141,8 +141,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<BarcodeCapture?> analyzeImage(String path) async {
-    final Map<String, Object?>? result =
-        await methodChannel.invokeMapMethod<String, Object?>(
+    final Map<Object?, Object?>? result =
+        await methodChannel.invokeMapMethod<Object?, Object?>(
       'analyzeImage',
       path,
     );
