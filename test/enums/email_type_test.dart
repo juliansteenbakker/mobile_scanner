@@ -21,8 +21,8 @@ void main() {
       const int negative = -1;
       const int outOfRange = 3;
 
-      expect(() => EmailType.fromRawValue(negative), EmailType.unknown);
-      expect(() => EmailType.fromRawValue(outOfRange), EmailType.unknown);
+      expect(EmailType.fromRawValue(negative), EmailType.unknown);
+      expect(EmailType.fromRawValue(outOfRange), EmailType.unknown);
     });
 
     test('can be converted to raw value', () {

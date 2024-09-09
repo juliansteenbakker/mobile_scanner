@@ -22,11 +22,8 @@ void main() {
       const int negative = -1;
       const int outOfRange = 4;
 
-      expect(() => EncryptionType.fromRawValue(negative), EncryptionType.unknown);
-      expect(
-        () => EncryptionType.fromRawValue(outOfRange),
-        EncryptionType.unknown,
-      );
+      expect(EncryptionType.fromRawValue(negative), EncryptionType.unknown);
+      expect(EncryptionType.fromRawValue(outOfRange), EncryptionType.unknown);
     });
 
     test('can be converted to raw value', () {

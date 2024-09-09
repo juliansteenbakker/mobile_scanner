@@ -23,8 +23,8 @@ void main() {
       const int negative = -1;
       const int outOfRange = 5;
 
-      expect(() => PhoneType.fromRawValue(negative), PhoneType.unknown);
-      expect(() => PhoneType.fromRawValue(outOfRange), PhoneType.unknown);
+      expect(PhoneType.fromRawValue(negative), PhoneType.unknown);
+      expect(PhoneType.fromRawValue(outOfRange), PhoneType.unknown);
     });
 
     test('can be converted to raw value', () {

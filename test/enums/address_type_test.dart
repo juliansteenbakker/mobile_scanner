@@ -21,8 +21,8 @@ void main() {
       const int negative = -1;
       const int outOfRange = 3;
 
-      expect(() => AddressType.fromRawValue(negative), AddressType.unknown);
-      expect(() => AddressType.fromRawValue(outOfRange), AddressType.unknown);
+      expect(AddressType.fromRawValue(negative), AddressType.unknown);
+      expect(AddressType.fromRawValue(outOfRange), AddressType.unknown);
     });
 
     test('can be converted to raw value', () {

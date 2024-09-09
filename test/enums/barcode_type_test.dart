@@ -31,8 +31,8 @@ void main() {
       const int negative = -1;
       const int outOfRange = 13;
 
-      expect(() => BarcodeType.fromRawValue(negative), BarcodeType.unknown);
-      expect(() => BarcodeType.fromRawValue(outOfRange), BarcodeType.unknown);
+      expect(BarcodeType.fromRawValue(negative), BarcodeType.unknown);
+      expect(BarcodeType.fromRawValue(outOfRange), BarcodeType.unknown);
     });
 
     test('can be converted to raw value', () {
