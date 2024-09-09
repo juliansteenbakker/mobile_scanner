@@ -542,10 +542,24 @@ extension CGImage {
 }
 
 extension VNBarcodeObservation {
+    private func distanceBetween(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
+        return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2))
+    }
+    
     public func toMap() -> [String: Any?] {
         return [
-            "rawValue": self.payloadStringValue ?? "",
-            "format": self.symbology.toInt ?? -1,
+            "corners": [
+                ["x": Double(topLeft.x), "y": Double(topLeft.y)],
+                ["x": Double(topRight.x), "y": Double(topRight.y)],
+                ["x": Double(bottomRight.x), "y": Double(bottomRight.y)],
+                ["x": Double(bottomLeft.x), "y": Double(bottomLeft.y)],
+            ],
+            "format": symbology.toInt ?? -1,
+            "rawValue": payloadStringValue ?? "",
+            "size": [
+                "width": Double(distanceBetween(topLeft, topRight)),
+                "height": Double(distanceBetween(topLeft, bottomLeft)),
+            ],
         ]
     }
 }
@@ -585,7 +599,7 @@ extension VNBarcodeSymbology {
         }
     }
 
-    var toInt:Int? {
+    var toInt: Int? {
         if #available(macOS 12.0, *) {
             if(self == VNBarcodeSymbology.codabar){
                 return 8
