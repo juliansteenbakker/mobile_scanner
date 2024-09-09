@@ -5,7 +5,7 @@ void main() {
   group('$EncryptionType tests', () {
     test('can be created from raw value', () {
       const values = <int, EncryptionType>{
-        0: EncryptionType.none,
+        0: EncryptionType.unknown,
         1: EncryptionType.open,
         2: EncryptionType.wpa,
         3: EncryptionType.wep,
@@ -18,20 +18,17 @@ void main() {
       }
     });
 
-    test('invalid raw value throws argument error', () {
+    test('invalid raw value returns EncryptionType.unknown', () {
       const int negative = -1;
       const int outOfRange = 4;
 
-      expect(() => EncryptionType.fromRawValue(negative), throwsArgumentError);
-      expect(
-        () => EncryptionType.fromRawValue(outOfRange),
-        throwsArgumentError,
-      );
+      expect(EncryptionType.fromRawValue(negative), EncryptionType.unknown);
+      expect(EncryptionType.fromRawValue(outOfRange), EncryptionType.unknown);
     });
 
     test('can be converted to raw value', () {
       const values = <EncryptionType, int>{
-        EncryptionType.none: 0,
+        EncryptionType.unknown: 0,
         EncryptionType.open: 1,
         EncryptionType.wpa: 2,
         EncryptionType.wep: 3,

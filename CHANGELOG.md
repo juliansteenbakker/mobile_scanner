@@ -1,3 +1,15 @@
+## 5.2.3
+
+Deprecations:
+* The `EncryptionType.none` constant has been deprecated, as its name was misleading. Use `EncryptionType.unknown` instead.
+
+Bugs fixed:
+* Fixed `EncryptionType` throwing on invalid `SAE` encryption type.
+* [web] Removed the `controls` attribute on the video preview.
+
+Improvements:
+* All enum types for barcode data (i.e. Wifi type or email type) now return `unknown` for unrecognized values.
+
 ## 5.2.2
 
 Improvements:

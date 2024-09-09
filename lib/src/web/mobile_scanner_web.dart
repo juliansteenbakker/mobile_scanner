@@ -88,6 +88,18 @@ class MobileScannerWeb extends MobileScannerPlatform {
       ..transformOrigin = 'center'
       ..pointerEvents = 'none';
 
+    // Do not show the media controls, as this is a preview element.
+    // Also prevent play/pause events from changing the media controls.
+    videoElement.controls = false;
+
+    videoElement.onplay = (JSAny _) {
+      videoElement.controls = false;
+    }.toJS;
+
+    videoElement.onpause = (JSAny _) {
+      videoElement.controls = false;
+    }.toJS;
+
     // Attach the video element to its parent container
     // and setup the PlatformView factory for this `textureId`.
     _divElement = HTMLDivElement()

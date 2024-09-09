@@ -20,7 +20,7 @@ enum EmailType {
       case 2:
         return EmailType.home;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return EmailType.unknown;
     }
   }
 

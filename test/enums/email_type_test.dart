@@ -17,12 +17,12 @@ void main() {
       }
     });
 
-    test('invalid raw value throws argument error', () {
+    test('invalid raw value returns EmailType.unknown', () {
       const int negative = -1;
       const int outOfRange = 3;
 
-      expect(() => EmailType.fromRawValue(negative), throwsArgumentError);
-      expect(() => EmailType.fromRawValue(outOfRange), throwsArgumentError);
+      expect(EmailType.fromRawValue(negative), EmailType.unknown);
+      expect(EmailType.fromRawValue(outOfRange), EmailType.unknown);
     });
 
     test('can be converted to raw value', () {
