@@ -549,16 +549,16 @@ extension VNBarcodeObservation {
     public func toMap() -> [String: Any?] {
         return [
             "corners": [
-                ["x": Double(topLeft.x), "y": Double(topLeft.y)],
-                ["x": Double(topRight.x), "y": Double(topRight.y)],
-                ["x": Double(bottomRight.x), "y": Double(bottomRight.y)],
-                ["x": Double(bottomLeft.x), "y": Double(bottomLeft.y)],
+                ["x": topLeft.x, "y": topLeft.y],
+                ["x": topRight.x, "y": topRight.y],
+                ["x": bottomRight.x, "y": bottomRight.y],
+                ["x": bottomLeft.x, "y": bottomLeft.y],
             ],
             "format": symbology.toInt ?? -1,
             "rawValue": payloadStringValue ?? "",
             "size": [
-                "width": Double(distanceBetween(topLeft, topRight)),
-                "height": Double(distanceBetween(topLeft, bottomLeft)),
+                "width": distanceBetween(topLeft, topRight),
+                "height": distanceBetween(topLeft, bottomLeft),
             ],
         ]
     }
