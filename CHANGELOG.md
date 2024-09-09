@@ -5,6 +5,7 @@ Deprecations:
 
 Bugs fixed:
 * Fixed `EncryptionType` throwing on invalid `SAE` encryption type.
+* [web] Removed the `controls` attribute on the video preview.
 
 Improvements:
 * All enum types for barcode data (i.e. Wifi type or email type) now return `unknown` for unrecognized values.
