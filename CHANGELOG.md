@@ -1,4 +1,4 @@
-## NEXT
+## 5.2.3
 
 Deprecations:
 * The `EncryptionType.none` constant has been deprecated, as its name was misleading. Use `EncryptionType.unknown` instead.
