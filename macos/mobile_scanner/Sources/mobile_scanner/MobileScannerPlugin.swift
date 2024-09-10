@@ -458,13 +458,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
         
-        guard let fileUrl: URL = URL(string: argReader.string(key: "filePath") ?? "") else {
+        guard let filePath: String = argReader.string(key: "filePath") else {
             // TODO: fix error code
             result(FlutterError(code: "MobileScanner",
                                 message: "No image found in analyzeImage!",
                                 details: nil))
             return
         }
+        
+        let fileUrl = URL(fileURLWithPath: filePath)
         
         guard let ciImage = CIImage(contentsOf: fileUrl) else {
             // TODO: fix error code
