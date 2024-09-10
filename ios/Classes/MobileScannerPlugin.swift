@@ -253,7 +253,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// Analyzes a single image.
     private func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        let uiImage = UIImage(contentsOfFile: call.arguments as? String ?? "")
+        let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
+        let scannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
+        let uiImage = UIImage(contentsOfFile: (call.arguments as! Dictionary<String, Any?>)["filePath"] as? String ?? "")
         
         if (uiImage == nil) {
             result(FlutterError(code: "MobileScanner",
@@ -262,7 +264,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { barcodes, error in
+        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back,
+                                   barcodeScannerOptions: scannerOptions, callback: { barcodes, error in
             if error != nil {
                 DispatchQueue.main.async {
                     result(FlutterError(code: "MobileScanner",
