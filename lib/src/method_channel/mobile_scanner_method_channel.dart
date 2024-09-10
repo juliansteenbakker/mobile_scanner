@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -140,11 +141,22 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<BarcodeCapture?> analyzeImage(String path) async {
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) async {
     final Map<Object?, Object?>? result =
         await methodChannel.invokeMapMethod<Object?, Object?>(
       'analyzeImage',
-      path,
+      {
+        'filePath': path,
+        'formats': formats.isEmpty
+            ? null
+            : [
+                for (final BarcodeFormat format in formats)
+                  if (format != BarcodeFormat.unknown) format.rawValue,
+              ],
+      },
     );
 
     return _parseBarcode(result);
