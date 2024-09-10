@@ -134,16 +134,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
         MobileScannerPlugin.returnImage = returnImage
 
-        let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
-        var barcodeOptions: BarcodeScannerOptions? = nil
-
-        if (formatList.count != 0) {
-            var barcodeFormats: BarcodeFormat = []
-            for index in formats {
-                barcodeFormats.insert(BarcodeFormat(rawValue: index))
-            }
-            barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
-        }
+        let barcodeOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
 
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
@@ -296,5 +287,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 result(["name": "barcode", "data": barcodesMap])
             }
         })
+    }
+    
+    private func buildBarcodeScannerOptions(_ formats: [Int]) -> BarcodeScannerOptions? {
+        guard !formats.isEmpty else {
+            return nil
+        }
+
+        var barcodeFormats: BarcodeFormat = []
+
+        for format in formats {
+            barcodeFormats.insert(BarcodeFormat(rawValue: format))
+        }
+
+        return BarcodeScannerOptions(formats: barcodeFormats)
     }
 }
