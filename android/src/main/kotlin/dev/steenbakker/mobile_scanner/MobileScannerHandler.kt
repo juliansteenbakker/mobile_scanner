@@ -231,13 +231,13 @@ class MobileScannerHandler(
 
     private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
         analyzerResult = result
-        val uri = Uri.fromFile(File(call.arguments.toString()))
 
-        // TODO: parse options from the method call
-        // See https://github.com/juliansteenbakker/mobile_scanner/issues/1069
+        val formats: List<Int>? = call.argument<List<Int>>("formats")
+        val filePath: String = call.argument<String>("filePath")!!
+
         mobileScanner!!.analyzeImage(
-            uri,
-            null,
+            Uri.fromFile(File(filePath)),
+            buildBarcodeScannerOptions(formats),
             analyzeImageSuccessCallback,
             analyzeImageErrorCallback)
     }
