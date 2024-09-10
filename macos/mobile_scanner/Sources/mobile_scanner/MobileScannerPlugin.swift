@@ -71,6 +71,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             stop(result)
         case "updateScanWindow":
             updateScanWindow(call, result)
+        case "analyzeImage":
+            analyzeImage(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -124,7 +126,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 VTCreateCGImageFromCVPixelBuffer(self!.latestBuffer, options: nil, imageOut: &cgImage)
                 let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
                 do {
-                    let barcodeRequest:VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
+                    let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
                         self?.imagesCurrentlyBeingProcessed = false
                         
                         if error != nil {
@@ -450,6 +452,68 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         textureId = nil
         
         result(nil)
+    }
+    
+    func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
+        
+        guard let fileUrl: URL = URL(string: argReader.string(key: "filePath") ?? "") else {
+            // TODO: fix error code
+            result(FlutterError(code: "MobileScanner",
+                                message: "No image found in analyzeImage!",
+                                details: nil))
+            return
+        }
+        
+        guard let ciImage = CIImage(contentsOf: fileUrl) else {
+            // TODO: fix error code
+            result(FlutterError(code: "MobileScanner",
+                                message: "No image found in analyzeImage!",
+                                details: nil))
+            return
+        }
+        
+        let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: CGImagePropertyOrientation.up, options: [:])
+        
+        do {
+            let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(
+                completionHandler: { [] (request, error) in
+                    
+                if error != nil {
+                    DispatchQueue.main.async {
+                        // TODO: fix error code
+                        result(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                    }
+                    return
+                }
+                    
+                guard let barcodes: [VNBarcodeObservation] = request.results as? [VNBarcodeObservation] else {
+                    return
+                }
+                    
+                if barcodes.isEmpty {
+                    return
+                }
+                    
+                result([
+                    "name": "barcode",
+                    "data": barcodes.map({ $0.toMap() }),
+                ])
+            })
+            
+            if !symbologies.isEmpty {
+                // Add the symbologies the user wishes to support.
+                barcodeRequest.symbologies = symbologies
+            }
+            
+            try imageRequestHandler.perform([barcodeRequest])
+        } catch let e {
+            // TODO: fix error code
+            DispatchQueue.main.async {
+                result(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+            }
+        }
     }
     
     // Observer for torch state
