@@ -83,8 +83,8 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 ## Web
 
-As of version 5.0.0 adding the library to the `index.html` is no longer required,
-as the library is automatically loaded on first use.
+As of version 5.0.0 adding the barcode scanning library script to the `index.html` is no longer required,
+as the script is automatically loaded on first use.
 
 ### Providing a mirror for the barcode scanning library
 
@@ -193,12 +193,3 @@ To display the camera preview, pass the controller to a `MobileScanner` widget.
 
 See the [examples](example/README.md) for runnable examples of various usages,
 such as the basic usage, applying a scan window, or retrieving images from the barcodes.
-
-- analyzeImage() for MacOS (reading the given file as an image frame and passing that to VN)
-- MacOS scan window, using https://developer.apple.com/documentation/vision/vnimagebasedrequest
-- implement size on web too?
-
-/**
- - analyzeImage() for MacOS (reading the given file as an image frame and passing that to VN)
- - MacOS scan window, using https://developer.apple.com/documentation/vision/vnimagebasedrequest
- */
