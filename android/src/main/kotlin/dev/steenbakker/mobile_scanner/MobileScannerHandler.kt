@@ -151,28 +151,16 @@ class MobileScannerHandler(
             null
         }
 
-        var barcodeScannerOptions: BarcodeScannerOptions? = null
-        if (formats != null) {
-            val formatsList: MutableList<Int> = mutableListOf()
-            for (formatValue in formats) {
-                formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
-            }
-            barcodeScannerOptions = if (formatsList.size == 1) {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
-                    .build()
-            } else {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(
-                    formatsList.first(),
-                    *formatsList.subList(1, formatsList.size).toIntArray()
-                ).build()
-            }
-        }
+        val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
 
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = if (speed == 0) DetectionSpeed.NO_DUPLICATES
-        else if (speed ==1) DetectionSpeed.NORMAL else DetectionSpeed.UNRESTRICTED
+        val detectionSpeed: DetectionSpeed = when (speed) {
+            0 -> DetectionSpeed.NO_DUPLICATES
+            1 -> DetectionSpeed.NORMAL
+            else -> DetectionSpeed.UNRESTRICTED
+        }
 
         mobileScanner!!.start(
             barcodeScannerOptions,
@@ -243,13 +231,13 @@ class MobileScannerHandler(
 
     private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
         analyzerResult = result
-        val uri = Uri.fromFile(File(call.arguments.toString()))
 
-        // TODO: parse options from the method call
-        // See https://github.com/juliansteenbakker/mobile_scanner/issues/1069
+        val formats: List<Int>? = call.argument<List<Int>>("formats")
+        val filePath: String = call.argument<String>("filePath")!!
+
         mobileScanner!!.analyzeImage(
-            uri,
-            null,
+            Uri.fromFile(File(filePath)),
+            buildBarcodeScannerOptions(formats),
             analyzeImageSuccessCallback,
             analyzeImageErrorCallback)
     }
@@ -283,5 +271,27 @@ class MobileScannerHandler(
         mobileScanner?.scanWindow = call.argument<List<Float>?>("rect")
 
         result.success(null)
+    }
+
+    private fun buildBarcodeScannerOptions(formats: List<Int>?): BarcodeScannerOptions? {
+        if (formats == null) {
+            return null
+        }
+
+        val formatsList: MutableList<Int> = mutableListOf()
+
+        for (formatValue in formats) {
+            formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
+        }
+
+        if (formatsList.size == 1) {
+            return BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
+                .build()
+        }
+
+        return BarcodeScannerOptions.Builder().setBarcodeFormats(
+            formatsList.first(),
+            *formatsList.subList(1, formatsList.size).toIntArray()
+        ).build()
     }
 }

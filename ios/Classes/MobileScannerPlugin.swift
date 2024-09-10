@@ -134,16 +134,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
         MobileScannerPlugin.returnImage = returnImage
 
-        let formatList = formats.map { format in return BarcodeFormat(rawValue: format)}
-        var barcodeOptions: BarcodeScannerOptions? = nil
-
-        if (formatList.count != 0) {
-            var barcodeFormats: BarcodeFormat = []
-            for index in formats {
-                barcodeFormats.insert(BarcodeFormat(rawValue: index))
-            }
-            barcodeOptions = BarcodeScannerOptions(formats: barcodeFormats)
-        }
+        let barcodeOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
 
         let position = facing == 0 ? AVCaptureDevice.Position.front : .back
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
@@ -262,7 +253,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     
     /// Analyzes a single image.
     private func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        let uiImage = UIImage(contentsOfFile: call.arguments as? String ?? "")
+        let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
+        let scannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
+        let uiImage = UIImage(contentsOfFile: (call.arguments as! Dictionary<String, Any?>)["filePath"] as? String ?? "")
         
         if (uiImage == nil) {
             result(FlutterError(code: "MobileScanner",
@@ -271,7 +264,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             return
         }
 
-        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back, callback: { barcodes, error in
+        mobileScanner.analyzeImage(image: uiImage!, position: AVCaptureDevice.Position.back,
+                                   barcodeScannerOptions: scannerOptions, callback: { barcodes, error in
             if error != nil {
                 DispatchQueue.main.async {
                     result(FlutterError(code: "MobileScanner",
@@ -296,5 +290,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 result(["name": "barcode", "data": barcodesMap])
             }
         })
+    }
+    
+    private func buildBarcodeScannerOptions(_ formats: [Int]) -> BarcodeScannerOptions? {
+        guard !formats.isEmpty else {
+            return nil
+        }
+
+        var barcodeFormats: BarcodeFormat = []
+
+        for format in formats {
+            barcodeFormats.insert(BarcodeFormat(rawValue: format))
+        }
+
+        return BarcodeScannerOptions(formats: barcodeFormats)
     }
 }

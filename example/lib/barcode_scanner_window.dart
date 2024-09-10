@@ -39,16 +39,16 @@ class _BarcodeScannerWithScanWindowState
             final scannedBarcode = barcodeCapture.barcodes.first;
 
             // No barcode corners, or size, or no camera preview size.
-            if (scannedBarcode.corners.isEmpty ||
-                value.size.isEmpty ||
-                barcodeCapture.size.isEmpty) {
+            if (value.size.isEmpty ||
+                scannedBarcode.size.isEmpty ||
+                scannedBarcode.corners.isEmpty) {
               return const SizedBox();
             }
 
             return CustomPaint(
               painter: BarcodeOverlay(
                 barcodeCorners: scannedBarcode.corners,
-                barcodeSize: barcodeCapture.size,
+                barcodeSize: scannedBarcode.size,
                 boxFit: BoxFit.contain,
                 cameraPreviewSize: value.size,
               ),
