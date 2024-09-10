@@ -138,11 +138,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
     required web.MediaStream videoStream,
   }) async {
     final int detectionTimeoutMs = options.detectionTimeoutMs;
-    final List<BarcodeFormat> formats = options.formats;
-
-    if (formats.contains(BarcodeFormat.unknown)) {
-      formats.removeWhere((element) => element == BarcodeFormat.unknown);
-    }
+    final List<BarcodeFormat> formats = [
+      for (final BarcodeFormat format in options.formats)
+        if (format != BarcodeFormat.unknown) format,
+    ];
 
     _reader = ZXingBrowserMultiFormatReader(
       _createReaderHints(formats),
