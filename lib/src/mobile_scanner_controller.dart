@@ -174,7 +174,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// The [path] points to a file on the device.
   ///
-  /// This is only supported on Android and iOS.
+  /// This is only supported on Android, iOS and MacOS.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   Future<BarcodeCapture?> analyzeImage(String path) {

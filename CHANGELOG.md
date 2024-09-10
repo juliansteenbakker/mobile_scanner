@@ -1,3 +1,10 @@
+## NEXT
+
+* [MacOS] Added the corners and size information to barcode results.
+* [MacOS] Added support for `analyzeImage`.
+* [web] Added the size information to barcode results.
+* Added support for barcode formats to image analysis.
+
 ## 5.2.3
 
 Deprecations:
