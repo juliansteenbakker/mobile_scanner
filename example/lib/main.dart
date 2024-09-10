@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner_example/barcode_scanner_analyze_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
 import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
@@ -20,95 +21,75 @@ void main() {
 class MyHome extends StatelessWidget {
   const MyHome({super.key});
 
+  Widget _buildItem(BuildContext context, String label, Widget page) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => page,
+              ),
+            );
+          },
+          child: Text(label),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Mobile Scanner Example')),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+        child: ListView(
           children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerSimple(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner Simple'),
+            _buildItem(
+              context,
+              'MobileScanner Simple',
+              const BarcodeScannerSimple(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerListView(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner with ListView'),
+            _buildItem(
+              context,
+              'MobileScanner with ListView',
+              const BarcodeScannerListView(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerWithController(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner with Controller'),
+            _buildItem(
+              context,
+              'MobileScanner with Controller',
+              const BarcodeScannerWithController(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerWithScanWindow(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner with ScanWindow'),
+            _buildItem(
+              context,
+              'MobileScanner with ScanWindow',
+              const BarcodeScannerWithScanWindow(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerReturningImage(),
-                  ),
-                );
-              },
-              child: const Text(
-                'MobileScanner with Controller (returning image)',
-              ),
+            _buildItem(
+              context,
+              'MobileScanner with Controller (return image)',
+              const BarcodeScannerReturningImage(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerWithZoom(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner with zoom slider'),
+            _buildItem(
+              context,
+              'MobileScanner with zoom slider',
+              const BarcodeScannerWithZoom(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => const BarcodeScannerPageView(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner pageView'),
+            _buildItem(
+              context,
+              'MobileScanner with PageView',
+              const BarcodeScannerPageView(),
             ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => BarcodeScannerWithOverlay(),
-                  ),
-                );
-              },
-              child: const Text('MobileScanner with Overlay'),
+            _buildItem(
+              context,
+              'MobileScanner with Overlay',
+              const BarcodeScannerWithOverlay(),
+            ),
+            _buildItem(
+              context,
+              'Analyze image from file',
+              const BarcodeScannerAnalyzeImage(),
             ),
           ],
         ),
