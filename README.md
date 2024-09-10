@@ -36,7 +36,7 @@ See the example app for detailed implementation information.
 | Features               | Android            | iOS                | macOS                | Web |
 |------------------------|--------------------|--------------------|----------------------|-----|
 | analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
-| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :x:                  | :x: |
+| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 | scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 
 ## Platform Support
@@ -193,3 +193,12 @@ To display the camera preview, pass the controller to a `MobileScanner` widget.
 
 See the [examples](example/README.md) for runnable examples of various usages,
 such as the basic usage, applying a scan window, or retrieving images from the barcodes.
+
+- analyzeImage() for MacOS (reading the given file as an image frame and passing that to VN)
+- MacOS scan window, using https://developer.apple.com/documentation/vision/vnimagebasedrequest
+- implement size on web too?
+
+/**
+ - analyzeImage() for MacOS (reading the given file as an image frame and passing that to VN)
+ - MacOS scan window, using https://developer.apple.com/documentation/vision/vnimagebasedrequest
+ */
