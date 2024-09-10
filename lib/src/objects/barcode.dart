@@ -152,7 +152,7 @@ class Barcode {
   /// This is null if the raw value is not available.
   final String? rawValue;
 
-  /// The size of the barcode bounding box.
+  /// The normalized size of the barcode bounding box.
   ///
   /// If the bounding box is unavailable, this will be [Size.zero].
   final Size size;
