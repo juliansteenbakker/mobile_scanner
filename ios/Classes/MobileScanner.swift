@@ -22,8 +22,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// The selected camera
     var device: AVCaptureDevice!
 
-    /// Barcode scanner for results
-    var scanner = BarcodeScanner.barcodeScanner()
+    /// The long lived barcode scanner for scanning barcodes from a camera preview.
+    var scanner: BarcodeScanner? = nil
 
     /// Default position of camera
     var videoPosition: AVCaptureDevice.Position = AVCaptureDevice.Position.back
@@ -146,7 +146,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 position: videoPosition
             )
 
-            scanner.process(image) { [self] barcodes, error in
+            scanner?.process(image) { [self] barcodes, error in
                 imagesCurrentlyBeingProcessed = false
                 
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
@@ -314,6 +314,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         textureId = nil
         captureSession = nil
         device = nil
+        scanner = nil
     }
 
     /// Toggle the torch.
