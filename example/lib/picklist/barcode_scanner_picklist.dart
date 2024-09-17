@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/picklist/classes/detect_collision.dart';
 import 'package:mobile_scanner_example/picklist/widgets/crosshair.dart';
-import 'package:mobile_scanner_example/picklist/widgets/draw_detected_barcodes.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerPicklist extends StatefulWidget {
@@ -17,20 +16,14 @@ class BarcodeScannerPicklist extends StatefulWidget {
 
 class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
     with WidgetsBindingObserver {
-  final _mobileScannerController = MobileScannerController(autoStart: false);
+  final _mobileScannerController = MobileScannerController(
+    autoStart: false,
+  );
   StreamSubscription<Object?>? _barcodesSubscription;
 
   final _scannerDisabled = ValueNotifier(false);
 
-  late final Offset _crosshair;
-
   bool barcodeDetected = false;
-
-  @override
-  void didChangeDependencies() {
-    _crosshair = MediaQuery.sizeOf(context).center(Offset.zero);
-    super.didChangeDependencies();
-  }
 
   @override
   void initState() {
@@ -75,14 +68,17 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
     _mobileScannerController.dispose();
   }
 
-  void _handleBarcodes(BarcodeCapture barcodes) {
+  void _handleBarcodes(BarcodeCapture capture) {
     if (_scannerDisabled.value) {
       return;
     }
 
-    for (final barcode in barcodes.barcodes) {
-      if (isOffsetInsideShape(
-        _crosshair,
+    for (final barcode in capture.barcodes) {
+      if (isPointInPolygon(
+        Offset(
+          _mobileScannerController.value.size.width / 2,
+          _mobileScannerController.value.size.height / 2,
+        ),
         barcode.corners,
       )) {
         if (!barcodeDetected) {
@@ -109,10 +105,6 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
         body: StreamBuilder(
           stream: _mobileScannerController.barcodes,
           builder: (context, snapshot) {
-            final barcodes = snapshot.data;
-            if (barcodes == null) {
-              debugPrint('ISNULL');
-            }
             return Listener(
               behavior: HitTestBehavior.opaque,
               onPointerDown: (_) => _scannerDisabled.value = true,
@@ -123,14 +115,8 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
                 children: [
                   MobileScanner(
                     controller: _mobileScannerController,
-                    errorBuilder: (context, error, child) {
-                      return ScannerErrorWidget(error: error);
-                    },
-                    fit: boxFit,
-                  ),
-                  ...drawDetectedBarcodes(
-                    barcodes: barcodes?.barcodes,
-                    cameraPreviewSize: _mobileScannerController.value.size,
+                    errorBuilder: (context, error, child) =>
+                        ScannerErrorWidget(error: error),
                     fit: boxFit,
                   ),
                   ValueListenableBuilder(
@@ -145,51 +131,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
               ),
             );
           },
-        )
-        // body:  Stack(
-        //   fit: StackFit.expand,
-        //   children: [
-        //     MobileScanner(
-        //       controller: _mobileScannerController,
-        //       errorBuilder: (context, error, child) {
-        //         return ScannerErrorWidget(error: error);
-        //       },
-        //       fit: boxFit,
-        //     ),
-        //     ...drawDetectedBarcodes(
-        //       controller: _mobileScannerController,
-        //       cameraPreviewSize: _mobileScannerController.value.size,
-        //       fit: boxFit,
-        //     ),
-        //     ...drawDetectedBarcodes(
-        //       controller: _mobileScannerController,
-        //       cameraPreviewSize: _mobileScannerController.value.size,
-        //       fit: boxFit,
-        //     ),
-        //     //   barcodes: _mobileScannerController. value. _barcodes.value,
-        //     //   cameraPreviewSize: _mobileScannerController.value.size,
-        //     //   fit: boxFit,
-        //     // ),
-        //     CustomPaint(
-        //       painter: BarcodeOverlay(
-        //         barcodeCorners: [
-        //           const Offset(0, 0),
-        //           const Offset(50, 0),
-        //           const Offset(50, 50),
-        //           const Offset(0, 50)
-        //         ],
-        //         barcodeSize: Size(50, 50),
-        //         boxFit: boxFit,
-        //         cameraPreviewSize: _mobileScannerController.value.size,
-        //       ),
-        //     ),
-        //     Crosshair(
-        //       crosshairRectangle: _crosshairRectangle,
-        //       scannerDisabled: _scannerDisabled.value,
-        //     ),
-        //   ],
-        // ),
-        ,
+        ),
       ),
     );
   }
