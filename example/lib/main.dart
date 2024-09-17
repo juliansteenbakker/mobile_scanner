@@ -12,8 +12,6 @@ import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 import 'package:mobile_scanner_example/picklist/picklist_result.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   runApp(
     const MaterialApp(
       title: 'Mobile Scanner Example',

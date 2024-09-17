@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/picklist/classes/detect_collision.dart';
+import 'package:mobile_scanner_example/picklist/classes/barcode_at_center.dart';
+
 import 'package:mobile_scanner_example/picklist/widgets/crosshair.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -21,13 +21,12 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
   );
   StreamSubscription<Object?>? _barcodesSubscription;
 
-  final _scannerDisabled = ValueNotifier(false);
+  final _scannerEnabled = ValueNotifier(true);
 
   bool barcodeDetected = false;
 
   @override
   void initState() {
-    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     WidgetsBinding.instance.addObserver(this);
     _barcodesSubscription = _mobileScannerController.barcodes.listen(
       _handleBarcodes,
@@ -69,17 +68,14 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
   }
 
   void _handleBarcodes(BarcodeCapture capture) {
-    if (_scannerDisabled.value) {
+    if (!_scannerEnabled.value) {
       return;
     }
 
     for (final barcode in capture.barcodes) {
-      if (isPointInPolygon(
-        Offset(
-          _mobileScannerController.value.size.width / 2,
-          _mobileScannerController.value.size.height / 2,
-        ),
-        barcode.corners,
+      if (isBarcodeAtCenterOfImage(
+        cameraOutputSize: _mobileScannerController.value.size,
+        barcode: barcode,
       )) {
         if (!barcodeDetected) {
           barcodeDetected = true;
@@ -92,46 +88,38 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
 
   @override
   Widget build(BuildContext context) {
-    const boxFit = BoxFit.contain;
-    return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        if (didPop) {
-          SystemChrome.setPreferredOrientations([...DeviceOrientation.values]);
-        }
-      },
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Picklist scanner')),
-        backgroundColor: Colors.black,
-        body: StreamBuilder(
-          stream: _mobileScannerController.barcodes,
-          builder: (context, snapshot) {
-            return Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: (_) => _scannerDisabled.value = true,
-              onPointerUp: (_) => _scannerDisabled.value = false,
-              onPointerCancel: (_) => _scannerDisabled.value = false,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  MobileScanner(
-                    controller: _mobileScannerController,
-                    errorBuilder: (context, error, child) =>
-                        ScannerErrorWidget(error: error),
-                    fit: boxFit,
-                  ),
-                  ValueListenableBuilder(
-                    valueListenable: _scannerDisabled,
-                    builder: (context, value, child) {
-                      return Crosshair(
-                        scannerDisabled: value,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+    return Scaffold(
+      appBar: AppBar(title: const Text('Picklist scanner')),
+      backgroundColor: Colors.black,
+      body: StreamBuilder(
+        stream: _mobileScannerController.barcodes,
+        builder: (context, snapshot) {
+          return Listener(
+            behavior: HitTestBehavior.opaque,
+            onPointerDown: (_) => _scannerEnabled.value = false,
+            onPointerUp: (_) => _scannerEnabled.value = true,
+            onPointerCancel: (_) => _scannerEnabled.value = true,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                MobileScanner(
+                  controller: _mobileScannerController,
+                  errorBuilder: (context, error, child) =>
+                      ScannerErrorWidget(error: error),
+                  fit: BoxFit.contain,
+                ),
+                ValueListenableBuilder(
+                  valueListenable: _scannerEnabled,
+                  builder: (context, value, child) {
+                    return Crosshair(
+                      scannerEnabled: value,
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

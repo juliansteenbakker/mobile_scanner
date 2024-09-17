@@ -3,17 +3,17 @@ import 'package:flutter/material.dart';
 class Crosshair extends StatelessWidget {
   const Crosshair({
     super.key,
-    required this.scannerDisabled,
+    required this.scannerEnabled,
   });
 
-  final bool scannerDisabled;
+  final bool scannerEnabled;
 
   @override
   Widget build(BuildContext context) {
     return Center(
       child: Icon(
         Icons.close,
-        color: scannerDisabled ? Colors.green : Colors.red,
+        color: scannerEnabled ? Colors.red : Colors.green,
       ),
     );
   }
