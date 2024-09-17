@@ -18,6 +18,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
     with WidgetsBindingObserver {
   final _mobileScannerController = MobileScannerController(
     autoStart: false,
+    useNewCameraSelector: true,
   );
   StreamSubscription<Object?>? _barcodesSubscription;
 
