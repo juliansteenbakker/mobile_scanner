@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
@@ -43,7 +44,8 @@ class MobileScannerState {
 
   /// Whether the mobile scanner has initialized successfully.
   ///
-  /// This is `true` if the camera is ready to be used.
+  /// This does not indicate that the camera permission was granted.
+  /// To check if the camera permission was granted, use [hasCameraPermission].
   final bool isInitialized;
 
   /// Whether the mobile scanner is currently running.
@@ -59,6 +61,12 @@ class MobileScannerState {
 
   /// The current zoom scale of the camera.
   final double zoomScale;
+
+  /// Whether permission to access the camera was granted.
+  bool get hasCameraPermission {
+    return isInitialized &&
+        error?.errorCode != MobileScannerErrorCode.permissionDenied;
+  }
 
   /// Create a copy of this state with the given parameters.
   MobileScannerState copyWith({

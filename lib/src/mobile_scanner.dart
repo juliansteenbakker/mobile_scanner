@@ -281,8 +281,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null) return;
-    if (!controller.value.isInitialized) {
+    if (widget.controller != null || !controller.value.hasCameraPermission) {
       return;
     }
 
