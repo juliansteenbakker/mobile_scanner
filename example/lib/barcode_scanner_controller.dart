@@ -60,7 +60,7 @@ class _BarcodeScannerWithControllerState
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!controller.value.isInitialized) {
+    if (!controller.value.hasCameraPermission) {
       return;
     }
 

@@ -258,9 +258,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let uiImage = UIImage(contentsOfFile: (call.arguments as! Dictionary<String, Any?>)["filePath"] as? String ?? "")
         
         if (uiImage == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "No image found in analyzeImage!",
-                                details: nil))
+            result(nil)
             return
         }
 

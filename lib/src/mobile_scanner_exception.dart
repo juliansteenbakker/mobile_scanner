@@ -1,6 +1,6 @@
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 
-/// This class represents an exception thrown by the mobile scanner.
+/// This class represents an exception thrown by the [MobileScannerController].
 class MobileScannerException implements Exception {
   const MobileScannerException({
     required this.errorCode,
@@ -16,9 +16,9 @@ class MobileScannerException implements Exception {
   @override
   String toString() {
     if (errorDetails != null && errorDetails?.message != null) {
-      return "MobileScannerException: code ${errorCode.name}, message: ${errorDetails?.message}";
+      return 'MobileScannerException(${errorCode.name}, ${errorDetails?.message})';
     }
-    return "MobileScannerException: ${errorCode.name}";
+    return 'MobileScannerException(${errorCode.name})';
   }
 }
 
@@ -46,3 +46,22 @@ class MobileScannerErrorDetails {
 /// This exception type is only used internally,
 /// and is not part of the public API.
 class PermissionRequestPendingException implements Exception {}
+
+/// This class represents an exception thrown by the [MobileScannerController]
+/// when a barcode scanning error occurs when processing an input frame.
+class MobileScannerBarcodeException implements Exception {
+  /// Creates a new [MobileScannerBarcodeException] with the given error message.
+  const MobileScannerBarcodeException(this.message);
+
+  /// The error message of the exception.
+  final String? message;
+
+  @override
+  String toString() {
+    if (message?.isNotEmpty ?? false) {
+      return 'MobileScannerBarcodeException($message)';
+    }
+
+    return 'MobileScannerBarcodeException(Could not detect a barcode in the input image.)';
+  }
+}
