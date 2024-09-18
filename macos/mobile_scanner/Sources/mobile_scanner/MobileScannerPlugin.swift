@@ -484,8 +484,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     
                 if error != nil {
                     DispatchQueue.main.async {
-                        // TODO: fix error code
-                        result(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                        result(FlutterError(
+                            code: MobileScannerErrorCodes.BARCODE_ERROR,
+                            message: error?.localizedDescription, details: nil))
                     }
                     return
                 }
@@ -510,10 +511,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             }
             
             try imageRequestHandler.perform([barcodeRequest])
-        } catch let e {
-            // TODO: fix error code
+        } catch let error {
             DispatchQueue.main.async {
-                result(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                result(FlutterError(
+                    code: MobileScannerErrorCodes.BARCODE_ERROR,
+                    message: error.localizedDescription, details: nil))
             }
         }
     }
