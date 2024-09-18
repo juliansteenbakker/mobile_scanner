@@ -273,7 +273,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
 
-        // let ratio: Int = argReader.int(key: "ratio")
         let torch:Bool = argReader.bool(key: "torch") ?? false
         let facing:Int = argReader.int(key: "facing") ?? 1
         let speed:Int = argReader.int(key: "speed") ?? 0
@@ -327,7 +326,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession!.addOutput(videoOutput)
         for connection in videoOutput.connections {
-            // connection.videoOrientation = .portrait
             if position == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
             }
@@ -459,20 +457,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
         
         guard let filePath: String = argReader.string(key: "filePath") else {
-            // TODO: fix error code
-            result(FlutterError(code: "MobileScanner",
-                                message: "No image found in analyzeImage!",
-                                details: nil))
+            result(nil)
             return
         }
         
         let fileUrl = URL(fileURLWithPath: filePath)
         
         guard let ciImage = CIImage(contentsOf: fileUrl) else {
-            // TODO: fix error code
-            result(FlutterError(code: "MobileScanner",
-                                message: "No image found in analyzeImage!",
-                                details: nil))
+            result(nil)
             return
         }
         
