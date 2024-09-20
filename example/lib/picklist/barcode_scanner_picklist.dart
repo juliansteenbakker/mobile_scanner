@@ -1,12 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/picklist/classes/barcode_at_center.dart';
-
 import 'package:mobile_scanner_example/picklist/widgets/crosshair.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
+// This sample implements picklist functionality.
+// The scanning can temporarily be suspended by the user by touching the screen.
+// When the scanning is active, the crosshair turns red.
+// When the scanning is suspended, the crosshair turns green.
+// A barcode has to touch the center of viewfinder to be scanned.
+// Therefore the Crosshair widget needs to be placed at the center of the
+// MobileScanner widget to visually line up.
 class BarcodeScannerPicklist extends StatefulWidget {
   const BarcodeScannerPicklist({super.key});
 
@@ -14,113 +21,109 @@ class BarcodeScannerPicklist extends StatefulWidget {
   State<BarcodeScannerPicklist> createState() => _BarcodeScannerPicklistState();
 }
 
-class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist>
-    with WidgetsBindingObserver {
+class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   final _mobileScannerController = MobileScannerController(
+    // The controller is started from the initState method.
     autoStart: false,
-    useNewCameraSelector: true,
+    // The know the placing of the barcodes, we need to know the size of the
+    // canvas they are placed on. Unfortunately the only known reliable way
+    // to get the dimensions, is to receive the complete image from the native
+    // side.
+    // https://github.com/juliansteenbakker/mobile_scanner/issues/1183
+    returnImage: true,
   );
-  StreamSubscription<Object?>? _barcodesSubscription;
 
+  // On this subscription the barcodes are received.
+  StreamSubscription<Object?>? _subscription;
+
+  // This boolean indicates if the detection of barcodes is enabled or
+  // temporarily suspended.
   final _scannerEnabled = ValueNotifier(true);
 
-  bool barcodeDetected = false;
+  // This boolean is used to prevent multiple pops.
+  var _validBarcodeFound = false;
 
   @override
   void initState() {
-    WidgetsBinding.instance.addObserver(this);
-    _barcodesSubscription = _mobileScannerController.barcodes.listen(
-      _handleBarcodes,
-    );
+    // Enable and disable scanning on the native side, so we don't get a stream
+    // of images when not needed. This also improves the behavior (false
+    // positives) when the user switches quickly to another barcode after
+    // enabling the scanner by releasing the finger.
+    _scannerEnabled.addListener(() {
+      _scannerEnabled.value
+          ? _mobileScannerController.updateScanWindow(null)
+          : _mobileScannerController.updateScanWindow(Rect.zero);
+    });
+    // Lock to portrait (may not work on iPad with multitasking).
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+    // Get a stream subscription and listen to received barcodes.
+    _subscription = _mobileScannerController.barcodes.listen(_handleBarcodes);
     super.initState();
+    // Start the controller to start scanning.
     unawaited(_mobileScannerController.start());
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!_mobileScannerController.value.isInitialized) {
-      return;
-    }
-
-    switch (state) {
-      case AppLifecycleState.detached:
-      case AppLifecycleState.hidden:
-      case AppLifecycleState.paused:
-        return;
-      case AppLifecycleState.resumed:
-        _barcodesSubscription =
-            _mobileScannerController.barcodes.listen(_handleBarcodes);
-
-        unawaited(_mobileScannerController.start());
-      case AppLifecycleState.inactive:
-        unawaited(_barcodesSubscription?.cancel());
-        _barcodesSubscription = null;
-        unawaited(_mobileScannerController.stop());
-    }
-  }
-
-  @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    unawaited(_barcodesSubscription?.cancel());
-    _barcodesSubscription = null;
+    // Cancel the stream subscription.
+    unawaited(_subscription?.cancel());
+    _subscription = null;
     super.dispose();
+    // Dispose the controller.
     _mobileScannerController.dispose();
   }
 
-  void _handleBarcodes(BarcodeCapture capture) {
-    if (!_scannerEnabled.value) {
+  // Check the list of barcodes only if scannerEnables is true.
+  // Only take the barcode that is at the center of the image.
+  // Return the barcode found to the calling page with the help of the
+  // navigator.
+  void _handleBarcodes(BarcodeCapture barcodeCapture) {
+    // Discard all events when the scanner is disabled or when already a valid
+    // barcode is found.
+    if (!_scannerEnabled.value || _validBarcodeFound) {
       return;
     }
-
-    for (final barcode in capture.barcodes) {
-      if (isBarcodeAtCenterOfImage(
-        cameraOutputSize: _mobileScannerController.value.size,
-        barcode: barcode,
-      )) {
-        if (!barcodeDetected) {
-          barcodeDetected = true;
-          Navigator.of(context).pop(barcode);
-        }
-        return;
-      }
+    final barcode = findBarcodeAtCenter(barcodeCapture);
+    if (barcode != null) {
+      _validBarcodeFound = true;
+      Navigator.of(context).pop(barcode);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Picklist scanner')),
-      backgroundColor: Colors.black,
-      body: StreamBuilder(
-        stream: _mobileScannerController.barcodes,
-        builder: (context, snapshot) {
-          return Listener(
-            behavior: HitTestBehavior.opaque,
-            onPointerDown: (_) => _scannerEnabled.value = false,
-            onPointerUp: (_) => _scannerEnabled.value = true,
-            onPointerCancel: (_) => _scannerEnabled.value = true,
-            child: Stack(
-              fit: StackFit.expand,
-              children: [
-                MobileScanner(
-                  controller: _mobileScannerController,
-                  errorBuilder: (context, error, child) =>
-                      ScannerErrorWidget(error: error),
-                  fit: BoxFit.contain,
-                ),
-                ValueListenableBuilder(
-                  valueListenable: _scannerEnabled,
-                  builder: (context, value, child) {
-                    return Crosshair(
-                      scannerEnabled: value,
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+        // Reset the page orientation to the system default values, when this page is popped
+        if (!didPop) {
+          return;
+        }
+        SystemChrome.setPreferredOrientations(<DeviceOrientation>[]);
+      },
+      child: Scaffold(
+        appBar: AppBar(title: const Text('Picklist scanner')),
+        backgroundColor: Colors.black,
+        body: Listener(
+          // Detect if the user touches the screen and disable/enable the scanner accordingly
+          behavior: HitTestBehavior.opaque,
+          onPointerDown: (_) => _scannerEnabled.value = false,
+          onPointerUp: (_) => _scannerEnabled.value = true,
+          onPointerCancel: (_) => _scannerEnabled.value = true,
+          // A stack containing the image feed and the crosshair
+          // The location of the crosshair must be at the center of the MobileScanner, otherwise the detection area and the visual representation do not line up.
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              MobileScanner(
+                controller: _mobileScannerController,
+                errorBuilder: (context, error, child) =>
+                    ScannerErrorWidget(error: error),
+                fit: BoxFit.contain,
+              ),
+              Crosshair(_scannerEnabled),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -15,7 +15,7 @@ class _PicklistResultState extends State<PicklistResult> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Picklist mode')),
+      appBar: AppBar(title: const Text('Picklist result')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
