@@ -112,6 +112,7 @@ class SwitchCameraButton extends StatelessWidget {
         }
 
         return IconButton(
+          color: Colors.white,
           iconSize: 32.0,
           icon: icon,
           onPressed: () async {
@@ -166,9 +167,15 @@ class ToggleFlashlightButton extends StatelessWidget {
               },
             );
           case TorchState.unavailable:
-            return const Icon(
-              Icons.no_flash,
-              color: Colors.grey,
+            return const SizedBox(
+              width: 48.0,
+              child: Center(
+                child: Icon(
+                  Icons.no_flash,
+                  size: 32.0,
+                  color: Colors.grey,
+                ),
+              ),
             );
         }
       },
