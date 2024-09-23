@@ -10,7 +10,7 @@ import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
 import 'package:mobile_scanner_example/picklist/picklist_result.dart';
 
-void main() async {
+void main() {
   runApp(
     const MaterialApp(
       title: 'Mobile Scanner Example',
