@@ -2,6 +2,7 @@
 
 * [MacOS] Added the corners and size information to barcode results.
 * [MacOS] Added support for `analyzeImage`.
+* [MacOS] Added a Privacy Manifest.
 * [web] Added the size information to barcode results.
 * Added support for barcode formats to image analysis.
 
