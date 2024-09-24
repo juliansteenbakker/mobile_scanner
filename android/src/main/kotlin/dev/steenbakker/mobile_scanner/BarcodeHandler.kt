@@ -24,6 +24,12 @@ class BarcodeHandler(binaryMessenger: BinaryMessenger) : EventChannel.StreamHand
         }
     }
 
+    fun publishError(errorCode: String, errorMessage: String, errorDetails: Any?) {
+        Handler(Looper.getMainLooper()).post {
+            eventSink?.error(errorCode, errorMessage, errorDetails)
+        }
+    }
+
     override fun onListen(event: Any?, eventSink: EventChannel.EventSink?) {
         this.eventSink = eventSink
     }

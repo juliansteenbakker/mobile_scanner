@@ -66,10 +66,7 @@ class MobileScannerHandler(
     }
 
     private val errorCallback: MobileScannerErrorCallback = {error: String ->
-        barcodeHandler.publishEvent(mapOf(
-            "name" to MobileScannerErrorCodes.BARCODE_ERROR,
-            "data" to error,
-        ))
+        barcodeHandler.publishError(MobileScannerErrorCodes.BARCODE_ERROR, error, null)
     }
 
     private var methodChannel: MethodChannel? = null
