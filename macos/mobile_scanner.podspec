@@ -18,4 +18,5 @@ An universal scanner for Flutter based on MLKit.
   s.platform = :osx, '10.14'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES' }
   s.swift_version = '5.0'
+  s.resource_bundles = {'mobile_scanner_macos_privacy' => ['mobile_scanner/Sources/mobile_scanner/Resources/PrivacyInfo.xcprivacy']}
 end
