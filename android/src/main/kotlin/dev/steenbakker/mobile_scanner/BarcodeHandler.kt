@@ -18,15 +18,15 @@ class BarcodeHandler(binaryMessenger: BinaryMessenger) : EventChannel.StreamHand
         eventChannel.setStreamHandler(this)
     }
 
-    fun publishEvent(event: Map<String, Any>) {
-        Handler(Looper.getMainLooper()).post {
-            eventSink?.success(event)
-        }
-    }
-
     fun publishError(errorCode: String, errorMessage: String, errorDetails: Any?) {
         Handler(Looper.getMainLooper()).post {
             eventSink?.error(errorCode, errorMessage, errorDetails)
+        }
+    }
+
+    fun publishEvent(event: Map<String, Any>) {
+        Handler(Looper.getMainLooper()).post {
+            eventSink?.success(event)
         }
     }
 
