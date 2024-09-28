@@ -13,6 +13,7 @@ the sample recommends using `hasCameraPermission`, which also guards against cam
 
 Bugs fixed:
 * Fixed a bug that would cause the scanner to emit an error when it was already started. Now it ignores any calls to start while it is starting.
+* [MacOS] Fixed a bug that prevented the `anaylzeImage()` sample from working properly.
 
 ## 5.2.3
 
