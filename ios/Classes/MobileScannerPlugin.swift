@@ -42,10 +42,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
             if error != nil {
-                barcodeHandler.publishEvent([
-                    "name": MobileScannerErrorCodes.BARCODE_ERROR,
-                    "data": error!.localizedDescription,
-                ])                
+                barcodeHandler.publishError(
+                    FlutterError(code: MobileScannerErrorCodes.BARCODE_ERROR,
+                                 message: error?.localizedDescription,
+                                 details: nil))
                 return
             }
             
