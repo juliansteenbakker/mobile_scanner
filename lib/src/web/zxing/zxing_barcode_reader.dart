@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
@@ -17,6 +18,11 @@ import 'package:web/web.dart' as web;
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
+
+  /// ZXing reports an error with this message if the code could not be detected.
+  @visibleForTesting
+  static const String kNoCodeDetectedErrorMessage =
+      'No MultiFormat Readers were able to detect the code.';
 
   /// The listener for media track settings changes.
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
@@ -105,7 +111,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
             return;
           }
 
-          if (error != null) {
+          // Skip the event if no code was detected.
+          if (error != null && error.message != kNoCodeDetectedErrorMessage) {
             controller.addError(MobileScannerBarcodeException(error.message));
             return;
           }
