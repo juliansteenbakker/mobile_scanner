@@ -322,6 +322,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
           _barcodesController.add(barcode);
         },
+        onError: (Object error) {
+          if (_barcodesController.isClosed) {
+            return;
+          }
+
+          _barcodesController.addError(error);
+        },
+        // Errors are handled gracefully by forwarding them.
+        cancelOnError: false,
       );
 
       final bool hasTorch = await _barcodeReader?.hasTorch() ?? false;
