@@ -44,20 +44,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   int? _textureId;
 
   /// Parse a [BarcodeCapture] from the given [event].
-  ///
-  /// If the event name is [kBarcodeErrorEventName],
-  /// a [MobileScannerBarcodeException] is thrown.
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
     if (event == null) {
       return null;
-    }
-
-    if (event
-        case {
-          'name': kBarcodeErrorEventName,
-          'data': final String? errorDescription
-        }) {
-      throw MobileScannerBarcodeException(errorDescription);
     }
 
     final Object? data = event['data'];
@@ -92,6 +81,19 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         message: 'Only Android, iOS and macOS are supported.',
       ),
     );
+  }
+
+  /// Parse a [MobileScannerBarcodeException] from the given [error] and [stackTrace], and throw it.
+  ///
+  /// If the error is not a [PlatformException],
+  /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
+  Never _parseBarcodeError(Object error, StackTrace stackTrace) {
+    if (error case PlatformException(:final String code, :final String? message)
+        when code == kBarcodeErrorEventName) {
+      throw MobileScannerBarcodeException(message);
+    }
+
+    Error.throwWithStackTrace(error, stackTrace);
   }
 
   /// Request permission to access the camera.
@@ -136,13 +138,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Stream<BarcodeCapture?> get barcodesStream {
-    // Handle both incoming barcode events and barcode error events.
-    return eventsStream.where(
-      (event) {
-        return event['name'] == 'barcode' ||
-            event['name'] == kBarcodeErrorEventName;
-      },
-    ).map((event) => _parseBarcode(event));
+    // Handle incoming barcode events.
+    // The error events are transformed to `MobileScannerBarcodeException` where possible.
+    return eventsStream
+        .where((e) => e['name'] == 'barcode')
+        .map((event) => _parseBarcode(event))
+        .handleError(_parseBarcodeError);
   }
 
   @override
