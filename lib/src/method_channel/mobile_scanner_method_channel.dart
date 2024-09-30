@@ -16,6 +16,14 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
+  /// The name of the barcode event that is sent when a barcode is scanned.
+  @visibleForTesting
+  static const String kBarcodeEventName = 'barcode';
+
+  /// The name of the error event that is sent when a barcode scan error occurs.
+  @visibleForTesting
+  static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -79,6 +87,19 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     );
   }
 
+  /// Parse a [MobileScannerBarcodeException] from the given [error] and [stackTrace], and throw it.
+  ///
+  /// If the error is not a [PlatformException],
+  /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
+  Never _parseBarcodeError(Object error, StackTrace stackTrace) {
+    if (error case PlatformException(:final String code, :final String? message)
+        when code == kBarcodeErrorEventName) {
+      throw MobileScannerBarcodeException(message);
+    }
+
+    Error.throwWithStackTrace(error, stackTrace);
+  }
+
   /// Request permission to access the camera.
   ///
   /// Throws a [MobileScannerException] if the permission is not granted.
@@ -121,9 +142,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Stream<BarcodeCapture?> get barcodesStream {
+    // Handle incoming barcode events.
+    // The error events are transformed to `MobileScannerBarcodeException` where possible.
     return eventsStream
-        .where((event) => event['name'] == 'barcode')
-        .map((event) => _parseBarcode(event));
+        .where((e) => e['name'] == kBarcodeEventName)
+        .map((event) => _parseBarcode(event))
+        .handleError(_parseBarcodeError);
   }
 
   @override
@@ -145,21 +169,30 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
   }) async {
-    final Map<Object?, Object?>? result =
-        await methodChannel.invokeMapMethod<Object?, Object?>(
-      'analyzeImage',
-      {
-        'filePath': path,
-        'formats': formats.isEmpty
-            ? null
-            : [
-                for (final BarcodeFormat format in formats)
-                  if (format != BarcodeFormat.unknown) format.rawValue,
-              ],
-      },
-    );
+    try {
+      final Map<Object?, Object?>? result =
+          await methodChannel.invokeMapMethod<Object?, Object?>(
+        'analyzeImage',
+        {
+          'filePath': path,
+          'formats': formats.isEmpty
+              ? null
+              : [
+                  for (final BarcodeFormat format in formats)
+                    if (format != BarcodeFormat.unknown) format.rawValue,
+                ],
+        },
+      );
 
-    return _parseBarcode(result);
+      return _parseBarcode(result);
+    } on PlatformException catch (error) {
+      // Handle any errors from analyze image requests.
+      if (error.code == kBarcodeErrorEventName) {
+        throw MobileScannerBarcodeException(error.message);
+      }
+
+      return null;
+    }
   }
 
   @override

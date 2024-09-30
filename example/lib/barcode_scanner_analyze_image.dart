@@ -22,7 +22,14 @@ class _BarcodeScannerAnalyzeImageState
       final XFile? file =
           await ImagePicker().pickImage(source: ImageSource.gallery);
 
-      if (!mounted || file == null) {
+      if (!mounted) {
+        return;
+      }
+
+      if (file == null) {
+        setState(() {
+          _barcodeCapture = null;
+        });
         return;
       }
 
@@ -43,7 +50,7 @@ class _BarcodeScannerAnalyzeImageState
 
     if (_barcodeCapture != null) {
       label = Text(
-        _barcodeCapture?.barcodes.firstOrNull?.displayValue ??
+        _barcodeCapture?.barcodes.firstOrNull?.rawValue ??
             'No barcode detected',
       );
     }

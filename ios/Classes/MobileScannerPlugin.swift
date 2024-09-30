@@ -42,7 +42,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     init(barcodeHandler: BarcodeHandler, registry: FlutterTextureRegistry) {
         self.mobileScanner = MobileScanner(registry: registry, mobileScannerCallback: { barcodes, error, image in
             if error != nil {
-                barcodeHandler.publishEvent(["name": "error", "data": error!.localizedDescription])
+                barcodeHandler.publishError(
+                    FlutterError(code: MobileScannerErrorCodes.BARCODE_ERROR,
+                                 message: error?.localizedDescription,
+                                 details: nil))
                 return
             }
             
@@ -150,20 +153,20 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 }
             }
         } catch MobileScannerError.alreadyStarted {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called start() while already started!",
+            result(FlutterError(code: MobileScannerErrorCodes.ALREADY_STARTED_ERROR,
+                                message: MobileScannerErrorCodes.ALREADY_STARTED_ERROR_MESSAGE,
                                 details: nil))
         } catch MobileScannerError.noCamera {
-            result(FlutterError(code: "MobileScanner",
-                                message: "No camera found or failed to open camera!",
+            result(FlutterError(code: MobileScannerErrorCodes.NO_CAMERA_ERROR,
+                                message: MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
                                 details: nil))
         } catch MobileScannerError.cameraError(let error) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error occured when setting up camera!",
-                                details: error))
+            result(FlutterError(code: MobileScannerErrorCodes.CAMERA_ERROR,
+                                message: error.localizedDescription,
+                                details: nil))
         } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Unknown error occured.",
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 details: nil))
         }
     }
@@ -186,25 +189,25 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let scale = call.arguments as? CGFloat
         if (scale == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "You must provide a scale when calling setScale!",
-                                details: nil))
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: MobileScannerErrorCodes.INVALID_ZOOM_SCALE_ERROR_MESSAGE,
+                                details: "The invalid zoom scale was nil."))
             return
         }
         do {
             try mobileScanner.setScale(scale!)
             result(nil)
         } catch MobileScannerError.zoomWhenStopped {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called setScale() while stopped!",
+            result(FlutterError(code: MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR,
+                                message: MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE,
                                 details: nil))
         } catch MobileScannerError.zoomError(let error) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error while zooming.",
-                                details: error))
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: error.localizedDescription,
+                                details: nil))
         } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error while zooming.",
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 details: nil))
         }
     }
@@ -215,16 +218,16 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             try mobileScanner.resetScale()
             result(nil)
         } catch MobileScannerError.zoomWhenStopped {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called resetScale() while stopped!",
+            result(FlutterError(code: MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR,
+                                message: MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE,
                                 details: nil))
         } catch MobileScannerError.zoomError(let error) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error while zooming.",
-                                details: error))
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: error.localizedDescription,
+                                details: nil))
         } catch {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Error while zooming.",
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 details: nil))
         }
     }
@@ -266,7 +269,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                    barcodeScannerOptions: scannerOptions, callback: { barcodes, error in
             if error != nil {
                 DispatchQueue.main.async {
-                    result(FlutterError(code: "MobileScanner",
+                    result(FlutterError(code: MobileScannerErrorCodes.BARCODE_ERROR,
                                         message: error?.localizedDescription,
                                         details: nil))
                 }

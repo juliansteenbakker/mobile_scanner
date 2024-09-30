@@ -10,6 +10,7 @@ import androidx.camera.core.ExperimentalGetImage
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import dev.steenbakker.mobile_scanner.objects.BarcodeFormats
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
+import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -28,7 +29,7 @@ class MobileScannerHandler(
 
     private val analyzeImageErrorCallback: AnalyzerErrorCallback = {
         Handler(Looper.getMainLooper()).post {
-            analyzerResult?.error("MobileScanner", it, null)
+            analyzerResult?.error(MobileScannerErrorCodes.BARCODE_ERROR, it, null)
             analyzerResult = null
         }
     }
@@ -65,10 +66,7 @@ class MobileScannerHandler(
     }
 
     private val errorCallback: MobileScannerErrorCallback = {error: String ->
-        barcodeHandler.publishEvent(mapOf(
-            "name" to "error",
-            "data" to error,
-        ))
+        barcodeHandler.publishError(MobileScannerErrorCodes.BARCODE_ERROR, error, null)
     }
 
     private var methodChannel: MethodChannel? = null
@@ -106,21 +104,21 @@ class MobileScannerHandler(
 
     @ExperimentalGetImage
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        if (mobileScanner == null) {
-            result.error("MobileScanner", "Called ${call.method} before initializing.", null)
-            return
-        }
         when (call.method) {
             "state" -> result.success(permissions.hasCameraPermission(activity))
             "request" -> permissions.requestPermission(
                 activity,
                 addPermissionListener,
                 object: MobileScannerPermissions.ResultCallback {
-                    override fun onResult(errorCode: String?, errorDescription: String?) {
+                    override fun onResult(errorCode: String?) {
                         when(errorCode) {
                             null -> result.success(true)
-                            MobileScannerPermissions.CAMERA_ACCESS_DENIED -> result.success(false)
-                            else -> result.error(errorCode, errorDescription, null)
+                            MobileScannerErrorCodes.CAMERA_ACCESS_DENIED -> result.success(false)
+                            MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING -> result.error(
+                                MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING,
+                                MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING_MESSAGE, null)
+                            else -> result.error(
+                                MobileScannerErrorCodes.GENERIC_ERROR, MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE, null)
                         }
                     }
                 })
@@ -185,29 +183,29 @@ class MobileScannerHandler(
                     when (it) {
                         is AlreadyStarted -> {
                             result.error(
-                                "MobileScanner",
-                                "Called start() while already started",
+                                MobileScannerErrorCodes.ALREADY_STARTED_ERROR,
+                                MobileScannerErrorCodes.ALREADY_STARTED_ERROR_MESSAGE,
                                 null
                             )
                         }
                         is CameraError -> {
                             result.error(
-                                "MobileScanner",
-                                "Error occurred when setting up camera!",
+                                MobileScannerErrorCodes.CAMERA_ERROR,
+                                MobileScannerErrorCodes.CAMERA_ERROR_MESSAGE,
                                 null
                             )
                         }
                         is NoCamera -> {
                             result.error(
-                                "MobileScanner",
-                                "No camera found or failed to open camera!",
+                                MobileScannerErrorCodes.NO_CAMERA_ERROR,
+                                MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
                                 null
                             )
                         }
                         else -> {
                             result.error(
-                                "MobileScanner",
-                                "Unknown error occurred.",
+                                MobileScannerErrorCodes.GENERIC_ERROR,
+                                MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 null
                             )
                         }
@@ -252,9 +250,11 @@ class MobileScannerHandler(
             mobileScanner!!.setScale(call.arguments as Double)
             result.success(null)
         } catch (e: ZoomWhenStopped) {
-            result.error("MobileScanner", "Called setScale() while stopped!", null)
+            result.error(
+                MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
         } catch (e: ZoomNotInRange) {
-            result.error("MobileScanner", "Scale should be within 0 and 1", null)
+            result.error(
+                MobileScannerErrorCodes.GENERIC_ERROR, MobileScannerErrorCodes.INVALID_ZOOM_SCALE_ERROR_MESSAGE, null)
         }
     }
 
@@ -263,7 +263,8 @@ class MobileScannerHandler(
             mobileScanner!!.resetScale()
             result.success(null)
         } catch (e: ZoomWhenStopped) {
-            result.error("MobileScanner", "Called resetScale() while stopped!", null)
+            result.error(
+                MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
         }
     }
 

@@ -19,6 +19,12 @@ public class BarcodeHandler: NSObject, FlutterStreamHandler {
         eventChannel.setStreamHandler(self)
     }
     
+    func publishError(_ error: FlutterError) {
+        DispatchQueue.main.async {
+            self.eventSink?(error)
+        }
+    }
+    
     func publishEvent(_ event: [String: Any?]) {
         DispatchQueue.main.async {
             self.eventSink?(event)
