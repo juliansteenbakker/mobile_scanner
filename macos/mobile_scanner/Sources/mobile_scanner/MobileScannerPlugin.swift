@@ -156,22 +156,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         })
                         
                         DispatchQueue.main.async {
-                            if (!MobileScannerPlugin.returnImage) {
+                            guard let image = cgImage else {
                                 self?.sink?([
                                     "name": "barcode",
                                     "data": barcodes.map({ $0.toMap() }),
                                 ])
                                 return
                             }
-                                                        
+                            
+                            // The image dimensions are always provided.
+                            // The image bytes are only non-null when `returnImage` is true.
+                            let imageData: [String: Any?] = [
+                                "bytes": MobileScannerPlugin.returnImage ? FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!) : nil,
+                                "width": Double(image.width),
+                                "height": Double(image.height),
+                            ]
+                            
                             self?.sink?([
                                 "name": "barcode",
                                 "data": barcodes.map({ $0.toMap() }),
-                                "image": cgImage == nil ? nil : [
-                                    "bytes": FlutterStandardTypedData(bytes: cgImage!.jpegData(compressionQuality: 0.8)!),
-                                    "width": Double(cgImage!.width),
-                                    "height": Double(cgImage!.height),
-                                ],
+                                "image": imageData,
                             ])
                         }
                     })
