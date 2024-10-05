@@ -121,6 +121,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
             controller.add(
               BarcodeCapture(
                 barcodes: [result.toBarcode],
+                size: videoSize,
               ),
             );
           }
