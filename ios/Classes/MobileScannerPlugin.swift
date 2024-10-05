@@ -69,22 +69,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                 return
             }
             
-            if (!MobileScannerPlugin.returnImage) {
-                barcodeHandler.publishEvent([
-                    "name": "barcode",
-                    "data": barcodesMap,
-                ])
-                return
-            }
+            // The image dimensions are always provided.
+            // The image bytes are only non-null when `returnImage` is true.
+            let imageData: [String: Any?] = [
+                "bytes": MobileScannerPlugin.returnImage ? FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!) : nil,
+                "width": image.size.width,
+                "height": image.size.height,
+            ]
             
             barcodeHandler.publishEvent([
                 "name": "barcode",
                 "data": barcodesMap,
-                "image": [
-                    "bytes": FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!),
-                    "width": image.size.width,
-                    "height": image.size.height,
-                ],
+                "image": imageData,
             ])
         }, torchModeChangeCallback: { torchState in
             barcodeHandler.publishEvent(["name": "torchState", "data": torchState])

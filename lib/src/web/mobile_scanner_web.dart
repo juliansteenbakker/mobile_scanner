@@ -143,6 +143,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 
     // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
+    // We might be able to add a workaround, using the label of the video track.
     // Facing mode is not supported by this track, do nothing.
     if (facingModes == null || facingModes.toDart.isEmpty) {
       return;

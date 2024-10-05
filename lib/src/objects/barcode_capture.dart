@@ -32,8 +32,6 @@ class BarcodeCapture {
   /// This is the data that was used to detect the available [barcodes], the input [image] and the [size].
   final Object? raw;
 
-  /// The size of the input [image].
-  ///
-  /// If [image] is null, this will be [Size.zero].
+  /// The size of the camera input [image].
   final Size size;
 }

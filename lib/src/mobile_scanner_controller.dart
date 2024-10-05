@@ -75,8 +75,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If this is empty, all supported formats are detected.
   final List<BarcodeFormat> formats;
 
-  /// Whether scanned barcodes should contain the image
-  /// that is embedded into the barcode.
+  /// Whether the [BarcodeCapture.image] bytes should be provided.
   ///
   /// If this is false, [BarcodeCapture.image] will always be null.
   ///

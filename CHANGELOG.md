@@ -5,11 +5,14 @@ Improvements:
 * [MacOS] Added support for `analyzeImage`.
 * [MacOS] Added a Privacy Manifest.
 * [web] Added the size information to barcode results.
+* [web] Added the video output size information to barcode capture.
 * Added support for barcode formats to image analysis.
 * Updated the scanner to report any scanning errors that were encountered during processing.
 * Introduced a new getter `hasCameraPermission` for the `MobileScannerState`.
 * Fixed a bug in the lifecycle handling sample. Now instead of checking `isInitialized`,
 the sample recommends using `hasCameraPermission`, which also guards against camera permission errors.
+* Updated the behavior of `returnImage` to only determine if the camera output bytes should be sent.
+* Updated the behavior of `BarcodeCapture.size` to always be provided when available, regardless of `returnImage`.
 
 Bugs fixed:
 * Fixed a bug that would cause the scanner to emit an error when it was already started. Now it ignores any calls to start while it is starting.
