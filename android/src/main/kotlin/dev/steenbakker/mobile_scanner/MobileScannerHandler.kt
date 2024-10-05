@@ -47,22 +47,17 @@ class MobileScannerHandler(
     private var analyzerResult: MethodChannel.Result? = null
 
     private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
-        if (image != null) {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes,
-                "image" to mapOf(
-                    "bytes" to image,
-                    "width" to width?.toDouble(),
-                    "height" to height?.toDouble(),
-                )
-            ))
-        } else {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes
-            ))
-        }
+        barcodeHandler.publishEvent(mapOf(
+            "name" to "barcode",
+            "data" to barcodes,
+            // The image dimensions are always provided.
+            // The image bytes are only non-null when `returnImage` is true.
+            "image" to mapOf(
+                "bytes" to image,
+                "width" to width?.toDouble(),
+                "height" to height?.toDouble(),
+            )
+        ))
     }
 
     private val errorCallback: MobileScannerErrorCallback = {error: String ->
