@@ -30,7 +30,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   BarcodeReader? _barcodeReader;
 
   /// The stream controller for the barcode stream.
-  final StreamController<BarcodeCapture> _barcodesController = StreamController.broadcast();
+  final StreamController<BarcodeCapture> _barcodesController =
+      StreamController.broadcast();
 
   /// The subscription for the barcode stream.
   StreamSubscription<Object?>? _barcodesSubscription;
@@ -44,7 +45,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// because that is the only property for video tracks that can be observed.
   ///
   /// See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
-  final StreamController<MediaTrackSettings> _settingsController = StreamController.broadcast();
+  final StreamController<MediaTrackSettings> _settingsController =
+      StreamController.broadcast();
 
   /// The texture ID for the camera view.
   int _textureId = 1;
@@ -63,10 +65,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Stream<BarcodeCapture?> get barcodesStream => _barcodesController.stream;
 
   @override
-  Stream<TorchState> get torchStateStream => _settingsController.stream.map((_) => TorchState.unavailable);
+  Stream<TorchState> get torchStateStream =>
+      _settingsController.stream.map((_) => TorchState.unavailable);
 
   @override
-  Stream<double> get zoomScaleStateStream => _settingsController.stream.map((_) => 1.0);
+  Stream<double> get zoomScaleStateStream =>
+      _settingsController.stream.map((_) => 1.0);
 
   /// Create the [HTMLVideoElement] along with its parent container [HTMLDivElement].
   HTMLVideoElement _createVideoElement(int textureId) {
@@ -163,12 +167,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.unsupported,
         errorDetails: MobileScannerErrorDetails(
-          message: 'This browser does not support displaying video from the camera.',
+          message:
+              'This browser does not support displaying video from the camera.',
         ),
       );
     }
 
-    final MediaTrackSupportedConstraints capabilities = window.navigator.mediaDevices.getSupportedConstraints();
+    final MediaTrackSupportedConstraints capabilities =
+        window.navigator.mediaDevices.getSupportedConstraints();
 
     final MediaStreamConstraints constraints;
 
@@ -189,7 +195,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     try {
       // Retrieving the media devices requests the camera permission.
-      final MediaStream videoStream = await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
+      final MediaStream videoStream =
+          await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
 
       return videoStream;
     } on DOMException catch (error, stackTrace) {
@@ -198,7 +205,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
 
       // Handle both unsupported and permission errors from the web.
-      if (errorMessage.contains('NotFoundError') || errorMessage.contains('NotSupportedError')) {
+      if (errorMessage.contains('NotFoundError') ||
+          errorMessage.contains('NotSupportedError')) {
         errorCode = MobileScannerErrorCode.unsupported;
       } else if (errorMessage.contains('NotAllowedError')) {
         errorCode = MobileScannerErrorCode.permissionDenied;
