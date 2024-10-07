@@ -40,13 +40,6 @@ class MobileScannerErrorDetails {
   final String? message;
 }
 
-/// This class represents an exception that is thrown
-/// when the scanner was (re)started while a permission request was pending.
-///
-/// This exception type is only used internally,
-/// and is not part of the public API.
-class PermissionRequestPendingException implements Exception {}
-
 /// This class represents an exception thrown by the [MobileScannerController]
 /// when a barcode scanning error occurs when processing an input frame.
 class MobileScannerBarcodeException implements Exception {

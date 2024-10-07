@@ -131,7 +131,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         
                         if error != nil {
                             DispatchQueue.main.async {
-                                self?.sink?(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                                self?.sink?(FlutterError(
+                                    code: MobileScannerErrorCodes.BARCODE_ERROR,
+                                    message: error?.localizedDescription, details: nil))
                             }
                             return
                         }
@@ -154,22 +156,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         })
                         
                         DispatchQueue.main.async {
-                            if (!MobileScannerPlugin.returnImage) {
+                            guard let image = cgImage else {
                                 self?.sink?([
                                     "name": "barcode",
                                     "data": barcodes.map({ $0.toMap() }),
                                 ])
                                 return
                             }
-                                                        
+                            
+                            // The image dimensions are always provided.
+                            // The image bytes are only non-null when `returnImage` is true.
+                            let imageData: [String: Any?] = [
+                                "bytes": MobileScannerPlugin.returnImage ? FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!) : nil,
+                                "width": Double(image.width),
+                                "height": Double(image.height),
+                            ]
+                            
                             self?.sink?([
                                 "name": "barcode",
                                 "data": barcodes.map({ $0.toMap() }),
-                                "image": cgImage == nil ? nil : [
-                                    "bytes": FlutterStandardTypedData(bytes: cgImage!.jpegData(compressionQuality: 0.8)!),
-                                    "width": Double(cgImage!.width),
-                                    "height": Double(cgImage!.height),
-                                ],
+                                "image": imageData,
                             ])
                         }
                     })
@@ -180,9 +186,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     }
 
                     try imageRequestHandler.perform([barcodeRequest])
-                } catch let e {
+                } catch let error {
                     DispatchQueue.main.async {
-                        self?.sink?(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                        self?.sink?(FlutterError(
+                            code: MobileScannerErrorCodes.BARCODE_ERROR,
+                            message: error.localizedDescription, details: nil))
                     }
                 }
             }
@@ -262,8 +270,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil || captureSession != nil) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "Called start() while already started!",
+            result(FlutterError(code: MobileScannerErrorCodes.ALREADY_STARTED_ERROR,
+                                message: MobileScannerErrorCodes.ALREADY_STARTED_ERROR_MESSAGE,
                                 details: nil))
             return
         }
@@ -294,8 +302,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         
         if (device == nil) {
-            result(FlutterError(code: "MobileScanner",
-                                message: "No camera found or failed to open camera!",
+            result(FlutterError(code: MobileScannerErrorCodes.NO_CAMERA_ERROR,
+                                message: MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
                                 details: nil))
             return
         }
@@ -313,7 +321,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             let input = try AVCaptureDeviceInput(device: device)
             captureSession!.addInput(input)
         } catch {
-            result(FlutterError(code: "MobileScanner", message: error.localizedDescription, details: nil))
+            result(FlutterError(
+                code: MobileScannerErrorCodes.CAMERA_ERROR,
+                message: error.localizedDescription, details: nil))
             return
         }
         captureSession!.sessionPreset = AVCaptureSession.Preset.photo
@@ -476,8 +486,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     
                 if error != nil {
                     DispatchQueue.main.async {
-                        // TODO: fix error code
-                        result(FlutterError(code: "MobileScanner", message: error?.localizedDescription, details: nil))
+                        result(FlutterError(
+                            code: MobileScannerErrorCodes.BARCODE_ERROR,
+                            message: error?.localizedDescription, details: nil))
                     }
                     return
                 }
@@ -502,10 +513,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             }
             
             try imageRequestHandler.perform([barcodeRequest])
-        } catch let e {
-            // TODO: fix error code
+        } catch let error {
             DispatchQueue.main.async {
-                result(FlutterError(code: "MobileScanner", message: e.localizedDescription, details: nil))
+                result(FlutterError(
+                    code: MobileScannerErrorCodes.BARCODE_ERROR,
+                    message: error.localizedDescription, details: nil))
             }
         }
     }
