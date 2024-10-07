@@ -25,12 +25,6 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   final _mobileScannerController = MobileScannerController(
     // The controller is started from the initState method.
     autoStart: false,
-    // The know the placing of the barcodes, we need to know the size of the
-    // canvas they are placed on. Unfortunately the only known reliable way
-    // to get the dimensions, is to receive the complete image from the native
-    // side.
-    // https://github.com/juliansteenbakker/mobile_scanner/issues/1183
-    returnImage: true,
   );
 
   // On this subscription the barcodes are received.
@@ -45,15 +39,6 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
 
   @override
   void initState() {
-    // Enable and disable scanning on the native side, so we don't get a stream
-    // of images when not needed. This also improves the behavior (false
-    // positives) when the user switches quickly to another barcode after
-    // enabling the scanner by releasing the finger.
-    _scannerEnabled.addListener(() {
-      _scannerEnabled.value
-          ? _mobileScannerController.updateScanWindow(null)
-          : _mobileScannerController.updateScanWindow(Rect.zero);
-    });
     // Lock to portrait (may not work on iPad with multitasking).
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
     // Get a stream subscription and listen to received barcodes.
