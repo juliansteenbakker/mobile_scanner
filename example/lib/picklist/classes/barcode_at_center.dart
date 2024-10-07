@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -7,7 +9,9 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 ///
 /// https://github.com/juliansteenbakker/mobile_scanner/issues/1183
 Barcode? findBarcodeAtCenter(BarcodeCapture barcodeCapture) {
-  final imageSize = barcodeCapture.size;
+  final imageSize = Platform.isAndroid
+      ? Size(barcodeCapture.size.height, barcodeCapture.size.width)
+      : barcodeCapture.size;
   for (final barcode in barcodeCapture.barcodes) {
     if (_isPolygonTouchingTheCenter(
       imageSize: imageSize,
