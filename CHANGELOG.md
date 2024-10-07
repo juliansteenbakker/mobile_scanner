@@ -1,9 +1,12 @@
-## 5.2.4
+## 6.0.0
+
+**BREAKING CHANGES:**
 
 * [iOS] iOS 15.5.0 is now the minimum supported iOS version.
+* [iOS] Updates MLKit to version 7.0.0.
+* [iOS] Updates the minimum supported XCode version to 15.3.0.
 
 Improvements:
-* [iOS] Updates MLkit to the latest release.
 * [MacOS] Added the corners and size information to barcode results.
 * [MacOS] Added support for `analyzeImage`.
 * [MacOS] Added a Privacy Manifest.
