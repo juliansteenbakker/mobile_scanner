@@ -1,6 +1,9 @@
-## NEXT
+## 5.2.4
+
+* [iOS] iOS 15.5.0 is now the minimum supported iOS version.
 
 Improvements:
+* [iOS] Updates MLkit to the latest release.
 * [MacOS] Added the corners and size information to barcode results.
 * [MacOS] Added support for `analyzeImage`.
 * [MacOS] Added a Privacy Manifest.
