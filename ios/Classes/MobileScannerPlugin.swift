@@ -175,7 +175,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 details: nil))
             return
         }
-        mobileScanner.setIntervalInvertImage(invert!)
+        mobileScanner.setIntervalInvertImage(intervalInvertImage!)
         result(nil)
     }
 
