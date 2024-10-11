@@ -84,6 +84,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             toggleTorch(result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "setIntervalInvertImage":
+            setIntervalInvertImage(call, result)
         case "setScale":
             setScale(call, result)
         case "resetScale":
@@ -101,6 +103,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
+        let intervalInvertImage: Bool = (call.arguments as! Dictionary<String, Any?>)["intervalInvertImage"] as? Bool ?? false
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
@@ -120,7 +123,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
+            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, returnImage: returnImage, intervalInvertImage: intervalInvertImage, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
                 DispatchQueue.main.async {
                     result([
                         "textureId": parameters.textureId,
@@ -162,6 +165,20 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         result(nil)
     }
     
+    
+    /// Sets interval inverting
+    private func setIntervalInvertImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let intervalInvertImage = call.arguments as? Bool
+        if (intervalInvertImage == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "You must provide a invert (bool) when calling setIntervalInvertImage",
+                                details: nil))
+            return
+        }
+        mobileScanner.setIntervalInvertImage(invert!)
+        result(nil)
+    }
+
     /// Sets the zoomScale.
     private func setScale(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let scale = call.arguments as? CGFloat
