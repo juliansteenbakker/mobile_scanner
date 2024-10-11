@@ -1,3 +1,12 @@
+## 6.0.1
+
+Bugs fixed:
+* Fixed a bug that would cause onDetect to not handle errors.
+
+Improvements:
+* [iOS] Excluded the `armv7` architecture, which is unsupported by MLKit 7.0.0.
+* Added a new `onDetectError` error handler to the `MobileScanner` widget, for use with `onDetect`.
+
 ## 6.0.0
 
 **BREAKING CHANGES:**
