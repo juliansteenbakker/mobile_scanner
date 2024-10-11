@@ -497,13 +497,29 @@ class MobileScanner(
     /**
      * Invert the input image.
      */
-    fun invertInputImage(image: InputImage): InputImage {
-        val bitmap = ImageConvertUtils.getInstance().getUpRightBitmap(image);
-        val tmp = Mat(bitmap.getWidth(), bitmap.getHeight(), CvType.CV_8UC1);
-        Utils.bitmapToMat(bitmap, tmp);
-        Core.bitwise_not(tmp, tmp);
-        Utils.matToBitmap(tmp, bitmap);
-        val newImage = InputImage.fromBitmap(bitmap, 0);
-        return newImage
+    private fun invertInputImage(image: InputImage): InputImage {
+        val bitmap = ImageConvertUtils.getInstance().getUpRightBitmap(image)
+
+        val mat = Mat()
+        Utils.bitmapToMat(bitmap, mat)
+
+        val channels = ArrayList<Mat>(4)
+        Core.split(mat, channels)
+
+        // Invert only RGB channels
+        for (i in 0..2) {
+            Core.bitwise_not(channels[i], channels[i])
+        }
+
+        // Merge channels back
+        Core.merge(channels, mat)
+
+        Utils.matToBitmap(mat, bitmap)
+        mat.release()
+        for (channel in channels) {
+            channel.release()
+        }
+
+        return InputImage.fromBitmap(bitmap, 0)
     }
 }

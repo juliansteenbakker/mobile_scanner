@@ -90,7 +90,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   final bool torchEnabled;
 
   /// Whether the image should be inverted on a 1 to 1 interval.
-  /// So images are normal - inverted - normal - inverted
+  /// So images are normal - inverted - normal - inverted...
   /// and we can read both kind of images.
   ///
   /// Defaults to false.
