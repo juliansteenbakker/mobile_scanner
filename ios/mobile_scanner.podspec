@@ -18,8 +18,12 @@ An universal scanner for Flutter based on MLKit.
   s.dependency 'GoogleMLKit/BarcodeScanning', '~> 7.0.0'
   s.platform = :ios, '15.5.0'
   s.static_framework = true
-  # Flutter.framework does not contain a i386 slice.
-  s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
+  # Flutter.framework does not contain a i386 slice, and MLKit does not support armv7.
+  s.pod_target_xcconfig = {
+    'DEFINES_MODULE' => 'YES',
+    'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386 armv7',
+    'EXCLUDED_ARCHS[sdk=iphoneos*]' => 'armv7',
+  }
   s.swift_version = '5.0'
   s.resource_bundles = { 'mobile_scanner_privacy' => ['Resources/PrivacyInfo.xcprivacy'] }
 end
