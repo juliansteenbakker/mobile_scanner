@@ -185,7 +185,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                     }
                 }
 
-                mobileScannerCallback(barcodes, error, image)
+                mobileScannerCallback(barcodes, error, uiImage)
             }
         }
     }
