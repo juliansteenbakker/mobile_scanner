@@ -39,7 +39,6 @@ import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
 import kotlin.math.roundToInt
-import org.opencv.android.OpenCVLoader
 
 class MobileScanner(
     private val activity: Activity,
@@ -488,7 +487,7 @@ class MobileScanner(
         val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
 
         // Convert YUV_420_888 image to NV21 format
-        val imageByteArray = YUV_420_888toNV21(image)
+        val imageByteArray = yuv420888toNV21(image)
 
         // Invert the cropped image
         val invertedBytes = inverse(imageByteArray)
@@ -504,7 +503,7 @@ class MobileScanner(
     }
 
     // Helper function to convert YUV_420_888 to NV21
-    private fun YUV_420_888toNV21(image: Image): ByteArray {
+    private fun yuv420888toNV21(image: Image): ByteArray {
         val yBuffer = image.planes[0].buffer
         val uBuffer = image.planes[1].buffer
         val vBuffer = image.planes[2].buffer
@@ -525,39 +524,6 @@ class MobileScanner(
     // Helper function to invert image data
     private fun inverse(bytes: ByteArray): ByteArray {
         return ByteArray(bytes.size) { i -> (bytes[i].toInt() xor 0xFF).toByte() }
-    }
-
-    // Helper function to crop an NV21 image
-    private fun cropNV21(
-        src: ByteArray,
-        width: Int,
-        height: Int,
-        left: Int,
-        top: Int,
-        clipW: Int,
-        clipH: Int
-    ): ByteArray? {
-        if (left > width || top > height) {
-            return null
-        }
-
-        val x = left
-        val y = top
-        val w = clipW
-        val h = clipH
-        val yUnit = w * h
-        val srcUnit = width * height
-        val uv = yUnit / 2
-        val nData = ByteArray(yUnit + uv)
-
-        for (i in y until y + h) {
-            for (j in x until x + w) {
-                nData[(i - y) * w + j - x] = src[i * width + j]
-                nData[yUnit + ((i - y) / 2) * w + j - x] = src[srcUnit + (i / 2) * width + j]
-            }
-        }
-
-        return nData
     }
 
     /**
