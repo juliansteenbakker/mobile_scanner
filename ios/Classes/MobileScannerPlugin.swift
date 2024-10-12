@@ -117,9 +117,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             resetScale(call, result)
         case "updateScanWindow":
             updateScanWindow(call, result)
+        case "setIntervalInvertImage":
+            setIntervalInvertImage(call, result)
         default:
             result(FlutterMethodNotImplemented)
         }
+    }
+
+    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+        let context = CIContext(options: nil)
+        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
+            return cgImage
+        }
+        return nil
     }
 
     /// Start the mobileScanner.
@@ -128,6 +138,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let facing: Int = (call.arguments as! Dictionary<String, Any?>)["facing"] as? Int ?? 1
         let formats: Array<Int> = (call.arguments as! Dictionary<String, Any?>)["formats"] as? Array ?? []
         let returnImage: Bool = (call.arguments as! Dictionary<String, Any?>)["returnImage"] as? Bool ?? false
+        let intervalInvertImage: Bool = (call.arguments as! Dictionary<String, Any?>)["intervalInvertImage"] as? Bool ?? false
         let speed: Int = (call.arguments as! Dictionary<String, Any?>)["speed"] as? Int ?? 0
         let timeoutMs: Int = (call.arguments as! Dictionary<String, Any?>)["timeout"] as? Int ?? 0
         self.mobileScanner.timeoutSeconds = Double(timeoutMs) / Double(1000)
@@ -139,7 +150,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         let detectionSpeed: DetectionSpeed = DetectionSpeed(rawValue: speed)!
 
         do {
-            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, cameraPosition: position, torch: torch, detectionSpeed: detectionSpeed) { parameters in
+            try mobileScanner.start(barcodeScannerOptions: barcodeOptions, cameraPosition: position, intervalInvertImage: intervalInvertImage, torch: torch, detectionSpeed: detectionSpeed) { parameters in
                 DispatchQueue.main.async {
                     result([
                         "textureId": parameters.textureId,
@@ -165,6 +176,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 details: nil))
         }
+    }
+
+    /// Sets the zoomScale.
+    private func setIntervalInvertImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let intervalInvertImage = call.arguments as? Bool
+        if (intervalInvertImage == nil) {
+            result(FlutterError(code: "MobileScanner",
+                                message: "You must provide a intervalInvertImage (bool) when calling setIntervalInvertImage",
+                                details: nil))
+            return
+        }
+        mobileScanner.setIntervalInvertImage(intervalInvertImage!)
+        result(nil)
     }
 
     /// Stops the mobileScanner and closes the texture.

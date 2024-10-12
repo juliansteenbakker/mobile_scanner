@@ -289,6 +289,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
+  Future<void> setIntervalInvertImage(bool intervalInvertImage) async {
+    await methodChannel.invokeMethod<void>(
+      'setIntervalInvertImage',
+      {'intervalInvertImage': intervalInvertImage},
+    );
+  }
+
+  @override
   Future<void> stop() async {
     if (_textureId == null) {
       return;

@@ -15,6 +15,7 @@ class StartOptions {
     required this.returnImage,
     required this.torchEnabled,
     required this.useNewCameraSelector,
+    required this.intervalInvertImage,
   });
 
   /// The direction for the camera.
@@ -22,6 +23,9 @@ class StartOptions {
 
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
+
+  /// Whether the scanner should work also with inverted images.
+  final bool intervalInvertImage;
 
   /// The detection speed for the scanner.
   final DetectionSpeed detectionSpeed;
@@ -58,6 +62,7 @@ class StartOptions {
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
       'useNewCameraSelector': useNewCameraSelector,
+      'intervalInvertImage': intervalInvertImage,
     };
   }
 }
