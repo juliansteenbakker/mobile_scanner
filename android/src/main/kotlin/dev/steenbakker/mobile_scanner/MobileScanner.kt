@@ -1,11 +1,13 @@
 package dev.steenbakker.mobile_scanner
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
+import android.media.Image
 import android.net.Uri
 import android.os.Build
 import android.os.Handler
@@ -58,6 +60,8 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
+    var intervalInvertImage: Boolean = false
+    private var invertImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
@@ -77,7 +81,17 @@ class MobileScanner(
     @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
-        val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+        // Invert every other frame.
+        if (intervalInvertImage) {
+            invertImage = !invertImage // so we jump from one normal to one inverted and viceversa
+        }
+
+        val inputImage = if (invertImage) {
+            invertInputImage(imageProxy)
+        } else {
+            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        }
 
         if (detectionSpeed == DetectionSpeed.NORMAL && scannerTimeout) {
             imageProxy.close()
@@ -244,11 +258,13 @@ class MobileScanner(
         mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
         cameraResolution: Size?,
-        newCameraResolutionSelector: Boolean
+        newCameraResolutionSelector: Boolean,
+        intervalInvertImage: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
+        this.intervalInvertImage = intervalInvertImage
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
             mobileScannerErrorCallback(AlreadyStarted())
@@ -460,6 +476,54 @@ class MobileScanner(
                 TorchState.ON -> it.cameraControl.enableTorch(false)
             }
         }
+    }
+
+    /**
+     * Inverts the image colours respecting the alpha channel
+     */
+    @SuppressLint("UnsafeOptInUsageError")
+    fun invertInputImage(imageProxy: ImageProxy): InputImage {
+        // Extract Image from ImageProxy
+        val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
+
+        // Convert YUV_420_888 image to NV21 format
+        val imageByteArray = yuv420888toNV21(image)
+
+        // Invert the cropped image
+        val invertedBytes = inverse(imageByteArray)
+
+        // Create a new InputImage from the inverted byte array
+        return InputImage.fromByteArray(
+            invertedBytes,
+            image.width,
+            image.height,
+            imageProxy.imageInfo.rotationDegrees,
+            InputImage.IMAGE_FORMAT_NV21
+        )
+    }
+
+    // Helper function to convert YUV_420_888 to NV21
+    private fun yuv420888toNV21(image: Image): ByteArray {
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
+
+        val ySize = yBuffer.remaining()
+        val uSize = uBuffer.remaining()
+        val vSize = vBuffer.remaining()
+
+        val nv21 = ByteArray(ySize + uSize + vSize)
+
+        yBuffer.get(nv21, 0, ySize)
+        vBuffer.get(nv21, ySize, vSize)
+        uBuffer.get(nv21, ySize + vSize, uSize)
+
+        return nv21
+    }
+
+    // Helper function to invert image data
+    private fun inverse(bytes: ByteArray): ByteArray {
+        return ByteArray(bytes.size) { i -> (bytes[i].toInt() xor 0xFF).toByte() }
     }
 
     /**
