@@ -82,7 +82,7 @@ class MobileScanner(
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
 
-        // Inversion
+        // Invert every other frame.
         if (intervalInvertImage) {
             invertImage = !invertImage // so we jump from one normal to one inverted and viceversa
         }
