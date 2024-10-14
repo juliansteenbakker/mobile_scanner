@@ -24,7 +24,7 @@ class StartOptions {
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
 
-  /// Whether the scanner should work also with inverted images.
+  /// Whether the scanner should try to detect color-inverted barcodes in every other frame.
   final bool intervalInvertImage;
 
   /// The detection speed for the scanner.
