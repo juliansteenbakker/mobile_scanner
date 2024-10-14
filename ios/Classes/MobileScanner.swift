@@ -149,7 +149,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
 
-            // Inversion
+            // Invert every other frame.
             let uiImage : UIImage
             if (intervalInvertImage) {
                invertImage = !invertImage
