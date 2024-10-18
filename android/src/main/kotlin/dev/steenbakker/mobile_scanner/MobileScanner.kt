@@ -489,7 +489,7 @@ class MobileScanner(
         // Convert YUV_420_888 image to NV21 format
         val imageByteArray = yuv420888toNV21(image)
 
-        // Invert the cropped image
+        // Inverts the result of NV21
         val invertedBytes = inverse(imageByteArray)
 
         // Create a new InputImage from the inverted byte array
@@ -521,7 +521,6 @@ class MobileScanner(
         return nv21
     }
 
-    // Helper function to invert image data
     private fun inverse(bytes: ByteArray): ByteArray {
         return ByteArray(bytes.size) { i -> (bytes[i].toInt() xor 0xFF).toByte() }
     }
