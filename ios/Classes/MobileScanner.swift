@@ -48,7 +48,6 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
-    /// Analyze inverted image intervally to include both inverted and normal images
     var shouldConsiderInvertedImages: Bool = false
     // local variable to invert this image only this time,
     // it changes based on [shouldConsiderInvertedImages] and
@@ -467,8 +466,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         if (invertCurrentImage) {
             uiImage = self.invertInputImage(image: uiImage)
         }
-        let visImage = VisionImage(image: uiImage)
-        visImage.orientation = imageOrientation(
+        let visionImage = VisionImage(image: uiImage)
+        visionImage.orientation = imageOrientation(
             deviceOrientation: UIDevice.current.orientation,
             defaultOrientation: .portrait,
             position: position
@@ -476,7 +475,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         
         let scanner: BarcodeScanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
 
-        scanner.process(visImage, completion: callback)
+        scanner.process(visionImage, completion: callback)
     }
 
     func invertInputImage(image: UIImage) -> UIImage {
