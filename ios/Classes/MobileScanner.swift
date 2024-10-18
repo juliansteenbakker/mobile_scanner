@@ -158,8 +158,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                invertCurrentImage = !invertCurrentImage
             }
             if (invertCurrentImage) {
-                let tempImage = self.invertInputImage(image: latestBuffer.image)
-                uiImage = tempImage
+                uiImage = self.invertInputImage(image: latestBuffer.image)
             } else {
                 uiImage = latestBuffer.image
             }
