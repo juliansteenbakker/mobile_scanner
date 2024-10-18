@@ -483,46 +483,38 @@ class MobileScanner(
      */
     @SuppressLint("UnsafeOptInUsageError")
     fun invertInputImage(imageProxy: ImageProxy): InputImage {
-        // Extract Image from ImageProxy
         val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
 
         // Convert YUV_420_888 image to NV21 format
-        val imageByteArray = yuv420888toNV21(image)
+        // based on our util helper
+        val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+        YuvToRgbConverter(activity).yuvToRgb(image, bitmap)
 
-        // Inverts the result of NV21
-        val invertedBytes = inverse(imageByteArray)
+        // Invert RGB values
+        invertBitmapColors(bitmap)
 
-        // Create a new InputImage from the inverted byte array
-        return InputImage.fromByteArray(
-            invertedBytes,
-            image.width,
-            image.height,
-            imageProxy.imageInfo.rotationDegrees,
-            InputImage.IMAGE_FORMAT_NV21
-        )
+        return InputImage.fromBitmap(bitmap, imageProxy.imageInfo.rotationDegrees)
     }
 
-    // Helper function to convert YUV_420_888 to NV21
-    private fun yuv420888toNV21(image: Image): ByteArray {
-        val yBuffer = image.planes[0].buffer
-        val uBuffer = image.planes[1].buffer
-        val vBuffer = image.planes[2].buffer
-
-        val ySize = yBuffer.remaining()
-        val uSize = uBuffer.remaining()
-        val vSize = vBuffer.remaining()
-
-        val nv21 = ByteArray(ySize + uSize + vSize)
-
-        yBuffer.get(nv21, 0, ySize)
-        vBuffer.get(nv21, ySize, vSize)
-        uBuffer.get(nv21, ySize + vSize, uSize)
-
-        return nv21
+    // Helper function to invert the colors of the bitmap
+    private fun invertBitmapColors(bitmap: Bitmap) {
+        val width = bitmap.width
+        val height = bitmap.height
+        for (x in 0 until width) {
+            for (y in 0 until height) {
+                val pixel = bitmap.getPixel(x, y)
+                val invertedColor = invertColor(pixel)
+                bitmap.setPixel(x, y, invertedColor)
+            }
+        }
     }
 
-    private fun inverse(bytes: ByteArray): ByteArray {
-        return ByteArray(bytes.size) { i -> (bytes[i].toInt() xor 0xFF).toByte() }
+    private fun invertColor(pixel: Int): Int {
+        val alpha = pixel and 0xFF000000.toInt()
+        val red = 255 - (pixel shr 16 and 0xFF)
+        val green = 255 - (pixel shr 8 and 0xFF)
+        val blue = 255 - (pixel and 0xFF)
+        return alpha or (red shl 16) or (green shl 8) or blue
     }
 
     /**
