@@ -60,7 +60,7 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
-    var intervalInvertImage: Boolean = false
+    var shouldConsiderInvertedImages: Boolean = false
     private var invertImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
@@ -83,7 +83,7 @@ class MobileScanner(
         val mediaImage = imageProxy.image ?: return@Analyzer
 
         // Invert every other frame.
-        if (intervalInvertImage) {
+        if (shouldConsiderInvertedImages) {
             invertImage = !invertImage // so we jump from one normal to one inverted and viceversa
         }
 
@@ -259,12 +259,12 @@ class MobileScanner(
         detectionTimeout: Long,
         cameraResolution: Size?,
         newCameraResolutionSelector: Boolean,
-        intervalInvertImage: Boolean,
+        shouldConsiderInvertedImages: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
-        this.intervalInvertImage = intervalInvertImage
+        this.shouldConsiderInvertedImages = shouldConsiderInvertedImages
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
             mobileScannerErrorCallback(AlreadyStarted())

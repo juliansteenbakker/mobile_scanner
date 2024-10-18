@@ -25,7 +25,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.intervalInvertImage = false,
+    this.shouldConsiderInvertedImages = false,
     this.useNewCameraSelector = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
@@ -92,7 +92,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false and is only supported on Android and iOS.
   ///
   /// Defaults to false.
-  final bool intervalInvertImage;
+  final bool shouldConsiderInvertedImages;
 
   /// Whether the flashlight should be turned on when the camera is started.
   ///
@@ -290,7 +290,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       returnImage: returnImage,
       torchEnabled: torchEnabled,
       useNewCameraSelector: useNewCameraSelector,
-      intervalInvertImage: intervalInvertImage,
+      shouldConsiderInvertedImages: shouldConsiderInvertedImages,
     );
 
     try {

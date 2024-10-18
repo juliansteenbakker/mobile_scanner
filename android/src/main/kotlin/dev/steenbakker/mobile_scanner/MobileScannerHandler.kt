@@ -124,7 +124,7 @@ class MobileScannerHandler(
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call, result)
-            "setIntervalInvertImage" -> setIntervalInvertImage(call, result)
+            "setShouldConsiderInvertedImages" -> setShouldConsiderInvertedImages(call, result)
             else -> result.notImplemented()
         }
     }
@@ -144,7 +144,7 @@ class MobileScannerHandler(
         } else {
             null
         }
-        val intervalInvertImage: Boolean = call.argument<Boolean>("intervalInvertImage") ?: false
+        val shouldConsiderInvertedImages: Boolean = call.argument<Boolean>("shouldConsiderInvertedImages") ?: false
 
         val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
 
@@ -212,15 +212,15 @@ class MobileScannerHandler(
             timeout.toLong(),
             cameraResolution,
             useNewCameraSelector,
-            intervalInvertImage,
+            shouldConsiderInvertedImages,
         )
     }
 
-    private fun setIntervalInvertImage(call: MethodCall, result: MethodChannel.Result) {
-        val intervalInvertImage = call.argument<Boolean?>("intervalInvertImage")
+    private fun setShouldConsiderInvertedImages(call: MethodCall, result: MethodChannel.Result) {
+        val shouldConsiderInvertedImages = call.argument<Boolean?>("shouldConsiderInvertedImages")
 
-        if (intervalInvertImage != null)
-            mobileScanner?.intervalInvertImage = intervalInvertImage
+        if (shouldConsiderInvertedImages != null)
+            mobileScanner?.shouldConsiderInvertedImages = shouldConsiderInvertedImages
 
         result.success(null)
     }
