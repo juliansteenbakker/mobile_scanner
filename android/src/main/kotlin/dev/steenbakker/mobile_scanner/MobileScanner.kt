@@ -61,7 +61,7 @@ class MobileScanner(
     /// Configurable variables
     var scanWindow: List<Float>? = null
     var shouldConsiderInvertedImages: Boolean = false
-    private var invertImage: Boolean = false
+    private var invertCurrentImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
@@ -84,10 +84,10 @@ class MobileScanner(
 
         // Invert every other frame.
         if (shouldConsiderInvertedImages) {
-            invertImage = !invertImage // so we jump from one normal to one inverted and viceversa
+            invertCurrentImage = !invertCurrentImage // so we jump from one normal to one inverted and viceversa
         }
 
-        val inputImage = if (invertImage) {
+        val inputImage = if (invertCurrentImage) {
             invertInputImage(imageProxy)
         } else {
             InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)

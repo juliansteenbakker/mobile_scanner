@@ -50,7 +50,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
 
     /// Analyze inverted image intervally to include both inverted and normal images
     var shouldConsiderInvertedImages: Bool = false
-    private var invertImage: Bool = false // local to invert intervally
+    // local variable to invert this image only this time,
+    // it changes based on [shouldConsiderInvertedImages] and
+    // it defaults as false
+    private var invertCurrentImage: Bool = false
 
     private let backgroundQueue = DispatchQueue(label: "camera-handling")
 
@@ -152,10 +155,10 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             // Invert every other frame.
             let uiImage : UIImage
             if (shouldConsiderInvertedImages) {
-               invertImage = !invertImage
+               invertCurrentImage = !invertCurrentImage
             }
-            if (invertImage) {
-                let tempImage = self.invertImage(image: latestBuffer.image)
+            if (invertCurrentImage) {
+                let tempImage = self.invertInputImage(image: latestBuffer.image)
                 uiImage = tempImage
             } else {
                 uiImage = latestBuffer.image
@@ -462,8 +465,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position,
                       barcodeScannerOptions: BarcodeScannerOptions?, callback: @escaping BarcodeScanningCallback) {
         var uiImage = image
-        if (invertImage) {
-            uiImage = self.invertImage(image: uiImage)
+        if (invertCurrentImage) {
+            uiImage = self.invertInputImage(image: uiImage)
         }
         let visImage = VisionImage(image: uiImage)
         visImage.orientation = imageOrientation(
@@ -477,7 +480,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         scanner.process(visImage, completion: callback)
     }
 
-    func invertImage(image: UIImage) -> UIImage {
+    func invertInputImage(image: UIImage) -> UIImage {
         let ciImage = CIImage(image: image)
         let filter = CIFilter(name: "CIColorInvert")
         filter?.setValue(ciImage, forKey: kCIInputImageKey)
