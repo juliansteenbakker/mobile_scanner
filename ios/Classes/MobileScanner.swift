@@ -462,7 +462,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// Analyze a single image
     func analyzeImage(image: UIImage, position: AVCaptureDevice.Position,
                       barcodeScannerOptions: BarcodeScannerOptions?, callback: @escaping BarcodeScanningCallback) {
-        var uiImage = image
+        let uiImage = image
         if (invertCurrentImage) {
             uiImage = self.invertInputImage(image: uiImage)
         }
