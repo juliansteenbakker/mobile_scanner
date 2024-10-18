@@ -124,14 +124,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         }
     }
 
-    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
-            return cgImage
-        }
-        return nil
-    }
-
     /// Start the mobileScanner.
     private func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let torch: Bool = (call.arguments as! Dictionary<String, Any?>)["torch"] as? Bool ?? false

@@ -128,7 +128,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
     }
 
-    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
+    private func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
         let context = CIContext(options: nil)
         if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
             return cgImage
