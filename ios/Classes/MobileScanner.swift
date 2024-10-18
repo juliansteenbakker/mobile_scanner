@@ -478,7 +478,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         scanner.process(visionImage, completion: callback)
     }
 
-    func invertInputImage(image: UIImage) -> UIImage {
+    private func invertInputImage(image: UIImage) -> UIImage {
         let ciImage = CIImage(image: image)
         let filter = CIFilter(name: "CIColorInvert")
         filter?.setValue(ciImage, forKey: kCIInputImageKey)
