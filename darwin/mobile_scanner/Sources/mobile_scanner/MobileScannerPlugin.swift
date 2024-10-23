@@ -410,12 +410,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 var width = Double(dimensions.width)
                 var height = Double(dimensions.height)
                 
+#if os(iOS)
                 // Swap width and height if the image is in portrait mode
                 if orientation == AVCaptureVideoOrientation.portrait || orientation == AVCaptureVideoOrientation.portraitUpsideDown {
                     let temp = width
                     width = height
                     height = temp
                 }
+#endif
 
                 let size = ["width": width, "height": height]
                 
@@ -516,7 +518,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             result(nil)
             return;
         }
-        
+
         do {
             try device.lockForConfiguration()
             device.torchMode = newTorchMode
