@@ -1,3 +1,8 @@
+## NEXT
+
+Improvements:
+* [iOS] Adds support for Swift Package Manager.
+
 ## 7.0.0-beta.1
 
 This version replaces MLKit on iOS with Apple's Vision API and merges the iOS and MacOS sources.
