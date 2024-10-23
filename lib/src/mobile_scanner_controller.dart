@@ -186,6 +186,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
+  /// The [formats] specify the barcode formats that should be detected in the image.
+  /// If the [formats] are omitted or empty, all formats are detected.
   ///
   /// This is only supported on Android, iOS and MacOS.
   ///
@@ -193,8 +195,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If an error occurred during the analysis of the image,
   /// a [MobileScannerBarcodeException] error is thrown.
-  Future<BarcodeCapture?> analyzeImage(String path) {
-    return MobileScannerPlatform.instance.analyzeImage(path);
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) {
+    return MobileScannerPlatform.instance.analyzeImage(path, formats: formats);
   }
 
   /// Build a camera preview widget.

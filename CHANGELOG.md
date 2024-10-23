@@ -1,3 +1,11 @@
+## 6.0.2
+
+Bugs fixed:
+* Fixed a bug that prevented `analyzeImage` from actually accepting the configured formats.
+
+Improvements:
+* [iOS] Excluded the `arm64` architecture for Simulators, which is unsupported by MLKit 7.0.0.
+
 ## 6.0.1
 
 Bugs fixed:
