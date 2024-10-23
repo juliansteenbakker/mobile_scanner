@@ -217,7 +217,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if #available(macOS 10.14, *) {
+        if #available(iOS 12.0, macOS 10.14, *) {
             let status = AVCaptureDevice.authorizationStatus(for: .video)
             switch status {
             case .notDetermined:
@@ -233,7 +233,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func requestPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if #available(macOS 10.14, *) {
+        if #available(iOS 12.0, macOS 10.14, *) {
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         } else {
             result(0)
@@ -366,8 +366,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         captureSession!.sessionPreset = AVCaptureSession.Preset.photo
-        
-        
         
         // Add video output
         let videoOutput = AVCaptureVideoDataOutput()
