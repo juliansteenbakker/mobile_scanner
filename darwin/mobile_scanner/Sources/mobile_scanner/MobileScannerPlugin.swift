@@ -288,6 +288,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
+#if os(iOS)
         var videoOrientation: AVCaptureVideoOrientation
 
         switch UIDevice.current.orientation {
@@ -304,6 +305,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         return videoOrientation
+#else
+        return .portrait
+#endif
     }
     
 
