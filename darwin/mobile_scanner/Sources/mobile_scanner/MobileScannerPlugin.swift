@@ -1,8 +1,16 @@
 import AVFoundation
-import FlutterMacOS
+import Flutter
 import Vision
-import AppKit
 import VideoToolbox
+
+#if os(iOS)
+  import Flutter
+  import UIKit
+  import MobileCoreServices
+#else
+  import AppKit
+  import FlutterMacOS
+#endif
 
 public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, FlutterTexture, AVCaptureVideoDataOutputSampleBufferDelegate {
     
@@ -39,11 +47,23 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var position = AVCaptureDevice.Position.back
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        let instance = MobileScannerPlugin(registrar.textures)
+        #if os(iOS)
+        let textures = registrar.textures()
+        #else
+        let textures = registrar.textures
+        #endif
+        
+        #if os(iOS)
+        let messenger = registrar.messenger()
+        #else
+        let messenger = registrar.messenger
+        #endif
+        
+        let instance = MobileScannerPlugin(textures)
         let method = FlutterMethodChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: registrar.messenger)
+                                            "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: messenger)
         let event = FlutterEventChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: registrar.messenger)
+                                            "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: messenger)
         registrar.addMethodCallDelegate(instance, channel: method)
         event.setStreamHandler(instance)
     }
@@ -267,6 +287,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let scaledScanWindow = CGRect(x: minX, y: minY, width: width, height: height)
         return scaledScanWindow.contains(barcode.boundingBox)
     }
+    
+    private func getVideoOrientation() -> AVCaptureVideoOrientation {
+        var videoOrientation: AVCaptureVideoOrientation
+
+        switch UIDevice.current.orientation {
+        case .portrait:
+            videoOrientation = .portrait
+        case .portraitUpsideDown:
+            videoOrientation = .portraitUpsideDown
+        case .landscapeLeft:
+            videoOrientation = .landscapeRight
+        case .landscapeRight:
+            videoOrientation = .landscapeLeft
+        default:
+            videoOrientation = .portrait
+        }
+
+        return videoOrientation
+    }
+    
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil || captureSession != nil) {
@@ -327,30 +367,59 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         captureSession!.sessionPreset = AVCaptureSession.Preset.photo
-        // Add video output.
-        let videoOutput = AVCaptureVideoDataOutput()
         
+        
+        
+        // Add video output
+        let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        
+
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession!.addOutput(videoOutput)
-        for connection in videoOutput.connections {
+        let orientation = self.getVideoOrientation()
+
+        // Adjust orientation for the video connection
+        if let connection = videoOutput.connections.first {
+            if connection.isVideoOrientationSupported {
+                connection.videoOrientation = orientation
+            }
+            
             if position == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
             }
         }
+        
         captureSession!.commitConfiguration()
-        captureSession!.startRunning()
-        let dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
-        let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
 
-        let answer: [String : Any?] = [
-            "textureId": textureId,
-            "size": size,
-            "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
-        ]
-        result(answer)
+        // Move startRunning to a background thread to avoid blocking the main UI thread
+        DispatchQueue.global(qos: .background).async {
+            self.captureSession!.startRunning()
+
+            DispatchQueue.main.async {
+                // Return the result on the main thread after the session starts
+                let dimensions = CMVideoFormatDescriptionGetDimensions(self.device!.activeFormat.formatDescription)
+                var width = Double(dimensions.width)
+                var height = Double(dimensions.height)
+                
+                // Swap width and height if the image is in portrait mode
+                if orientation == AVCaptureVideoOrientation.portrait || orientation == AVCaptureVideoOrientation.portraitUpsideDown {
+                    let temp = width
+                    width = height
+                    height = temp
+                }
+
+                let size = ["width": width, "height": height]
+
+                let answer: [String : Any?] = [
+                    "textureId": self.textureId,
+                    "size": size,
+                    "currentTorchState": self.device!.hasTorch ? self.device!.torchMode.rawValue : -1,
+                ]
+                
+                result(answer) // Make sure to return the result on the main thread
+            }
+        }
     }
 
     // TODO: this method should be removed when iOS and MacOS share their implementation.
@@ -587,7 +656,7 @@ extension CGImage {
         
         let formatHint: CFString
         
-        if #available(macOS 11.0, *) {
+        if #available(iOS 14.0, macOS 11.0, *) {
             formatHint = UTType.jpeg.identifier as CFString
         } else {
             formatHint = kUTTypeJPEG
@@ -626,6 +695,7 @@ extension VNBarcodeObservation {
             ],
             "format": symbology.toInt ?? -1,
             "rawValue": payloadStringValue ?? "",
+            "displayValue": payloadStringValue ?? "",
             "size": [
                 "width": distanceBetween(topLeft, topRight),
                 "height": distanceBetween(topLeft, bottomLeft),
@@ -636,7 +706,7 @@ extension VNBarcodeObservation {
 
 extension VNBarcodeSymbology {
     static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
-        if #available(macOS 12.0, *) {
+        if #available(iOS 15.0, macOS 12.0, *) {
             if(mapValue == 8){
                 return VNBarcodeSymbology.codabar
             }
@@ -670,7 +740,7 @@ extension VNBarcodeSymbology {
     }
 
     var toInt: Int? {
-        if #available(macOS 12.0, *) {
+        if #available(iOS 15.0, macOS 12.0, *) {
             if(self == VNBarcodeSymbology.codabar){
                 return 8
             }

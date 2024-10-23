@@ -1,3 +1,14 @@
+## 7.0.0-beta.1
+
+This version replaces MLKit on iOS with Apples Vision API. The code base is now shared with macOS.
+This change removes the requirement for iOS 15.
+
+There are still some problems with this build.
+- Zoom slider not working
+- scanWindow not working
+- Flash shows briefly when starting scanner.
+- Other issues, not fully tested yet.
+
 ## 6.0.2
 
 Bugs fixed:
