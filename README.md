@@ -60,6 +60,10 @@ dev.steenbakker.mobile_scanner.useUnbundled=true
 ```
 
 ### iOS
+
+_iOS arm64 Simulators are currently not yet supported, until the migration to the Vision API is complete._
+_See_ https://github.com/juliansteenbakker/mobile_scanner/issues/1225
+
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
 
