@@ -1,7 +1,12 @@
+## NEXT
+
+Improvements:
+* [iOS] Adds support for Swift Package Manager.
+
 ## 7.0.0-beta.1
 
-This version replaces MLKit on iOS with Apples Vision API. The code base is now shared with macOS.
-This change removes the requirement for iOS 15 or higher.
+This version replaces MLKit on iOS with Apple's Vision API and merges the iOS and MacOS sources.
+The requirement for the minimum iOS version has been relaxed back down to iOS 12.0.
 
 There are still some problems with this build.
 - Zoom slider not working

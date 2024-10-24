@@ -1,5 +1,4 @@
 import AVFoundation
-import Flutter
 import Vision
 import VideoToolbox
 
@@ -218,7 +217,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func checkPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if #available(macOS 10.14, *) {
+        if #available(iOS 12.0, macOS 10.14, *) {
             let status = AVCaptureDevice.authorizationStatus(for: .video)
             switch status {
             case .notDetermined:
@@ -234,7 +233,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func requestPermission(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
-        if #available(macOS 10.14, *) {
+        if #available(iOS 12.0, macOS 10.14, *) {
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         } else {
             result(0)
@@ -289,6 +288,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
+#if os(iOS)
         var videoOrientation: AVCaptureVideoOrientation
 
         switch UIDevice.current.orientation {
@@ -297,14 +297,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         case .portraitUpsideDown:
             videoOrientation = .portraitUpsideDown
         case .landscapeLeft:
-            videoOrientation = .landscapeRight
-        case .landscapeRight:
             videoOrientation = .landscapeLeft
+        case .landscapeRight:
+            videoOrientation = .landscapeRight
         default:
             videoOrientation = .portrait
         }
 
         return videoOrientation
+#else
+        return .portrait
+#endif
     }
     
 
@@ -368,8 +371,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         captureSession!.sessionPreset = AVCaptureSession.Preset.photo
         
-        
-        
         // Add video output
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
@@ -392,79 +393,53 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         captureSession!.commitConfiguration()
 
-        // Move startRunning to a background thread to avoid blocking the main UI thread
+        // Move startRunning to a background thread to avoid blocking the main UI thread.
         DispatchQueue.global(qos: .background).async {
             self.captureSession!.startRunning()
 
             DispatchQueue.main.async {
-                // Return the result on the main thread after the session starts
-                let dimensions = CMVideoFormatDescriptionGetDimensions(self.device!.activeFormat.formatDescription)
+                let dimensions: CMVideoDimensions
+                
+                if let device = self.device {
+                    dimensions = CMVideoFormatDescriptionGetDimensions(device.activeFormat.formatDescription)
+                } else {
+                    dimensions = CMVideoDimensions()
+                }
+                
+                // Return the result on the main thread after the session starts.
                 var width = Double(dimensions.width)
                 var height = Double(dimensions.height)
                 
+#if os(iOS)
                 // Swap width and height if the image is in portrait mode
                 if orientation == AVCaptureVideoOrientation.portrait || orientation == AVCaptureVideoOrientation.portraitUpsideDown {
                     let temp = width
                     width = height
                     height = temp
                 }
+#endif
 
                 let size = ["width": width, "height": height]
-
-                let answer: [String : Any?] = [
-                    "textureId": self.textureId,
-                    "size": size,
-                    "currentTorchState": self.device!.hasTorch ? self.device!.torchMode.rawValue : -1,
-                ]
                 
-                result(answer) // Make sure to return the result on the main thread
+                let answer: [String : Any?]
+                
+                if let device = self.device {
+                    answer = [
+                        "textureId": self.textureId,
+                        "size": size,
+                        "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
+                    ]
+                } else {
+                    answer = [
+                        "textureId": self.textureId,
+                        "size": size,
+                        "currentTorchState": -1,
+                    ]
+                }
+                
+                result(answer)
             }
         }
-    }
-
-    // TODO: this method should be removed when iOS and MacOS share their implementation.
-    private func toggleTorchInternal() {
-        guard let device = self.device else {
-            return
-        }
-        
-        if (!device.hasTorch) {
-            return
-        }
-        
-        if #available(macOS 15.0, *) {
-            if(!device.isTorchAvailable) {
-                return
-            }
-        }
-        
-        var newTorchMode: AVCaptureDevice.TorchMode = device.torchMode
-        
-        switch(device.torchMode) {
-        case AVCaptureDevice.TorchMode.auto:
-            if #available(macOS 10.15, *) {
-                newTorchMode = device.isTorchActive ? AVCaptureDevice.TorchMode.off : AVCaptureDevice.TorchMode.on
-            }
-            break;
-        case AVCaptureDevice.TorchMode.off:
-            newTorchMode = AVCaptureDevice.TorchMode.on
-            break;
-        case AVCaptureDevice.TorchMode.on:
-            newTorchMode = AVCaptureDevice.TorchMode.off
-            break;
-        default:
-            return;
-        }
-        
-        if (!device.isTorchModeSupported(newTorchMode) || device.torchMode == newTorchMode) {
-            return;
-        }
-
-        do {
-            try device.lockForConfiguration()
-            device.torchMode = newTorchMode
-            device.unlockForConfiguration()
-        } catch(_) {}
     }
     
     /// Turn the torch on.
@@ -503,7 +478,53 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     private func toggleTorch(_ result: @escaping FlutterResult) {
-        self.toggleTorchInternal()
+        guard let device = self.device else {
+            result(nil)
+            return
+        }
+        
+        if (!device.hasTorch) {
+            result(nil)
+            return
+        }
+        
+        if #available(macOS 15.0, *) {
+            if(!device.isTorchAvailable) {
+                result(nil)
+                return
+            }
+        }
+        
+        var newTorchMode: AVCaptureDevice.TorchMode = device.torchMode
+        
+        switch(device.torchMode) {
+        case AVCaptureDevice.TorchMode.auto:
+            if #available(macOS 10.15, *) {
+                newTorchMode = device.isTorchActive ? AVCaptureDevice.TorchMode.off : AVCaptureDevice.TorchMode.on
+            }
+            break;
+        case AVCaptureDevice.TorchMode.off:
+            newTorchMode = AVCaptureDevice.TorchMode.on
+            break;
+        case AVCaptureDevice.TorchMode.on:
+            newTorchMode = AVCaptureDevice.TorchMode.off
+            break;
+        default:
+            result(nil)
+            return;
+        }
+        
+        if (!device.isTorchModeSupported(newTorchMode) || device.torchMode == newTorchMode) {
+            result(nil)
+            return;
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = newTorchMode
+            device.unlockForConfiguration()
+        } catch(_) {}
+        
         result(nil)
     }
 

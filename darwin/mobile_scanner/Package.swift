@@ -6,6 +6,7 @@ import PackageDescription
 let package = Package(
     name: "mobile_scanner",
     platforms: [
+        .iOS("12.0"),
         .macOS("10.14")
     ],
     products: [
