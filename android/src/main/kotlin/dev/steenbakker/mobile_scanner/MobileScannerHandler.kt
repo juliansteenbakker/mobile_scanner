@@ -137,7 +137,6 @@ class MobileScannerHandler(
         val speed: Int = call.argument<Int>("speed") ?: 1
         val timeout: Int = call.argument<Int>("timeout") ?: 250
         val cameraResolutionValues: List<Int>? = call.argument<List<Int>>("cameraResolution")
-        val useNewCameraSelector: Boolean = call.argument<Boolean>("useNewCameraSelector") ?: false
         val cameraResolution: Size? = if (cameraResolutionValues != null) {
             Size(cameraResolutionValues[0], cameraResolutionValues[1])
         } else {
@@ -208,8 +207,7 @@ class MobileScannerHandler(
                 }
             },
             timeout.toLong(),
-            cameraResolution,
-            useNewCameraSelector
+            cameraResolution
         )
     }
 

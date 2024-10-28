@@ -18,7 +18,6 @@ class _BarcodeScannerWithControllerState
   final MobileScannerController controller = MobileScannerController(
     autoStart: false,
     torchEnabled: true,
-    useNewCameraSelector: true,
   );
 
   Barcode? _barcode;
