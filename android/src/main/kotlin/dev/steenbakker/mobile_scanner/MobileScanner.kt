@@ -119,12 +119,14 @@ class MobileScanner(
                     return@addOnSuccessListener
                 }
 
+                val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
+
                 if (!returnImage) {
                     mobileScannerCallback(
                         barcodeMap,
                         null,
-                        mediaImage.width,
-                        mediaImage.height)
+                        if (portrait) mediaImage.width else mediaImage.height,
+                        if (portrait) mediaImage.height else mediaImage.width)
                     return@addOnSuccessListener
                 }
 

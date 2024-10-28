@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanned_barcode_label.dart';
@@ -15,7 +14,12 @@ class BarcodeScannerWithScanWindow extends StatefulWidget {
 
 class _BarcodeScannerWithScanWindowState
     extends State<BarcodeScannerWithScanWindow> {
-  final MobileScannerController controller = MobileScannerController();
+  final MobileScannerController controller = MobileScannerController(
+    detectionSpeed: DetectionSpeed.unrestricted,
+  );
+
+  // TODO: Fix BoxFit.fill & BoxFit.fitHeight
+  final boxFit = BoxFit.contain;
 
   Widget _buildBarcodeOverlay() {
     return ValueListenableBuilder(
@@ -36,22 +40,31 @@ class _BarcodeScannerWithScanWindowState
               return const SizedBox();
             }
 
-            final scannedBarcode = barcodeCapture.barcodes.first;
+            final overlays = <Widget>[];
 
-            // No barcode corners, or size, or no camera preview size.
-            if (value.size.isEmpty ||
-                scannedBarcode.size.isEmpty ||
-                scannedBarcode.corners.isEmpty) {
-              return const SizedBox();
+            for (final scannedBarcode in barcodeCapture.barcodes) {
+              // No barcode corners, or size, or no camera preview size.
+              if (value.size.isEmpty ||
+                  scannedBarcode.size.isEmpty ||
+                  scannedBarcode.corners.isEmpty) {
+                continue;
+              }
+
+              overlays.add(
+                CustomPaint(
+                  painter: BarcodeOverlay(
+                    barcodeCorners: scannedBarcode.corners,
+                    barcodeSize: scannedBarcode.size,
+                    boxFit: boxFit,
+                    cameraPreviewSize: barcodeCapture.size,
+                  ),
+                ),
+              );
             }
 
-            return CustomPaint(
-              painter: BarcodeOverlay(
-                barcodeCorners: scannedBarcode.corners,
-                barcodeSize: scannedBarcode.size,
-                boxFit: BoxFit.contain,
-                cameraPreviewSize: value.size,
-              ),
+            return Stack(
+              fit: StackFit.expand,
+              children: overlays,
             );
           },
         );
@@ -72,6 +85,7 @@ class _BarcodeScannerWithScanWindowState
         }
 
         return CustomPaint(
+          size: value.size,
           painter: ScannerOverlay(scanWindowRect),
         );
       },
@@ -81,8 +95,8 @@ class _BarcodeScannerWithScanWindowState
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
-      center: MediaQuery.sizeOf(context).center(Offset.zero),
-      width: 200,
+      center: MediaQuery.sizeOf(context).center(const Offset(0, -100)),
+      width: 300,
       height: 200,
     );
 
@@ -93,7 +107,7 @@ class _BarcodeScannerWithScanWindowState
         fit: StackFit.expand,
         children: [
           MobileScanner(
-            fit: BoxFit.contain,
+            fit: boxFit,
             scanWindow: scanWindow,
             controller: controller,
             errorBuilder: (context, error, child) {
@@ -131,22 +145,21 @@ class ScannerOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: use `Offset.zero & size` instead of Rect.largest
-    // we need to pass the size to the custom paint widget
-    final backgroundPath = Path()..addRect(Rect.largest);
+    // Define the main overlay path covering the entire screen
+    final backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
+
+    // Define the cutout path in the center
     final cutoutPath = Path()..addRect(scanWindow);
 
-    final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
-      ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.dstOut;
+    // Combine the two paths: overlay minus the cutout area
+    final overlayWithCutoutPath =
+        Path.combine(PathOperation.difference, backgroundPath, cutoutPath);
 
-    final backgroundWithCutout = Path.combine(
-      PathOperation.difference,
-      backgroundPath,
-      cutoutPath,
-    );
-    canvas.drawPath(backgroundWithCutout, backgroundPaint);
+    // Paint the overlay with the cutout
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.5); // Semi-transparent black
+    canvas.drawPath(overlayWithCutoutPath, paint);
   }
 
   @override
@@ -195,13 +208,14 @@ class BarcodeOverlay extends CustomPainter {
     final double ratioWidth;
     final double ratioHeight;
 
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
-      ratioWidth = barcodeSize.width / adjustedSize.destination.width;
-      ratioHeight = barcodeSize.height / adjustedSize.destination.height;
-    } else {
-      ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
-      ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
-    }
+    // if (!kIsWeb && defaultTargetPlatform == TargetPlatform.iOS) {
+    //   ratioWidth = barcodeSize.width / adjustedSize.destination.width;
+    //   ratioHeight = barcodeSize.height / adjustedSize.destination.height;
+    // } else
+    // {
+    ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
+    ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
+    // }
 
     final List<Offset> adjustedOffset = [
       for (final offset in barcodeCorners)
@@ -215,14 +229,13 @@ class BarcodeOverlay extends CustomPainter {
 
     final backgroundPaint = Paint()
       ..color = Colors.red.withOpacity(0.3)
-      ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.dstOut;
+      ..style = PaintingStyle.fill;
 
     canvas.drawPath(cutoutPath, backgroundPaint);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
+    return true;
   }
 }
