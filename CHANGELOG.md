@@ -1,7 +1,14 @@
-## NEXT
+## 7.0.0-beta.2
 
 Improvements:
 * [iOS] Adds support for Swift Package Manager.
+* [Apple] Fixes zoom slider
+* Fixed torch at start not working
+* Fixed scanWindow not being correct
+* Fixed barcode overlay not being correct
+
+Known issues:
+* BoxFit.cover & BoxFit.fitHeight produces wrong width in barcodeOverlay
 
 ## 7.0.0-beta.1
 
@@ -9,10 +16,10 @@ This version replaces MLKit on iOS with Apple's Vision API and merges the iOS an
 The requirement for the minimum iOS version has been relaxed back down to iOS 12.0.
 
 There are still some problems with this build.
-- Zoom slider not working
-- scanWindow not working
-- Flash shows briefly when starting scanner.
-- Other issues, not fully tested yet.
+* Zoom slider not working
+* scanWindow not working
+* Flash shows briefly when starting scanner.
+* Other issues, not fully tested yet.
 
 ## 6.0.2
 
