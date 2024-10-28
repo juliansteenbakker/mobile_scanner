@@ -351,11 +351,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         
-        // Turn on the torch if requested.
-        if (torch) {
-            self.turnTorchOn()
-        }
-        
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
         captureSession!.beginConfiguration()
         
@@ -418,6 +413,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     height = temp
                 }
 #endif
+                
+                // Turn on the torch if requested.
+                if (torch) {
+                    self.turnTorchOn()
+                }
 
                 let size = ["width": width, "height": height]
                 
@@ -462,7 +462,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             try device.lockForConfiguration()
             device.torchMode = .on
             device.unlockForConfiguration()
-        } catch(_) {}
+        } catch(_) {
+            
+        }
     }
     
     /// Reset the zoom scale.
