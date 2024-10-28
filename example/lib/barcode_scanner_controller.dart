@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/scanner_button_widgets.dart';
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
@@ -20,40 +21,12 @@ class _BarcodeScannerWithControllerState
     torchEnabled: true,
   );
 
-  Barcode? _barcode;
   StreamSubscription<Object?>? _subscription;
-
-  Widget _buildBarcode(Barcode? value) {
-    if (value == null) {
-      return const Text(
-        'Scan something!',
-        overflow: TextOverflow.fade,
-        style: TextStyle(color: Colors.white),
-      );
-    }
-
-    return Text(
-      value.displayValue ?? 'No display value.',
-      overflow: TextOverflow.fade,
-      style: const TextStyle(color: Colors.white),
-    );
-  }
-
-  void _handleBarcode(BarcodeCapture barcodes) {
-    if (mounted) {
-      setState(() {
-        _barcode = barcodes.barcodes.firstOrNull;
-      });
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-
-    _subscription = controller.barcodes.listen(_handleBarcode);
-
     unawaited(controller.start());
   }
 
@@ -69,8 +42,6 @@ class _BarcodeScannerWithControllerState
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(_handleBarcode);
-
         unawaited(controller.start());
       case AppLifecycleState.inactive:
         unawaited(_subscription?.cancel());
@@ -104,7 +75,13 @@ class _BarcodeScannerWithControllerState
                 children: [
                   ToggleFlashlightButton(controller: controller),
                   StartStopMobileScannerButton(controller: controller),
-                  Expanded(child: Center(child: _buildBarcode(_barcode))),
+                  Expanded(
+                    child: Center(
+                      child: ScannedBarcodeLabel(
+                        barcodes: controller.barcodes,
+                      ),
+                    ),
+                  ),
                   SwitchCameraButton(controller: controller),
                   AnalyzeImageFromGalleryButton(controller: controller),
                 ],

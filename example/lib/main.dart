@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner_example/barcode_scanner_analyze_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_controller.dart';
-import 'package:mobile_scanner_example/barcode_scanner_listview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_pageview.dart';
 import 'package:mobile_scanner_example/barcode_scanner_returning_image.dart';
 import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
@@ -50,11 +49,6 @@ class MyHome extends StatelessWidget {
               context,
               'MobileScanner Simple',
               const BarcodeScannerSimple(),
-            ),
-            _buildItem(
-              context,
-              'MobileScanner with ListView',
-              const BarcodeScannerListView(),
             ),
             _buildItem(
               context,

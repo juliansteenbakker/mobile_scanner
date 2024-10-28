@@ -16,6 +16,8 @@ class ScannedBarcodeLabel extends StatelessWidget {
       builder: (context, snapshot) {
         final scannedBarcodes = snapshot.data?.barcodes ?? [];
 
+        final values = scannedBarcodes.map((e) => e.displayValue).join(', ');
+
         if (scannedBarcodes.isEmpty) {
           return const Text(
             'Scan something!',
@@ -25,7 +27,7 @@ class ScannedBarcodeLabel extends StatelessWidget {
         }
 
         return Text(
-          scannedBarcodes.first.displayValue ?? 'No display value.',
+          values.isEmpty ? 'No display value.' : values,
           overflow: TextOverflow.fade,
           style: const TextStyle(color: Colors.white),
         );
