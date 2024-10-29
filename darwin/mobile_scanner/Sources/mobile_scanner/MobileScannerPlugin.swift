@@ -350,6 +350,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         // Check the zoom factor at switching from ultra wide camera to wide camera.
         standardZoomFactor = 1
+        #if os(iOS)
         if #available(iOS 13.0, *) {
             for (index, actualDevice) in device.constituentDevices.enumerated() {
                 if (actualDevice.deviceType != .builtInUltraWideCamera) {
@@ -360,6 +361,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 }
             }
         }
+        #endif
         
         // Add device input
         do {
@@ -523,25 +525,31 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     /// Set the zoom factor of the camera
     func setScaleInternal(_ scale: CGFloat) throws {
+
         if (device == nil) {
             throw MobileScannerError.zoomWhenStopped
         }
         
         do {
-            try device.lockForConfiguration()
-            let maxZoomFactor = device.activeFormat.videoMaxZoomFactor
-            
-            var actualScale = (scale * 4) + 1
-            
-            // Set maximum zoomrate of 5x
-            actualScale = min(5.0, actualScale)
-            
-            // Limit to max rate of camera
-            actualScale = min(maxZoomFactor, actualScale)
-            
-            // Limit to 1.0 scale
-            device.videoZoomFactor = actualScale
-            device.unlockForConfiguration()
+            #if os(iOS)
+                try device.lockForConfiguration()
+                let maxZoomFactor = device.activeFormat.videoMaxZoomFactor
+                
+                var actualScale = (scale * 4) + 1
+                
+                // Set maximum zoomrate of 5x
+                actualScale = min(5.0, actualScale)
+                
+                // Limit to max rate of camera
+                actualScale = min(maxZoomFactor, actualScale)
+                
+                // Limit to 1.0 scale
+
+                device.videoZoomFactor = actualScale
+
+
+                device.unlockForConfiguration()
+            #endif
         } catch {
             throw MobileScannerError.zoomError(error)
         }
@@ -555,9 +563,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         do {
-            try device.lockForConfiguration()
-            device.videoZoomFactor = standardZoomFactor
-            device.unlockForConfiguration()
+            #if os(iOS)
+                try device.lockForConfiguration()
+                device.videoZoomFactor = standardZoomFactor
+                device.unlockForConfiguration()
+            #endif
         } catch {
             throw MobileScannerError.zoomError(error)
         }
