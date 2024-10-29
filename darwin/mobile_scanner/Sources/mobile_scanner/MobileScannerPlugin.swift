@@ -249,6 +249,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let scanWindowData: Array? = argReader.floatArray(key: "rect")
 
         if (scanWindowData == nil) {
+            scanWindow = nil
             result(nil)
             return
         }
