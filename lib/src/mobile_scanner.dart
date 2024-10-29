@@ -146,7 +146,12 @@ class _MobileScannerState extends State<MobileScanner>
     MobileScannerState scannerState,
     BoxConstraints constraints,
   ) {
-    if (widget.scanWindow == null) {
+    if (widget.scanWindow == null && scanWindow == null) {
+      return;
+    } else if (widget.scanWindow == null) {
+      scanWindow = null;
+
+      unawaited(controller.updateScanWindow(null));
       return;
     }
 

@@ -1,3 +1,9 @@
+## NEXT
+- Fixed an issue which caused the scanWindow to always be present if provided, even when scanWindow is updated to null
+- Integrated basic barcode overlay and scanner overlay into the package.
+- Made updateScanWindow private, because logic within the MobileScanner widget is needed in order to pass a correct scanWindow.
+The scanWindow can be updated by directly changing the scanWindow in the MobileScanner widget.
+
 ## 7.0.0-beta.3
 Fix build issues on macOS
 
