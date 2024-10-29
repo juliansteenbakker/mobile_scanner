@@ -1,3 +1,6 @@
+## 7.0.0-beta.3
+Fix build issues on macOS
+
 ## 7.0.0-beta.2
 
 Improvements:
