@@ -3,6 +3,7 @@
 **BREAKING CHANGES:**
 
 * The `updateScanWindow` method is now private. Instead, update the scan window in the `MobileScanner` widget directly.
+* The deprecated `EncryptionType.none` constant has been removed. Use `EncryptionType.unknown` instead.
 
 Bugs fixed:
 * [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
