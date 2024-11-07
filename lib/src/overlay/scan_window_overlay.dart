@@ -9,8 +9,44 @@ class ScanWindowOverlay extends StatelessWidget {
     super.key,
     required this.controller,
     required this.scanWindow,
+    this.borderColor = Colors.white,
+    this.borderRadius = BorderRadius.zero,
+    this.borderStrokeCap = StrokeCap.butt,
+    this.borderStrokeJoin = StrokeJoin.miter,
+    this.borderStyle = PaintingStyle.stroke,
+    this.borderWidth = 2.0,
     this.color = const Color(0x80000000),
   });
+
+  /// The color for the scan window border.
+  ///
+  /// Defaults to [Colors.white].
+  final Color borderColor;
+
+  /// The border radius for the scan window and its border.
+  ///
+  /// Defaults to [BorderRadius.zero].
+  final BorderRadius borderRadius;
+
+  /// The stroke cap for the border around the scan window.
+  ///
+  /// Defaults to [StrokeCap.butt].
+  final StrokeCap borderStrokeCap;
+
+  /// The stroke join for the border around the scan window.
+  ///
+  /// Defaults to [StrokeJoin.miter].
+  final StrokeJoin borderStrokeJoin;
+
+  /// The style for the border around the scan window.
+  ///
+  /// Defaults to [PaintingStyle.stroke].
+  final PaintingStyle borderStyle;
+
+  /// The width for the border around the scan window.
+  ///
+  /// Defaults to 2.0.
+  final double borderWidth;
 
   /// The color for the scan window box.
   ///
@@ -40,6 +76,12 @@ class ScanWindowOverlay extends StatelessWidget {
         return CustomPaint(
           size: value.size,
           painter: ScanWindowPainter(
+            borderColor: borderColor,
+            borderRadius: borderRadius,
+            borderStrokeCap: borderStrokeCap,
+            borderStrokeJoin: borderStrokeJoin,
+            borderStyle: borderStyle,
+            borderWidth: borderWidth,
             scanWindow: scanWindow,
             color: color,
           ),
