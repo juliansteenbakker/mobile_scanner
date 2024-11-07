@@ -1,15 +1,32 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// This widget represents an overlay that paints the bounding boxes of detected barcodes.
 class BarcodeOverlay extends StatelessWidget {
+  /// Construct a new [BarcodeOverlay] instance.
   const BarcodeOverlay({
     super.key,
-    required this.controller,
     required this.boxFit,
+    required this.controller,
+    this.color = const Color(0x4DF44336),
+    this.style = PaintingStyle.fill,
   });
 
-  final MobileScannerController controller;
+  /// The [BoxFit] to use when painting the barcode box.
   final BoxFit boxFit;
+
+  /// The controller that provides the barcodes to display.
+  final MobileScannerController controller;
+
+  /// The color to use when painting the barcode box.
+  ///
+  /// Defaults to [Colors.red], with an opacity of 30%.
+  final Color color;
+
+  /// The style to use when painting the barcode box.
+  ///
+  /// Defaults to [PaintingStyle.fill].
+  final PaintingStyle style;
 
   @override
   Widget build(BuildContext context) {
@@ -26,32 +43,25 @@ class BarcodeOverlay extends StatelessWidget {
           builder: (context, snapshot) {
             final BarcodeCapture? barcodeCapture = snapshot.data;
 
-            // No barcode.
-            if (barcodeCapture == null || barcodeCapture.barcodes.isEmpty) {
+            // No barcode or preview size.
+            if (barcodeCapture == null || barcodeCapture.size.isEmpty || barcodeCapture.barcodes.isEmpty) {
               return const SizedBox();
             }
 
-            final overlays = <Widget>[];
-
-            for (final scannedBarcode in barcodeCapture.barcodes) {
-              // No barcode corners, or size, or no camera preview size.
-              if (value.size.isEmpty ||
-                  scannedBarcode.size.isEmpty ||
-                  scannedBarcode.corners.isEmpty) {
-                continue;
-              }
-
-              overlays.add(
-                CustomPaint(
-                  painter: BarcodePainter(
-                    barcodeCorners: scannedBarcode.corners,
-                    barcodeSize: scannedBarcode.size,
-                    boxFit: boxFit,
-                    cameraPreviewSize: barcodeCapture.size,
+            final overlays = <Widget>[
+              for (final Barcode barcode in barcodeCapture.barcodes)
+                if (!barcode.size.isEmpty && barcode.corners.isNotEmpty)
+                  CustomPaint(
+                    painter: BarcodePainter(
+                      barcodeCorners: barcode.corners,
+                      barcodeSize: barcode.size,
+                      boxFit: boxFit,
+                      cameraPreviewSize: barcodeCapture.size,
+                      color: color,
+                      style: style,
+                    ),
                   ),
-                ),
-              );
-            }
+            ];
 
             return Stack(
               fit: StackFit.expand,

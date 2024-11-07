@@ -9,8 +9,8 @@ class BarcodePainter extends CustomPainter {
     required this.barcodeSize,
     required this.boxFit,
     required this.cameraPreviewSize,
-    this.color = const Color(0x4DF44336),
-    this.style = PaintingStyle.fill,
+    required this.color,
+    required this.style,
   });
 
   /// The corners of the barcode.
@@ -27,13 +27,9 @@ class BarcodePainter extends CustomPainter {
   final Size cameraPreviewSize;
 
   /// The color to use when painting the barcode box.
-  ///
-  /// Defaults to [Colors.red], with an opacity of 30%.
   final Color color;
 
   /// The style to use when painting the barcode box.
-  ///
-  /// Defaults to [PaintingStyle.fill].
   final PaintingStyle style;
 
   @override
