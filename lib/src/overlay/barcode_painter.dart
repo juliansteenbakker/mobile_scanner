@@ -1,23 +1,44 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
+/// This class represents a [CustomPainter] that draws the [barcodeCorners] of a single barcode.
 class BarcodePainter extends CustomPainter {
-  BarcodePainter({
+  /// Construct a new [BarcodePainter] instance.
+  const BarcodePainter({
     required this.barcodeCorners,
     required this.barcodeSize,
     required this.boxFit,
     required this.cameraPreviewSize,
+    this.color = const Color(0x4DF44336),
+    this.style = PaintingStyle.fill,
   });
 
+  /// The corners of the barcode.
   final List<Offset> barcodeCorners;
+
+  /// The size of the barcode.
   final Size barcodeSize;
+
+  /// The [BoxFit] to use when painting the barcode box.
   final BoxFit boxFit;
+
+  /// The size of the camera preview,
+  /// relative to which the [barcodeSize] and [barcodeCorners] are positioned.
   final Size cameraPreviewSize;
+
+  /// The color to use when painting the barcode box.
+  ///
+  /// Defaults to [Colors.red], with an opacity of 30%.
+  final Color color;
+
+  /// The style to use when painting the barcode box.
+  ///
+  /// Defaults to [PaintingStyle.fill].
+  final PaintingStyle style;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcodeCorners.isEmpty ||
-        barcodeSize.isEmpty ||
-        cameraPreviewSize.isEmpty) {
+    if (barcodeCorners.isEmpty || barcodeSize.isEmpty || cameraPreviewSize.isEmpty) {
       return;
     }
 
@@ -37,11 +58,8 @@ class BarcodePainter extends CustomPainter {
       horizontalPadding = 0;
     }
 
-    final double ratioWidth;
-    final double ratioHeight;
-
-    ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
-    ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
+    final double ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
+    final double ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
 
     final List<Offset> adjustedOffset = [
       for (final offset in barcodeCorners)
@@ -54,14 +72,21 @@ class BarcodePainter extends CustomPainter {
     final cutoutPath = Path()..addPolygon(adjustedOffset, true);
 
     final backgroundPaint = Paint()
-      ..color = Colors.red.withOpacity(0.3)
-      ..style = PaintingStyle.fill;
+      ..color = color
+      ..style = style;
 
     canvas.drawPath(cutoutPath, backgroundPaint);
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
+  bool shouldRepaint(BarcodePainter oldDelegate) {
+    const ListEquality<Offset> listEquality = ListEquality<Offset>();
+
+    return listEquality.equals(oldDelegate.barcodeCorners, barcodeCorners) ||
+        oldDelegate.barcodeSize != barcodeSize ||
+        oldDelegate.boxFit != boxFit ||
+        oldDelegate.cameraPreviewSize != cameraPreviewSize ||
+        oldDelegate.color != color ||
+        oldDelegate.style != style;
   }
 }

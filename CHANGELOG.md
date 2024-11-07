@@ -13,6 +13,7 @@ Improvements:
 * Added a basic barcode overlay widget, for use with the camera preview.
 * Update the bundled MLKit model for Android to version `17.3.0`.
 * Added documentation in places where it was missing.
+* Added `color` and `style` properties to the `BarcodePainter` widget.
 
 ## 7.0.0-beta.3
 
