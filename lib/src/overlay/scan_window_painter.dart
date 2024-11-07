@@ -4,16 +4,14 @@ import 'package:flutter/material.dart';
 class ScanWindowPainter extends CustomPainter {
   /// Construct a new [ScanWindowPainter] instance.
   const ScanWindowPainter({
+    required this.color,
     required this.scanWindow,
-    this.color = const Color(0x80000000),
   });
 
   /// The color for the scan window box.
   final Color color;
 
-  /// The rectangle defining the scan window.
-  ///
-  /// Defaults to [Colors.black] with 50% opacity.
+  /// The rectangle that defines the scan window.
   final Rect scanWindow;
 
   @override
@@ -32,7 +30,7 @@ class ScanWindowPainter extends CustomPainter {
     final overlayWithCutoutPath = Path.combine(PathOperation.difference, backgroundPath, cutoutPath);
 
     // Paint the overlay with the cutout
-    final paint = Paint()..color = Colors.black.withOpacity(0.5);
+    final paint = Paint()..color = color;
     canvas.drawPath(overlayWithCutoutPath, paint);
   }
 
