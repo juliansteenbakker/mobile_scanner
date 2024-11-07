@@ -1,3 +1,7 @@
+/// @docImport 'package:flutter/services.dart';
+/// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+library;
+
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 
 /// This class represents an exception thrown by the [MobileScannerController].
