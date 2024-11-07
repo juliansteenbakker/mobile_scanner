@@ -6,6 +6,7 @@ import 'package:mobile_scanner/src/enums/detection_speed.dart';
 
 /// This class defines the different start options for the mobile scanner.
 class StartOptions {
+  /// Construct a new [StartOptions] instance.
   const StartOptions({
     required this.cameraDirection,
     required this.cameraResolution,
@@ -37,6 +38,7 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
+  /// Converts this object to a map.
   Map<String, Object?> toMap() {
     return <String, Object?>{
       if (cameraResolution != null)

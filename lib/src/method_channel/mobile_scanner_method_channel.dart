@@ -38,6 +38,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   Stream<Map<Object?, Object?>>? _eventsStream;
 
+  /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
     _eventsStream ??=
         eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();

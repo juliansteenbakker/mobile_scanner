@@ -4,6 +4,7 @@ import 'package:mobile_scanner/src/enums/torch_state.dart';
 
 /// This class defines the attributes for the mobile scanner view.
 class MobileScannerViewAttributes {
+  /// Construct a new [MobileScannerViewAttributes] instance.
   const MobileScannerViewAttributes({
     required this.currentTorchMode,
     this.numberOfCameras,
