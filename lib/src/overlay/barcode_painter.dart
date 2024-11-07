@@ -34,7 +34,9 @@ class BarcodePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcodeCorners.isEmpty || barcodeSize.isEmpty || cameraPreviewSize.isEmpty) {
+    if (barcodeCorners.isEmpty ||
+        barcodeSize.isEmpty ||
+        cameraPreviewSize.isEmpty) {
       return;
     }
 
@@ -54,8 +56,10 @@ class BarcodePainter extends CustomPainter {
       horizontalPadding = 0;
     }
 
-    final double ratioWidth = cameraPreviewSize.width / adjustedSize.destination.width;
-    final double ratioHeight = cameraPreviewSize.height / adjustedSize.destination.height;
+    final double ratioWidth =
+        cameraPreviewSize.width / adjustedSize.destination.width;
+    final double ratioHeight =
+        cameraPreviewSize.height / adjustedSize.destination.height;
 
     final List<Offset> adjustedOffset = [
       for (final offset in barcodeCorners)

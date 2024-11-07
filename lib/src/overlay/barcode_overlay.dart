@@ -44,7 +44,9 @@ class BarcodeOverlay extends StatelessWidget {
             final BarcodeCapture? barcodeCapture = snapshot.data;
 
             // No barcode or preview size.
-            if (barcodeCapture == null || barcodeCapture.size.isEmpty || barcodeCapture.barcodes.isEmpty) {
+            if (barcodeCapture == null ||
+                barcodeCapture.size.isEmpty ||
+                barcodeCapture.barcodes.isEmpty) {
               return const SizedBox();
             }
 

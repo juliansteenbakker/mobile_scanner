@@ -44,7 +44,7 @@ class _BarcodeScannerWithScanWindowState
             },
           ),
           BarcodeOverlay(controller: controller, boxFit: boxFit),
-          ScannerOverlay(
+          ScanWindowOverlay(
             scanWindow: scanWindow,
             controller: controller,
           ),
