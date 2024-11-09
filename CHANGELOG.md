@@ -8,6 +8,7 @@
 Bugs fixed:
 * [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
 * [Apple] Fixed an issue that caused the barcode size to report the wrong height.
+* [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
 
 Improvements:
 * Added a basic barcode overlay widget, for use with the camera preview.

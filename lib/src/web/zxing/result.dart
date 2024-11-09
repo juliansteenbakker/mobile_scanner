@@ -75,6 +75,8 @@ extension type Result(JSObject _) implements JSObject {
 
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {
+    // The order of the points is dependent on the type of barcode.
+    // Don't do a manual correction here, but leave it up to the reader implementation.
     final List<Offset> corners = resultPoints;
 
     return Barcode(

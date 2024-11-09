@@ -814,11 +814,12 @@ extension VNBarcodeObservation {
         let bottomRightY = (1 - bottomRight.y) * CGFloat(imageHeight)
         let bottomLeftY = (1 - bottomLeft.y) * CGFloat(imageHeight)
         let data = [
+            // Clockwise, starting from the top-left corner.
             "corners":  [
-                ["x": bottomLeftX, "y": bottomLeftY],
                 ["x": topLeftX, "y": topLeftY],
                 ["x": topRightX, "y": topRightY],
                 ["x": bottomRightX, "y": bottomRightY],
+                ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
             "rawValue": payloadStringValue ?? "",
