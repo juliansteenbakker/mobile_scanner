@@ -177,11 +177,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         })
                         
                         DispatchQueue.main.async {
+                            // If the image is nil, use zero as the size.
                             guard let image = cgImage else {
-                            // Image not known, default image size to 1
                                 self?.sink?([
                                     "name": "barcode",
-                                    "data": barcodes.map({ $0.toMap(width: 1, height: 1) }),
+                                    "data": barcodes.map({ $0.toMap(imageWidth: 0, imageHeight: 0) }),
                                 ])
                                 return
                             }
@@ -194,10 +194,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 "height": Double(image.height),
                             ]
                             
-                            
                             self?.sink?([
                                 "name": "barcode",
-                                "data": barcodes.map({ $0.toMap(width: image.width, height: image.height) }),
+                                "data": barcodes.map({ $0.toMap(imageWidth: image.width, imageHeight: image.height) }),
                                 "image": imageData,
                             ])
                         }
@@ -473,7 +472,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             device.torchMode = .on
             device.unlockForConfiguration()
         } catch(_) {
-            
+            // Do nothing.
         }
     }
     
@@ -526,7 +525,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     /// Set the zoom factor of the camera
     func setScaleInternal(_ scale: CGFloat) throws {
-
         if (device == nil) {
             throw MobileScannerError.zoomWhenStopped
         }
@@ -545,9 +543,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 actualScale = min(maxZoomFactor, actualScale)
                 
                 // Limit to 1.0 scale
-
                 device.videoZoomFactor = actualScale
-
 
                 device.unlockForConfiguration()
             #endif
@@ -620,7 +616,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             try device.lockForConfiguration()
             device.torchMode = newTorchMode
             device.unlockForConfiguration()
-        } catch(_) {}
+        } catch(_) {
+            // Do nothing.
+        }
         
         result(nil)
     }
@@ -690,7 +688,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     
                 result([
                     "name": "barcode",
-                    "data": barcodes.map({ $0.toMap(width: 1, height: 1) }),
+                    "data": barcodes.map({ $0.toMap(imageWidth: Int(ciImage.extent.width), imageHeight: Int(ciImage.extent.height)) }),
                 ])
             })
             
@@ -803,28 +801,32 @@ extension VNBarcodeObservation {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2))
     }
     
-    public func toMap(width: Int, height: Int) -> [String: Any?] {
-        let topLeftX = topLeft.x * CGFloat(width)
-        let topRightX = topRight.x * CGFloat(width)
-        let bottomRightX = bottomRight.x * CGFloat(width)
-        let bottomLeftX = bottomLeft.x * CGFloat(width)
-        let topLeftY = (1 - topLeft.y) * CGFloat(height)
-        let topRightY = (1 - topRight.y) * CGFloat(height)
-        let bottomRightY = (1 - bottomRight.y) * CGFloat(height)
-        let bottomLeftY = (1 - bottomLeft.y) * CGFloat(height)
+    /// Map this `VNBarcodeObservation` to a dictionary.
+    ///
+    /// The `imageWidth` and `imageHeight` indicate the width and height of the input image that contains this observation.
+    public func toMap(imageWidth: Int, imageHeight: Int) -> [String: Any?] {
+        let topLeftX = topLeft.x * CGFloat(imageWidth)
+        let topRightX = topRight.x * CGFloat(imageWidth)
+        let bottomRightX = bottomRight.x * CGFloat(imageWidth)
+        let bottomLeftX = bottomLeft.x * CGFloat(imageWidth)
+        let topLeftY = (1 - topLeft.y) * CGFloat(imageHeight)
+        let topRightY = (1 - topRight.y) * CGFloat(imageHeight)
+        let bottomRightY = (1 - bottomRight.y) * CGFloat(imageHeight)
+        let bottomLeftY = (1 - bottomLeft.y) * CGFloat(imageHeight)
         let data = [
+            // Clockwise, starting from the top-left corner.
             "corners":  [
-                ["x": bottomLeftX, "y": bottomLeftY],
                 ["x": topLeftX, "y": topLeftY],
                 ["x": topRightX, "y": topRightY],
                 ["x": bottomRightX, "y": bottomRightY],
+                ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
             "rawValue": payloadStringValue ?? "",
             "displayValue": payloadStringValue ?? "",
             "size": [
-                "width": distanceBetween(topLeft, topRight) * CGFloat(width),
-                "height": distanceBetween(topLeft, bottomLeft) * CGFloat(width),
+                "width": distanceBetween(topLeft, topRight) * CGFloat(imageWidth),
+                "height": distanceBetween(topLeft, bottomLeft) * CGFloat(imageHeight),
             ],
         ] as [String : Any]
         return data
