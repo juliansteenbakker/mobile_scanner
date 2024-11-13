@@ -71,7 +71,7 @@ class ScanWindowPainter extends CustomPainter {
     final Paint overlayWithCutoutPaint = Paint()
       ..color = color
       ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.dstOver;
+      ..blendMode = BlendMode.srcOver; // android
 
     final Paint borderPaint = Paint()
       ..color = borderColor

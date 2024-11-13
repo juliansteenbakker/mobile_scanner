@@ -169,10 +169,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         
                         let barcodes: [VNBarcodeObservation] = results.compactMap({ barcode in
                             // If there is a scan window, check if the barcode is within said scan window.
-                            if self?.scanWindow != nil && cgImage != nil && !(self?.isBarcodeInsideScanWindow(barcodeObservation: barcode, imageSize: CGSize(width: cgImage!.width, height: cgImage!.height)) ?? false) {
-                                return nil
-                            }
-                            
+//                            if self?.scanWindow != nil && cgImage != nil && !(self?.isBarcodeInsideScanWindow(barcodeObservation: barcode, imageSize: CGSize(width: cgImage!.width, height: cgImage!.height)) ?? false) {
+//                                return nil
+//                            }
+//                            
                             return barcode
                         })
                         
@@ -181,7 +181,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             guard let image = cgImage else {
                                 self?.sink?([
                                     "name": "barcode",
-                                    "data": barcodes.map({ $0.toMap(imageWidth: 0, imageHeight: 0) }),
+                                    "data": barcodes.map({ $0.toMap(imageWidth: 0, imageHeight: 0, scanWindow: nil)}),
                                 ])
                                 return
                             }
@@ -196,7 +196,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             
                             self?.sink?([
                                 "name": "barcode",
-                                "data": barcodes.map({ $0.toMap(imageWidth: image.width, imageHeight: image.height) }),
+                                "data": barcodes.map({ $0.toMap(imageWidth: image.width, imageHeight: image.height, scanWindow: self?.scanWindow) }),
                                 "image": imageData,
                             ])
                         }
@@ -206,6 +206,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         // Add the symbologies the user wishes to support.
                         barcodeRequest.symbologies = self!.symbologies
                     }
+                    
+                    // Set the region of interest to match scanWindow
+//                    if let scanWindow = self?.scanWindow {
+//                        barcodeRequest.regionOfInterest = scanWindow
+//                    }
+                    // Set the region of interest to match scanWindow
+                    if let scanWindow = self?.scanWindow {
+                        barcodeRequest.regionOfInterest = scanWindow
+                    }
+                    
+                    
+//                    !(self?.isBarcodeInsideScanWindow(barcodeObservation: barcode, imageSize: CGSize(width: cgImage!.width, height: cgImage!.height))
+//                    if (self?.scanWindow != nil) {
+//                        barcodeRequest.regionOfInterest = self!.scanWindow!
+//                    }
+                    
 
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let error {
@@ -688,7 +704,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     
                 result([
                     "name": "barcode",
-                    "data": barcodes.map({ $0.toMap(imageWidth: Int(ciImage.extent.width), imageHeight: Int(ciImage.extent.height)) }),
+                    "data": barcodes.map({ $0.toMap(imageWidth: Int(ciImage.extent.width), imageHeight: Int(ciImage.extent.height), scanWindow: self.scanWindow) }),
                 ])
             })
             
@@ -804,15 +820,48 @@ extension VNBarcodeObservation {
     /// Map this `VNBarcodeObservation` to a dictionary.
     ///
     /// The `imageWidth` and `imageHeight` indicate the width and height of the input image that contains this observation.
-    public func toMap(imageWidth: Int, imageHeight: Int) -> [String: Any?] {
-        let topLeftX = topLeft.x * CGFloat(imageWidth)
-        let topRightX = topRight.x * CGFloat(imageWidth)
-        let bottomRightX = bottomRight.x * CGFloat(imageWidth)
-        let bottomLeftX = bottomLeft.x * CGFloat(imageWidth)
-        let topLeftY = (1 - topLeft.y) * CGFloat(imageHeight)
-        let topRightY = (1 - topRight.y) * CGFloat(imageHeight)
-        let bottomRightY = (1 - bottomRight.y) * CGFloat(imageHeight)
-        let bottomLeftY = (1 - bottomLeft.y) * CGFloat(imageHeight)
+    public func toMap(imageWidth: Int, imageHeight: Int, scanWindow: CGRect?) -> [String: Any?] {
+        
+        // Calculate adjusted points based on whether scanWindow is set
+        let adjustedTopLeft: CGPoint
+        let adjustedTopRight: CGPoint
+        let adjustedBottomRight: CGPoint
+        let adjustedBottomLeft: CGPoint
+        
+        if let scanWindow = scanWindow {
+            // When a scanWindow is set, adjust the barcode coordinates to the full image
+            func adjustPoint(_ point: CGPoint) -> CGPoint {
+                let x = scanWindow.minX + point.x * scanWindow.width
+                let y = scanWindow.minY + point.y * scanWindow.height
+                return CGPoint(x: x, y: y)
+            }
+            
+            adjustedTopLeft = adjustPoint(topLeft)
+            adjustedTopRight = adjustPoint(topRight)
+            adjustedBottomRight = adjustPoint(bottomRight)
+            adjustedBottomLeft = adjustPoint(bottomLeft)
+        } else {
+            // If no scanWindow, use original points (already normalized to the full image)
+            adjustedTopLeft = topLeft
+            adjustedTopRight = topRight
+            adjustedBottomRight = bottomRight
+            adjustedBottomLeft = bottomLeft
+        }
+        
+        // Convert adjusted points from normalized coordinates to image pixel coordinates
+        let topLeftX = adjustedTopLeft.x * CGFloat(imageWidth)
+        let topRightX = adjustedTopRight.x * CGFloat(imageWidth)
+        let bottomRightX = adjustedBottomRight.x * CGFloat(imageWidth)
+        let bottomLeftX = adjustedBottomLeft.x * CGFloat(imageWidth)
+        let topLeftY = (1 - adjustedTopLeft.y) * CGFloat(imageHeight)
+        let topRightY = (1 - adjustedTopRight.y) * CGFloat(imageHeight)
+        let bottomRightY = (1 - adjustedBottomRight.y) * CGFloat(imageHeight)
+        let bottomLeftY = (1 - adjustedBottomLeft.y) * CGFloat(imageHeight)
+        
+        // Calculate the width and height of the barcode based on adjusted coordinates
+        let width = distanceBetween(adjustedTopLeft, adjustedTopRight) * CGFloat(imageWidth)
+        let height = distanceBetween(adjustedTopLeft, adjustedBottomLeft) * CGFloat(imageHeight)
+        
         let data = [
             // Clockwise, starting from the top-left corner.
             "corners":  [
@@ -825,8 +874,8 @@ extension VNBarcodeObservation {
             "rawValue": payloadStringValue ?? "",
             "displayValue": payloadStringValue ?? "",
             "size": [
-                "width": distanceBetween(topLeft, topRight) * CGFloat(imageWidth),
-                "height": distanceBetween(topLeft, bottomLeft) * CGFloat(imageHeight),
+                "width": width,
+                "height": height,
             ],
         ] as [String : Any]
         return data
