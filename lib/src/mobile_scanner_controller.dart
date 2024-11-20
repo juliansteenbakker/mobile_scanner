@@ -439,4 +439,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     await MobileScannerPlatform.instance.dispose();
   }
+
+  /// Exposes the [addBarcode] method.
+  ///
+  /// This method is used for adding a barcode to the barcode stream.
+  /// so when using [analyzeImage] the return value
+  /// can be used in [MobileScanner] using [onDetect] callback.
+  void addBarcode(BarcodeCapture? barcode) {
+    if (_barcodesController.isClosed || barcode == null) {
+      return;
+    }
+
+    _barcodesController.add(barcode);
+  }
 }
