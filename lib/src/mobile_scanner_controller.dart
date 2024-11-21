@@ -26,6 +26,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.returnImage = false,
     this.torchEnabled = false,
     this.useNewCameraSelector = false,
+    this.enableAutoZoom = false
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -95,6 +96,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Only supported on Android.
   final bool useNewCameraSelector;
+
+  /// Whether the Camera should auto zoom.
+  ///
+  /// Only supported on Android.
+  final bool enableAutoZoom;
 
   /// The internal barcode controller, that listens for detected barcodes.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -283,6 +289,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       returnImage: returnImage,
       torchEnabled: torchEnabled,
       useNewCameraSelector: useNewCameraSelector,
+      enableAutoZoom: enableAutoZoom
     );
 
     try {

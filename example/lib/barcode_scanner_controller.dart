@@ -19,6 +19,7 @@ class _BarcodeScannerWithControllerState
     autoStart: false,
     torchEnabled: true,
     useNewCameraSelector: true,
+    enableAutoZoom: true
   );
 
   Barcode? _barcode;
