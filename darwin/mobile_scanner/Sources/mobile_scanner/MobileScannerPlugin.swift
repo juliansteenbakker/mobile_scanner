@@ -167,12 +167,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             return
                         }
                         
-                        let barcodes: [VNBarcodeObservation] = results.compactMap({ barcode in
-                            // If there is a scan window, check if the barcode is within said scan window.
-//                            if self?.scanWindow != nil && cgImage != nil && !(self?.isBarcodeInsideScanWindow(barcodeObservation: barcode, imageSize: CGSize(width: cgImage!.width, height: cgImage!.height)) ?? false) {
-//                                return nil
-//                            }
-//                            
+                        let barcodes: [VNBarcodeObservation] = results.compactMap({ barcode in 
                             return barcode
                         })
                         
@@ -208,20 +203,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     }
                     
                     // Set the region of interest to match scanWindow
-//                    if let scanWindow = self?.scanWindow {
-//                        barcodeRequest.regionOfInterest = scanWindow
-//                    }
-                    // Set the region of interest to match scanWindow
                     if let scanWindow = self?.scanWindow {
                         barcodeRequest.regionOfInterest = scanWindow
                     }
-                    
-                    
-//                    !(self?.isBarcodeInsideScanWindow(barcodeObservation: barcode, imageSize: CGSize(width: cgImage!.width, height: cgImage!.height))
-//                    if (self?.scanWindow != nil) {
-//                        barcodeRequest.regionOfInterest = self!.scanWindow!
-//                    }
-                    
 
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let error {
@@ -278,24 +262,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
         result(nil)
     }
-    
-    func isBarcodeInsideScanWindow(barcodeObservation: VNBarcodeObservation, imageSize: CGSize) -> Bool {
-        let boundingBox = barcodeObservation.boundingBox
-        
-        // Adjust boundingBox by inverting the y-axis
-        let adjustedBoundingBox = CGRect(
-            x: boundingBox.minX,
-            y: 1.0 - boundingBox.maxY,
-            width: boundingBox.width,
-            height: boundingBox.height
-        )
-        
-        let intersects = scanWindow!.contains(adjustedBoundingBox)
-        
-        // Check if the adjusted bounding box intersects with or is within the scan window
-        return intersects
-    }
-
     
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
 #if os(iOS)
