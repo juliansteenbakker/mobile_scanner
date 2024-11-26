@@ -14,11 +14,6 @@ enum EncryptionType {
 
   const EncryptionType(this.rawValue);
 
-  @Deprecated(
-    'EncryptionType.none is deprecated. Use EncryptionType.unknown instead.',
-  )
-  static const EncryptionType none = EncryptionType.unknown;
-
   factory EncryptionType.fromRawValue(int value) {
     switch (value) {
       case 0:

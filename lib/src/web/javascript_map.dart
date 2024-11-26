@@ -11,8 +11,12 @@ import 'dart:js_interop';
 @JS('Map')
 extension type JSMap<K extends JSAny, V extends JSAny>._(JSObject _)
     implements JSObject {
+  /// Construct a new Javascript `Map`.
   external factory JSMap();
 
+  /// Get the value for the given [key].
   external V? get(K key);
+
+  /// Set the [value] for the given [key].
   external JSVoid set(K key, V? value);
 }

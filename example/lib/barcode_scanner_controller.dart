@@ -21,8 +21,6 @@ class _BarcodeScannerWithControllerState
     torchEnabled: true,
   );
 
-  StreamSubscription<Object?>? _subscription;
-
   @override
   void initState() {
     super.initState();
@@ -44,8 +42,6 @@ class _BarcodeScannerWithControllerState
       case AppLifecycleState.resumed:
         unawaited(controller.start());
       case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
-        _subscription = null;
         unawaited(controller.stop());
     }
   }
@@ -96,8 +92,6 @@ class _BarcodeScannerWithControllerState
   @override
   Future<void> dispose() async {
     WidgetsBinding.instance.removeObserver(this);
-    unawaited(_subscription?.cancel());
-    _subscription = null;
     super.dispose();
     await controller.dispose();
   }

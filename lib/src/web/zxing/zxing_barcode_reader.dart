@@ -17,6 +17,7 @@ import 'package:web/web.dart' as web;
 
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
+  /// Construct a new [ZXingBarcodeReader] instance.
   ZXingBarcodeReader();
 
   /// ZXing reports an error with this message if the code could not be detected.

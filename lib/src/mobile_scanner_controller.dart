@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner.dart';
+library;
+
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';

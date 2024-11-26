@@ -29,5 +29,5 @@ export 'src/objects/url_bookmark.dart';
 export 'src/objects/wifi.dart';
 export 'src/overlay/barcode_overlay.dart';
 export 'src/overlay/barcode_painter.dart';
-export 'src/overlay/scanner_overlay.dart';
-export 'src/overlay/scanner_painter.dart';
+export 'src/overlay/scan_window_overlay.dart';
+export 'src/overlay/scan_window_painter.dart';

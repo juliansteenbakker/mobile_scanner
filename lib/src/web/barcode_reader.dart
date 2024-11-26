@@ -11,6 +11,9 @@ import 'package:web/web.dart';
 
 /// This class represents the base interface for a barcode reader implementation.
 abstract class BarcodeReader {
+  /// Construct a new [BarcodeReader] instance.
+  ///
+  /// This constructor is const, for subclasses.
   const BarcodeReader();
 
   /// Whether the scanner is currently scanning for barcodes.

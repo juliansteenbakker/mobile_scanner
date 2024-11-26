@@ -1,34 +1,51 @@
 ## NEXT
-- Fixed an issue which caused the scanWindow to always be present if provided, even when scanWindow is updated to null
-- Integrated basic barcode overlay and scanner overlay into the package.
-- Made updateScanWindow private, because logic within the MobileScanner widget is needed in order to pass a correct scanWindow.
-The scanWindow can be updated by directly changing the scanWindow in the MobileScanner widget.
+
+**BREAKING CHANGES:**
+
+* The `updateScanWindow` method is now private. Instead, update the scan window in the `MobileScanner` widget directly.
+* The deprecated `EncryptionType.none` constant has been removed. Use `EncryptionType.unknown` instead.
+
+Bugs fixed:
+* [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
+* [Apple] Fixed an issue that caused the barcode size to report the wrong height.
+* [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
+
+Improvements:
+* Added a basic barcode overlay widget, for use with the camera preview.
+* Added a basic scan window overlay widget, for use with the camera preview.
+* Update the bundled MLKit model for Android to version `17.3.0`.
+* Added documentation in places where it was missing.
+* Added `color` and `style` properties to the `BarcodePainter` widget.
 
 ## 7.0.0-beta.3
-Fix build issues on macOS
+
+* Fixed a build issue on macOS.
 
 ## 7.0.0-beta.2
 
+Bugs fixed:
+* [Apple] Fixed an issue with the zoom slider being non-functional.
+* [Apple] Fixed an issue where the flash would briefly show when the camera is turned on.
+* [Apple] Fixed an issue that prevented the scan window from working.
+* [Apple] Fixed an issue that caused the barcode overlay to use the wrong dimensions.
+
 Improvements:
 * [iOS] Adds support for Swift Package Manager.
-* [Apple] Fixes zoom slider
-* Fixed torch at start not working
-* Fixed scanWindow not being correct
-* Fixed barcode overlay not being correct
 
 Known issues:
-* BoxFit.cover & BoxFit.fitHeight produces wrong width in barcodeOverlay
+* BoxFit.cover & BoxFit.fitHeight produce the wrong width in the barcode overlay.
 
 ## 7.0.0-beta.1
 
-This version replaces MLKit on iOS with Apple's Vision API and merges the iOS and MacOS sources.
-The requirement for the minimum iOS version has been relaxed back down to iOS 12.0.
+Improvements:
+* [iOS] Migrate to the Vision API.
+* [iOS] Updated the minimum iOS version back down to 12.0.
+* [Apple] Merged the iOS and MacOS sources.
 
-There are still some problems with this build.
-* Zoom slider not working
-* scanWindow not working
-* Flash shows briefly when starting scanner.
-* Other issues, not fully tested yet.
+Known issues:
+* [Apple] The zoom slider does not work correctly.
+* [Apple] The scan window does not work correctly.
+* [Apple] The camera flash briefly shows when the camera is started.
 
 ## 6.0.2
 

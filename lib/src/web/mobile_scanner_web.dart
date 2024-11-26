@@ -57,6 +57,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Get the view type for the platform view factory.
   String _getViewType(int textureId) => 'mobile-scanner-view-$textureId';
 
+  /// Registers this class as the default instance of [MobileScannerPlatform].
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
   }
