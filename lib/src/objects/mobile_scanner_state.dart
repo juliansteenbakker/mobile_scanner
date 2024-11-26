@@ -72,6 +72,8 @@ class MobileScannerState {
   }
 
   /// Create a copy of this state with the given parameters.
+  ///
+  /// If [resetError] is `true`, the error will be reset to null.
   MobileScannerState copyWith({
     int? availableCameras,
     CameraFacing? cameraDirection,
@@ -81,11 +83,12 @@ class MobileScannerState {
     Size? size,
     TorchState? torchState,
     double? zoomScale,
+    bool resetError = false,
   }) {
     return MobileScannerState(
       availableCameras: availableCameras ?? this.availableCameras,
       cameraDirection: cameraDirection ?? this.cameraDirection,
-      error: error,
+      error: resetError ? null : error ?? this.error,
       isInitialized: isInitialized ?? this.isInitialized,
       isRunning: isRunning ?? this.isRunning,
       size: size ?? this.size,
