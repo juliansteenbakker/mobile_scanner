@@ -350,9 +350,27 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       torchState: oldTorchState == TorchState.unavailable
           ? TorchState.unavailable
           : TorchState.off,
+      resetError: true,
     );
 
-    await MobileScannerPlatform.instance.stop();
+    try {
+      await MobileScannerPlatform.instance.stop();
+    } catch (error, stackTrace) {
+      if (_isDisposed) {
+        return;
+      }
+
+      // If the camera failed to stop, report the error.
+      value = value.copyWith(
+        error: MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            details: stackTrace.toString(),
+            message: error.toString(),
+          ),
+        ),
+      );
+    }
   }
 
   /// Switch between the front and back camera.
