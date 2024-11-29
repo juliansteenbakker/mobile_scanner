@@ -1,4 +1,27 @@
-## NEXT
+## 6.0.2
+
+Bugs fixed:
+* Fixed a bug that prevented `analyzeImage` from actually accepting the configured formats.
+
+Improvements:
+* [iOS] Excluded the `arm64` architecture for Simulators, which is unsupported by MLKit 7.0.0.
+
+## 6.0.1
+
+Bugs fixed:
+* Fixed a bug that would cause onDetect to not handle errors.
+
+Improvements:
+* [iOS] Excluded the `armv7` architecture, which is unsupported by MLKit 7.0.0.
+* Added a new `onDetectError` error handler to the `MobileScanner` widget, for use with `onDetect`.
+
+## 6.0.0
+
+**BREAKING CHANGES:**
+
+* [iOS] iOS 15.5.0 is now the minimum supported iOS version.
+* [iOS] Updates MLKit to version 7.0.0.
+* [iOS] Updates the minimum supported XCode version to 15.3.0.
 
 Improvements:
 * [MacOS] Added the corners and size information to barcode results.
