@@ -60,6 +60,10 @@ dev.steenbakker.mobile_scanner.useUnbundled=true
 ```
 
 ### iOS
+
+_iOS arm64 Simulators are currently not yet supported, until the migration to the Vision API is complete._
+_See_ https://github.com/juliansteenbakker/mobile_scanner/issues/1225
+
 **Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
 
@@ -127,7 +131,7 @@ class MyState extends State<MyStatefulWidget> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     // If the controller is not ready, do not try to start or stop it.
     // Permission dialogs can trigger lifecycle changes before the controller is ready.
-    if (!controller.value.isInitialized) {
+    if (!controller.value.hasCameraPermission) {
       return;
     }
 

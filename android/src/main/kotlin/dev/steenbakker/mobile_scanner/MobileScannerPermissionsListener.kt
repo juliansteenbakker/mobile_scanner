@@ -1,6 +1,7 @@
 package dev.steenbakker.mobile_scanner
 
 import android.content.pm.PackageManager
+import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import io.flutter.plugin.common.PluginRegistry
 
 /**
@@ -29,11 +30,9 @@ internal class MobileScannerPermissionsListener(
         // grantResults could be empty if the permissions request with the user is interrupted
         // https://developer.android.com/reference/android/app/Activity#onRequestPermissionsResult(int,%20java.lang.String[],%20int[])
         if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
-            resultCallback.onResult(
-                MobileScannerPermissions.CAMERA_ACCESS_DENIED,
-                MobileScannerPermissions.CAMERA_ACCESS_DENIED_MESSAGE)
+            resultCallback.onResult(MobileScannerErrorCodes.CAMERA_ACCESS_DENIED)
         } else {
-            resultCallback.onResult(null, null)
+            resultCallback.onResult(null)
         }
 
         return true

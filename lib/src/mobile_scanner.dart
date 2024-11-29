@@ -21,6 +21,7 @@ class MobileScanner extends StatefulWidget {
   const MobileScanner({
     this.controller,
     this.onDetect,
+    this.onDetectError = _onDetectErrorHandler,
     this.fit = BoxFit.cover,
     this.errorBuilder,
     this.overlayBuilder,
@@ -34,8 +35,16 @@ class MobileScanner extends StatefulWidget {
   final MobileScannerController? controller;
 
   /// The function that signals when new codes were detected by the [controller].
-  /// If null, use the controller.barcodes stream directly to capture barcodes.
+  ///
+  /// To handle both [BarcodeCapture]s and [MobileScannerBarcodeException]s,
+  /// use the [MobileScannerController.barcodes] stream directly (recommended),
+  /// or provide a function to [onDetectError].
   final void Function(BarcodeCapture barcodes)? onDetect;
+
+  /// The error handler equivalent for the [onDetect] function.
+  ///
+  /// If [onDetect] is not null, and this is null, errors are silently ignored.
+  final void Function(Object error, StackTrace stackTrace) onDetectError;
 
   /// The error builder for the camera preview.
   ///
@@ -116,6 +125,11 @@ class MobileScanner extends StatefulWidget {
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
+
+  /// This empty function is used as the default error handler for [onDetect].
+  static void _onDetectErrorHandler(Object error, StackTrace stackTrace) {
+    // Do nothing.
+  }
 }
 
 class _MobileScannerState extends State<MobileScanner>
@@ -249,7 +263,11 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     if (widget.onDetect != null) {
       WidgetsBinding.instance.addObserver(this);
-      _subscription = controller.barcodes.listen(widget.onDetect);
+      _subscription = controller.barcodes.listen(
+        widget.onDetect,
+        onError: widget.onDetectError,
+        cancelOnError: false,
+      );
     }
     if (controller.autoStart) {
       controller.start();
@@ -281,8 +299,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null) return;
-    if (!controller.value.isInitialized) {
+    if (widget.controller != null || !controller.value.hasCameraPermission) {
       return;
     }
 
@@ -292,7 +309,11 @@ class _MobileScannerState extends State<MobileScanner>
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(widget.onDetect);
+        _subscription = controller.barcodes.listen(
+          widget.onDetect,
+          onError: widget.onDetectError,
+          cancelOnError: false,
+        );
 
         unawaited(controller.start());
       case AppLifecycleState.inactive:
