@@ -1,17 +1,22 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner_example/picklist/classes/fix_coordinate_space.dart';
 
 /// This function finds the barcode that touches the center of the
 /// image. If no barcode is found that touches the center, null is returned.
 /// See [_BarcodeScannerPicklistState] and the returnImage option for more info.
 ///
 /// https://github.com/juliansteenbakker/mobile_scanner/issues/1183
-Barcode? findBarcodeAtCenter(BarcodeCapture barcodeCapture) {
-  final imageSize = barcodeCapture.size;
+Barcode? findBarcodeAtCenter(
+  BarcodeCapture barcodeCapture,
+  DeviceOrientation orientation,
+) {
+  final imageSize = fixPortraitLandscape(barcodeCapture.size, orientation);
   for (final barcode in barcodeCapture.barcodes) {
+    final corners = fixCorners(barcode.corners);
     if (_isPolygonTouchingTheCenter(
       imageSize: imageSize,
-      polygon: barcode.corners,
+      polygon: corners,
     )) {
       return barcode;
     }
