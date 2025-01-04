@@ -55,7 +55,7 @@ class _BarcodeScannerWithControllerState
         children: [
           MobileScanner(
             controller: controller,
-            errorBuilder: (context, error, child) {
+            errorBuilder: (context, error) {
               return ScannerErrorWidget(error: error);
             },
             fit: BoxFit.contain,

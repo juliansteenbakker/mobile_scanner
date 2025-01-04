@@ -8,13 +8,6 @@ import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
-/// The function signature for the error builder.
-typedef MobileScannerErrorBuilder = Widget Function(
-  BuildContext,
-  MobileScannerException,
-  Widget?,
-);
-
 /// This widget displays a live camera preview for the barcode scanner.
 class MobileScanner extends StatefulWidget {
   /// Create a new [MobileScanner] using the provided [controller].
@@ -50,7 +43,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// If this is null, a black [ColoredBox],
   /// with a centered white [Icons.error] icon is used as error widget.
-  final MobileScannerErrorBuilder? errorBuilder;
+  final Widget Function(BuildContext, MobileScannerException)? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
   ///
@@ -73,7 +66,7 @@ class MobileScanner extends StatefulWidget {
   /// If this is null, a black [ColoredBox] is used as placeholder.
   ///
   /// The placeholder is displayed when the camera preview is being initialized.
-  final Widget Function(BuildContext, Widget?)? placeholderBuilder;
+  final WidgetBuilder? placeholderBuilder;
 
   /// The scan window rectangle for the barcode scanner.
   ///
@@ -203,12 +196,11 @@ class _MobileScannerState extends State<MobileScanner>
   Widget build(BuildContext context) {
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
-      builder: (BuildContext context, MobileScannerState value, Widget? child) {
+      builder: (BuildContext context, MobileScannerState value, _) {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
-          return widget.placeholderBuilder?.call(context, child) ??
-              defaultPlaceholder;
+          return widget.placeholderBuilder?.call(context) ?? defaultPlaceholder;
         }
 
         final MobileScannerException? error = value.error;
@@ -219,8 +211,7 @@ class _MobileScannerState extends State<MobileScanner>
             child: Center(child: Icon(Icons.error, color: Colors.white)),
           );
 
-          return widget.errorBuilder?.call(context, error, child) ??
-              defaultError;
+          return widget.errorBuilder?.call(context, error) ?? defaultError;
         }
 
         return LayoutBuilder(

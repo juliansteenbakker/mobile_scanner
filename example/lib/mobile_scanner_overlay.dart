@@ -38,7 +38,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
               fit: BoxFit.contain,
               controller: controller,
               scanWindow: scanWindow,
-              errorBuilder: (context, error, child) {
+              errorBuilder: (context, error) {
                 return ScannerErrorWidget(error: error);
               },
               overlayBuilder: (context, constraints) {

@@ -77,7 +77,7 @@ class _BarcodeScannerWithZoomState extends State<BarcodeScannerWithZoom> {
           MobileScanner(
             controller: controller,
             fit: BoxFit.contain,
-            errorBuilder: (context, error, child) {
+            errorBuilder: (context, error) {
               return ScannerErrorWidget(error: error);
             },
           ),
