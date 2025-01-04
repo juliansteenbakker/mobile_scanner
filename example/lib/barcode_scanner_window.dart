@@ -39,7 +39,7 @@ class _BarcodeScannerWithScanWindowState
             fit: boxFit,
             scanWindow: scanWindow,
             controller: controller,
-            errorBuilder: (context, error, child) {
+            errorBuilder: (context, error) {
               return ScannerErrorWidget(error: error);
             },
           ),
@@ -54,7 +54,7 @@ class _BarcodeScannerWithScanWindowState
               alignment: Alignment.center,
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               height: 100,
-              color: Colors.black.withOpacity(0.4),
+              color: const Color.fromRGBO(0, 0, 0, 0.4),
               child: ScannedBarcodeLabel(barcodes: controller.barcodes),
             ),
           ),
