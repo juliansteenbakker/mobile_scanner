@@ -641,7 +641,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let fileUrl = URL(fileURLWithPath: filePath)
         
         guard let ciImage = CIImage(contentsOf: fileUrl) else {
-            result(nil)
+            result(FlutterError(
+                code: MobileScannerErrorCodes.BARCODE_ERROR,
+                message: MobileScannerErrorCodes.ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE,
+                details: nil
+            ))
             return
         }
         

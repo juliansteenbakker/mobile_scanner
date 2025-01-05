@@ -7,12 +7,10 @@ import android.graphics.Matrix
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Size
 import android.view.Surface
-import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -32,10 +30,12 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
+import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.math.roundToInt
 
 class MobileScanner(
@@ -432,7 +432,15 @@ class MobileScanner(
         scannerOptions: BarcodeScannerOptions?,
         onSuccess: AnalyzerSuccessCallback,
         onError: AnalyzerErrorCallback) {
-        val inputImage = InputImage.fromFilePath(activity, image)
+        val inputImage: InputImage
+
+        try {
+            inputImage = InputImage.fromFilePath(activity, image)
+        } catch (error: IOException) {
+            onError(MobileScannerErrorCodes.ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE)
+
+            return
+        }
 
         // Use a short lived scanner instance, which is closed when the analysis is done.
         val barcodeScanner: BarcodeScanner = barcodeScannerFactory(scannerOptions)

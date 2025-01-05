@@ -11,6 +11,8 @@ Bugs fixed:
 * [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
 * [Apple] Fixed an issue that caused the barcode size to report the wrong height.
 * [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
+* [Apple] Fixed an issue where `analyzeImage` would not throw an error if no valid image is provided as argument.
+* [Android] Fixed an issue where `analyzeImage` would not return if no valid image is provided as argument.
 
 Improvements:
 * Added a basic barcode overlay widget, for use with the camera preview.
@@ -18,6 +20,7 @@ Improvements:
 * Update the bundled MLKit model for Android to version `17.3.0`.
 * Added documentation in places where it was missing.
 * Added `color` and `style` properties to the `BarcodePainter` widget.
+* Enabled Swift Package Manager for the example app.
 
 ## 7.0.0-beta.3
 

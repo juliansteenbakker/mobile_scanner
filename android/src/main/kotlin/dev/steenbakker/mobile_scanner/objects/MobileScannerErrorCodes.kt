@@ -4,6 +4,7 @@ class MobileScannerErrorCodes {
     companion object {
         const val ALREADY_STARTED_ERROR = "MOBILE_SCANNER_ALREADY_STARTED_ERROR"
         const val ALREADY_STARTED_ERROR_MESSAGE = "The scanner was already started."
+        const val ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE = "The provided file is not an image."
         // The error code 'BARCODE_ERROR' does not have an error message,
         // because it uses the error message from the underlying error.
         const val BARCODE_ERROR = "MOBILE_SCANNER_BARCODE_ERROR"
