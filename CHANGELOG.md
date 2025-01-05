@@ -12,6 +12,7 @@ Bugs fixed:
 * [Apple] Fixed an issue that caused the barcode size to report the wrong height.
 * [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
 * [Apple] Fixed an issue where `analyzeImage` would not throw an error if no valid image is provided as argument.
+* [Apple] Fixed an issue where `analyzeImage` would not return if no barcodes are found in the image.
 * [Android] Fixed an issue where `analyzeImage` would not return if no valid image is provided as argument.
 
 Improvements:
