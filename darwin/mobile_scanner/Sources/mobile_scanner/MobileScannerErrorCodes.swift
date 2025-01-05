@@ -10,6 +10,7 @@ import Foundation
 struct MobileScannerErrorCodes {
     static let ALREADY_STARTED_ERROR = "MOBILE_SCANNER_ALREADY_STARTED_ERROR"
     static let ALREADY_STARTED_ERROR_MESSAGE = "The scanner was already started."
+    static let ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE = "The provided file is not an image."
     // The error code 'BARCODE_ERROR' does not have an error message,
     // because it uses the error message from the undelying error.
     static let BARCODE_ERROR = "MOBILE_SCANNER_BARCODE_ERROR"
