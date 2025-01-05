@@ -665,17 +665,31 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 }
                     
                 guard let barcodes: [VNBarcodeObservation] = request.results as? [VNBarcodeObservation] else {
+                    DispatchQueue.main.async {
+                        result([
+                            "name": "barcode",
+                            "data": [],
+                        ])
+                    }
                     return
                 }
                     
                 if barcodes.isEmpty {
+                    DispatchQueue.main.async {
+                        result([
+                            "name": "barcode",
+                            "data": [],
+                        ])
+                    }
                     return
                 }
                     
-                result([
-                    "name": "barcode",
-                    "data": barcodes.map({ $0.toMap(imageWidth: Int(ciImage.extent.width), imageHeight: Int(ciImage.extent.height), scanWindow: self.scanWindow) }),
-                ])
+                DispatchQueue.main.async {
+                    result([
+                        "name": "barcode",
+                        "data": barcodes.map({ $0.toMap(imageWidth: Int(ciImage.extent.width), imageHeight: Int(ciImage.extent.height), scanWindow: self.scanWindow) }),
+                    ])
+                }
             })
             
             if !symbologies.isEmpty {
