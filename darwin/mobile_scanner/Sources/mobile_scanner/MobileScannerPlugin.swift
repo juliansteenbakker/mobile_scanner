@@ -48,17 +48,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var standardZoomFactor: CGFloat = 1
     
     public static func register(with registrar: FlutterPluginRegistrar) {
-        #if os(iOS)
+#if os(iOS)
         let textures = registrar.textures()
-        #else
+#else
         let textures = registrar.textures
-        #endif
+#endif
         
-        #if os(iOS)
+#if os(iOS)
         let messenger = registrar.messenger()
-        #else
+#else
         let messenger = registrar.messenger
-        #endif
+#endif
         
         let instance = MobileScannerPlugin(textures)
         let method = FlutterMethodChannel(name:
@@ -332,7 +332,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         // Check the zoom factor at switching from ultra wide camera to wide camera.
         standardZoomFactor = 1
-        #if os(iOS)
+#if os(iOS)
         if #available(iOS 13.0, *) {
             for (index, actualDevice) in device.constituentDevices.enumerated() {
                 if (actualDevice.deviceType != .builtInUltraWideCamera) {
@@ -343,7 +343,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 }
             }
         }
-        #endif
+#endif
         
         // Add device input
         do {
@@ -512,7 +512,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         
         do {
-            #if os(iOS)
+#if os(iOS)
                 try device.lockForConfiguration()
                 let maxZoomFactor = device.activeFormat.videoMaxZoomFactor
                 
@@ -528,7 +528,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 device.videoZoomFactor = actualScale
 
                 device.unlockForConfiguration()
-            #endif
+#endif
         } catch {
             throw MobileScannerError.zoomError(error)
         }
@@ -542,11 +542,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         do {
-            #if os(iOS)
+#if os(iOS)
                 try device.lockForConfiguration()
                 device.videoZoomFactor = standardZoomFactor
                 device.unlockForConfiguration()
-            #endif
+#endif
         } catch {
             throw MobileScannerError.zoomError(error)
         }
@@ -630,6 +630,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The iOS Simulator cannot use some of the GPU features that are required for the Vision API.
+        // Thus analyzing images is not supported on the iOS Simulator.
+        //
+        // See https://forums.developer.apple.com/forums/thread/696714
+#if os(iOS) && targetEnvironment(simulator)
+        result(FlutterError(
+            code: MobileScannerErrorCodes.UNSUPPORTED_OPERATION_ERROR,
+            message: MobileScannerErrorCodes.ANALYZE_IMAGE_IOS_SIMULATOR_NOT_SUPPORTED_ERROR_MESSAGE,
+            details: nil
+        ))
+        return
+#endif
+        
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
         
