@@ -632,6 +632,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         // The iOS Simulator cannot use some of the GPU features that are required for the Vision API.
         // Thus analyzing images is not supported on the iOS Simulator.
+        //
+        // See https://forums.developer.apple.com/forums/thread/696714
 #if os(iOS) && targetEnvironment(simulator)
         result(FlutterError(
             code: MobileScannerErrorCodes.UNSUPPORTED_OPERATION_ERROR,
