@@ -24,6 +24,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
 
+  /// The name of the error event that is sent when an operation is not supported.
+  @visibleForTesting
+  static const String kUnsupportdOperationErrorEventName =
+      'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -190,6 +195,15 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       // Handle any errors from analyze image requests.
       if (error.code == kBarcodeErrorEventName) {
         throw MobileScannerBarcodeException(error.message);
+      }
+
+      if (error.code == kUnsupportdOperationErrorEventName) {
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.fromPlatformException(error),
+          errorDetails: MobileScannerErrorDetails(
+            message: error.message,
+          ),
+        );
       }
 
       return null;

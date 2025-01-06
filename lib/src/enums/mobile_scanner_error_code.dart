@@ -43,6 +43,8 @@ enum MobileScannerErrorCode {
       'MOBILE_SCANNER_NO_CAMERA_ERROR' => MobileScannerErrorCode.unsupported,
       'MOBILE_SCANNER_CAMERA_PERMISSION_DENIED' =>
         MobileScannerErrorCode.permissionDenied,
+      'MOBILE_SCANNER_UNSUPPORTED_OPERATION' =>
+        MobileScannerErrorCode.unsupported,
       _ => MobileScannerErrorCode.genericError,
     };
   }
