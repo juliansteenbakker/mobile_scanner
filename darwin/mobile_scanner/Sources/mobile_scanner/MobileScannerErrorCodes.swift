@@ -10,6 +10,7 @@ import Foundation
 struct MobileScannerErrorCodes {
     static let ALREADY_STARTED_ERROR = "MOBILE_SCANNER_ALREADY_STARTED_ERROR"
     static let ALREADY_STARTED_ERROR_MESSAGE = "The scanner was already started."
+    static let ANALYZE_IMAGE_IOS_SIMULATOR_NOT_SUPPORTED_ERROR_MESSAGE = "Analyzing an image from a file is not supported on the iOS Simulator.";
     static let ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE = "The provided file is not an image."
     // The error code 'BARCODE_ERROR' does not have an error message,
     // because it uses the error message from the undelying error.
@@ -25,4 +26,5 @@ struct MobileScannerErrorCodes {
     static let NO_CAMERA_ERROR_MESSAGE = "No cameras available."
     static let SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
     static let SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
+    static let UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION"
 }

@@ -630,6 +630,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        // The iOS Simulator cannot use some of the GPU features that are required for the Vision API.
+        // Thus analyzing images is not supported on the iOS Simulator.
+#if os(iOS) && targetEnvironment(simulator)
+        result(FlutterError(
+            code: MobileScannerErrorCodes.UNSUPPORTED_OPERATION_ERROR,
+            message: MobileScannerErrorCodes.ANALYZE_IMAGE_IOS_SIMULATOR_NOT_SUPPORTED_ERROR_MESSAGE,
+            details: nil
+        ))
+        return
+#endif
+        
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
         
