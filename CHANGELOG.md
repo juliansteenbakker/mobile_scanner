@@ -13,6 +13,7 @@ Bugs fixed:
 * [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
 * [Apple] Fixed an issue where `analyzeImage` would not throw an error if no valid image is provided as argument.
 * [Apple] Fixed an issue where `analyzeImage` would not return if no barcodes are found in the image.
+* [Apple] Fixed an issue where the iOS Simulator did not report that analyzing images from a file is unsupported. 
 * [Android] Fixed an issue where `analyzeImage` would not return if no valid image is provided as argument.
 
 Improvements:
