@@ -22,5 +22,6 @@ class MobileScannerErrorCodes {
         const val NO_CAMERA_ERROR_MESSAGE = "No cameras available."
         const val SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
         const val SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
+        const val UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION" // Reserved for future use.
     }
 }
