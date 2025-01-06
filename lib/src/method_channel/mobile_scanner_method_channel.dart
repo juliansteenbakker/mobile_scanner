@@ -198,12 +198,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       }
 
       if (error.code == kUnsupportdOperationErrorEventName) {
-        throw MobileScannerException(
-          errorCode: MobileScannerErrorCode.fromPlatformException(error),
-          errorDetails: MobileScannerErrorDetails(
-            message: error.message,
-          ),
-        );
+        throw UnsupportedError(error.message ?? 'Unsupported operation.');
       }
 
       return null;
