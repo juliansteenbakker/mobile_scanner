@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+library;
+
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/camera_facing.dart';

@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner.dart';
+library;
+
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -25,7 +28,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.useNewCameraSelector = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -86,15 +88,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Defaults to false.
   final bool torchEnabled;
-
-  /// Use the new resolution selector.
-  ///
-  /// This feature is experimental and not fully tested yet.
-  /// Use caution when using this flag,
-  /// as the new resolution selector may produce unwanted or zoomed images.
-  ///
-  /// Only supported on Android.
-  final bool useNewCameraSelector;
 
   /// The internal barcode controller, that listens for detected barcodes.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -189,12 +182,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// The [formats] specify the barcode formats that should be detected in the image.
   /// If the [formats] are omitted or empty, all formats are detected.
   ///
-  /// This is only supported on Android, iOS and MacOS.
+  /// This is only supported on Android, physical iOS devices and MacOS.
+  /// This is not supported on the iOS Simulator, due to restrictions on the Simulator.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   ///
   /// If an error occurred during the analysis of the image,
   /// a [MobileScannerBarcodeException] error is thrown.
+  ///
+  /// If analyzing images from a file is not supported, an [UnsupportedError] is thrown.
   Future<BarcodeCapture?> analyzeImage(
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
@@ -282,7 +278,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      useNewCameraSelector: useNewCameraSelector,
     );
 
     try {

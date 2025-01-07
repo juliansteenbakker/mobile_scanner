@@ -1,3 +1,59 @@
+## 7.0.0-beta.4
+
+**BREAKING CHANGES:**
+
+* The `updateScanWindow` method is now private. Instead, update the scan window in the `MobileScanner` widget directly.
+* The deprecated `EncryptionType.none` constant has been removed. Use `EncryptionType.unknown` instead.
+* The `errorBuilder` and `placeholderBuilder` of the `MobileScanner` widget no longer take a Widget argument, as it was unused.
+* The `MobileScannerErrorBuilder` typedef has been removed.
+
+Bugs fixed:
+* [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
+* [Apple] Fixed an issue that caused the barcode size to report the wrong height.
+* [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
+* [Apple] Fixed an issue where `analyzeImage` would not throw an error if no valid image is provided as argument.
+* [Apple] Fixed an issue where `analyzeImage` would not return if no barcodes are found in the image.
+* [Apple] Fixed an issue where the iOS Simulator did not report that analyzing images from a file is unsupported. 
+* [Android] Fixed an issue where `analyzeImage` would not return if no valid image is provided as argument.
+
+Improvements:
+* Added a basic barcode overlay widget, for use with the camera preview.
+* Added a basic scan window overlay widget, for use with the camera preview.
+* Update the bundled MLKit model for Android to version `17.3.0`.
+* Added documentation in places where it was missing.
+* Added `color` and `style` properties to the `BarcodePainter` widget.
+* Enabled Swift Package Manager for the example app.
+
+## 7.0.0-beta.3
+
+* Fixed a build issue on macOS.
+
+## 7.0.0-beta.2
+
+Bugs fixed:
+* [Apple] Fixed an issue with the zoom slider being non-functional.
+* [Apple] Fixed an issue where the flash would briefly show when the camera is turned on.
+* [Apple] Fixed an issue that prevented the scan window from working.
+* [Apple] Fixed an issue that caused the barcode overlay to use the wrong dimensions.
+
+Improvements:
+* [iOS] Adds support for Swift Package Manager.
+
+Known issues:
+* BoxFit.cover & BoxFit.fitHeight produce the wrong width in the barcode overlay.
+
+## 7.0.0-beta.1
+
+Improvements:
+* [iOS] Migrate to the Vision API.
+* [iOS] Updated the minimum iOS version back down to 12.0.
+* [Apple] Merged the iOS and MacOS sources.
+
+Known issues:
+* [Apple] The zoom slider does not work correctly.
+* [Apple] The scan window does not work correctly.
+* [Apple] The camera flash briefly shows when the camera is started.
+
 ## 6.0.2
 
 Bugs fixed:

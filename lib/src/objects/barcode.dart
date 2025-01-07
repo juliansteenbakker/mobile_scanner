@@ -102,10 +102,16 @@ class Barcode {
   /// The contact information that is embedded in the barcode.
   final ContactInfo? contactInfo;
 
-  /// The four corner points of the barcode,
-  /// in clockwise order, starting with the top-left point.
+  /// The corner points of the barcode.
   ///
-  /// Due to the possible perspective distortions, this is not necessarily a rectangle.
+  /// On Android, iOS and MacOS, this is a list of four points,
+  /// in clockwise direction, starting with the top left.
+  ///
+  /// On the web, the amount of points and their order
+  /// is dependent on the type of barcode that was detected.
+  ///
+  /// Due to the possible perspective distortions,
+  /// the points do not necessarily form a rectangle.
   ///
   /// This list is empty if the corners can not be determined.
   final List<Offset> corners;
