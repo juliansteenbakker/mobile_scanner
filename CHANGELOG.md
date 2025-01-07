@@ -1,8 +1,13 @@
+## NEXT
+
+* This release requires Flutter 3.27.0 or higher.
+
+Improvements:
+* [Android] Added support for Impeller.
+
 ## 7.0.0-beta.4
 
 **BREAKING CHANGES:**
-
-* This release requires Flutter 3.27.0 or higher.
 
 * The `updateScanWindow` method is now private. Instead, update the scan window in the `MobileScanner` widget directly.
 * The deprecated `EncryptionType.none` constant has been removed. Use `EncryptionType.unknown` instead.
