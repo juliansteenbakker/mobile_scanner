@@ -54,6 +54,67 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   int? _textureId;
   bool _pausing = false;
 
+  /// Rotate the given [child] to account for the device orientation.
+  Widget _buildCameraViewWithDeviceOrientation(Widget child) {
+    final Map<DeviceOrientation, int> degreesForDeviceOrientation =
+        <DeviceOrientation, int>{
+      DeviceOrientation.portraitUp: 0,
+      DeviceOrientation.landscapeRight: 90,
+      DeviceOrientation.portraitDown: 180,
+      DeviceOrientation.landscapeLeft: 270,
+    };
+
+    int naturalDeviceOrientationDegrees =
+        degreesForDeviceOrientation[naturalOrientation]!;
+
+    if (isPreviewPreTransformed) {
+      // If the camera preview is backed by a SurfaceTexture, the transformation
+      // needed to correctly rotate the preview has already been applied.
+      // However, we may need to correct the camera preview rotation if the
+      // device is naturally landscape-oriented.
+      if (naturalOrientation == DeviceOrientation.landscapeLeft ||
+          naturalOrientation == DeviceOrientation.landscapeRight) {
+        final int quarterTurnsToCorrectForLandscape =
+            (-naturalDeviceOrientationDegrees + 360) ~/ 4;
+        return RotatedBox(
+            quarterTurns: quarterTurnsToCorrectForLandscape, child: child);
+      }
+      return child;
+    }
+
+    // If the camera preview is not backed by a SurfaceTexture,
+    // the camera preview rotation needs to be manually applied,
+    // while also taking into account devices that are naturally landscape-oriented.
+    final int signForCameraDirection = cameraIsFrontFacing ? 1 : -1;
+
+    // For front-facing cameras, the preview is rotated counterclockwise,
+    // so we determine the rotation needed to correct the camera preview with
+    // respect to the natural orientation of the device based on the inverse of
+    // naturalOrientation.
+    if (signForCameraDirection == 1 &&
+        (currentDeviceOrientation == DeviceOrientation.landscapeLeft ||
+            currentDeviceOrientation == DeviceOrientation.landscapeRight)) {
+      naturalDeviceOrientationDegrees += 180;
+    }
+
+    // See https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation
+    final double rotation = (sensorOrientation +
+            naturalDeviceOrientationDegrees * signForCameraDirection +
+            360) %
+        360;
+
+    int quarterTurnsToCorrectPreview = rotation ~/ 90;
+
+    // Correct the camera preview rotation for devices that are naturally landscape-oriented.
+    if (naturalOrientation == DeviceOrientation.landscapeLeft ||
+        naturalOrientation == DeviceOrientation.landscapeRight) {
+      quarterTurnsToCorrectPreview +=
+          (-naturalDeviceOrientationDegrees + 360) ~/ 4;
+    }
+
+    return RotatedBox(quarterTurns: quarterTurnsToCorrectPreview, child: child);
+  }
+
   /// Parse a [BarcodeCapture] from the given [event].
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
     if (event == null) {
@@ -212,7 +273,16 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return const SizedBox();
     }
 
-    return Texture(textureId: _textureId!);
+    final Widget texture = Texture(textureId: _textureId!);
+
+    // On Android, the texture needs to be rotated manually.
+    // This is needed for devices that are naturally landscape oriented,
+    // or when the underlying SurfaceProducer dos not handle the orientation.
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return _buildCameraViewWithDeviceOrientation(texture);
+    }
+
+    return texture;
   }
 
   @override
