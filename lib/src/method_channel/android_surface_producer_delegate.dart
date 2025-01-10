@@ -2,6 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
+import 'package:mobile_scanner/src/utils/parse_device_orientation_extension.dart';
 
 /// This class will manage the orientation corrections for textures
 /// that are provided by the SurfaceProducer API on Android.
@@ -14,6 +18,63 @@ class AndroidSurfaceProducerDelegate {
     required this.naturalOrientation,
     required this.sensorOrientation,
   });
+
+  /// Construct a new [AndroidSurfaceProducerDelegate]
+  /// from the given [config] and [cameraDirection].
+  ///
+  /// Throws a [MobileScannerException] if the configuration is invalid.
+  factory AndroidSurfaceProducerDelegate.fromConfiguration(
+    Map<String, Object?> config,
+    CameraFacing cameraDirection,
+  ) {
+    if (config
+        case {
+          'currentDeviceOrientation': final String deviceOrientation,
+          'isPreviewPreTransformed': final bool isPreviewPreTransformed,
+          'naturalDeviceOrientation': final String naturalDeviceOrientation,
+          'sensorOrientation': final int sensorOrientation
+        }) {
+      final DeviceOrientation? currentOrientation =
+          deviceOrientation.tryParseDeviceOrientation();
+      final DeviceOrientation? naturalOrientation =
+          naturalDeviceOrientation.tryParseDeviceOrientation();
+
+      if (currentOrientation == null) {
+        throw const MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            message:
+                'The start method did not return a valid current device orientation.',
+          ),
+        );
+      }
+
+      if (naturalOrientation == null) {
+        throw const MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            message:
+                'The start method did not return a valid natural device orientation.',
+          ),
+        );
+      }
+
+      return AndroidSurfaceProducerDelegate(
+        cameraIsFrontFacing: cameraDirection == CameraFacing.front,
+        currentDeviceOrientation: currentOrientation,
+        isPreviewPreTransformed: isPreviewPreTransformed,
+        naturalOrientation: naturalOrientation,
+        sensorOrientation: sensorOrientation,
+      );
+    }
+
+    throw const MobileScannerException(
+      errorCode: MobileScannerErrorCode.genericError,
+      errorDetails: MobileScannerErrorDetails(
+        message: 'The start method did not return a valid configuration.',
+      ),
+    );
+  }
 
   /// The rotation degrees corresponding to each device orientation.
   static const Map<DeviceOrientation, int> _degreesForDeviceOrientation =
