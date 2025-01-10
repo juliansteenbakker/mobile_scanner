@@ -7,6 +7,7 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/method_channel/android_surface_producer_delegate.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -26,8 +27,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   /// The name of the error event that is sent when an operation is not supported.
   @visibleForTesting
-  static const String kUnsupportdOperationErrorEventName =
-      'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
+  static const String kUnsupportdOperationErrorEventName = 'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -45,75 +45,17 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
-    _eventsStream ??=
-        eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
+    _eventsStream ??= eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
 
     return _eventsStream!;
   }
 
+  /// The delegate that handles texture rotation corrections on Android.
+  AndroidSurfaceProducerDelegate? _surfaceProducerDelegate;
+
+  /// The identifier of the current texture.
   int? _textureId;
   bool _pausing = false;
-
-  /// Rotate the given [child] to account for the device orientation.
-  Widget _buildCameraViewWithDeviceOrientation(Widget child) {
-    final Map<DeviceOrientation, int> degreesForDeviceOrientation =
-        <DeviceOrientation, int>{
-      DeviceOrientation.portraitUp: 0,
-      DeviceOrientation.landscapeRight: 90,
-      DeviceOrientation.portraitDown: 180,
-      DeviceOrientation.landscapeLeft: 270,
-    };
-
-    int naturalDeviceOrientationDegrees =
-        degreesForDeviceOrientation[naturalOrientation]!;
-
-    if (isPreviewPreTransformed) {
-      // If the camera preview is backed by a SurfaceTexture, the transformation
-      // needed to correctly rotate the preview has already been applied.
-      // However, we may need to correct the camera preview rotation if the
-      // device is naturally landscape-oriented.
-      if (naturalOrientation == DeviceOrientation.landscapeLeft ||
-          naturalOrientation == DeviceOrientation.landscapeRight) {
-        final int quarterTurnsToCorrectForLandscape =
-            (-naturalDeviceOrientationDegrees + 360) ~/ 4;
-        return RotatedBox(
-            quarterTurns: quarterTurnsToCorrectForLandscape, child: child);
-      }
-      return child;
-    }
-
-    // If the camera preview is not backed by a SurfaceTexture,
-    // the camera preview rotation needs to be manually applied,
-    // while also taking into account devices that are naturally landscape-oriented.
-    final int signForCameraDirection = cameraIsFrontFacing ? 1 : -1;
-
-    // For front-facing cameras, the preview is rotated counterclockwise,
-    // so we determine the rotation needed to correct the camera preview with
-    // respect to the natural orientation of the device based on the inverse of
-    // naturalOrientation.
-    if (signForCameraDirection == 1 &&
-        (currentDeviceOrientation == DeviceOrientation.landscapeLeft ||
-            currentDeviceOrientation == DeviceOrientation.landscapeRight)) {
-      naturalDeviceOrientationDegrees += 180;
-    }
-
-    // See https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation
-    final double rotation = (sensorOrientation +
-            naturalDeviceOrientationDegrees * signForCameraDirection +
-            360) %
-        360;
-
-    int quarterTurnsToCorrectPreview = rotation ~/ 90;
-
-    // Correct the camera preview rotation for devices that are naturally landscape-oriented.
-    if (naturalOrientation == DeviceOrientation.landscapeLeft ||
-        naturalOrientation == DeviceOrientation.landscapeRight) {
-      quarterTurnsToCorrectPreview +=
-          (-naturalDeviceOrientationDegrees + 360) ~/ 4;
-    }
-
-    return RotatedBox(quarterTurns: quarterTurnsToCorrectPreview, child: child);
-  }
 
   /// Parse a [BarcodeCapture] from the given [event].
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
@@ -127,14 +69,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return null;
     }
 
-    final List<Map<Object?, Object?>> barcodes =
-        data.cast<Map<Object?, Object?>>();
+    final List<Map<Object?, Object?>> barcodes = data.cast<Map<Object?, Object?>>();
 
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      final Map<Object?, Object?>? imageData =
-          event['image'] as Map<Object?, Object?>?;
+      final Map<Object?, Object?>? imageData = event['image'] as Map<Object?, Object?>?;
       final Uint8List? image = imageData?['bytes'] as Uint8List?;
       final double? width = imageData?['width'] as double?;
       final double? height = imageData?['height'] as double?;
@@ -160,8 +100,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// If the error is not a [PlatformException],
   /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
   Never _parseBarcodeError(Object error, StackTrace stackTrace) {
-    if (error case PlatformException(:final String code, :final String? message)
-        when code == kBarcodeErrorEventName) {
+    if (error case PlatformException(:final String code, :final String? message) when code == kBarcodeErrorEventName) {
       throw MobileScannerBarcodeException(message);
     }
 
@@ -173,8 +112,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// Throws a [MobileScannerException] if the permission is not granted.
   Future<void> _requestCameraPermission() async {
     try {
-      final MobileScannerAuthorizationState authorizationState =
-          MobileScannerAuthorizationState.fromRawValue(
+      final MobileScannerAuthorizationState authorizationState = MobileScannerAuthorizationState.fromRawValue(
         await methodChannel.invokeMethod<int>('state') ?? 0,
       );
 
@@ -186,8 +124,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         // So if the permission was denied, request it again.
         case MobileScannerAuthorizationState.denied:
         case MobileScannerAuthorizationState.undetermined:
-          final bool permissionGranted =
-              await methodChannel.invokeMethod<bool>('request') ?? false;
+          final bool permissionGranted = await methodChannel.invokeMethod<bool>('request') ?? false;
 
           if (!permissionGranted) {
             throw const MobileScannerException(
@@ -238,8 +175,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
   }) async {
     try {
-      final Map<Object?, Object?>? result =
-          await methodChannel.invokeMapMethod<Object?, Object?>(
+      final Map<Object?, Object?>? result = await methodChannel.invokeMapMethod<Object?, Object?>(
         'analyzeImage',
         {
           'filePath': path,
@@ -275,11 +211,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Widget texture = Texture(textureId: _textureId!);
 
-    // On Android, the texture needs to be rotated manually.
-    // This is needed for devices that are naturally landscape oriented,
-    // or when the underlying SurfaceProducer dos not handle the orientation.
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return _buildCameraViewWithDeviceOrientation(texture);
+    if (_surfaceProducerDelegate case final AndroidSurfaceProducerDelegate delegate) {
+      return delegate.applyRotationCorrection(texture);
     }
 
     return texture;
@@ -348,6 +281,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = textureId;
 
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      _surfaceProducerDelegate = AndroidSurfaceProducerDelegate.fromConfiguration(
+        startResult,
+        startOptions.cameraDirection,
+      );
+    }
+
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
     final TorchState currentTorchState = TorchState.fromRawValue(
       startResult['currentTorchState'] as int? ?? -1,
@@ -355,8 +295,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Size size;
 
-    if (startResult['size']
-        case {'width': final double width, 'height': final double height}) {
+    if (startResult['size'] case {'width': final double width, 'height': final double height}) {
       size = Size(width, height);
     } else {
       size = Size.zero;
@@ -379,6 +318,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = null;
     _pausing = false;
+    _surfaceProducerDelegate?.dispose();
+    _surfaceProducerDelegate = null;
 
     await methodChannel.invokeMethod<void>('stop');
   }
