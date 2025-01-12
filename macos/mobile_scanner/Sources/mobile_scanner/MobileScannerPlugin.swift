@@ -482,7 +482,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             captureSession.removeOutput(output)
         }
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
-//         registry.unregisterTexture(textureId) TODO
 
         latestBuffer = nil
         self.captureSession = nil
