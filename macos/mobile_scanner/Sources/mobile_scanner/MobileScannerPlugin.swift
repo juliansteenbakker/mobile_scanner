@@ -25,7 +25,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     // optional window to limit scan search
     var scanWindow: CGRect?
-    
+
     /// Whether to return the input image with the barcode event.
     /// This is static to avoid accessing `self` in the `VNDetectBarcodesRequest` callback.
     private static var returnImage: Bool = false
@@ -35,9 +35,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var timeoutSeconds: Double = 0
 
     var symbologies:[VNBarcodeSymbology] = []
-    
+
     var position = AVCaptureDevice.Position.back
     
+    private var stopped: Bool {
+        return device == nil || captureSession == nil
+    }
+
+    private var paused: Bool {
+        return stopped && textureId != nil
+    }
+
     public static func register(with registrar: FlutterPluginRegistrar) {
         let instance = MobileScannerPlugin(registrar.textures)
         let method = FlutterMethodChannel(name:
@@ -67,6 +75,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             setScale(call, result)
         case "resetScale":
             resetScale(call, result)
+        case "pause":
+            pause(result)
         case "stop":
             stop(result)
         case "updateScanWindow":
@@ -128,7 +138,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 do {
                     let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
                         self?.imagesCurrentlyBeingProcessed = false
-                        
+
                         if error != nil {
                             DispatchQueue.main.async {
                                 self?.sink?(FlutterError(
@@ -137,24 +147,24 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             }
                             return
                         }
-                        
+
                         guard let results: [VNBarcodeObservation] = request.results as? [VNBarcodeObservation] else {
                             return
                         }
-                        
+
                         if results.isEmpty {
                             return
                         }
-                        
+
                         let barcodes: [VNBarcodeObservation] = results.compactMap({ barcode in
                             // If there is a scan window, check if the barcode is within said scan window.
                             if self?.scanWindow != nil && cgImage != nil && !(self?.isBarCodeInScanWindow(self!.scanWindow!, barcode, cgImage!) ?? false) {
                                 return nil
                             }
-                            
+
                             return barcode
                         })
-                        
+
                         DispatchQueue.main.async {
                             guard let image = cgImage else {
                                 self?.sink?([
@@ -163,7 +173,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 ])
                                 return
                             }
-                            
+
                             // The image dimensions are always provided.
                             // The image bytes are only non-null when `returnImage` is true.
                             let imageData: [String: Any?] = [
@@ -171,7 +181,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                 "width": Double(image.width),
                                 "height": Double(image.height),
                             ]
-                            
+
                             self?.sink?([
                                 "name": "barcode",
                                 "data": barcodes.map({ $0.toMap() }),
@@ -179,7 +189,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             ])
                         }
                     })
-                    
+
                     if self?.symbologies.isEmpty == false {
                         // Add the symbologies the user wishes to support.
                         barcodeRequest.symbologies = self!.symbologies
@@ -276,7 +286,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
 
-        textureId = registry.register(self)
+        textureId = textureId ?? registry.register(self)
         captureSession = AVCaptureSession()
 
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
@@ -438,52 +448,73 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
-    func stop(_ result: FlutterResult) {
-        if (device == nil || captureSession == nil) {
+    func pause(_ result: FlutterResult) {
+        if (paused || stopped) {
             result(nil)
 
             return
         }
-        captureSession!.stopRunning()
-        for input in captureSession!.inputs {
-            captureSession!.removeInput(input)
+        releaseCamera()
+    }
+
+    func stop(_ result: FlutterResult) {
+        if (!paused && stopped) {
+            result(nil)
+
+            return
         }
-        for output in captureSession!.outputs {
-            captureSession!.removeOutput(output)
-        }
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
-        registry.unregisterTexture(textureId)
-        
-        latestBuffer = nil
-        captureSession = nil
-        device = nil
-        textureId = nil
-        
+        releaseCamera()
+        releaseTexture()
+
         result(nil)
     }
-    
+
+    private func releaseCamera() {
+        guard let captureSession = captureSession else {
+            return
+        }
+
+        captureSession.stopRunning()
+        for input in captureSession.inputs {
+            captureSession.removeInput(input)
+        }
+        for output in captureSession.outputs {
+            captureSession.removeOutput(output)
+        }
+        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+
+        latestBuffer = nil
+        self.captureSession = nil
+        device = nil
+    }
+
+    private func releaseTexture() {
+        registry.unregisterTexture(textureId)
+        textureId = nil
+    }
+
     func analyzeImage(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
-        
+
         guard let filePath: String = argReader.string(key: "filePath") else {
             result(nil)
             return
         }
-        
+
         let fileUrl = URL(fileURLWithPath: filePath)
-        
+
         guard let ciImage = CIImage(contentsOf: fileUrl) else {
             result(nil)
             return
         }
-        
+
         let imageRequestHandler = VNImageRequestHandler(ciImage: ciImage, orientation: CGImagePropertyOrientation.up, options: [:])
-        
+
         do {
             let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(
                 completionHandler: { [] (request, error) in
-                    
+
                 if error != nil {
                     DispatchQueue.main.async {
                         result(FlutterError(
@@ -492,26 +523,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     }
                     return
                 }
-                    
+
                 guard let barcodes: [VNBarcodeObservation] = request.results as? [VNBarcodeObservation] else {
                     return
                 }
-                    
+
                 if barcodes.isEmpty {
                     return
                 }
-                    
+
                 result([
                     "name": "barcode",
                     "data": barcodes.map({ $0.toMap() }),
                 ])
             })
-            
+
             if !symbologies.isEmpty {
                 // Add the symbologies the user wishes to support.
                 barcodeRequest.symbologies = symbologies
             }
-            
+
             try imageRequestHandler.perform([barcodeRequest])
         } catch let error {
             DispatchQueue.main.async {
@@ -521,7 +552,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             }
         }
     }
-    
+
     // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
@@ -584,29 +615,29 @@ class MapArgumentReader {
 extension CGImage {
     public func jpegData(compressionQuality: CGFloat) -> Data? {
         let mutableData = CFDataCreateMutable(nil, 0)
-        
+
         let formatHint: CFString
-        
+
         if #available(macOS 11.0, *) {
             formatHint = UTType.jpeg.identifier as CFString
         } else {
             formatHint = kUTTypeJPEG
         }
-        
+
         guard let destination = CGImageDestinationCreateWithData(mutableData!, formatHint, 1, nil) else {
             return nil
         }
-        
+
         let options: NSDictionary = [
             kCGImageDestinationLossyCompressionQuality: compressionQuality,
         ]
-        
+
         CGImageDestinationAddImage(destination, self, options)
-        
+
         if !CGImageDestinationFinalize(destination) {
             return nil
         }
-        
+
         return mutableData as Data?
     }
 }
@@ -615,7 +646,7 @@ extension VNBarcodeObservation {
     private func distanceBetween(_ p1: CGPoint, _ p2: CGPoint) -> CGFloat {
         return sqrt(pow(p1.x - p2.x, 2) + pow(p1.y - p2.y, 2))
     }
-    
+
     public func toMap() -> [String: Any?] {
         return [
             "corners": [

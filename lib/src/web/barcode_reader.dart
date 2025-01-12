@@ -128,6 +128,11 @@ abstract class BarcodeReader {
     throw UnimplementedError('start() has not been implemented.');
   }
 
+  /// Pause the barcode reader.
+  Future<void> pause() {
+    throw UnimplementedError('pause() has not been implemented.');
+  }
+
   /// Stop the barcode reader and dispose of the video stream.
   Future<void> stop() {
     throw UnimplementedError('stop() has not been implemented.');

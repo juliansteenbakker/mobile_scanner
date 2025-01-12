@@ -273,7 +273,7 @@ class MobileScanner(
             }
 
             cameraProvider?.unbindAll()
-            textureEntry = textureRegistry.createSurfaceTexture()
+            textureEntry = textureEntry ?: textureRegistry.createSurfaceTexture()
 
             // Preview
             val surfaceProvider = Preview.SurfaceProvider { request ->
@@ -405,14 +405,33 @@ class MobileScanner(
         }, executor)
 
     }
+
+    /**
+     * Pause barcode scanning.
+     */
+    fun pause() {
+        if (isPaused()) {
+            throw AlreadyPaused()
+        } else if (isStopped()) {
+            throw AlreadyStopped()
+        }
+
+        releaseCamera()
+    }
+
     /**
      * Stop barcode scanning.
      */
     fun stop() {
-        if (isStopped()) {
+        if (!isPaused() && isStopped()) {
             throw AlreadyStopped()
         }
 
+        releaseCamera()
+        releaseTexture()
+    }
+
+    private fun releaseCamera() {
         if (displayListener != null) {
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
@@ -430,9 +449,6 @@ class MobileScanner(
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
-        cameraProvider = null
-        camera = null
-        preview = null
 
         // Release the texture for the preview.
         textureEntry?.release()
@@ -444,7 +460,13 @@ class MobileScanner(
         lastScanned = null
     }
 
+    private fun releaseTexture() {
+        textureEntry?.release()
+        textureEntry = null
+    }
+
     private fun isStopped() = camera == null && preview == null
+    private fun isPaused() = isStopped() && textureEntry != null
 
     /**
      * Toggles the flash light on or off.
