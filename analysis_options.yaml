@@ -5,3 +5,4 @@ linter:
     - combinators_ordering
     - require_trailing_commas
     - unnecessary_library_directive
+    - prefer_single_quotes

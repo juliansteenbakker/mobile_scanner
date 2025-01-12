@@ -75,12 +75,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If this is empty, all supported formats are detected.
   final List<BarcodeFormat> formats;
 
-  /// Whether scanned barcodes should contain the image
-  /// that is embedded into the barcode.
+  /// Whether the [BarcodeCapture.image] bytes should be provided.
   ///
   /// If this is false, [BarcodeCapture.image] will always be null.
   ///
-  /// Defaults to false, and is only supported on iOS and Android.
+  /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
   /// Whether the flashlight should be turned on when the camera is started.
@@ -102,6 +101,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       StreamController.broadcast();
 
   /// Get the stream of scanned barcodes.
+  ///
+  /// If an error occurred during the detection of a barcode,
+  /// a [MobileScannerBarcodeException] error is emitted to the stream.
   Stream<BarcodeCapture> get barcodes => _barcodesController.stream;
 
   StreamSubscription<BarcodeCapture?>? _barcodesSubscription;
@@ -121,14 +123,25 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   void _setupListeners() {
-    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
-        .listen((BarcodeCapture? barcode) {
-      if (_barcodesController.isClosed || barcode == null) {
-        return;
-      }
+    _barcodesSubscription =
+        MobileScannerPlatform.instance.barcodesStream.listen(
+      (BarcodeCapture? barcode) {
+        if (_barcodesController.isClosed || barcode == null) {
+          return;
+        }
 
-      _barcodesController.add(barcode);
-    });
+        _barcodesController.add(barcode);
+      },
+      onError: (Object error) {
+        if (_barcodesController.isClosed) {
+          return;
+        }
+
+        _barcodesController.addError(error);
+      },
+      // Errors are handled gracefully by forwarding them.
+      cancelOnError: false,
+    );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
@@ -197,12 +210,20 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
+  /// The [formats] specify the barcode formats that should be detected in the image.
+  /// If the [formats] are omitted or empty, all formats are detected.
   ///
-  /// This is only supported on Android and iOS.
+  /// This is only supported on Android, iOS and MacOS.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
-  Future<BarcodeCapture?> analyzeImage(String path) {
-    return MobileScannerPlatform.instance.analyzeImage(path);
+  ///
+  /// If an error occurred during the analysis of the image,
+  /// a [MobileScannerBarcodeException] error is thrown.
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) {
+    return MobileScannerPlatform.instance.analyzeImage(path, formats: formats);
   }
 
   /// Build a camera preview widget.
@@ -270,13 +291,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    // Permission was denied, do nothing.
-    // When the controller is stopped,
-    // the error is reset so the permission can be requested again if possible.
-    if (value.error?.errorCode == MobileScannerErrorCode.permissionDenied) {
-      return;
-    }
-
     // Do nothing if the camera is already running.
     if (value.isRunning) {
       return;
@@ -316,6 +330,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
       }
     } on MobileScannerException catch (error) {
+      // If the controller is already initialized, ignore the error.
+      // Starting the controller while it is already started, or in the process of starting, is redundant.
+      if (error.errorCode ==
+          MobileScannerErrorCode.controllerAlreadyInitialized) {
+        return;
+      }
+
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
       // torch state and zoom scale to the defaults.
@@ -330,8 +351,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           zoomScale: 1.0,
         );
       }
-    } on PermissionRequestPendingException catch (_) {
-      // If a permission request was already pending, do nothing.
     }
   }
 

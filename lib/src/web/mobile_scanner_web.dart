@@ -4,6 +4,7 @@ import 'dart:ui_web' as ui_web;
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_web_plugins/flutter_web_plugins.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -37,12 +38,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   /// The container div element for the camera view.
   late HTMLDivElement _divElement;
-
-  /// The flag that keeps track of whether a permission request is in progress.
-  ///
-  /// On the web, a permission request triggers a dialog, that in turn triggers a lifecycle change.
-  /// While the permission request is in progress, any attempts at (re)starting the camera should be ignored.
-  bool _permissionRequestInProgress = false;
 
   /// The stream controller for the media track settings stream.
   ///
@@ -87,6 +82,18 @@ class MobileScannerWeb extends MobileScannerPlatform {
       ..objectFit = 'cover'
       ..transformOrigin = 'center'
       ..pointerEvents = 'none';
+
+    // Do not show the media controls, as this is a preview element.
+    // Also prevent play/pause events from changing the media controls.
+    videoElement.controls = false;
+
+    videoElement.onplay = (JSAny _) {
+      videoElement.controls = false;
+    }.toJS;
+
+    videoElement.onpause = (JSAny _) {
+      videoElement.controls = false;
+    }.toJS;
 
     // Attach the video element to its parent container
     // and setup the PlatformView factory for this `textureId`.
@@ -136,6 +143,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 
     // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
+    // We might be able to add a workaround, using the label of the video track.
     // Facing mode is not supported by this track, do nothing.
     if (facingModes == null || facingModes.toDart.isEmpty) {
       return;
@@ -186,17 +194,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
     }
 
     try {
-      _permissionRequestInProgress = true;
-
       // Retrieving the media devices requests the camera permission.
       final MediaStream videoStream =
           await window.navigator.mediaDevices.getUserMedia(constraints).toDart;
 
-      _permissionRequestInProgress = false;
-
       return videoStream;
     } on DOMException catch (error, stackTrace) {
-      _permissionRequestInProgress = false;
       final String errorMessage = error.toString();
 
       MobileScannerErrorCode errorCode = MobileScannerErrorCode.genericError;
@@ -220,7 +223,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
-  Future<BarcodeCapture?> analyzeImage(String path) {
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) {
     throw UnsupportedError('analyzeImage() is not supported on the web.');
   }
 
@@ -256,11 +262,13 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    // If the permission request has not yet completed,
-    // the camera view is not ready yet.
-    // Prevent the permission popup from triggering a restart of the scanner.
-    if (_permissionRequestInProgress) {
-      throw PermissionRequestPendingException();
+    if (_barcodeReader != null) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'The scanner was already started.',
+        ),
+      );
     }
 
     // If the previous state is a pause, reset scanner.
@@ -273,16 +281,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
     await _barcodeReader?.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
     );
-
-    if (_barcodeReader?.isScanning ?? false) {
-      throw const MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
-        errorDetails: MobileScannerErrorDetails(
-          message:
-              'The scanner was already started. Call stop() before calling start() again.',
-        ),
-      );
-    }
 
     // Request camera permissions and prepare the video stream.
     final MediaStream videoStream = await _prepareVideoStream(
@@ -330,6 +328,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
           _barcodesController.add(barcode);
         },
+        onError: (Object error) {
+          if (_barcodesController.isClosed) {
+            return;
+          }
+
+          _barcodesController.addError(error);
+        },
+        // Errors are handled gracefully by forwarding them.
+        cancelOnError: false,
       );
 
       final bool hasTorch = await _barcodeReader?.hasTorch() ?? false;

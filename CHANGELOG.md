@@ -1,5 +1,77 @@
-## NEXT
-* This release requires Flutter 3.22.0 and Dart 3.4.
+## 6.0.2
+
+Bugs fixed:
+* Fixed a bug that prevented `analyzeImage` from actually accepting the configured formats.
+
+Improvements:
+* [iOS] Excluded the `arm64` architecture for Simulators, which is unsupported by MLKit 7.0.0.
+
+## 6.0.1
+
+Bugs fixed:
+* Fixed a bug that would cause onDetect to not handle errors.
+
+Improvements:
+* [iOS] Excluded the `armv7` architecture, which is unsupported by MLKit 7.0.0.
+* Added a new `onDetectError` error handler to the `MobileScanner` widget, for use with `onDetect`.
+
+## 6.0.0
+
+**BREAKING CHANGES:**
+
+* [iOS] iOS 15.5.0 is now the minimum supported iOS version.
+* [iOS] Updates MLKit to version 7.0.0.
+* [iOS] Updates the minimum supported XCode version to 15.3.0.
+
+Improvements:
+* [MacOS] Added the corners and size information to barcode results.
+* [MacOS] Added support for `analyzeImage`.
+* [MacOS] Added a Privacy Manifest.
+* [web] Added the size information to barcode results.
+* [web] Added the video output size information to barcode capture.
+* Added support for barcode formats to image analysis.
+* Updated the scanner to report any scanning errors that were encountered during processing.
+* Introduced a new getter `hasCameraPermission` for the `MobileScannerState`.
+* Fixed a bug in the lifecycle handling sample. Now instead of checking `isInitialized`,
+the sample recommends using `hasCameraPermission`, which also guards against camera permission errors.
+* Updated the behavior of `returnImage` to only determine if the camera output bytes should be sent.
+* Updated the behavior of `BarcodeCapture.size` to always be provided when available, regardless of `returnImage`.
+
+Bugs fixed:
+* Fixed a bug that would cause the scanner to emit an error when it was already started. Now it ignores any calls to start while it is starting.
+* [MacOS] Fixed a bug that prevented the `anaylzeImage()` sample from working properly.
+
+## 5.2.3
+
+Deprecations:
+* The `EncryptionType.none` constant has been deprecated, as its name was misleading. Use `EncryptionType.unknown` instead.
+
+Bugs fixed:
+* Fixed `EncryptionType` throwing on invalid `SAE` encryption type.
+* [web] Removed the `controls` attribute on the video preview.
+
+Improvements:
+* All enum types for barcode data (i.e. Wifi type or email type) now return `unknown` for unrecognized values.
+
+## 5.2.2
+
+Improvements:
+* [MacOS] Adds Swift Package Manager support.
+* [MacOS] Adds support for `returnImage`.
+* Added a new `size` property to `Barcode`, that denotes the bounding box of the barcode.
+
+Bugs fixed:
+* Fixed some documentation errors for the `size` and `image` of `BarcodeCapture`.
+* [iOS] Fixed a bug with `returnImage`.
+* [Android/iOS] Adjusted the raw barcode scan value to pass the raw event data, like on MacOS.
+
+## 5.2.1
+
+* Updates the `package:web` dependency to use a version range.
+
+## 5.2.0
+
+This release requires Flutter 3.22.0 and Dart 3.4.
 
 * [Android] Fixed a leak of the barcode scanner.
 * [Android] Fixed a crash when encountering invalid numbers for the scan window.
@@ -39,7 +111,7 @@ Improvements:
 This major release contains all the changes from the 5.0.0 beta releases, along with the following changes:
 
 Improvements:
-- [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
+* [Android] Remove the Kotlin Standard Library from the dependencies, as it is automatically included in Kotlin 1.4+
 
 ## 5.0.0-beta.3
 **BREAKING CHANGES:**

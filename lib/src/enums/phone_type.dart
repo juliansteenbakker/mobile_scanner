@@ -30,7 +30,7 @@ enum PhoneType {
       case 4:
         return PhoneType.mobile;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return PhoneType.unknown;
     }
   }
 

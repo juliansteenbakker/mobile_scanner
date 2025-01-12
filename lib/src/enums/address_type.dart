@@ -20,7 +20,7 @@ enum AddressType {
       case 2:
         return AddressType.home;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return AddressType.unknown;
     }
   }
 

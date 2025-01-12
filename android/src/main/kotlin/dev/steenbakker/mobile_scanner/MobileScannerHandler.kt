@@ -10,6 +10,7 @@ import androidx.camera.core.ExperimentalGetImage
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import dev.steenbakker.mobile_scanner.objects.BarcodeFormats
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
+import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -28,7 +29,7 @@ class MobileScannerHandler(
 
     private val analyzeImageErrorCallback: AnalyzerErrorCallback = {
         Handler(Looper.getMainLooper()).post {
-            analyzerResult?.error("MobileScanner", it, null)
+            analyzerResult?.error(MobileScannerErrorCodes.BARCODE_ERROR, it, null)
             analyzerResult = null
         }
     }
@@ -46,27 +47,21 @@ class MobileScannerHandler(
     private var analyzerResult: MethodChannel.Result? = null
 
     private val callback: MobileScannerCallback = { barcodes: List<Map<String, Any?>>, image: ByteArray?, width: Int?, height: Int? ->
-        if (image != null) {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes,
-                "image" to image,
-                "width" to width!!.toDouble(),
-                "height" to height!!.toDouble()
-            ))
-        } else {
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to barcodes
-            ))
-        }
+        barcodeHandler.publishEvent(mapOf(
+            "name" to "barcode",
+            "data" to barcodes,
+            // The image dimensions are always provided.
+            // The image bytes are only non-null when `returnImage` is true.
+            "image" to mapOf(
+                "bytes" to image,
+                "width" to width?.toDouble(),
+                "height" to height?.toDouble(),
+            )
+        ))
     }
 
     private val errorCallback: MobileScannerErrorCallback = {error: String ->
-        barcodeHandler.publishEvent(mapOf(
-            "name" to "error",
-            "data" to error,
-        ))
+        barcodeHandler.publishError(MobileScannerErrorCodes.BARCODE_ERROR, error, null)
     }
 
     private var methodChannel: MethodChannel? = null
@@ -104,21 +99,21 @@ class MobileScannerHandler(
 
     @ExperimentalGetImage
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
-        if (mobileScanner == null) {
-            result.error("MobileScanner", "Called ${call.method} before initializing.", null)
-            return
-        }
         when (call.method) {
             "state" -> result.success(permissions.hasCameraPermission(activity))
             "request" -> permissions.requestPermission(
                 activity,
                 addPermissionListener,
                 object: MobileScannerPermissions.ResultCallback {
-                    override fun onResult(errorCode: String?, errorDescription: String?) {
+                    override fun onResult(errorCode: String?) {
                         when(errorCode) {
                             null -> result.success(true)
-                            MobileScannerPermissions.CAMERA_ACCESS_DENIED -> result.success(false)
-                            else -> result.error(errorCode, errorDescription, null)
+                            MobileScannerErrorCodes.CAMERA_ACCESS_DENIED -> result.success(false)
+                            MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING -> result.error(
+                                MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING,
+                                MobileScannerErrorCodes.CAMERA_PERMISSIONS_REQUEST_ONGOING_MESSAGE, null)
+                            else -> result.error(
+                                MobileScannerErrorCodes.GENERIC_ERROR, MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE, null)
                         }
                     }
                 })
@@ -150,28 +145,16 @@ class MobileScannerHandler(
             null
         }
 
-        var barcodeScannerOptions: BarcodeScannerOptions? = null
-        if (formats != null) {
-            val formatsList: MutableList<Int> = mutableListOf()
-            for (formatValue in formats) {
-                formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
-            }
-            barcodeScannerOptions = if (formatsList.size == 1) {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
-                    .build()
-            } else {
-                BarcodeScannerOptions.Builder().setBarcodeFormats(
-                    formatsList.first(),
-                    *formatsList.subList(1, formatsList.size).toIntArray()
-                ).build()
-            }
-        }
+        val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats)
 
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
 
-        val detectionSpeed: DetectionSpeed = if (speed == 0) DetectionSpeed.NO_DUPLICATES
-        else if (speed ==1) DetectionSpeed.NORMAL else DetectionSpeed.UNRESTRICTED
+        val detectionSpeed: DetectionSpeed = when (speed) {
+            0 -> DetectionSpeed.NO_DUPLICATES
+            1 -> DetectionSpeed.NORMAL
+            else -> DetectionSpeed.UNRESTRICTED
+        }
 
         mobileScanner!!.start(
             barcodeScannerOptions,
@@ -196,29 +179,29 @@ class MobileScannerHandler(
                     when (it) {
                         is AlreadyStarted -> {
                             result.error(
-                                "MobileScanner",
-                                "Called start() while already started",
+                                MobileScannerErrorCodes.ALREADY_STARTED_ERROR,
+                                MobileScannerErrorCodes.ALREADY_STARTED_ERROR_MESSAGE,
                                 null
                             )
                         }
                         is CameraError -> {
                             result.error(
-                                "MobileScanner",
-                                "Error occurred when setting up camera!",
+                                MobileScannerErrorCodes.CAMERA_ERROR,
+                                MobileScannerErrorCodes.CAMERA_ERROR_MESSAGE,
                                 null
                             )
                         }
                         is NoCamera -> {
                             result.error(
-                                "MobileScanner",
-                                "No camera found or failed to open camera!",
+                                MobileScannerErrorCodes.NO_CAMERA_ERROR,
+                                MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
                                 null
                             )
                         }
                         else -> {
                             result.error(
-                                "MobileScanner",
-                                "Unknown error occurred.",
+                                MobileScannerErrorCodes.GENERIC_ERROR,
+                                MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 null
                             )
                         }
@@ -254,13 +237,13 @@ class MobileScannerHandler(
 
     private fun analyzeImage(call: MethodCall, result: MethodChannel.Result) {
         analyzerResult = result
-        val uri = Uri.fromFile(File(call.arguments.toString()))
 
-        // TODO: parse options from the method call
-        // See https://github.com/juliansteenbakker/mobile_scanner/issues/1069
+        val formats: List<Int>? = call.argument<List<Int>>("formats")
+        val filePath: String = call.argument<String>("filePath")!!
+
         mobileScanner!!.analyzeImage(
-            uri,
-            null,
+            Uri.fromFile(File(filePath)),
+            buildBarcodeScannerOptions(formats),
             analyzeImageSuccessCallback,
             analyzeImageErrorCallback)
     }
@@ -275,9 +258,11 @@ class MobileScannerHandler(
             mobileScanner!!.setScale(call.arguments as Double)
             result.success(null)
         } catch (e: ZoomWhenStopped) {
-            result.error("MobileScanner", "Called setScale() while stopped!", null)
+            result.error(
+                MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
         } catch (e: ZoomNotInRange) {
-            result.error("MobileScanner", "Scale should be within 0 and 1", null)
+            result.error(
+                MobileScannerErrorCodes.GENERIC_ERROR, MobileScannerErrorCodes.INVALID_ZOOM_SCALE_ERROR_MESSAGE, null)
         }
     }
 
@@ -286,7 +271,8 @@ class MobileScannerHandler(
             mobileScanner!!.resetScale()
             result.success(null)
         } catch (e: ZoomWhenStopped) {
-            result.error("MobileScanner", "Called resetScale() while stopped!", null)
+            result.error(
+                MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
         }
     }
 
@@ -294,5 +280,27 @@ class MobileScannerHandler(
         mobileScanner?.scanWindow = call.argument<List<Float>?>("rect")
 
         result.success(null)
+    }
+
+    private fun buildBarcodeScannerOptions(formats: List<Int>?): BarcodeScannerOptions? {
+        if (formats == null) {
+            return null
+        }
+
+        val formatsList: MutableList<Int> = mutableListOf()
+
+        for (formatValue in formats) {
+            formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
+        }
+
+        if (formatsList.size == 1) {
+            return BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
+                .build()
+        }
+
+        return BarcodeScannerOptions.Builder().setBarcodeFormats(
+            formatsList.first(),
+            *formatsList.subList(1, formatsList.size).toIntArray()
+        ).build()
     }
 }

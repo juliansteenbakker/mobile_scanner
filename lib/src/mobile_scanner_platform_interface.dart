@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -46,9 +47,15 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Analyze a local image file for barcodes.
   ///
   /// The [path] is the path to the file on disk.
+  /// The [formats] specify the barcode formats that should be detected.
+  ///
+  /// If [formats] is empty, all barcode formats will be detected.
   ///
   /// Returns the barcodes that were found in the image.
-  Future<BarcodeCapture?> analyzeImage(String path) {
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) {
     throw UnimplementedError('analyzeImage() has not been implemented.');
   }
 

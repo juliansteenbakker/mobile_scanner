@@ -22,11 +22,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     /// The selected camera
     var device: AVCaptureDevice!
 
-    /// Barcode scanner for results
-    var scanner = BarcodeScanner.barcodeScanner()
-
-    /// Return image buffer with the Barcode event
-    var returnImage: Bool = false
+    /// The long lived barcode scanner for scanning barcodes from a camera preview.
+    var scanner: BarcodeScanner? = nil
 
     /// Default position of camera
     var videoPosition: AVCaptureDevice.Position = AVCaptureDevice.Position.back
@@ -60,11 +57,11 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     private var imagesCurrentlyBeingProcessed = false
     
     public var timeoutSeconds: Double = 0
-    
+
     private var stopped: Bool {
         return device == nil || captureSession == nil
     }
-    
+
     private var paused: Bool {
         return stopped && textureId != nil
     }
@@ -134,9 +131,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-        
+
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
-            print("Failed to get image buffer from sample buffer.")
             return
         }
         latestBuffer = imageBuffer
@@ -159,7 +155,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                 position: videoPosition
             )
 
-            scanner.process(image) { [self] barcodes, error in
+            scanner?.process(image) { [self] barcodes, error in
                 imagesCurrentlyBeingProcessed = false
                 
                 if (detectionSpeed == DetectionSpeed.noDuplicates) {
@@ -169,7 +165,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                     
                     if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
                         return
-                    } else if (newScannedBarcodes?.isEmpty == false) {
+                    }
+
+                    if (newScannedBarcodes?.isEmpty == false) {
                         barcodesString = newScannedBarcodes
                     }
                 }
@@ -180,7 +178,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Start scanning for barcodes
-    func start(barcodeScannerOptions: BarcodeScannerOptions?, returnImage: Bool, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
+    func start(barcodeScannerOptions: BarcodeScannerOptions?, cameraPosition: AVCaptureDevice.Position, torch: Bool, detectionSpeed: DetectionSpeed, completion: @escaping (MobileScannerStartParameters) -> ()) throws {
         self.detectionSpeed = detectionSpeed
         if (device != nil || captureSession != nil) {
             throw MobileScannerError.alreadyStarted
@@ -303,7 +301,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             completion(MobileScannerStartParameters())
         }
     }
-    
+
     /// Pause scanning for barcodes
     func pause() throws {
         if (paused) {
@@ -322,13 +320,13 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         releaseCamera()
         releaseTexture()
     }
-    
+
     private func releaseCamera() {
-        
+
         guard let captureSession = captureSession else {
             return
         }
-        
+
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -343,10 +341,11 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         self.captureSession = nil
         device = nil
     }
-    
+
     private func releaseTexture() {
         registry?.unregisterTexture(textureId)
         textureId = nil
+        scanner = nil
     }
 
     /// Toggle the torch.
@@ -464,7 +463,8 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Analyze a single image
-    func analyzeImage(image: UIImage, position: AVCaptureDevice.Position, callback: @escaping BarcodeScanningCallback) {
+    func analyzeImage(image: UIImage, position: AVCaptureDevice.Position,
+                      barcodeScannerOptions: BarcodeScannerOptions?, callback: @escaping BarcodeScanningCallback) {
         let image = VisionImage(image: image)
         image.orientation = imageOrientation(
             deviceOrientation: UIDevice.current.orientation,
@@ -472,21 +472,12 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             position: position
         )
 
+        let scanner: BarcodeScanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
+
         scanner.process(image, completion: callback)
     }
 
     var barcodesString: Array<String?>?
-
-    //    /// Convert image buffer to jpeg
-    //    private func ciImageToJpeg(ciImage: CIImage) -> Data {
-    //
-    //        // let ciImage = CIImage(cvPixelBuffer: latestBuffer)
-    //        let context:CIContext = CIContext.init(options: nil)
-    //        let cgImage:CGImage = context.createCGImage(ciImage, from: ciImage.extent)!
-    //        let uiImage:UIImage = UIImage(cgImage: cgImage, scale: 1, orientation: UIImage.Orientation.up)
-    //
-    //        return uiImage.jpegData(compressionQuality: 0.8)!
-    //    }
 
     /// Rotates images accordingly
     func imageOrientation(

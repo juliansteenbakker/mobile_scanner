@@ -5,7 +5,7 @@ import 'package:mobile_scanner/src/enums/encryption_type.dart';
 class WiFi {
   /// Construct a new [WiFi] instance.
   const WiFi({
-    this.encryptionType = EncryptionType.none,
+    this.encryptionType = EncryptionType.unknown,
     this.ssid,
     this.password,
   });

@@ -39,16 +39,16 @@ class _BarcodeScannerWithScanWindowState
             final scannedBarcode = barcodeCapture.barcodes.first;
 
             // No barcode corners, or size, or no camera preview size.
-            if (scannedBarcode.corners.isEmpty ||
-                value.size.isEmpty ||
-                barcodeCapture.size.isEmpty) {
+            if (value.size.isEmpty ||
+                scannedBarcode.size.isEmpty ||
+                scannedBarcode.corners.isEmpty) {
               return const SizedBox();
             }
 
             return CustomPaint(
               painter: BarcodeOverlay(
                 barcodeCorners: scannedBarcode.corners,
-                barcodeSize: barcodeCapture.size,
+                barcodeSize: scannedBarcode.size,
                 boxFit: BoxFit.contain,
                 cameraPreviewSize: value.size,
               ),
@@ -131,15 +131,15 @@ class ScannerOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // TODO: use `Offset.zero & size` instead of Rect.largest
     // we need to pass the size to the custom paint widget
-    final backgroundPath = Path()..addRect(Rect.largest);
+    final backgroundPath = Path()
+      ..addRect(Rect.fromLTWH(0, 0, size.width, size.height));
     final cutoutPath = Path()..addRect(scanWindow);
 
     final backgroundPaint = Paint()
       ..color = Colors.black.withOpacity(0.5)
       ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.dstOut;
+      ..blendMode = BlendMode.dstOver;
 
     final backgroundWithCutout = Path.combine(
       PathOperation.difference,

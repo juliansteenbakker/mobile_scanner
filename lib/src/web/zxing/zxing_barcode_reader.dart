@@ -2,7 +2,9 @@ import 'dart:async';
 import 'dart:js_interop';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
@@ -10,11 +12,17 @@ import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
+import 'package:mobile_scanner/src/web/zxing/zxing_exception.dart';
 import 'package:web/web.dart' as web;
 
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBarcodeReader();
+
+  /// ZXing reports an error with this message if the code could not be detected.
+  @visibleForTesting
+  static const String kNoCodeDetectedErrorMessage =
+      'No MultiFormat Readers were able to detect the code.';
 
   /// The listener for media track settings changes.
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
@@ -98,16 +106,25 @@ final class ZXingBarcodeReader extends BarcodeReader {
       _reader?.decodeContinuously.callAsFunction(
         _reader,
         _reader?.videoElement,
-        (Result? result, JSAny? error) {
-          if (controller.isClosed || result == null) {
+        (Result? result, ZXingException? error) {
+          if (controller.isClosed) {
             return;
           }
 
-          controller.add(
-            BarcodeCapture(
-              barcodes: [result.toBarcode],
-            ),
-          );
+          // Skip the event if no code was detected.
+          if (error != null && error.message != kNoCodeDetectedErrorMessage) {
+            controller.addError(MobileScannerBarcodeException(error.message));
+            return;
+          }
+
+          if (result != null) {
+            controller.add(
+              BarcodeCapture(
+                barcodes: [result.toBarcode],
+                size: videoSize,
+              ),
+            );
+          }
         }.toJS,
       );
     };
@@ -138,11 +155,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
     required web.MediaStream videoStream,
   }) async {
     final int detectionTimeoutMs = options.detectionTimeoutMs;
-    final List<BarcodeFormat> formats = options.formats;
-
-    if (formats.contains(BarcodeFormat.unknown)) {
-      formats.removeWhere((element) => element == BarcodeFormat.unknown);
-    }
+    final List<BarcodeFormat> formats = [
+      for (final BarcodeFormat format in options.formats)
+        if (format != BarcodeFormat.unknown) format,
+    ];
 
     _reader = ZXingBrowserMultiFormatReader(
       _createReaderHints(formats),

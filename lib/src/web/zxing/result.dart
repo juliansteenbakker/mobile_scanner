@@ -75,13 +75,33 @@ extension type Result(JSObject _) implements JSObject {
 
   /// Convert this result to a [Barcode].
   Barcode get toBarcode {
+    final List<Offset> corners = resultPoints;
+
     return Barcode(
-      corners: resultPoints,
+      corners: corners,
       format: barcodeFormat,
       displayValue: text,
       rawBytes: rawBytes,
       rawValue: text,
+      size: _computeSize(corners),
       type: BarcodeType.text,
     );
+  }
+
+  Size _computeSize(List<Offset> points) {
+    if (points.length != 4) {
+      return Size.zero;
+    }
+
+    final Iterable<double> xCoords = points.map((p) => p.dx);
+    final Iterable<double> yCoords = points.map((p) => p.dy);
+
+    // Find the minimum and maximum x and y coordinates.
+    final double xMin = xCoords.reduce((a, b) => a < b ? a : b);
+    final double xMax = xCoords.reduce((a, b) => a > b ? a : b);
+    final double yMin = yCoords.reduce((a, b) => a < b ? a : b);
+    final double yMax = yCoords.reduce((a, b) => a > b ? a : b);
+
+    return Size(xMax - xMin, yMax - yMin);
   }
 }

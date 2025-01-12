@@ -70,7 +70,7 @@ enum BarcodeType {
       case 12:
         return BarcodeType.driverLicense;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return BarcodeType.unknown;
     }
   }
 

@@ -16,6 +16,14 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
+  /// The name of the barcode event that is sent when a barcode is scanned.
+  @visibleForTesting
+  static const String kBarcodeEventName = 'barcode';
+
+  /// The name of the error event that is sent when a barcode scan error occurs.
+  @visibleForTesting
+  static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -55,31 +63,19 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     final List<Map<Object?, Object?>> barcodes =
         data.cast<Map<Object?, Object?>>();
 
-    if (defaultTargetPlatform == TargetPlatform.macOS) {
+    if (defaultTargetPlatform == TargetPlatform.android ||
+        defaultTargetPlatform == TargetPlatform.iOS ||
+        defaultTargetPlatform == TargetPlatform.macOS) {
+      final Map<Object?, Object?>? imageData =
+          event['image'] as Map<Object?, Object?>?;
+      final Uint8List? image = imageData?['bytes'] as Uint8List?;
+      final double? width = imageData?['width'] as double?;
+      final double? height = imageData?['height'] as double?;
+
       return BarcodeCapture(
         raw: event,
-        barcodes: barcodes
-            .map(
-              (barcode) => Barcode(
-                rawValue: barcode['payload'] as String?,
-                format: BarcodeFormat.fromRawValue(
-                  barcode['symbology'] as int? ?? -1,
-                ),
-              ),
-            )
-            .toList(),
-      );
-    }
-
-    if (defaultTargetPlatform == TargetPlatform.android ||
-        defaultTargetPlatform == TargetPlatform.iOS) {
-      final double? width = event['width'] as double?;
-      final double? height = event['height'] as double?;
-
-      return BarcodeCapture(
-        raw: data,
         barcodes: barcodes.map(Barcode.fromNative).toList(),
-        image: event['image'] as Uint8List?,
+        image: image,
         size: width == null || height == null ? Size.zero : Size(width, height),
       );
     }
@@ -90,6 +86,19 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         message: 'Only Android, iOS and macOS are supported.',
       ),
     );
+  }
+
+  /// Parse a [MobileScannerBarcodeException] from the given [error] and [stackTrace], and throw it.
+  ///
+  /// If the error is not a [PlatformException],
+  /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
+  Never _parseBarcodeError(Object error, StackTrace stackTrace) {
+    if (error case PlatformException(:final String code, :final String? message)
+        when code == kBarcodeErrorEventName) {
+      throw MobileScannerBarcodeException(message);
+    }
+
+    Error.throwWithStackTrace(error, stackTrace);
   }
 
   /// Request permission to access the camera.
@@ -134,9 +143,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Stream<BarcodeCapture?> get barcodesStream {
+    // Handle incoming barcode events.
+    // The error events are transformed to `MobileScannerBarcodeException` where possible.
     return eventsStream
-        .where((event) => event['name'] == 'barcode')
-        .map((event) => _parseBarcode(event));
+        .where((e) => e['name'] == kBarcodeEventName)
+        .map((event) => _parseBarcode(event))
+        .handleError(_parseBarcodeError);
   }
 
   @override
@@ -154,14 +166,34 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<BarcodeCapture?> analyzeImage(String path) async {
-    final Map<String, Object?>? result =
-        await methodChannel.invokeMapMethod<String, Object?>(
-      'analyzeImage',
-      path,
-    );
+  Future<BarcodeCapture?> analyzeImage(
+    String path, {
+    List<BarcodeFormat> formats = const <BarcodeFormat>[],
+  }) async {
+    try {
+      final Map<Object?, Object?>? result =
+          await methodChannel.invokeMapMethod<Object?, Object?>(
+        'analyzeImage',
+        {
+          'filePath': path,
+          'formats': formats.isEmpty
+              ? null
+              : [
+                  for (final BarcodeFormat format in formats)
+                    if (format != BarcodeFormat.unknown) format.rawValue,
+                ],
+        },
+      );
 
-    return _parseBarcode(result);
+      return _parseBarcode(result);
+    } on PlatformException catch (error) {
+      // Handle any errors from analyze image requests.
+      if (error.code == kBarcodeErrorEventName) {
+        throw MobileScannerBarcodeException(error.message);
+      }
+
+      return null;
+    }
   }
 
   @override
@@ -189,8 +221,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message:
-              'The scanner was already started. Call stop() before calling start() again.',
+          message: 'The scanner was already started.',
         ),
       );
     }
@@ -206,7 +237,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     } on PlatformException catch (error) {
       throw MobileScannerException(
-        errorCode: MobileScannerErrorCode.genericError,
+        errorCode: MobileScannerErrorCode.fromPlatformException(error),
         errorDetails: MobileScannerErrorDetails(
           code: error.code,
           details: error.details as Object?,
@@ -242,17 +273,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       startResult['currentTorchState'] as int? ?? -1,
     );
 
-    final Map<Object?, Object?>? sizeInfo =
-        startResult['size'] as Map<Object?, Object?>?;
-    final double? width = sizeInfo?['width'] as double?;
-    final double? height = sizeInfo?['height'] as double?;
-
     final Size size;
 
-    if (width == null || height == null) {
-      size = Size.zero;
-    } else {
+    if (startResult['size']
+        case {'width': final double width, 'height': final double height}) {
       size = Size(width, height);
+    } else {
+      size = Size.zero;
     }
 
     _pausing = false;

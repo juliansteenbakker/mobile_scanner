@@ -1,7 +1,7 @@
 /// Wifi encryption type constants.
 enum EncryptionType {
   /// Unknown encryption type.
-  none(0),
+  unknown(0),
 
   /// Not encrypted.
   open(1),
@@ -14,10 +14,15 @@ enum EncryptionType {
 
   const EncryptionType(this.rawValue);
 
+  @Deprecated(
+    'EncryptionType.none is deprecated. Use EncryptionType.unknown instead.',
+  )
+  static const EncryptionType none = EncryptionType.unknown;
+
   factory EncryptionType.fromRawValue(int value) {
     switch (value) {
       case 0:
-        return EncryptionType.none;
+        return EncryptionType.unknown;
       case 1:
         return EncryptionType.open;
       case 2:
@@ -25,7 +30,7 @@ enum EncryptionType {
       case 3:
         return EncryptionType.wep;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return EncryptionType.unknown;
     }
   }
 
