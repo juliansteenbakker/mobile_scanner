@@ -455,6 +455,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         releaseCamera()
+
+        result(nil)
     }
 
     func stop(_ result: FlutterResult) {
