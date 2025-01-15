@@ -183,13 +183,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
-  void _stop() {
+  /// Returns false if stop is called but not necessary, otherwise true is returned.
+  bool _stop() {
     // Do nothing if not initialized or already stopped.
     // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
     // due to the permission popup gaining focus.
     // This would 'stop' the camera while it is not ready yet.
     if (!value.isInitialized || !value.isRunning || _isDisposed) {
-      return;
+      return false;
     }
 
     _disposeListeners();
@@ -205,6 +206,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           ? TorchState.unavailable
           : TorchState.off,
     );
+    return true;
   }
 
   /// Analyze an image file.
@@ -360,8 +362,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    _stop();
-    await MobileScannerPlatform.instance.stop();
+    if (_stop()) {
+      await MobileScannerPlatform.instance.stop();
+    }
   }
 
   /// Pause the camera.
@@ -371,8 +374,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the camera is already paused or stopped.
   Future<void> pause() async {
-    _stop();
-    await MobileScannerPlatform.instance.pause();
+    if (_stop()) {
+      await MobileScannerPlatform.instance.pause();
+    }
   }
 
   /// Switch between the front and back camera.
