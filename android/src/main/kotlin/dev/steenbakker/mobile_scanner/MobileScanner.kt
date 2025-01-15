@@ -49,6 +49,7 @@ class MobileScanner(
     /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
     private var scanner: BarcodeScanner? = null
@@ -61,6 +62,7 @@ class MobileScanner(
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
+    private var isPaused = false
 
     companion object {
         /**
@@ -250,7 +252,22 @@ class MobileScanner(
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
 
-        if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
+        if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
+
+           // TODO: resume here for seamless transition
+//            if (isPaused) {
+//                resumeCamera()
+//                mobileScannerStartedCallback(
+//                    MobileScannerStartParameters(
+//                        if (portrait) width else height,
+//                        if (portrait) height else width,
+//                        currentTorchState,
+//                        textureEntry!!.id(),
+//                        numberOfCameras ?: 0
+//                    )
+//                )
+//                return
+//            }
             mobileScannerErrorCallback(AlreadyStarted())
 
             return
@@ -353,6 +370,7 @@ class MobileScanner(
                     preview,
                     analysis
                 )
+                cameraSelector = cameraPosition
             } catch(exception: Exception) {
                 mobileScannerErrorCallback(NoCamera())
 
@@ -410,25 +428,39 @@ class MobileScanner(
      * Pause barcode scanning.
      */
     fun pause() {
-        if (isPaused()) {
+        if (isPaused) {
             throw AlreadyPaused()
         } else if (isStopped()) {
             throw AlreadyStopped()
         }
 
-        releaseCamera()
+        pauseCamera()
     }
 
     /**
      * Stop barcode scanning.
      */
     fun stop() {
-        if (!isPaused() && isStopped()) {
+        if (!isPaused && isStopped()) {
             throw AlreadyStopped()
         }
 
         releaseCamera()
-        releaseTexture()
+    }
+
+    private fun pauseCamera() {
+        // Pause camera by unbinding all use cases
+        cameraProvider?.unbindAll()
+        isPaused = true
+    }
+
+    private fun resumeCamera() {
+        // Resume camera by rebinding use cases
+        cameraProvider?.let { provider ->
+            val owner = activity as LifecycleOwner
+            cameraSelector?.let { provider.bindToLifecycle(owner, it, preview) }
+        }
+        isPaused = false
     }
 
     private fun releaseCamera() {
@@ -446,11 +478,13 @@ class MobileScanner(
             it.zoomState.removeObservers(owner)
             it.cameraState.removeObservers(owner)
         }
+        textureEntry?.release()
+        textureEntry = null
+
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
 
-        // Release the texture for the preview.
         textureEntry?.release()
         textureEntry = null
 
@@ -460,13 +494,7 @@ class MobileScanner(
         lastScanned = null
     }
 
-    private fun releaseTexture() {
-        textureEntry?.release()
-        textureEntry = null
-    }
-
     private fun isStopped() = camera == null && preview == null
-    private fun isPaused() = isStopped() && textureEntry != null
 
     /**
      * Toggles the flash light on or off.
