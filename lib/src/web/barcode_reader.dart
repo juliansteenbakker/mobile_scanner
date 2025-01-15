@@ -20,7 +20,7 @@ abstract class BarcodeReader {
   /// Pause the barcode reader.
   void pause() => throw UnimplementedError('pause() has not been implemented.');
 
-  /// Pause the barcode reader.
+  /// Resume the barcode reader.
   Future<void> resume() =>
       throw UnimplementedError('resume() has not been implemented.');
 
