@@ -263,6 +263,16 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (_barcodeReader != null) {
+      if (_barcodeReader!.paused ?? false) {
+        await _barcodeReader?.resume();
+        return MobileScannerViewAttributes(
+          // The torch of a media stream is not available for video tracks.
+          // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+          currentTorchMode: TorchState.unavailable,
+          size: _barcodeReader?.videoSize ?? Size.zero,
+        );
+      }
+
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
@@ -365,7 +375,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Future<void> pause() async {
     _barcodesSubscription?.pause();
-    await _barcodeReader?.pause();
+    _barcodeReader?.pause();
   }
 
   @override

@@ -169,8 +169,15 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  Future<void> pause() async {
-    _reader?.videoElement?.pause();
+  bool? get paused => _reader?.videoElement?.paused;
+
+  @override
+  void pause() => _reader?.videoElement?.pause();
+
+  @override
+  Future<void> resume() async {
+    final result = _reader?.videoElement?.play();
+    await result?.toDart;
   }
 
   @override
