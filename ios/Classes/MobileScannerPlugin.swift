@@ -105,6 +105,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
             AVCaptureDevice.requestAccess(for: .video, completionHandler: { result($0) })
         case "start":
             start(call, result)
+        case "pause":
+            pause(result)
         case "stop":
             stop(result)
         case "toggleTorch":
@@ -168,6 +170,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
                                 message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
                                 details: nil))
         }
+    }
+    
+    /// Stops the mobileScanner without closing the texture.
+    private func pause(_ result: @escaping FlutterResult) {
+        do {
+            try mobileScanner.pause()
+        } catch {}
+        result(nil)
     }
 
     /// Sets the zoomScale.

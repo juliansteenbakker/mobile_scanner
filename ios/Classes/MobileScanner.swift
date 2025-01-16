@@ -64,6 +64,14 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     public var timeoutSeconds: Double = 0
 
+    private var stopped: Bool {
+        return device == nil || captureSession == nil
+    }
+
+    private var paused: Bool {
+        return stopped && textureId != nil
+    }
+
     init(registry: FlutterTextureRegistry?, mobileScannerCallback: @escaping MobileScannerCallback, torchModeChangeCallback: @escaping TorchModeChangeCallback, zoomScaleChangeCallback: @escaping ZoomScaleChangeCallback) {
         self.registry = registry
         self.mobileScannerCallback = mobileScannerCallback
@@ -137,6 +145,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     
     /// Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+
         guard let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else {
             return
         }
@@ -180,7 +189,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
                     if (error == nil && barcodesString != nil && newScannedBarcodes != nil && barcodesString!.elementsEqual(newScannedBarcodes!)) {
                         return
                     }
-                    
+
                     if (newScannedBarcodes?.isEmpty == false) {
                         barcodesString = newScannedBarcodes
                     }
@@ -202,7 +211,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         barcodesString = nil
         scanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
         captureSession = AVCaptureSession()
-        textureId = registry?.register(self)
+        textureId = textureId ?? registry?.register(self)
 
         // Open the camera device
         device = getDefaultCameraDevice(position: cameraPosition)
@@ -317,27 +326,49 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         }
     }
 
-    /// Stop scanning for barcodes
-    func stop() throws {
-        if (device == nil || captureSession == nil) {
+    /// Pause scanning for barcodes
+    func pause() throws {
+        if (paused) {
+            throw MobileScannerError.alreadyPaused
+        } else if (stopped) {
             throw MobileScannerError.alreadyStopped
         }
-        
-        captureSession!.stopRunning()
-        for input in captureSession!.inputs {
-            captureSession!.removeInput(input)
+        releaseCamera()
+    }
+
+    /// Stop scanning for barcodes
+    func stop() throws {
+        if (!paused && stopped) {
+            throw MobileScannerError.alreadyStopped
         }
-        for output in captureSession!.outputs {
-            captureSession!.removeOutput(output)
+        releaseCamera()
+        releaseTexture()
+    }
+
+    private func releaseCamera() {
+
+        guard let captureSession = captureSession else {
+            return
+        }
+
+        captureSession.stopRunning()
+        for input in captureSession.inputs {
+            captureSession.removeInput(input)
+        }
+        for output in captureSession.outputs {
+            captureSession.removeOutput(output)
         }
 
         latestBuffer = nil
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+        self.captureSession = nil
+        device = nil
+    }
+
+    private func releaseTexture() {
         registry?.unregisterTexture(textureId)
         textureId = nil
-        captureSession = nil
-        device = nil
         scanner = nil
     }
 
@@ -474,7 +505,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
             defaultOrientation: .portrait,
             position: position
         )
-        
+
         let scanner: BarcodeScanner = barcodeScannerOptions != nil ? BarcodeScanner.barcodeScanner(options: barcodeScannerOptions!) : BarcodeScanner.barcodeScanner()
 
         scanner.process(visionImage, completion: callback)

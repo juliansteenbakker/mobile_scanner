@@ -97,6 +97,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('stop() has not been implemented.');
   }
 
+  /// Pause the camera.
+  Future<void> pause() {
+    throw UnimplementedError('pause() has not been implemented.');
+  }
+
   /// Toggle the torch on the active camera on or off.
   Future<void> toggleTorch() {
     throw UnimplementedError('toggleTorch() has not been implemented.');

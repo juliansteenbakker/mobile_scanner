@@ -105,6 +105,7 @@ class _BarcodeScannerWithControllerState
                 children: [
                   ToggleFlashlightButton(controller: controller),
                   StartStopMobileScannerButton(controller: controller),
+                  PauseMobileScannerButton(controller: controller),
                   Expanded(child: Center(child: _buildBarcode(_barcode))),
                   SwitchCameraButton(controller: controller),
                   AnalyzeImageFromGalleryButton(controller: controller),

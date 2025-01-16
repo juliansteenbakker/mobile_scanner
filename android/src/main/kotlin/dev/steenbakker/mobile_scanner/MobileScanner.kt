@@ -51,6 +51,7 @@ class MobileScanner(
     /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
     private var scanner: BarcodeScanner? = null
@@ -65,6 +66,7 @@ class MobileScanner(
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
+    private var isPaused = false
 
     companion object {
         /**
@@ -266,7 +268,22 @@ class MobileScanner(
         this.returnImage = returnImage
         this.shouldConsiderInvertedImages = shouldConsiderInvertedImages
 
-        if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
+        if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
+
+           // TODO: resume here for seamless transition
+//            if (isPaused) {
+//                resumeCamera()
+//                mobileScannerStartedCallback(
+//                    MobileScannerStartParameters(
+//                        if (portrait) width else height,
+//                        if (portrait) height else width,
+//                        currentTorchState,
+//                        textureEntry!!.id(),
+//                        numberOfCameras ?: 0
+//                    )
+//                )
+//                return
+//            }
             mobileScannerErrorCallback(AlreadyStarted())
 
             return
@@ -289,7 +306,7 @@ class MobileScanner(
             }
 
             cameraProvider?.unbindAll()
-            textureEntry = textureRegistry.createSurfaceTexture()
+            textureEntry = textureEntry ?: textureRegistry.createSurfaceTexture()
 
             // Preview
             val surfaceProvider = Preview.SurfaceProvider { request ->
@@ -369,6 +386,7 @@ class MobileScanner(
                     preview,
                     analysis
                 )
+                cameraSelector = cameraPosition
             } catch(exception: Exception) {
                 mobileScannerErrorCallback(NoCamera())
 
@@ -421,14 +439,47 @@ class MobileScanner(
         }, executor)
 
     }
+
+    /**
+     * Pause barcode scanning.
+     */
+    fun pause() {
+        if (isPaused) {
+            throw AlreadyPaused()
+        } else if (isStopped()) {
+            throw AlreadyStopped()
+        }
+
+        pauseCamera()
+    }
+
     /**
      * Stop barcode scanning.
      */
     fun stop() {
-        if (isStopped()) {
+        if (!isPaused && isStopped()) {
             throw AlreadyStopped()
         }
 
+        releaseCamera()
+    }
+
+    private fun pauseCamera() {
+        // Pause camera by unbinding all use cases
+        cameraProvider?.unbindAll()
+        isPaused = true
+    }
+
+    private fun resumeCamera() {
+        // Resume camera by rebinding use cases
+        cameraProvider?.let { provider ->
+            val owner = activity as LifecycleOwner
+            cameraSelector?.let { provider.bindToLifecycle(owner, it, preview) }
+        }
+        isPaused = false
+    }
+
+    private fun releaseCamera() {
         if (displayListener != null) {
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
@@ -443,14 +494,11 @@ class MobileScanner(
             it.zoomState.removeObservers(owner)
             it.cameraState.removeObservers(owner)
         }
+
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
-        cameraProvider = null
-        camera = null
-        preview = null
 
-        // Release the texture for the preview.
         textureEntry?.release()
         textureEntry = null
 
