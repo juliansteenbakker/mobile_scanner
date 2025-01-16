@@ -52,6 +52,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   int? _textureId;
+  bool _pausing = false;
 
   /// Parse a [BarcodeCapture] from the given [event].
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
@@ -226,7 +227,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    if (_textureId != null) {
+    if (!_pausing && _textureId != null) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
@@ -291,6 +292,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       size = Size.zero;
     }
 
+    _pausing = false;
+
     return MobileScannerViewAttributes(
       currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
@@ -305,8 +308,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     _textureId = null;
+    _pausing = false;
 
     await methodChannel.invokeMethod<void>('stop');
+  }
+
+  @override
+  Future<void> pause() async {
+    if (_pausing) {
+      return;
+    }
+
+    _pausing = true;
+
+    await methodChannel.invokeMethod<void>('pause');
   }
 
   @override

@@ -118,6 +118,7 @@ class MobileScannerHandler(
                     }
                 })
             "start" -> start(call, result)
+            "pause" -> pause(result)
             "stop" -> stop(result)
             "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
@@ -209,6 +210,18 @@ class MobileScannerHandler(
             timeout.toLong(),
             cameraResolution
         )
+    }
+
+    private fun pause(result: MethodChannel.Result) {
+        try {
+            mobileScanner!!.pause()
+            result.success(null)
+        } catch (e: Exception) {
+            when (e) {
+                is AlreadyPaused, is AlreadyStopped -> result.success(null)
+                else -> throw e
+            }
+        }
     }
 
     private fun stop(result: MethodChannel.Result) {

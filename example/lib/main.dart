@@ -7,6 +7,7 @@ import 'package:mobile_scanner_example/barcode_scanner_simple.dart';
 import 'package:mobile_scanner_example/barcode_scanner_window.dart';
 import 'package:mobile_scanner_example/barcode_scanner_zoom.dart';
 import 'package:mobile_scanner_example/mobile_scanner_overlay.dart';
+import 'package:mobile_scanner_example/picklist/picklist_result.dart';
 
 void main() {
   runApp(
@@ -84,6 +85,11 @@ class MyHome extends StatelessWidget {
               context,
               'Analyze image from file',
               const BarcodeScannerAnalyzeImage(),
+            ),
+            _buildItem(
+              context,
+              'Picklist mode',
+              const PicklistResult(),
             ),
           ],
         ),
