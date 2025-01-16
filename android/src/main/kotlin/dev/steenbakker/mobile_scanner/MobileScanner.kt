@@ -478,8 +478,6 @@ class MobileScanner(
             it.zoomState.removeObservers(owner)
             it.cameraState.removeObservers(owner)
         }
-        textureEntry?.release()
-        textureEntry = null
 
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
