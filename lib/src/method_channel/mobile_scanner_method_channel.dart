@@ -27,7 +27,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   /// The name of the error event that is sent when an operation is not supported.
   @visibleForTesting
-  static const String kUnsupportdOperationErrorEventName = 'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
+  static const String kUnsupportdOperationErrorEventName =
+      'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -45,7 +46,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
-    _eventsStream ??= eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
+    _eventsStream ??=
+        eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
 
     return _eventsStream!;
   }
@@ -69,12 +71,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return null;
     }
 
-    final List<Map<Object?, Object?>> barcodes = data.cast<Map<Object?, Object?>>();
+    final List<Map<Object?, Object?>> barcodes =
+        data.cast<Map<Object?, Object?>>();
 
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS ||
         defaultTargetPlatform == TargetPlatform.macOS) {
-      final Map<Object?, Object?>? imageData = event['image'] as Map<Object?, Object?>?;
+      final Map<Object?, Object?>? imageData =
+          event['image'] as Map<Object?, Object?>?;
       final Uint8List? image = imageData?['bytes'] as Uint8List?;
       final double? width = imageData?['width'] as double?;
       final double? height = imageData?['height'] as double?;
@@ -100,7 +104,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// If the error is not a [PlatformException],
   /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
   Never _parseBarcodeError(Object error, StackTrace stackTrace) {
-    if (error case PlatformException(:final String code, :final String? message) when code == kBarcodeErrorEventName) {
+    if (error case PlatformException(:final String code, :final String? message)
+        when code == kBarcodeErrorEventName) {
       throw MobileScannerBarcodeException(message);
     }
 
@@ -112,7 +117,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// Throws a [MobileScannerException] if the permission is not granted.
   Future<void> _requestCameraPermission() async {
     try {
-      final MobileScannerAuthorizationState authorizationState = MobileScannerAuthorizationState.fromRawValue(
+      final MobileScannerAuthorizationState authorizationState =
+          MobileScannerAuthorizationState.fromRawValue(
         await methodChannel.invokeMethod<int>('state') ?? 0,
       );
 
@@ -124,7 +130,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         // So if the permission was denied, request it again.
         case MobileScannerAuthorizationState.denied:
         case MobileScannerAuthorizationState.undetermined:
-          final bool permissionGranted = await methodChannel.invokeMethod<bool>('request') ?? false;
+          final bool permissionGranted =
+              await methodChannel.invokeMethod<bool>('request') ?? false;
 
           if (!permissionGranted) {
             throw const MobileScannerException(
@@ -175,7 +182,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
   }) async {
     try {
-      final Map<Object?, Object?>? result = await methodChannel.invokeMapMethod<Object?, Object?>(
+      final Map<Object?, Object?>? result =
+          await methodChannel.invokeMapMethod<Object?, Object?>(
         'analyzeImage',
         {
           'filePath': path,
@@ -211,7 +219,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Widget texture = Texture(textureId: _textureId!);
 
-    if (_surfaceProducerDelegate case final AndroidSurfaceProducerDelegate delegate) {
+    if (_surfaceProducerDelegate
+        case final AndroidSurfaceProducerDelegate delegate) {
       return delegate.applyRotationCorrection(texture);
     }
 
@@ -282,7 +291,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = textureId;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
-      _surfaceProducerDelegate = AndroidSurfaceProducerDelegate.fromConfiguration(
+      _surfaceProducerDelegate =
+          AndroidSurfaceProducerDelegate.fromConfiguration(
         startResult,
         startOptions.cameraDirection,
       );
@@ -295,7 +305,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Size size;
 
-    if (startResult['size'] case {'width': final double width, 'height': final double height}) {
+    if (startResult['size']
+        case {'width': final double width, 'height': final double height}) {
       size = Size(width, height);
     } else {
       size = Size.zero;
