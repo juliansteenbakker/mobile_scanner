@@ -34,30 +34,10 @@ class AndroidSurfaceProducerDelegate {
           'naturalDeviceOrientation': final String naturalDeviceOrientation,
           'sensorOrientation': final int sensorOrientation
         }) {
-      final DeviceOrientation? currentOrientation =
-          deviceOrientation.tryParseDeviceOrientation();
-      final DeviceOrientation? naturalOrientation =
-          naturalDeviceOrientation.tryParseDeviceOrientation();
-
-      if (currentOrientation == null) {
-        throw const MobileScannerException(
-          errorCode: MobileScannerErrorCode.genericError,
-          errorDetails: MobileScannerErrorDetails(
-            message:
-                'The start method did not return a valid current device orientation.',
-          ),
-        );
-      }
-
-      if (naturalOrientation == null) {
-        throw const MobileScannerException(
-          errorCode: MobileScannerErrorCode.genericError,
-          errorDetails: MobileScannerErrorDetails(
-            message:
-                'The start method did not return a valid natural device orientation.',
-          ),
-        );
-      }
+      final DeviceOrientation currentOrientation =
+          deviceOrientation.parseDeviceOrientation();
+      final DeviceOrientation naturalOrientation =
+          naturalDeviceOrientation.parseDeviceOrientation();
 
       return AndroidSurfaceProducerDelegate(
         cameraIsFrontFacing: cameraDirection == CameraFacing.front,

@@ -5,15 +5,19 @@ import 'package:flutter/services.dart';
 extension ParseDeviceOrientation on String {
   /// Parse `this` into a [DeviceOrientation].
   ///
-  /// Returns the parsed device orientation,
-  /// or null if `this` is not a valid device orientation.
-  DeviceOrientation? tryParseDeviceOrientation() {
+  /// Returns the parsed device orientation.
+  /// Throws an [ArgumentError] if `this` is an invalid device orientation.
+  DeviceOrientation parseDeviceOrientation() {
     return switch (this) {
       'PORTRAIT_UP' => DeviceOrientation.portraitUp,
       'PORTRAIT_DOWN' => DeviceOrientation.portraitDown,
       'LANDSCAPE_LEFT' => DeviceOrientation.landscapeLeft,
       'LANDSCAPE_RIGHT' => DeviceOrientation.landscapeRight,
-      _ => null,
+      _ => throw ArgumentError.value(
+          this,
+          'deviceOrientation',
+          'Received an invalid device orientation',
+        ),
     };
   }
 }
