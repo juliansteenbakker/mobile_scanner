@@ -4,7 +4,11 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.media.Image
@@ -141,14 +145,13 @@ class MobileScanner(
                     mobileScannerCallback(
                         barcodeMap,
                         null,
-                        if (portrait) mediaImage.width else mediaImage.height,
-                        if (portrait) mediaImage.height else mediaImage.width)
+                        if (portrait) inputImage.width else inputImage.height,
+                        if (portrait) inputImage.height else inputImage.width)
                     return@addOnSuccessListener
                 }
 
                 val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
-                val imageFormat = YuvToRgbConverter(activity.applicationContext)
-
+                val imageFormat =YuvToRgbConverter(activity.applicationContext)
                 imageFormat.yuvToRgb(mediaImage, bitmap)
 
                 val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
@@ -159,6 +162,7 @@ class MobileScanner(
                 val bmWidth = bmResult.width
                 val bmHeight = bmResult.height
                 bmResult.recycle()
+                imageFormat.release()
 
                 mobileScannerCallback(
                     barcodeMap,
@@ -233,8 +237,7 @@ class MobileScanner(
         mobileScannerStartedCallback: MobileScannerStartedCallback,
         mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
-        cameraResolution: Size?,
-        newCameraResolutionSelector: Boolean,
+        cameraResolutionWanted: Size?,
         shouldConsiderInvertedImages: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
@@ -492,40 +495,45 @@ class MobileScanner(
     /**
      * Inverts the image colours respecting the alpha channel
      */
-    @SuppressLint("UnsafeOptInUsageError")
+    @ExperimentalGetImage
     fun invertInputImage(imageProxy: ImageProxy): InputImage {
         val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
 
-        // Convert YUV_420_888 image to NV21 format
-        // based on our util helper
+        // Convert YUV_420_888 image to RGB Bitmap
         val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
-        YuvToRgbConverter(activity).yuvToRgb(image, bitmap)
+        try {
+            val imageFormat =YuvToRgbConverter(activity.applicationContext);
+            imageFormat.yuvToRgb(image, bitmap)
 
-        // Invert RGB values
-        invertBitmapColors(bitmap)
+            // Create an inverted bitmap
+            val invertedBitmap = invertBitmapColors(bitmap)
+            imageFormat.release()
 
-        return InputImage.fromBitmap(bitmap, imageProxy.imageInfo.rotationDegrees)
-    }
-
-    // Helper function to invert the colors of the bitmap
-    private fun invertBitmapColors(bitmap: Bitmap) {
-        val width = bitmap.width
-        val height = bitmap.height
-        for (x in 0 until width) {
-            for (y in 0 until height) {
-                val pixel = bitmap.getPixel(x, y)
-                val invertedColor = invertColor(pixel)
-                bitmap.setPixel(x, y, invertedColor)
-            }
+            return InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
+        } finally {
+            // Release resources
+            bitmap.recycle() // Free up bitmap memory
+            imageProxy.close() // Close ImageProxy
         }
     }
 
-    private fun invertColor(pixel: Int): Int {
-        val alpha = pixel and 0xFF000000.toInt()
-        val red = 255 - (pixel shr 16 and 0xFF)
-        val green = 255 - (pixel shr 8 and 0xFF)
-        val blue = 255 - (pixel and 0xFF)
-        return alpha or (red shl 16) or (green shl 8) or blue
+    // Efficiently invert bitmap colors using ColorMatrix
+    private fun invertBitmapColors(bitmap: Bitmap): Bitmap {
+        val colorMatrix = ColorMatrix().apply {
+            set(floatArrayOf(
+                -1f, 0f, 0f, 0f, 255f,  // Red
+                0f, -1f, 0f, 0f, 255f,  // Green
+                0f, 0f, -1f, 0f, 255f,  // Blue
+                0f, 0f, 0f, 1f, 0f      // Alpha
+            ))
+        }
+        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
+
+        val invertedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config)
+        val canvas = Canvas(invertedBitmap)
+        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+
+        return invertedBitmap
     }
 
     /**

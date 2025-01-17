@@ -211,7 +211,6 @@ class MobileScannerHandler(
             },
             timeout.toLong(),
             cameraResolution,
-            useNewCameraSelector,
             shouldConsiderInvertedImages,
         )
     }
