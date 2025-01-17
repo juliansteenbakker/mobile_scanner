@@ -29,7 +29,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.returnImage = false,
     this.torchEnabled = false,
     this.shouldConsiderInvertedImages = false,
-    this.useNewCameraSelector = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -317,7 +316,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      useNewCameraSelector: useNewCameraSelector,
       shouldConsiderInvertedImages: shouldConsiderInvertedImages,
     );
 

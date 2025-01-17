@@ -15,7 +15,6 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
-    required this.useNewCameraSelector,
     required this.shouldConsiderInvertedImages,
   });
 
@@ -58,7 +57,6 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
-      'useNewCameraSelector': useNewCameraSelector,
       'shouldConsiderInvertedImages': shouldConsiderInvertedImages,
     };
   }
