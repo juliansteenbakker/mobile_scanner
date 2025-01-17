@@ -14,6 +14,7 @@ import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
+import 'package:mobile_scanner/src/utils/parse_device_orientation_extension.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
@@ -36,13 +37,31 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     'dev.steenbakker.mobile_scanner/scanner/method',
   );
 
+  /// The event channel that sends back device orientation change events.
+  @visibleForTesting
+  final deviceOrientationEventChannel = const EventChannel(
+    'dev.steenbakker.mobile_scanner/scanner/deviceOrientation',
+  );
+
   /// The event channel that sends back scanned barcode events.
   @visibleForTesting
   final eventChannel = const EventChannel(
     'dev.steenbakker.mobile_scanner/scanner/event',
   );
 
+  Stream<DeviceOrientation>? _deviceOrientationStream;
   Stream<Map<Object?, Object?>>? _eventsStream;
+
+  /// Get the event stream of device orientation change events
+  /// that come from the [deviceOrientationEventChannel].
+  Stream<DeviceOrientation> get deviceOrientationChangedStream {
+    _deviceOrientationStream ??= deviceOrientationEventChannel
+        .receiveBroadcastStream()
+        .cast<String>()
+        .map((String orientation) => orientation.parseDeviceOrientation());
+
+    return _deviceOrientationStream!;
+  }
 
   /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
@@ -295,6 +314,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
           AndroidSurfaceProducerDelegate.fromConfiguration(
         startResult,
         startOptions.cameraDirection,
+      );
+      _surfaceProducerDelegate?.startListeningToDeviceOrientation(
+        deviceOrientationChangedStream,
       );
     }
 
