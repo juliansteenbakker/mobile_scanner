@@ -103,7 +103,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
             children: [
               MobileScanner(
                 controller: _mobileScannerController,
-                errorBuilder: (context, error, child) =>
+                errorBuilder: (context, error) =>
                     ScannerErrorWidget(error: error),
                 fit: BoxFit.contain,
               ),

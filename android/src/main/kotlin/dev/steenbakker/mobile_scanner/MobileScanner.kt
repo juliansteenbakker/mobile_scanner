@@ -9,12 +9,10 @@ import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.media.Image
 import android.net.Uri
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Size
 import android.view.Surface
-import android.view.WindowManager
 import androidx.annotation.VisibleForTesting
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -34,10 +32,12 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
+import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
+import java.io.IOException
 import kotlin.math.roundToInt
 
 class MobileScanner(
@@ -135,12 +135,14 @@ class MobileScanner(
                     return@addOnSuccessListener
                 }
 
+                val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
+
                 if (!returnImage) {
                     mobileScannerCallback(
                         barcodeMap,
                         null,
-                        mediaImage.width,
-                        mediaImage.height)
+                        if (portrait) mediaImage.width else mediaImage.height,
+                        if (portrait) mediaImage.height else mediaImage.width)
                     return@addOnSuccessListener
                 }
 
@@ -214,34 +216,6 @@ class MobileScanner(
             // If we get NaN, rather than give a false positive, just return false.
             return false
         }
-    }
-
-    // Return the best resolution for the actual device orientation.
-    //
-    // By default the resolution is 480x640, which is too low for ML Kit.
-    // If the given resolution is not supported by the display,
-    // the closest available resolution is used.
-    //
-    // The resolution should be adjusted for the display rotation, to preserve the aspect ratio.
-    @Suppress("deprecation")
-    private fun getResolution(cameraResolution: Size): Size {
-        val rotation = if (Build.VERSION.SDK_INT >= 30) {
-            activity.display!!.rotation
-        } else {
-            val windowManager = activity.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-
-            windowManager.defaultDisplay.rotation
-        }
-
-        val widthMaxRes = cameraResolution.width
-        val heightMaxRes = cameraResolution.height
-
-        val targetResolution = if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180) {
-            Size(widthMaxRes, heightMaxRes) // Portrait mode
-        } else {
-            Size(heightMaxRes, widthMaxRes) // Landscape mode
-        }
-        return targetResolution
     }
 
     /**
@@ -333,48 +307,37 @@ class MobileScanner(
                 .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
-            if (cameraResolution != null) {
-                if (newCameraResolutionSelector) {
-                    val selectorBuilder = ResolutionSelector.Builder()
-                    selectorBuilder.setResolutionStrategy(
-                        ResolutionStrategy(
-                            cameraResolution,
-                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+            val cameraResolution =  cameraResolutionWanted ?: Size(1920, 1080)
+
+            val selectorBuilder = ResolutionSelector.Builder()
+            selectorBuilder.setResolutionStrategy(
+                ResolutionStrategy(
+                    cameraResolution,
+                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                )
+            )
+            analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
+
+            if (displayListener == null) {
+                displayListener = object : DisplayManager.DisplayListener {
+                    override fun onDisplayAdded(displayId: Int) {}
+
+                    override fun onDisplayRemoved(displayId: Int) {}
+
+                    override fun onDisplayChanged(displayId: Int) {
+                        val selector = ResolutionSelector.Builder().setResolutionStrategy(
+                            ResolutionStrategy(
+                                cameraResolution,
+                                ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                            )
                         )
-                    )
-                    analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
-                } else {
-                    @Suppress("DEPRECATION")
-                    analysisBuilder.setTargetResolution(getResolution(cameraResolution))
-                }
-
-                if (displayListener == null) {
-                    displayListener = object : DisplayManager.DisplayListener {
-                        override fun onDisplayAdded(displayId: Int) {}
-
-                        override fun onDisplayRemoved(displayId: Int) {}
-
-                        override fun onDisplayChanged(displayId: Int) {
-                            if (newCameraResolutionSelector) {
-                                val selectorBuilder = ResolutionSelector.Builder()
-                                selectorBuilder.setResolutionStrategy(
-                                    ResolutionStrategy(
-                                        cameraResolution,
-                                        ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
-                                    )
-                                )
-                                analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
-                            } else {
-                                @Suppress("DEPRECATION")
-                                analysisBuilder.setTargetResolution(getResolution(cameraResolution))
-                            }
-                        }
+                        analysisBuilder.setResolutionSelector(selector.build()).build()
                     }
-
-                    displayManager.registerDisplayListener(
-                        displayListener, null,
-                    )
                 }
+
+                displayManager.registerDisplayListener(
+                    displayListener, null,
+                )
             }
 
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
@@ -573,7 +536,15 @@ class MobileScanner(
         scannerOptions: BarcodeScannerOptions?,
         onSuccess: AnalyzerSuccessCallback,
         onError: AnalyzerErrorCallback) {
-        val inputImage = InputImage.fromFilePath(activity, image)
+        val inputImage: InputImage
+
+        try {
+            inputImage = InputImage.fromFilePath(activity, image)
+        } catch (error: IOException) {
+            onError(MobileScannerErrorCodes.ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE)
+
+            return
+        }
 
         // Use a short lived scanner instance, which is closed when the analysis is done.
         val barcodeScanner: BarcodeScanner = barcodeScannerFactory(scannerOptions)
