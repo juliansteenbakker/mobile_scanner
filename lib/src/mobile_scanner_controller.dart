@@ -28,7 +28,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.enableAutoZoom = false
+    this.enableAutoZoom = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -310,7 +310,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      enableAutoZoom: enableAutoZoom
+      enableAutoZoom: enableAutoZoom,
     );
 
     try {

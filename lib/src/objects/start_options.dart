@@ -15,8 +15,7 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
-    required this.useNewCameraSelector,
-    required this.enableAutoZoom
+    required this.enableAutoZoom,
   });
 
   /// The direction for the camera.
@@ -60,7 +59,7 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
-      'autoZoom' : enableAutoZoom
+      'autoZoom': enableAutoZoom,
     };
   }
 }
