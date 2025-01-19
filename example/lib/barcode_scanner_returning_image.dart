@@ -87,7 +87,7 @@ class _BarcodeScannerReturningImageState
                   children: [
                     MobileScanner(
                       controller: controller,
-                      errorBuilder: (context, error, child) {
+                      errorBuilder: (context, error) {
                         return ScannerErrorWidget(error: error);
                       },
                       fit: BoxFit.contain,
@@ -97,7 +97,7 @@ class _BarcodeScannerReturningImageState
                       child: Container(
                         alignment: Alignment.bottomCenter,
                         height: 100,
-                        color: Colors.black.withOpacity(0.4),
+                        color: const Color.fromRGBO(0, 0, 0, 0.4),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [

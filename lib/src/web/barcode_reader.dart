@@ -11,7 +11,21 @@ import 'package:web/web.dart';
 
 /// This class represents the base interface for a barcode reader implementation.
 abstract class BarcodeReader {
+  /// Construct a new [BarcodeReader] instance.
+  ///
+  /// This constructor is const, for subclasses.
   const BarcodeReader();
+
+  /// Whether the video feed is paused
+  bool? get paused =>
+      throw UnimplementedError('paused has not been implemented.');
+
+  /// Pause the barcode reader.
+  void pause() => throw UnimplementedError('pause() has not been implemented.');
+
+  /// Resume the barcode reader.
+  Future<void> resume() =>
+      throw UnimplementedError('resume() has not been implemented.');
 
   /// Whether the scanner is currently scanning for barcodes.
   bool get isScanning {

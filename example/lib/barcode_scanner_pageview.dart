@@ -69,7 +69,7 @@ class _BarcodeScannerPage extends StatelessWidget {
         MobileScanner(
           controller: controller,
           fit: BoxFit.contain,
-          errorBuilder: (context, error, child) {
+          errorBuilder: (context, error) {
             return ScannerErrorWidget(error: error);
           },
         ),
@@ -78,7 +78,7 @@ class _BarcodeScannerPage extends StatelessWidget {
           child: Container(
             alignment: Alignment.bottomCenter,
             height: 100,
-            color: Colors.black.withOpacity(0.4),
+            color: const Color.fromRGBO(0, 0, 0, 0.4),
             child: Center(
               child: ScannedBarcodeLabel(barcodes: controller.barcodes),
             ),

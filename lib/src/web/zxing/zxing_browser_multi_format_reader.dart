@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/web/zxing/result.dart';
+library;
+
 import 'dart:js_interop';
 
 import 'package:mobile_scanner/src/web/javascript_map.dart';

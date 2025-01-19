@@ -17,6 +17,7 @@ import 'package:web/web.dart' as web;
 
 /// A barcode reader implementation that uses the ZXing library.
 final class ZXingBarcodeReader extends BarcodeReader {
+  /// Construct a new [ZXingBarcodeReader] instance.
   ZXingBarcodeReader();
 
   /// ZXing reports an error with this message if the code could not be detected.
@@ -166,6 +167,18 @@ final class ZXingBarcodeReader extends BarcodeReader {
     );
 
     await _prepareVideoElement(videoElement, videoStream);
+  }
+
+  @override
+  bool? get paused => _reader?.videoElement?.paused;
+
+  @override
+  void pause() => _reader?.videoElement?.pause();
+
+  @override
+  Future<void> resume() async {
+    final result = _reader?.videoElement?.play();
+    await result?.toDart;
   }
 
   @override

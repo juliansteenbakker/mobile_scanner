@@ -122,6 +122,7 @@ class MobileScannerHandler(
                     }
                 })
             "start" -> start(call, result)
+            "pause" -> pause(result)
             "stop" -> stop(result)
             "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
@@ -141,7 +142,6 @@ class MobileScannerHandler(
         val speed: Int = call.argument<Int>("speed") ?: 1
         val timeout: Int = call.argument<Int>("timeout") ?: 250
         val cameraResolutionValues: List<Int>? = call.argument<List<Int>>("cameraResolution")
-        val useNewCameraSelector: Boolean = call.argument<Boolean>("useNewCameraSelector") ?: false
         val enableAutoZoom: Boolean = call.argument<Boolean>("autoZoom") ?: false
         val cameraResolution: Size? = if (cameraResolutionValues != null) {
             Size(cameraResolutionValues[0], cameraResolutionValues[1])
@@ -213,9 +213,20 @@ class MobileScannerHandler(
                 }
             },
             timeout.toLong(),
-            cameraResolution,
-            useNewCameraSelector
+            cameraResolution
         )
+    }
+
+    private fun pause(result: MethodChannel.Result) {
+        try {
+            mobileScanner!!.pause()
+            result.success(null)
+        } catch (e: Exception) {
+            when (e) {
+                is AlreadyPaused, is AlreadyStopped -> result.success(null)
+                else -> throw e
+            }
+        }
     }
 
     private fun stop(result: MethodChannel.Result) {

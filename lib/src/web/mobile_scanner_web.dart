@@ -57,6 +57,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Get the view type for the platform view factory.
   String _getViewType(int textureId) => 'mobile-scanner-view-$textureId';
 
+  /// Registers this class as the default instance of [MobileScannerPlatform].
   static void registerWith(Registrar registrar) {
     MobileScannerPlatform.instance = MobileScannerWeb();
   }
@@ -263,12 +264,27 @@ class MobileScannerWeb extends MobileScannerPlatform {
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (_barcodeReader != null) {
+      if (_barcodeReader!.paused ?? false) {
+        await _barcodeReader?.resume();
+        return MobileScannerViewAttributes(
+          // The torch of a media stream is not available for video tracks.
+          // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+          currentTorchMode: TorchState.unavailable,
+          size: _barcodeReader?.videoSize ?? Size.zero,
+        );
+      }
+
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
           message: 'The scanner was already started.',
         ),
       );
+    }
+
+    // If the previous state is a pause, reset scanner.
+    if (_barcodesSubscription != null && _barcodesSubscription!.isPaused) {
+      await stop();
     }
 
     _barcodeReader = ZXingBarcodeReader();
@@ -355,6 +371,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
         ),
       );
     }
+  }
+
+  @override
+  Future<void> pause() async {
+    _barcodesSubscription?.pause();
+    _barcodeReader?.pause();
   }
 
   @override

@@ -24,6 +24,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
 
+  /// The name of the error event that is sent when an operation is not supported.
+  @visibleForTesting
+  static const String kUnsupportdOperationErrorEventName =
+      'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -38,6 +43,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   Stream<Map<Object?, Object?>>? _eventsStream;
 
+  /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
     _eventsStream ??=
         eventChannel.receiveBroadcastStream().cast<Map<Object?, Object?>>();
@@ -46,6 +52,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   int? _textureId;
+  bool _pausing = false;
 
   /// Parse a [BarcodeCapture] from the given [event].
   BarcodeCapture? _parseBarcode(Map<Object?, Object?>? event) {
@@ -191,6 +198,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         throw MobileScannerBarcodeException(error.message);
       }
 
+      if (error.code == kUnsupportdOperationErrorEventName) {
+        throw UnsupportedError(error.message ?? 'Unsupported operation.');
+      }
+
       return null;
     }
   }
@@ -216,7 +227,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    if (_textureId != null) {
+    if (!_pausing && _textureId != null) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
@@ -281,6 +292,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       size = Size.zero;
     }
 
+    _pausing = false;
+
     return MobileScannerViewAttributes(
       currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
@@ -295,8 +308,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     _textureId = null;
+    _pausing = false;
 
     await methodChannel.invokeMethod<void>('stop');
+  }
+
+  @override
+  Future<void> pause() async {
+    if (_pausing) {
+      return;
+    }
+
+    _pausing = true;
+
+    await methodChannel.invokeMethod<void>('pause');
   }
 
   @override
