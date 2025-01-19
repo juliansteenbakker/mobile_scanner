@@ -28,7 +28,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.shouldConsiderInvertedImages = false,
+    this.invertImages = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -91,10 +91,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// This is useful if barcodes can be both black-on-white (the most common) and white-on-black (less common).
   /// Usage of this parameter can incur a performance cost, as some frames need to be altered further during processing.
   ///
-  /// Defaults to false and is only supported on Android and iOS.
-  ///
-  /// Defaults to false.
-  final bool shouldConsiderInvertedImages;
+  /// Defaults to false and is only supported on Android.
+  final bool invertImages;
 
   /// Whether the flashlight should be turned on when the camera is started.
   ///
@@ -316,7 +314,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      shouldConsiderInvertedImages: shouldConsiderInvertedImages,
+      invertImages: invertImages,
     );
 
     try {

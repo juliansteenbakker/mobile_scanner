@@ -1,6 +1,5 @@
 package dev.steenbakker.mobile_scanner
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
@@ -11,7 +10,6 @@ import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
-import android.media.Image
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
@@ -44,6 +42,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import kotlin.math.roundToInt
 
+
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
@@ -65,8 +64,7 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
-    var shouldConsiderInvertedImages: Boolean = false
-    private var invertCurrentImage: Boolean = false
+    private var invertImages: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
@@ -88,12 +86,7 @@ class MobileScanner(
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
 
-        // Invert every other frame.
-        if (shouldConsiderInvertedImages) {
-            invertCurrentImage = !invertCurrentImage // so we jump from one normal to one inverted and viceversa
-        }
-
-        val inputImage = if (invertCurrentImage) {
+        val inputImage = if (invertImages) {
             invertInputImage(imageProxy)
         } else {
             InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -151,7 +144,7 @@ class MobileScanner(
                 }
 
                 val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
-                val imageFormat =YuvToRgbConverter(activity.applicationContext)
+                val imageFormat = YuvToRgbConverter(activity.applicationContext)
                 imageFormat.yuvToRgb(mediaImage, bitmap)
 
                 val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
@@ -238,12 +231,12 @@ class MobileScanner(
         mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
         cameraResolutionWanted: Size?,
-        shouldConsiderInvertedImages: Boolean,
+        invertImages: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
-        this.shouldConsiderInvertedImages = shouldConsiderInvertedImages
+        this.invertImages = invertImages
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
 
@@ -436,14 +429,14 @@ class MobileScanner(
         isPaused = true
     }
 
-    private fun resumeCamera() {
-        // Resume camera by rebinding use cases
-        cameraProvider?.let { provider ->
-            val owner = activity as LifecycleOwner
-            cameraSelector?.let { provider.bindToLifecycle(owner, it, preview) }
-        }
-        isPaused = false
-    }
+//    private fun resumeCamera() {
+//        // Resume camera by rebinding use cases
+//        cameraProvider?.let { provider ->
+//            val owner = activity as LifecycleOwner
+//            cameraSelector?.let { provider.bindToLifecycle(owner, it, preview) }
+//        }
+//        isPaused = false
+//    }
 
     private fun releaseCamera() {
         if (displayListener != null) {
@@ -502,7 +495,7 @@ class MobileScanner(
         // Convert YUV_420_888 image to RGB Bitmap
         val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
         try {
-            val imageFormat =YuvToRgbConverter(activity.applicationContext);
+            val imageFormat = YuvToRgbConverter(activity.applicationContext)
             imageFormat.yuvToRgb(image, bitmap)
 
             // Create an inverted bitmap

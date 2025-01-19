@@ -1,19 +1,17 @@
+@file:Suppress("DEPRECATION")
+/// TODO: Upgrade to implementation without deprecated android.renderscript, but with same or better performance
+
 package dev.steenbakker.mobile_scanner.utils
 
 import android.content.Context
 import android.graphics.Bitmap
-import android.graphics.ImageFormat
 import android.media.Image
-import android.os.Build
 import android.renderscript.Allocation
-import android.renderscript.Allocation.createAllocations
 import android.renderscript.Element
 import android.renderscript.RenderScript
 import android.renderscript.ScriptIntrinsicYuvToRGB
 import android.renderscript.Type
-import androidx.annotation.RequiresApi
 import java.nio.ByteBuffer
-
 
 /**
  * Helper class used to efficiently convert a [Media.Image] object from
