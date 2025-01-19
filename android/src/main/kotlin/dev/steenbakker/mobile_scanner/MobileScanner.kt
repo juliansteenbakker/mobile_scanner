@@ -517,6 +517,11 @@ class MobileScanner(
         camera?.cameraControl?.setLinearZoom(scale.toFloat())
     }
 
+    fun setZoomRatio(zoomRatio: Double) {
+        if (camera == null) throw ZoomWhenStopped()
+        camera?.cameraControl?.setZoomRatio(zoomRatio.toFloat())
+    }
+
     /**
      * Reset the zoom rate of the camera.
      */

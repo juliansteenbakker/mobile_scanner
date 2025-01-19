@@ -38,6 +38,7 @@ See the example app for detailed implementation information.
 | analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 | returnImage            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
 | scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
+| autoZoom               | :heavy_check_mark: | :x: | :x:   | :x: |
 
 ## Platform Support
 
