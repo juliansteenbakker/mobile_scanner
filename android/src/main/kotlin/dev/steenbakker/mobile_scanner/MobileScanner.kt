@@ -34,6 +34,7 @@ import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
+import dev.steenbakker.mobile_scanner.utils.serialize
 import io.flutter.view.TextureRegistry
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -46,6 +47,7 @@ class MobileScanner(
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
+    private val deviceOrientationListener: DeviceOrientationListener,
 ) {
 
     /// Internal variables
@@ -426,6 +428,8 @@ class MobileScanner(
                 currentTorchState = it.torchState.value ?: -1
             }
 
+            deviceOrientationListener.start()
+
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
@@ -449,6 +453,7 @@ class MobileScanner(
             throw AlreadyStopped()
         }
 
+        deviceOrientationListener.stop()
         pauseCamera()
     }
 
@@ -460,6 +465,7 @@ class MobileScanner(
             throw AlreadyStopped()
         }
 
+        deviceOrientationListener.stop()
         releaseCamera()
     }
 
