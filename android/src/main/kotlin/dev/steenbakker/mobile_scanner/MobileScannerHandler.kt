@@ -168,6 +168,9 @@ class MobileScannerHandler(
                     result.success(mapOf(
                         "textureId" to it.id,
                         "size" to mapOf("width" to it.width, "height" to it.height),
+                        "naturalDeviceOrientation" to it.naturalDeviceOrientation,
+                        "isPreviewPreTransformed" to it.isPreviewPreTransformed,
+                        "sensorOrientation" to it.sensorOrientation,
                         "currentTorchState" to it.currentTorchState,
                         "numberOfCameras" to it.numberOfCameras
                     ))
