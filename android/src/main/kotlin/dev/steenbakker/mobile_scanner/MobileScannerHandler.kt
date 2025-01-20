@@ -84,6 +84,8 @@ class MobileScannerHandler(
             "dev.steenbakker.mobile_scanner/scanner/method")
         methodChannel!!.setMethodCallHandler(this)
 
+        val deviceOrientationListener = DeviceOrientationListener(activity)
+
         deviceOrientationChannel = EventChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/deviceOrientation")
         deviceOrientationChannel!!.setStreamHandler(deviceOrientationListener)

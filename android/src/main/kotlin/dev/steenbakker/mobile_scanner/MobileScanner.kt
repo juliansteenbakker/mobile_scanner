@@ -46,8 +46,8 @@ class MobileScanner(
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
-    private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
     private val deviceOrientationListener: DeviceOrientationListener,
+    private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
 
     /// Internal variables
