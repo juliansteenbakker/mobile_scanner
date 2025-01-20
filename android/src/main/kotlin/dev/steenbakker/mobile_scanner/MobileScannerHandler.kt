@@ -87,6 +87,7 @@ class MobileScannerHandler(
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
+        barcodeHandler.dispose()
         mobileScanner?.dispose()
         mobileScanner = null
 
