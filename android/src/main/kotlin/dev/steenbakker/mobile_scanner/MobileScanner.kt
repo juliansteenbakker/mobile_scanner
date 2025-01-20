@@ -41,6 +41,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import kotlin.math.roundToInt
+
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
@@ -149,8 +150,10 @@ class MobileScanner(
                     val byteArray = stream.toByteArray()
                     val bmWidth = bmResult.width
                     val bmHeight = bmResult.height
+
                     bmResult.recycle()
                     imageProxy.close()
+
                     mobileScannerCallback(
                         barcodeMap,
                         byteArray,
