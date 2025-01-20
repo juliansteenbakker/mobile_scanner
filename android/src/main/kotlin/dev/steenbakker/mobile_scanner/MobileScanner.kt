@@ -299,13 +299,16 @@ class MobileScanner(
 //            if (isPaused) {
 //                resumeCamera()
 //                mobileScannerStartedCallback(
-//                    MobileScannerStartParameters(
-//                        if (portrait) width else height,
-//                        if (portrait) height else width,
-//                        currentTorchState,
-//                        surfaceProducer!!.id(),
-//                        numberOfCameras ?: 0
-//                    )
+//                  MobileScannerStartParameters(
+//                    if (portrait) width else height,
+//                    if (portrait) height else width,
+//                    deviceOrientationListener.getUIOrientation().serialize(),
+//                    sensorRotationDegrees,
+//                    surfaceProducer!!.handlesCropAndRotation(),
+//                    currentTorchState,
+//                    surfaceProducer!!.id(),
+//                    numberOfCameras ?: 0
+//                  )
 //                )
 //                return
 //            }
@@ -415,7 +418,8 @@ class MobileScanner(
             val resolution = analysis.resolutionInfo!!.resolution
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
-            val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
+            val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
+            val portrait = sensorRotationDegrees % 180 == 0
 
             // Start with 'unavailable' torch state.
             var currentTorchState: Int = -1
@@ -434,6 +438,9 @@ class MobileScanner(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
+                    deviceOrientationListener.getUIOrientation().serialize(),
+                    sensorRotationDegrees,
+                    surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
                     surfaceProducer!!.id(),
                     numberOfCameras ?: 0
