@@ -13,7 +13,6 @@ class AndroidSurfaceProducerDelegate {
   /// Construct a new [AndroidSurfaceProducerDelegate].
   AndroidSurfaceProducerDelegate({
     required this.cameraIsFrontFacing,
-    required this.currentDeviceOrientation,
     required this.isPreviewPreTransformed,
     required this.naturalOrientation,
     required this.sensorOrientation,
@@ -29,19 +28,15 @@ class AndroidSurfaceProducerDelegate {
   ) {
     if (config
         case {
-          'currentDeviceOrientation': final String deviceOrientation,
           'isPreviewPreTransformed': final bool isPreviewPreTransformed,
           'naturalDeviceOrientation': final String naturalDeviceOrientation,
           'sensorOrientation': final int sensorOrientation
         }) {
-      final DeviceOrientation currentOrientation =
-          deviceOrientation.parseDeviceOrientation();
       final DeviceOrientation naturalOrientation =
           naturalDeviceOrientation.parseDeviceOrientation();
 
       return AndroidSurfaceProducerDelegate(
         cameraIsFrontFacing: cameraDirection == CameraFacing.front,
-        currentDeviceOrientation: currentOrientation,
         isPreviewPreTransformed: isPreviewPreTransformed,
         naturalOrientation: naturalOrientation,
         sensorOrientation: sensorOrientation,
@@ -78,7 +73,7 @@ class AndroidSurfaceProducerDelegate {
   ///
   /// When the orientation changes this field is updated by notifications from
   /// the [_deviceOrientationSubscription].
-  DeviceOrientation currentDeviceOrientation;
+  DeviceOrientation? currentDeviceOrientation;
 
   /// Whether the camera preview is pre-transformed,
   /// and thus does not need an orientation correction.
