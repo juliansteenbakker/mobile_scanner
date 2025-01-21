@@ -63,7 +63,7 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
-    private var invertImages: Boolean = false
+    private var invertImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
@@ -85,7 +85,7 @@ class MobileScanner(
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
 
-        val inputImage = if (invertImages) {
+        val inputImage = if (invertImage) {
             invertInputImage(imageProxy)
         } else {
             InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
@@ -230,12 +230,12 @@ class MobileScanner(
         mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
         cameraResolutionWanted: Size?,
-        invertImages: Boolean,
+        invertImage: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
-        this.invertImages = invertImages
+        this.invertImage = invertImage
 
         if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
 
