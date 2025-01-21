@@ -42,7 +42,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import kotlin.math.roundToInt
 
-
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
