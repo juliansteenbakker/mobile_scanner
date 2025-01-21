@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
  * analysis use case at the default analyzer resolution, which is 30 FPS with
  * 640x480 on a Pixel 3 XL device.
  */
-/// TODO: Upgrade to implementation without deprecated android.renderscript, but with same or better performance.
+/// TODO: Upgrade to implementation without deprecated android.renderscript, but with same or better performance. See https://github.com/juliansteenbakker/mobile_scanner/issues/1142
 class YuvToRgbConverter(context: Context) {
     @Suppress("DEPRECATION")
     private val rs = RenderScript.create(context)

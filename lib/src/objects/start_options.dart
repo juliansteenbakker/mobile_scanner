@@ -24,7 +24,7 @@ class StartOptions {
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
 
-  /// Whether the scanner should try to detect color-inverted barcodes in every other frame.
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
   final bool invertImage;
 
   /// The detection speed for the scanner.

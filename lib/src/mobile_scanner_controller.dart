@@ -85,11 +85,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
-  /// Whether the scanner should try to detect color-inverted barcodes in every other frame.
-  ///
-  /// When this option is enabled, every odd frame from the camera preview has its colors inverted before processing.
-  /// This is useful if barcodes can be both black-on-white (the most common) and white-on-black (less common).
-  /// Usage of this parameter can incur a performance cost, as some frames need to be altered further during processing.
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  /// Usage of this parameter can incur a performance cost, as frames need to be altered during processing.
   ///
   /// Defaults to false and is only supported on Android.
   final bool invertImage;
