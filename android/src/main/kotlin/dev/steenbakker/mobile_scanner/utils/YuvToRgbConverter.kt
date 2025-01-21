@@ -1,5 +1,4 @@
-@file:Suppress("DEPRECATION")
-/// TODO: Upgrade to implementation without deprecated android.renderscript, but with same or better performance
+
 
 package dev.steenbakker.mobile_scanner.utils
 
@@ -23,14 +22,19 @@ import java.nio.ByteBuffer
  * analysis use case at the default analyzer resolution, which is 30 FPS with
  * 640x480 on a Pixel 3 XL device.
  */
+/// TODO: Upgrade to implementation without deprecated android.renderscript, but with same or better performance.
 class YuvToRgbConverter(context: Context) {
+    @Suppress("DEPRECATION")
     private val rs = RenderScript.create(context)
+    @Suppress("DEPRECATION")
     private val scriptYuvToRgb =
         ScriptIntrinsicYuvToRGB.create(rs, Element.U8_4(rs))
 
     private var yuvBits: ByteBuffer? = null
     private var bytes: ByteArray = ByteArray(0)
+    @Suppress("DEPRECATION")
     private var inputAllocation: Allocation? = null
+    @Suppress("DEPRECATION")
     private var outputAllocation: Allocation? = null
 
     @Synchronized
@@ -44,10 +48,14 @@ class YuvToRgbConverter(context: Context) {
             }
 
             yuvBuffer.buffer.get(bytes)
+            @Suppress("DEPRECATION")
             inputAllocation!!.copyFrom(bytes)
 
+            @Suppress("DEPRECATION")
             scriptYuvToRgb.setInput(inputAllocation)
+            @Suppress("DEPRECATION")
             scriptYuvToRgb.forEach(outputAllocation)
+            @Suppress("DEPRECATION")
             outputAllocation!!.copyTo(output)
         } catch (e: Exception) {
             throw IllegalStateException("Failed to convert YUV to RGB", e)
@@ -55,25 +63,30 @@ class YuvToRgbConverter(context: Context) {
     }
 
     private fun needCreateAllocations(image: Image, yuvBuffer: YuvByteBuffer): Boolean {
+        @Suppress("DEPRECATION")
         return inputAllocation?.type?.x != image.width ||
                 inputAllocation?.type?.y != image.height ||
                 inputAllocation?.type?.yuv != yuvBuffer.type
     }
 
     private fun createAllocations(image: Image, yuvBuffer: YuvByteBuffer) {
+        @Suppress("DEPRECATION")
         val yuvType = Type.Builder(rs, Element.U8(rs))
             .setX(image.width)
             .setY(image.height)
             .setYuvFormat(yuvBuffer.type)
+        @Suppress("DEPRECATION")
         inputAllocation = Allocation.createTyped(
             rs,
             yuvType.create(),
             Allocation.USAGE_SCRIPT
         )
         bytes = ByteArray(yuvBuffer.buffer.capacity())
+        @Suppress("DEPRECATION")
         val rgbaType = Type.Builder(rs, Element.RGBA_8888(rs))
             .setX(image.width)
             .setY(image.height)
+        @Suppress("DEPRECATION")
         outputAllocation = Allocation.createTyped(
             rs,
             rgbaType.create(),
@@ -81,6 +94,7 @@ class YuvToRgbConverter(context: Context) {
         )
     }
 
+    @Suppress("DEPRECATION")
     fun release() {
         inputAllocation?.destroy()
         outputAllocation?.destroy()
