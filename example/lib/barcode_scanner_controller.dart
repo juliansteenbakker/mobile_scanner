@@ -19,7 +19,7 @@ class _BarcodeScannerWithControllerState
   final MobileScannerController controller = MobileScannerController(
     autoStart: false,
     // torchEnabled: true,
-    enableAutoZoom: true,
+    autoZoom: true,
     // invertImage: true,
   );
 
