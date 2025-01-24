@@ -15,6 +15,7 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
+    required this.invertImage,
   });
 
   /// The direction for the camera.
@@ -22,6 +23,9 @@ class StartOptions {
 
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
+
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  final bool invertImage;
 
   /// The detection speed for the scanner.
   final DetectionSpeed detectionSpeed;
@@ -53,6 +57,7 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
+      'invertImage': invertImage,
     };
   }
 }
