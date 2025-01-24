@@ -38,6 +38,10 @@ import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
 import io.flutter.view.TextureRegistry
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import kotlin.math.roundToInt
@@ -107,6 +111,7 @@ class MobileScanner(
 
                     if (newScannedBarcodes == lastScanned) {
                         // New scanned is duplicate, returning
+                        imageProxy.close()
                         return@addOnSuccessListener
                     }
                     if (newScannedBarcodes.isNotEmpty()) {
@@ -128,12 +133,14 @@ class MobileScanner(
                 }
 
                 if (barcodeMap.isEmpty()) {
+                    imageProxy.close()
                     return@addOnSuccessListener
                 }
 
                 val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
 
                 if (!returnImage) {
+                    imageProxy.close()
                     mobileScannerCallback(
                         barcodeMap,
                         null,
@@ -142,31 +149,35 @@ class MobileScanner(
                     return@addOnSuccessListener
                 }
 
-                val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
-                val imageFormat = YuvToRgbConverter(activity.applicationContext)
-                imageFormat.yuvToRgb(mediaImage, bitmap)
+                CoroutineScope(Dispatchers.IO).launch {
+                    val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
+                    val imageFormat = YuvToRgbConverter(activity.applicationContext)
 
-                val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
+                    imageFormat.yuvToRgb(mediaImage, bitmap)
 
-                val stream = ByteArrayOutputStream()
-                bmResult.compress(Bitmap.CompressFormat.PNG, 100, stream)
-                val byteArray = stream.toByteArray()
-                val bmWidth = bmResult.width
-                val bmHeight = bmResult.height
-                bmResult.recycle()
-                imageFormat.release()
+                    val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
+                    val stream = ByteArrayOutputStream()
+                    bmResult.compress(Bitmap.CompressFormat.PNG, 100, stream)
+                    val byteArray = stream.toByteArray()
+                    val bmWidth = bmResult.width
+                    val bmHeight = bmResult.height
 
-                mobileScannerCallback(
-                    barcodeMap,
-                    byteArray,
-                    bmWidth,
-                    bmHeight
-                )
+                    bmResult.recycle()
+                    imageProxy.close()
+                    
+                    mobileScannerCallback(
+                        barcodeMap,
+                        byteArray,
+                        bmWidth,
+                        bmHeight
+                    )
+                }
+
             }.addOnFailureListener { e ->
                 mobileScannerErrorCallback(
                     e.localizedMessage ?: e.toString()
                 )
-            }.addOnCompleteListener { imageProxy.close() }
+            }
         }
 
         if (detectionSpeed == DetectionSpeed.NORMAL) {
