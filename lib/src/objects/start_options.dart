@@ -15,7 +15,7 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
-    required this.enableAutoZoom,
+    required this.autoZoom,
   });
 
   /// The direction for the camera.
@@ -39,10 +39,11 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
-  /// Whether the Camera should auto zoom.
+  /// Whether the camera should auto zoom if the detected code is to far from
+  /// the camera.
   ///
   /// This option is only supported on Android. Other platforms will ignore this option.
-  final bool enableAutoZoom;
+  final bool autoZoom;
 
   /// Converts this object to a map.
   Map<String, Object?> toMap() {
@@ -59,7 +60,7 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
-      'autoZoom': enableAutoZoom,
+      'autoZoom': autoZoom,
     };
   }
 }

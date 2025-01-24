@@ -142,14 +142,14 @@ class MobileScannerHandler(
         val speed: Int = call.argument<Int>("speed") ?: 1
         val timeout: Int = call.argument<Int>("timeout") ?: 250
         val cameraResolutionValues: List<Int>? = call.argument<List<Int>>("cameraResolution")
-        val enableAutoZoom: Boolean = call.argument<Boolean>("autoZoom") ?: false
+        val autoZoom: Boolean = call.argument<Boolean>("autoZoom") ?: false
         val cameraResolution: Size? = if (cameraResolutionValues != null) {
             Size(cameraResolutionValues[0], cameraResolutionValues[1])
         } else {
             null
         }
 
-        val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats, enableAutoZoom)
+        val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats, autoZoom)
 
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
@@ -293,7 +293,7 @@ class MobileScannerHandler(
         result.success(null)
     }
 
-    private fun buildBarcodeScannerOptions(formats: List<Int>?, enableAutoZoom: Boolean): BarcodeScannerOptions? {
+    private fun buildBarcodeScannerOptions(formats: List<Int>?, autoZoom: Boolean): BarcodeScannerOptions? {
         val builder : BarcodeScannerOptions.Builder?
         if (formats == null) {
            builder = BarcodeScannerOptions.Builder()
@@ -314,7 +314,7 @@ class MobileScannerHandler(
             }
         }
 
-        if (enableAutoZoom) {
+        if (autoZoom) {
             builder.setZoomSuggestionOptions(
                 ZoomSuggestionOptions.Builder {
                     setZoomRatio(it)
