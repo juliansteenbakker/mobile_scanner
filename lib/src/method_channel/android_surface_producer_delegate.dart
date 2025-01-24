@@ -60,6 +60,10 @@ class AndroidSurfaceProducerDelegate {
     DeviceOrientation.landscapeLeft: 270,
   };
 
+  // TODO: remove this flag once the rotation correction functions correctly on Impeller.
+  // See https://github.com/juliansteenbakker/mobile_scanner/pull/1283#discussion_r1927798329
+  static const bool _rotationCorrectionEnabled = false;
+
   /// The subscription that listens to device orientation changes.
   StreamSubscription<Object?>? _deviceOrientationSubscription;
 
@@ -90,6 +94,10 @@ class AndroidSurfaceProducerDelegate {
 
   /// Apply a rotation correction to the given [texture] widget.
   Widget applyRotationCorrection(Widget texture) {
+    if (!_rotationCorrectionEnabled) {
+      return texture;
+    }
+
     int naturalDeviceOrientationDegrees =
         _degreesForDeviceOrientation[naturalOrientation]!;
 
@@ -151,6 +159,10 @@ class AndroidSurfaceProducerDelegate {
   /// Start listening to device orientation changes,
   /// which are provided by the given [stream].
   void startListeningToDeviceOrientation(Stream<DeviceOrientation> stream) {
+    if (!_rotationCorrectionEnabled) {
+      return;
+    }
+
     _deviceOrientationSubscription ??=
         stream.listen((DeviceOrientation newOrientation) {
       currentDeviceOrientation = newOrientation;
