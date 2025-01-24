@@ -28,6 +28,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
+    this.invertImage = false,
+    this.autoZoom = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
@@ -84,10 +86,22 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  /// Usage of this parameter can incur a performance cost, as frames need to be altered during processing.
+  ///
+  /// Defaults to false and is only supported on Android.
+  final bool invertImage;
+
   /// Whether the flashlight should be turned on when the camera is started.
   ///
   /// Defaults to false.
   final bool torchEnabled;
+
+  /// Whether the camera should auto zoom if the detected code is to far from
+  /// the camera.
+  ///
+  /// Only supported on Android.
+  final bool autoZoom;
 
   /// The internal barcode controller, that listens for detected barcodes.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -174,6 +188,32 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         ),
       );
     }
+  }
+
+  /// Returns false if stop is called but not necessary, otherwise true is returned.
+  bool _stop() {
+    // Do nothing if not initialized or already stopped.
+    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
+    // due to the permission popup gaining focus.
+    // This would 'stop' the camera while it is not ready yet.
+    if (!value.isInitialized || !value.isRunning || _isDisposed) {
+      return false;
+    }
+
+    _disposeListeners();
+
+    final TorchState oldTorchState = value.torchState;
+
+    // After the camera stopped, set the torch state to off,
+    // as the torch state callback is never called when the camera is stopped.
+    // If the device does not have a torch, do not report "off".
+    value = value.copyWith(
+      isRunning: false,
+      torchState: oldTorchState == TorchState.unavailable
+          ? TorchState.unavailable
+          : TorchState.off,
+    );
+    return true;
   }
 
   /// Analyze an image file.
@@ -278,6 +318,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
+      invertImage: invertImage,
+      autoZoom: autoZoom,
     );
 
     try {
@@ -331,29 +373,21 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    // Do nothing if not initialized or already stopped.
-    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
-    // due to the permission popup gaining focus.
-    // This would 'stop' the camera while it is not ready yet.
-    if (!value.isInitialized || !value.isRunning || _isDisposed) {
-      return;
+    if (_stop()) {
+      await MobileScannerPlatform.instance.stop();
     }
+  }
 
-    _disposeListeners();
-
-    final TorchState oldTorchState = value.torchState;
-
-    // After the camera stopped, set the torch state to off,
-    // as the torch state callback is never called when the camera is stopped.
-    // If the device does not have a torch, do not report "off".
-    value = value.copyWith(
-      isRunning: false,
-      torchState: oldTorchState == TorchState.unavailable
-          ? TorchState.unavailable
-          : TorchState.off,
-    );
-
-    await MobileScannerPlatform.instance.stop();
+  /// Pause the camera.
+  ///
+  /// This method stops to update camera frame and scan barcodes.
+  /// After calling this method, the camera can be restarted using [start].
+  ///
+  /// Does nothing if the camera is already paused or stopped.
+  Future<void> pause() async {
+    if (_stop()) {
+      await MobileScannerPlatform.instance.pause();
+    }
   }
 
   /// Switch between the front and back camera.

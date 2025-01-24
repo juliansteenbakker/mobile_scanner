@@ -18,7 +18,9 @@ class _BarcodeScannerWithControllerState
     extends State<BarcodeScannerWithController> with WidgetsBindingObserver {
   final MobileScannerController controller = MobileScannerController(
     autoStart: false,
-    torchEnabled: true,
+    // torchEnabled: true,
+    autoZoom: true,
+    // invertImage: true,
   );
 
   @override
@@ -71,6 +73,7 @@ class _BarcodeScannerWithControllerState
                 children: [
                   ToggleFlashlightButton(controller: controller),
                   StartStopMobileScannerButton(controller: controller),
+                  PauseMobileScannerButton(controller: controller),
                   Expanded(
                     child: Center(
                       child: ScannedBarcodeLabel(

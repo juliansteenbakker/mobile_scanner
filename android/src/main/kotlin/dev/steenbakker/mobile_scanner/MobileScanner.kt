@@ -3,7 +3,11 @@ package dev.steenbakker.mobile_scanner
 import android.app.Activity
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
+import android.graphics.Paint
 import android.graphics.Rect
 import android.hardware.display.DisplayManager
 import android.net.Uri
@@ -49,6 +53,7 @@ class MobileScanner(
     /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
     private var camera: Camera? = null
+    private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
     private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
     private var scanner: BarcodeScanner? = null
@@ -58,9 +63,11 @@ class MobileScanner(
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
+    private var invertImage: Boolean = false
     private var detectionSpeed: DetectionSpeed = DetectionSpeed.NO_DUPLICATES
     private var detectionTimeout: Long = 250
     private var returnImage = false
+    private var isPaused = false
 
     companion object {
         /**
@@ -77,7 +84,12 @@ class MobileScanner(
     @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy -> // YUV_420_888 format
         val mediaImage = imageProxy.image ?: return@Analyzer
-        val inputImage = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+
+        val inputImage = if (invertImage) {
+            invertInputImage(imageProxy)
+        } else {
+            InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+        }
 
         if (detectionSpeed == DetectionSpeed.NORMAL && scannerTimeout) {
             imageProxy.close()
@@ -125,14 +137,13 @@ class MobileScanner(
                     mobileScannerCallback(
                         barcodeMap,
                         null,
-                        if (portrait) mediaImage.width else mediaImage.height,
-                        if (portrait) mediaImage.height else mediaImage.width)
+                        if (portrait) inputImage.width else inputImage.height,
+                        if (portrait) inputImage.height else inputImage.width)
                     return@addOnSuccessListener
                 }
 
                 val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
                 val imageFormat = YuvToRgbConverter(activity.applicationContext)
-
                 imageFormat.yuvToRgb(mediaImage, bitmap)
 
                 val bmResult = rotateBitmap(bitmap, camera?.cameraInfo?.sensorRotationDegrees?.toFloat() ?: 90f)
@@ -143,6 +154,7 @@ class MobileScanner(
                 val bmWidth = bmResult.width
                 val bmHeight = bmResult.height
                 bmResult.recycle()
+                imageFormat.release()
 
                 mobileScannerCallback(
                     barcodeMap,
@@ -217,13 +229,30 @@ class MobileScanner(
         mobileScannerStartedCallback: MobileScannerStartedCallback,
         mobileScannerErrorCallback: (exception: Exception) -> Unit,
         detectionTimeout: Long,
-        cameraResolutionWanted: Size?
+        cameraResolutionWanted: Size?,
+        invertImage: Boolean,
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
         this.returnImage = returnImage
+        this.invertImage = invertImage
 
-        if (camera?.cameraInfo != null && preview != null && textureEntry != null) {
+        if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
+
+           // TODO: resume here for seamless transition
+//            if (isPaused) {
+//                resumeCamera()
+//                mobileScannerStartedCallback(
+//                    MobileScannerStartParameters(
+//                        if (portrait) width else height,
+//                        if (portrait) height else width,
+//                        currentTorchState,
+//                        textureEntry!!.id(),
+//                        numberOfCameras ?: 0
+//                    )
+//                )
+//                return
+//            }
             mobileScannerErrorCallback(AlreadyStarted())
 
             return
@@ -246,7 +275,7 @@ class MobileScanner(
             }
 
             cameraProvider?.unbindAll()
-            textureEntry = textureRegistry.createSurfaceTexture()
+            textureEntry = textureEntry ?: textureRegistry.createSurfaceTexture()
 
             // Preview
             val surfaceProvider = Preview.SurfaceProvider { request ->
@@ -315,6 +344,7 @@ class MobileScanner(
                     preview,
                     analysis
                 )
+                cameraSelector = cameraPosition
             } catch(exception: Exception) {
                 mobileScannerErrorCallback(NoCamera())
 
@@ -367,14 +397,47 @@ class MobileScanner(
         }, executor)
 
     }
+
+    /**
+     * Pause barcode scanning.
+     */
+    fun pause() {
+        if (isPaused) {
+            throw AlreadyPaused()
+        } else if (isStopped()) {
+            throw AlreadyStopped()
+        }
+
+        pauseCamera()
+    }
+
     /**
      * Stop barcode scanning.
      */
     fun stop() {
-        if (isStopped()) {
+        if (!isPaused && isStopped()) {
             throw AlreadyStopped()
         }
 
+        releaseCamera()
+    }
+
+    private fun pauseCamera() {
+        // Pause camera by unbinding all use cases
+        cameraProvider?.unbindAll()
+        isPaused = true
+    }
+
+//    private fun resumeCamera() {
+//        // Resume camera by rebinding use cases
+//        cameraProvider?.let { provider ->
+//            val owner = activity as LifecycleOwner
+//            cameraSelector?.let { provider.bindToLifecycle(owner, it, preview) }
+//        }
+//        isPaused = false
+//    }
+
+    private fun releaseCamera() {
         if (displayListener != null) {
             val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
 
@@ -389,14 +452,11 @@ class MobileScanner(
             it.zoomState.removeObservers(owner)
             it.cameraState.removeObservers(owner)
         }
+
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
-        cameraProvider = null
-        camera = null
-        preview = null
 
-        // Release the texture for the preview.
         textureEntry?.release()
         textureEntry = null
 
@@ -422,6 +482,50 @@ class MobileScanner(
                 TorchState.ON -> it.cameraControl.enableTorch(false)
             }
         }
+    }
+
+    /**
+     * Inverts the image colours respecting the alpha channel
+     */
+    @ExperimentalGetImage
+    fun invertInputImage(imageProxy: ImageProxy): InputImage {
+        val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
+
+        // Convert YUV_420_888 image to RGB Bitmap
+        val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+        try {
+            val imageFormat = YuvToRgbConverter(activity.applicationContext)
+            imageFormat.yuvToRgb(image, bitmap)
+
+            // Create an inverted bitmap
+            val invertedBitmap = invertBitmapColors(bitmap)
+            imageFormat.release()
+
+            return InputImage.fromBitmap(invertedBitmap, imageProxy.imageInfo.rotationDegrees)
+        } finally {
+            // Release resources
+            bitmap.recycle() // Free up bitmap memory
+            imageProxy.close() // Close ImageProxy
+        }
+    }
+
+    // Efficiently invert bitmap colors using ColorMatrix
+    private fun invertBitmapColors(bitmap: Bitmap): Bitmap {
+        val colorMatrix = ColorMatrix().apply {
+            set(floatArrayOf(
+                -1f, 0f, 0f, 0f, 255f,  // Red
+                0f, -1f, 0f, 0f, 255f,  // Green
+                0f, 0f, -1f, 0f, 255f,  // Blue
+                0f, 0f, 0f, 1f, 0f      // Alpha
+            ))
+        }
+        val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
+
+        val invertedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config)
+        val canvas = Canvas(invertedBitmap)
+        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+
+        return invertedBitmap
     }
 
     /**
@@ -467,6 +571,11 @@ class MobileScanner(
         if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
         if (camera == null) throw ZoomWhenStopped()
         camera?.cameraControl?.setLinearZoom(scale.toFloat())
+    }
+
+    fun setZoomRatio(zoomRatio: Double) {
+        if (camera == null) throw ZoomWhenStopped()
+        camera?.cameraControl?.setZoomRatio(zoomRatio.toFloat())
     }
 
     /**

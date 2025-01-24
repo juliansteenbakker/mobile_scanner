@@ -54,8 +54,11 @@ Known issues:
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
 
-## 6.0.2
+## 6.0.3
+New features:
+* Adds pause function to pause the camera but keep textures in place.
 
+## 6.0.2
 Bugs fixed:
 * Fixed a bug that prevented `analyzeImage` from actually accepting the configured formats.
 
@@ -63,7 +66,6 @@ Improvements:
 * [iOS] Excluded the `arm64` architecture for Simulators, which is unsupported by MLKit 7.0.0.
 
 ## 6.0.1
-
 Bugs fixed:
 * Fixed a bug that would cause onDetect to not handle errors.
 
