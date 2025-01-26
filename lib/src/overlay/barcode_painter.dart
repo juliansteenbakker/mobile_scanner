@@ -1,4 +1,4 @@
-import "dart:math" as math;
+import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
@@ -41,31 +41,20 @@ class BarcodePainter extends CustomPainter {
       return;
     }
 
-    ScalingRatios ratio = calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
+    final ratios = calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
     // final adjustedSize = applyBoxFit(boxFit, cameraPreviewSize, size);
 
-    double horizontalPadding =
-        ((cameraPreviewSize.width * ratio.widthRatio - size.width) / 2);
-    double verticalPadding =
-        ((cameraPreviewSize.height * ratio.heightRatio - size.height) / 2);
+    final double horizontalPadding =
+        (cameraPreviewSize.width * ratios.widthRatio - size.width) / 2;
+    final double verticalPadding =
+        (cameraPreviewSize.height * ratios.heightRatio - size.height) / 2;
 
     final List<Offset> adjustedOffset = [
-      Offset(
-        (barcodeCorners[0].dx * ratio.widthRatio - horizontalPadding),
-        (barcodeCorners[0].dy * ratio.heightRatio - verticalPadding),
-      ),
-      Offset(
-        (barcodeCorners[1].dx * ratio.widthRatio - horizontalPadding),
-        (barcodeCorners[1].dy * ratio.heightRatio - verticalPadding),
-      ),
-      Offset(
-        (barcodeCorners[2].dx * ratio.widthRatio - horizontalPadding),
-        (barcodeCorners[2].dy * ratio.heightRatio - verticalPadding),
-      ),
-      Offset(
-        (barcodeCorners[3].dx * ratio.widthRatio - horizontalPadding),
-        (barcodeCorners[3].dy * ratio.heightRatio - verticalPadding),
-      ),
+      for (final offset in barcodeCorners)
+        Offset(
+          offset.dx * ratios.widthRatio - horizontalPadding,
+          offset.dy * ratios.heightRatio - verticalPadding,
+        ),
     ];
 
     final cutoutPath = Path()..addPolygon(adjustedOffset, true);
@@ -90,28 +79,17 @@ class BarcodePainter extends CustomPainter {
   }
 }
 
-class ScalingRatios {
-  final double widthRatio;
-  final double heightRatio;
-
-  ScalingRatios(this.widthRatio, this.heightRatio);
-
-  @override
-  String toString() =>
-      'ScalingRatios(widthRatio: $widthRatio, heightRatio: $heightRatio)';
-}
-
 /// Calculate the scaling ratios for width and height to fit the small box (cameraPreviewSize)
 /// into the large box (size) based on the specified BoxFit mode.
-/// Returns a ScalingRatios object containing the width and height scaling ratios.
-ScalingRatios calculateBoxFitRatio(
+/// Returns a record containing the width and height scaling ratios.
+({double widthRatio, double heightRatio}) calculateBoxFitRatio(
     BoxFit boxFit, Size cameraPreviewSize, Size size) {
   // If the width or height of cameraPreviewSize or size is 0, return (1.0, 1.0) (no scaling)
   if (cameraPreviewSize.width <= 0 ||
       cameraPreviewSize.height <= 0 ||
       size.width <= 0 ||
       size.height <= 0) {
-    return ScalingRatios(1.0, 1.0);
+    return (widthRatio: 1.0, heightRatio: 1.0);
   }
 
   // Calculate the scaling ratios for width and height
@@ -121,33 +99,33 @@ ScalingRatios calculateBoxFitRatio(
   switch (boxFit) {
     case BoxFit.fill:
       // Stretch to fill the large box without maintaining aspect ratio
-      return ScalingRatios(widthRatio, heightRatio);
+      return (widthRatio: widthRatio, heightRatio: heightRatio);
 
     case BoxFit.contain:
       // Maintain aspect ratio, ensure the content fits entirely within the large box
       final ratio = math.min(widthRatio, heightRatio);
-      return ScalingRatios(ratio, ratio);
+      return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.cover:
       // Maintain aspect ratio, ensure the content fully covers the large box
       final ratio = math.max(widthRatio, heightRatio);
-      return ScalingRatios(ratio, ratio);
+      return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.fitWidth:
       // Maintain aspect ratio, ensure the width matches the large box
-      return ScalingRatios(widthRatio, widthRatio);
+      return (widthRatio: widthRatio, heightRatio: widthRatio);
 
     case BoxFit.fitHeight:
       // Maintain aspect ratio, ensure the height matches the large box
-      return ScalingRatios(heightRatio, heightRatio);
+      return (widthRatio: heightRatio, heightRatio: heightRatio);
 
     case BoxFit.none:
       // No scaling
-      return ScalingRatios(1.0, 1.0);
+      return (widthRatio: 1.0, heightRatio: 1.0);
 
     case BoxFit.scaleDown:
       // If the content is larger than the large box, scale down to fit; otherwise, no scaling
       final ratio = math.min(1.0, math.min(widthRatio, heightRatio));
-      return ScalingRatios(ratio, ratio);
+      return (widthRatio: ratio, heightRatio: ratio);
   }
 }
