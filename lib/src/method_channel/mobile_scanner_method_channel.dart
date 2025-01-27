@@ -7,12 +7,14 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/method_channel/android_surface_producer_delegate.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
+import 'package:mobile_scanner/src/utils/parse_device_orientation_extension.dart';
 
 /// An implementation of [MobileScannerPlatform] that uses method channels.
 class MethodChannelMobileScanner extends MobileScannerPlatform {
@@ -35,13 +37,31 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     'dev.steenbakker.mobile_scanner/scanner/method',
   );
 
+  /// The event channel that sends back device orientation change events.
+  @visibleForTesting
+  final deviceOrientationEventChannel = const EventChannel(
+    'dev.steenbakker.mobile_scanner/scanner/deviceOrientation',
+  );
+
   /// The event channel that sends back scanned barcode events.
   @visibleForTesting
   final eventChannel = const EventChannel(
     'dev.steenbakker.mobile_scanner/scanner/event',
   );
 
+  Stream<DeviceOrientation>? _deviceOrientationStream;
   Stream<Map<Object?, Object?>>? _eventsStream;
+
+  /// Get the event stream of device orientation change events
+  /// that come from the [deviceOrientationEventChannel].
+  Stream<DeviceOrientation> get deviceOrientationChangedStream {
+    _deviceOrientationStream ??= deviceOrientationEventChannel
+        .receiveBroadcastStream()
+        .cast<String>()
+        .map((String orientation) => orientation.parseDeviceOrientation());
+
+    return _deviceOrientationStream!;
+  }
 
   /// Get the event stream of barcode events that come from the [eventChannel].
   Stream<Map<Object?, Object?>> get eventsStream {
@@ -51,6 +71,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     return _eventsStream!;
   }
 
+  /// The delegate that handles texture rotation corrections on Android.
+  AndroidSurfaceProducerDelegate? _surfaceProducerDelegate;
+
+  /// The identifier of the current texture.
   int? _textureId;
   bool _pausing = false;
 
@@ -212,7 +236,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       return const SizedBox();
     }
 
-    return Texture(textureId: _textureId!);
+    final Widget texture = Texture(textureId: _textureId!);
+
+    if (_surfaceProducerDelegate
+        case final AndroidSurfaceProducerDelegate delegate) {
+      return delegate.applyRotationCorrection(texture);
+    }
+
+    return texture;
   }
 
   @override
@@ -278,6 +309,17 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = textureId;
 
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      _surfaceProducerDelegate =
+          AndroidSurfaceProducerDelegate.fromConfiguration(
+        startResult,
+        startOptions.cameraDirection,
+      );
+      _surfaceProducerDelegate?.startListeningToDeviceOrientation(
+        deviceOrientationChangedStream,
+      );
+    }
+
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
     final TorchState currentTorchState = TorchState.fromRawValue(
       startResult['currentTorchState'] as int? ?? -1,
@@ -309,6 +351,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = null;
     _pausing = false;
+    _surfaceProducerDelegate?.dispose();
+    _surfaceProducerDelegate = null;
 
     await methodChannel.invokeMethod<void>('stop');
   }

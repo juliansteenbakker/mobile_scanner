@@ -1,3 +1,10 @@
+## NEXT
+
+* This release requires Flutter 3.27.0 or higher.
+
+Improvements:
+* [Android] Added support for Impeller.
+
 ## 7.0.0-beta.5
 
 Improvements:

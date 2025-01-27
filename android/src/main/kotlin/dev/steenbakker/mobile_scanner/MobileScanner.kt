@@ -22,6 +22,7 @@ import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
+import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
@@ -37,6 +38,7 @@ import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import dev.steenbakker.mobile_scanner.objects.MobileScannerErrorCodes
 import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.YuvToRgbConverter
+import dev.steenbakker.mobile_scanner.utils.serialize
 import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +46,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
+import java.util.concurrent.Executors
 import kotlin.math.roundToInt
 
 class MobileScanner(
@@ -51,6 +54,7 @@ class MobileScanner(
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
+    private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
 
@@ -59,7 +63,7 @@ class MobileScanner(
     private var camera: Camera? = null
     private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
-    private var textureEntry: TextureRegistry.SurfaceTextureEntry? = null
+    private var surfaceProducer: TextureRegistry.SurfaceProducer? = null
     private var scanner: BarcodeScanner? = null
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
@@ -190,6 +194,70 @@ class MobileScanner(
         }
     }
 
+    /**
+     * Create a {@link Preview.SurfaceProvider} that specifies how to provide a {@link Surface} to a
+     * {@code Preview}.
+     */
+    @VisibleForTesting
+    fun createSurfaceProvider(surfaceProducer: TextureRegistry.SurfaceProducer): Preview.SurfaceProvider {
+        return Preview.SurfaceProvider {
+            request: SurfaceRequest ->
+            run {
+                // Set the callback for the surfaceProducer to invalidate Surfaces that it produces
+                // when they get destroyed.
+                surfaceProducer.setCallback(
+                    object : TextureRegistry.SurfaceProducer.Callback {
+                        override fun onSurfaceAvailable() {
+                            // Do nothing. The Preview.SurfaceProvider will handle this
+                            // whenever a new Surface is needed.
+                        }
+
+                        // TODO: replace with "onSurfaceCleanup" when available in Flutter 3.28 or later
+                        // See https://github.com/flutter/flutter/pull/160937
+                        override fun onSurfaceDestroyed() {
+                            // Invalidate the SurfaceRequest so that CameraX knows to to make a new request
+                            // for a surface.
+                            request.invalidate()
+                        }
+                    }
+                )
+
+                // Provide the surface.
+                surfaceProducer.setSize(request.resolution.width, request.resolution.height)
+
+                val surface: Surface = surfaceProducer.surface
+
+                // The single thread executor is only used to invoke the result callback.
+                // Thus it is safe to use a new executor,
+                // instead of reusing the executor that is passed to the camera process provider.
+                request.provideSurface(surface, Executors.newSingleThreadExecutor()) {
+                    // Handle the result of the request for a surface.
+                    // See: https://developer.android.com/reference/androidx/camera/core/SurfaceRequest.Result
+
+                    // Always attempt a release.
+                    surface.release()
+
+                    val resultCode: Int = it.resultCode
+
+                    when(resultCode) {
+                        SurfaceRequest.Result.RESULT_REQUEST_CANCELLED,
+                        SurfaceRequest.Result.RESULT_WILL_NOT_PROVIDE_SURFACE,
+                        SurfaceRequest.Result.RESULT_SURFACE_ALREADY_PROVIDED,
+                        SurfaceRequest.Result.RESULT_SURFACE_USED_SUCCESSFULLY -> {
+                            // Only need to release, do nothing.
+                        }
+                        SurfaceRequest.Result.RESULT_INVALID_SURFACE -> {
+                            // The surface was invalid, so it is not clear how to recover from this.
+                        }
+                        else -> {
+                            // Fallthrough, in case any result codes are added later.
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(degrees)
@@ -250,19 +318,22 @@ class MobileScanner(
         this.returnImage = returnImage
         this.invertImage = invertImage
 
-        if (camera?.cameraInfo != null && preview != null && textureEntry != null && !isPaused) {
+        if (camera?.cameraInfo != null && preview != null && surfaceProducer != null && !isPaused) {
 
-           // TODO: resume here for seamless transition
+// TODO: resume here for seamless transition
 //            if (isPaused) {
 //                resumeCamera()
 //                mobileScannerStartedCallback(
-//                    MobileScannerStartParameters(
-//                        if (portrait) width else height,
-//                        if (portrait) height else width,
-//                        currentTorchState,
-//                        textureEntry!!.id(),
-//                        numberOfCameras ?: 0
-//                    )
+//                  MobileScannerStartParameters(
+//                    if (portrait) width else height,
+//                    if (portrait) height else width,
+//                    deviceOrientationListener.getUIOrientation().serialize(),
+//                    sensorRotationDegrees,
+//                    surfaceProducer!!.handlesCropAndRotation(),
+//                    currentTorchState,
+//                    surfaceProducer!!.id(),
+//                    numberOfCameras ?: 0
+//                  )
 //                )
 //                return
 //            }
@@ -288,23 +359,10 @@ class MobileScanner(
             }
 
             cameraProvider?.unbindAll()
-            textureEntry = textureEntry ?: textureRegistry.createSurfaceTexture()
+            surfaceProducer = surfaceProducer ?: textureRegistry.createSurfaceProducer()
+            val surfaceProvider: Preview.SurfaceProvider = createSurfaceProvider(surfaceProducer!!)
 
             // Preview
-            val surfaceProvider = Preview.SurfaceProvider { request ->
-                if (isStopped()) {
-                    return@SurfaceProvider
-                }
-
-                val texture = textureEntry!!.surfaceTexture()
-                texture.setDefaultBufferSize(
-                    request.resolution.width,
-                    request.resolution.height
-                )
-
-                val surface = Surface(texture)
-                request.provideSurface(surface, executor) { }
-            }
 
             // Build the preview to be shown on the Flutter texture
             val previewBuilder = Preview.Builder()
@@ -385,7 +443,8 @@ class MobileScanner(
             val resolution = analysis.resolutionInfo!!.resolution
             val width = resolution.width.toDouble()
             val height = resolution.height.toDouble()
-            val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
+            val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
+            val portrait = sensorRotationDegrees % 180 == 0
 
             // Start with 'unavailable' torch state.
             var currentTorchState: Int = -1
@@ -398,12 +457,17 @@ class MobileScanner(
                 currentTorchState = it.torchState.value ?: -1
             }
 
+            deviceOrientationListener.start()
+
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
+                    deviceOrientationListener.getUIOrientation().serialize(),
+                    sensorRotationDegrees,
+                    surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
-                    textureEntry!!.id(),
+                    surfaceProducer!!.id(),
                     numberOfCameras ?: 0
                 )
             )
@@ -421,6 +485,7 @@ class MobileScanner(
             throw AlreadyStopped()
         }
 
+        deviceOrientationListener.stop()
         pauseCamera()
     }
 
@@ -432,6 +497,7 @@ class MobileScanner(
             throw AlreadyStopped()
         }
 
+        deviceOrientationListener.stop()
         releaseCamera()
     }
 
@@ -470,8 +536,9 @@ class MobileScanner(
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
 
-        textureEntry?.release()
-        textureEntry = null
+        // Release the surface for the preview.
+        surfaceProducer?.release()
+        surfaceProducer = null
 
         // Release the scanner.
         scanner?.close()

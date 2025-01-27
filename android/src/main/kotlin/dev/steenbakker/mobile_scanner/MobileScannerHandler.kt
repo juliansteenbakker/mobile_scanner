@@ -19,6 +19,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import java.io.File
 import com.google.mlkit.vision.barcode.ZoomSuggestionOptions
@@ -69,6 +70,7 @@ class MobileScannerHandler(
     }
 
     private var methodChannel: MethodChannel? = null
+    private var deviceOrientationChannel: EventChannel? = null
 
     private var mobileScanner: MobileScanner? = null
 
@@ -85,12 +87,23 @@ class MobileScannerHandler(
         methodChannel = MethodChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/method")
         methodChannel!!.setMethodCallHandler(this)
-        mobileScanner = MobileScanner(activity, textureRegistry, callback, errorCallback)
+
+        val deviceOrientationListener = DeviceOrientationListener(activity)
+
+        deviceOrientationChannel = EventChannel(binaryMessenger,
+            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation")
+        deviceOrientationChannel!!.setStreamHandler(deviceOrientationListener)
+
+        mobileScanner = MobileScanner(
+            activity, textureRegistry, callback, errorCallback, deviceOrientationListener)
     }
 
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
         methodChannel?.setMethodCallHandler(null)
         methodChannel = null
+        deviceOrientationChannel?.setStreamHandler(null)
+        deviceOrientationChannel = null
+        barcodeHandler.dispose()
         mobileScanner?.dispose()
         mobileScanner = null
 
@@ -174,6 +187,9 @@ class MobileScannerHandler(
                     result.success(mapOf(
                         "textureId" to it.id,
                         "size" to mapOf("width" to it.width, "height" to it.height),
+                        "naturalDeviceOrientation" to it.naturalDeviceOrientation,
+                        "isPreviewPreTransformed" to it.isPreviewPreTransformed,
+                        "sensorOrientation" to it.sensorOrientation,
                         "currentTorchState" to it.currentTorchState,
                         "numberOfCameras" to it.numberOfCameras
                     ))
