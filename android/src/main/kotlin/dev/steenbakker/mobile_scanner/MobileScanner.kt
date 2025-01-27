@@ -153,6 +153,7 @@ class MobileScanner(
 
                     bmResult.recycle()
                     imageProxy.close()
+                    imageFormat.release()
 
                     mobileScannerCallback(
                         barcodeMap,
