@@ -1,11 +1,10 @@
 ## 6.0.4
 Bugs fixed:
-* [Android] Fixed UI jank when `returnImage` is true.
+* [Android] Fixed UI stutter when `returnImage` is true.
 
 ## 6.0.3
 New features:
 * Adds pause function to pause the camera but keep textures in place.
-
 
 ## 6.0.2
 Bugs fixed:
