@@ -5,6 +5,17 @@
 Improvements:
 * [Android] Added support for Impeller.
 
+## 7.0.0-beta.5
+
+Improvements:
+* [Android] Added `autoZoom` parameter to auto zoom if the detected code is to far from the camera.
+* [Android] Added `invertImage` parameter to invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+* [Android] Updated camera-camera2 dependencies.
+* Added pause functionality to all platforms.
+
+Bugs fixed:
+* [Android] Fixed resources not being closed.
+
 ## 7.0.0-beta.4
 
 **BREAKING CHANGES:**
@@ -63,7 +74,7 @@ Known issues:
 
 ## 6.0.4
 Bugs fixed:
-* [Android] Fixed UI jank when `returnImage` is true.
+* [Android] Fixed UI stutter when `returnImage` is true.
 
 ## 6.0.3
 New features:
