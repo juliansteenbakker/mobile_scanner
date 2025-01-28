@@ -128,12 +128,12 @@ class MobileScanner(
                 }
 
                 if (!returnImage) {
-                    imageProxy.close()
                     mobileScannerCallback(
                         barcodeMap,
                         null,
                         mediaImage.width,
                         mediaImage.height)
+                    imageProxy.close()
                     return@addOnSuccessListener
                 }
 
@@ -151,16 +151,16 @@ class MobileScanner(
                     val bmWidth = bmResult.width
                     val bmHeight = bmResult.height
 
-                    bmResult.recycle()
-                    imageProxy.close()
-                    imageFormat.release()
-
                     mobileScannerCallback(
                         barcodeMap,
                         byteArray,
                         bmWidth,
                         bmHeight
                     )
+
+                    bmResult.recycle()
+                    imageProxy.close()
+                    imageFormat.release()
                 }
 
             }.addOnFailureListener { e ->
