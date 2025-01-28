@@ -144,12 +144,12 @@ class MobileScanner(
                 val portrait = (camera?.cameraInfo?.sensorRotationDegrees ?: 0) % 180 == 0
 
                 if (!returnImage) {
-                    imageProxy.close()
                     mobileScannerCallback(
                         barcodeMap,
                         null,
                         if (portrait) inputImage.width else inputImage.height,
                         if (portrait) inputImage.height else inputImage.width)
+                    imageProxy.close()
                     return@addOnSuccessListener
                 }
 
@@ -167,16 +167,16 @@ class MobileScanner(
                     val bmWidth = bmResult.width
                     val bmHeight = bmResult.height
 
-                    bmResult.recycle()
-                    imageProxy.close()
-                    imageFormat.release()
-
                     mobileScannerCallback(
                         barcodeMap,
                         byteArray,
                         bmWidth,
                         bmHeight
                     )
+
+                    bmResult.recycle()
+                    imageProxy.close()
+                    imageFormat.release()
                 }
 
             }.addOnFailureListener { e ->
