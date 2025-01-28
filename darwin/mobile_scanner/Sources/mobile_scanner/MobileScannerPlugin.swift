@@ -358,6 +358,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
+            
+            if (!(captureSession!.canAddInput(input))) {
+                result(FlutterError(
+                    code: MobileScannerErrorCodes.CAMERA_ERROR,
+                    message: MobileScannerErrorCodes.CAMERA_ERROR_CAPTURE_SESSION_INPUT_OCCUPIED_MESSAGE,
+                    details: nil))
+                return
+            }
+            
             captureSession!.addInput(input)
         } catch {
             result(FlutterError(
