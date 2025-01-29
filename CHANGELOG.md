@@ -1,3 +1,10 @@
+## NEXT
+Bugs fixed:
+* [web] Fixed a bug that prevented color inverted barcodes from being scanned.
+
+Improvements:
+* [web] Bump ZXingJS from version 0.19.1 to 0.21.3.
+
 ## 6.0.4
 Bugs fixed:
 * [Android] Fixed UI stutter when `returnImage` is true.
