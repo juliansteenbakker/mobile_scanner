@@ -5,6 +5,10 @@ Bugs fixed:
 Improvements:
 * [web] Bump ZXingJS from version 0.19.1 to 0.21.3.
 
+## 6.0.5
+Bugs fixed:
+* [Android] Fixed crash due to imageProxy being closed too early.
+
 ## 6.0.4
 Bugs fixed:
 * [Android] Fixed UI stutter when `returnImage` is true.
