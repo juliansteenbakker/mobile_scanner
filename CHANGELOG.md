@@ -1,3 +1,7 @@
+## 6.0.5
+Bugs fixed:
+* [Android] Fixed crash due to imageProxy being closed too early.
+
 ## 6.0.4
 Bugs fixed:
 * [Android] Fixed UI stutter when `returnImage` is true.
