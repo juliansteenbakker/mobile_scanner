@@ -68,7 +68,7 @@ class _BarcodeScannerListViewState extends State<BarcodeScannerListView> {
             child: Container(
               alignment: Alignment.bottomCenter,
               height: 100,
-              color: Colors.black.withOpacity(0.4),
+              color: const Color.fromRGBO(0, 0, 0, 0.4),
               child: Column(
                 children: [
                   Expanded(
