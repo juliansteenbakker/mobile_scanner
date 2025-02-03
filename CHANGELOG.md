@@ -1,6 +1,7 @@
 ## NEXT
 
 * This release requires Flutter 3.27.0 or higher.
+* Export the `MobileScannerViewAttributes` and `StartOptions` types, to allow them in tests.
 
 Improvements:
 * [Android] Added support for Impeller.
