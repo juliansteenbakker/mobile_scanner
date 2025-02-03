@@ -118,7 +118,7 @@ class ScannerOverlay extends CustomPainter {
       );
 
     final backgroundPaint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = const Color.fromRGBO(0, 0, 0, 0.5)
       ..style = PaintingStyle.fill
       ..blendMode = BlendMode.dstOver;
 
