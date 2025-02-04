@@ -6,6 +6,9 @@
 Improvements:
 * [Android] Added support for Impeller.
 
+Bugs fixed:
+* [Apple] Fixed a bug that caused a crash when the capture session could not add the video input.
+
 ## 7.0.0-beta.5
 
 Improvements:
