@@ -900,6 +900,13 @@ extension VNBarcodeObservation {
         // Calculate the width and height of the barcode based on adjusted coordinates
         let width = distanceBetween(adjustedTopLeft, adjustedTopRight) * CGFloat(imageWidth)
         let height = distanceBetween(adjustedTopLeft, adjustedBottomLeft) * CGFloat(imageHeight)
+        var rawBytes: FlutterStandardTypedData? = nil
+        
+        if #available(iOS 17.0, macOS 14.0, *) {
+            if let payloadData = payloadData {
+                rawBytes = FlutterStandardTypedData(bytes: payloadData)
+            }
+        }
 
         let data = [
             // Clockwise, starting from the top-left corner.
@@ -910,6 +917,7 @@ extension VNBarcodeObservation {
                 ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
+            "rawBytes": rawBytes,
             "rawValue": payloadStringValue ?? "",
             "displayValue": payloadStringValue ?? "",
             "size": [
