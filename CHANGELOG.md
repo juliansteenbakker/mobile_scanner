@@ -1,4 +1,4 @@
-## NEXT
+## 6.0.6
 Bugs fixed:
 * [web] Fixed a bug that prevented color inverted barcodes from being scanned.
 
