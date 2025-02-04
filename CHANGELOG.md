@@ -1,11 +1,13 @@
-## NEXT
+## 7.0.0-beta.6
+
+**BREAKING CHANGES:**
 
 * This release requires Flutter 3.27.0 or higher.
-* Export the `MobileScannerViewAttributes` and `StartOptions` types, to allow them in tests.
 
 Improvements:
 * [Android] Added support for Impeller.
 * [Apple] Added support for `rawBytes` from the Vision API observations.
+* Export the `MobileScannerViewAttributes` and `StartOptions` types, to allow them in tests.
 
 Bugs fixed:
 * [Apple] Fixed a bug that caused a crash when the capture session could not add the video input.
