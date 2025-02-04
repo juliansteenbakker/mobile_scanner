@@ -53,7 +53,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.19.1';
+  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.21.3';
 
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {
