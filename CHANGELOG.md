@@ -5,6 +5,7 @@
 
 Improvements:
 * [Android] Added support for Impeller.
+* [Apple] Added support for `rawBytes` from the Vision API observations.
 
 ## 7.0.0-beta.5
 
