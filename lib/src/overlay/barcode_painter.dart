@@ -42,7 +42,6 @@ class BarcodePainter extends CustomPainter {
     }
 
     final ratios = calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
-    // final adjustedSize = applyBoxFit(boxFit, cameraPreviewSize, size);
 
     final double horizontalPadding =
         (cameraPreviewSize.width * ratios.widthRatio - size.width) / 2;
@@ -83,7 +82,10 @@ class BarcodePainter extends CustomPainter {
 /// into the large box (size) based on the specified BoxFit mode.
 /// Returns a record containing the width and height scaling ratios.
 ({double widthRatio, double heightRatio}) calculateBoxFitRatio(
-    BoxFit boxFit, Size cameraPreviewSize, Size size) {
+  BoxFit boxFit,
+  Size cameraPreviewSize,
+  Size size,
+) {
   // If the width or height of cameraPreviewSize or size is 0, return (1.0, 1.0) (no scaling)
   if (cameraPreviewSize.width <= 0 ||
       cameraPreviewSize.height <= 0 ||
