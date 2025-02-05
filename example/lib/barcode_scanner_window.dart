@@ -89,11 +89,11 @@ class _BarcodeScannerWithScanWindowState
                             ScannedBarcodeLabel(barcodes: controller.barcodes),
                       ),
                     ),
-                    const Text(
-                      "Camera preview",
-                      style: TextStyle(
+                    Text(
+                      "Camera preview\nBoxFit: $boxFit",
+                      style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 30,
+                        fontSize: 20,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
