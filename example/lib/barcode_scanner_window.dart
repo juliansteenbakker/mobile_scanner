@@ -104,18 +104,8 @@ class _BarcodeScannerWithScanWindowState
                         spacing: 0.5,
                         runSpacing: 3.0,
                         alignment: WrapAlignment.center,
-                        children: BoxFitOption.values.map((option) {
-                          return SizedBox(
-                            height: 28,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                setState(() {
-                                  boxFit = option.boxFit;
-                                });
-                              },
-                              child: Text(option.label),
-                            ),
-                          );
+                        children: BoxFit.values.map((fit) {
+                          return _buildBoxFitButton(fit);
                         }).toList(),
                       ),
                     ),
@@ -129,24 +119,21 @@ class _BarcodeScannerWithScanWindowState
     );
   }
 
+  Widget _buildBoxFitButton(BoxFit fit) {
+    return SizedBox(
+      height: 28,
+      child: ElevatedButton(
+        onPressed: () => setState(() {
+          boxFit = fit;
+        }),
+        child: Text(fit.name),
+      ),
+    );
+  }
+
   @override
   Future<void> dispose() async {
     super.dispose();
     await controller.dispose();
   }
-}
-
-enum BoxFitOption {
-  fill(BoxFit.fill, "fill"),
-  contain(BoxFit.contain, "contain"),
-  cover(BoxFit.cover, "cover"),
-  fitWidth(BoxFit.fitWidth, "fitWidth"),
-  fitHeight(BoxFit.fitHeight, "fitHeight"),
-  none(BoxFit.none, "none"),
-  scaleDown(BoxFit.scaleDown, "scaleDown");
-
-  final BoxFit boxFit;
-  final String label;
-
-  const BoxFitOption(this.boxFit, this.label);
 }
