@@ -268,8 +268,10 @@ void main() {
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.min(size.width / cameraPreviewSize.width,
-              size.height / cameraPreviewSize.height);
+          final expectedRatio = math.min(
+            size.width / cameraPreviewSize.width,
+            size.height / cameraPreviewSize.height,
+          );
           expect(ratio.widthRatio, expectedRatio);
           expect(ratio.heightRatio, expectedRatio);
         });
@@ -325,9 +327,12 @@ void main() {
             size,
           );
           final expectedRatio = math.min(
-              1.0,
-              math.min(size.width / cameraPreviewSize.width,
-                  size.height / cameraPreviewSize.height));
+            1.0,
+            math.min(
+              size.width / cameraPreviewSize.width,
+              size.height / cameraPreviewSize.height,
+            ),
+          );
           expect(ratio.widthRatio, expectedRatio);
           expect(ratio.heightRatio, expectedRatio);
         });
