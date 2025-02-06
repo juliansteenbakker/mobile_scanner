@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/scanned_barcode_label.dart';
-
 import 'package:mobile_scanner_example/scanner_error_widget.dart';
 
 class BarcodeScannerWithScanWindow extends StatefulWidget {
@@ -18,7 +17,6 @@ class _BarcodeScannerWithScanWindowState
     detectionSpeed: DetectionSpeed.unrestricted,
   );
 
-  // TODO: Fix BoxFit.fill & BoxFit.fitHeight
   BoxFit boxFit = BoxFit.contain;
   final double containerWidth = 300;
   final double containerHeight = 600;
@@ -85,8 +83,9 @@ class _BarcodeScannerWithScanWindowState
                         ),
                         height: 100,
                         color: const Color.fromRGBO(0, 0, 0, 0.4),
-                        child:
-                            ScannedBarcodeLabel(barcodes: controller.barcodes),
+                        child: ScannedBarcodeLabel(
+                          barcodes: controller.barcodes,
+                        ),
                       ),
                     ),
                     Text(
@@ -104,9 +103,8 @@ class _BarcodeScannerWithScanWindowState
                         spacing: 0.5,
                         runSpacing: 3.0,
                         alignment: WrapAlignment.center,
-                        children: BoxFit.values.map((fit) {
-                          return _buildBoxFitButton(fit);
-                        }).toList(),
+                        children:
+                            BoxFit.values.map(_buildBoxFitButton).toList(),
                       ),
                     ),
                   ],

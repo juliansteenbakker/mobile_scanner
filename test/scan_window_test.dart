@@ -1,5 +1,7 @@
+import 'dart:math' as math;
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 void main() {
@@ -148,6 +150,186 @@ void main() {
             BoxFit.scaleDown,
             const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
           );
+        });
+      });
+    },
+  );
+
+  group(
+    'Calculate Box Fit Ratio',
+    () {
+      group('Smaller camera preview size in portrait', () {
+        const cameraPreviewSize = Size(480.0, 640.0);
+        const size = Size(432.0, 256.0);
+
+        test('scp p: BoxFit.fill', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fill,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+        });
+
+        test('scp p: BoxFit.contain', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.contain,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.min(
+            size.width / cameraPreviewSize.width,
+            size.height / cameraPreviewSize.height,
+          );
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
+        });
+
+        test('scp p: BoxFit.cover', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.cover,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.max(
+            size.width / cameraPreviewSize.width,
+            size.height / cameraPreviewSize.height,
+          );
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
+        });
+
+        test('scp p: BoxFit.fitWidth', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitWidth,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.heightRatio, size.width / cameraPreviewSize.width);
+        });
+
+        test('scp p: BoxFit.fitHeight', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitHeight,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+        });
+
+        test('scp p: BoxFit.none', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.none,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 1.0);
+          expect(ratio.heightRatio, 1.0);
+        });
+
+        test('scp p: BoxFit.scaleDown', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.scaleDown,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.min(
+            1.0,
+            math.min(
+              size.width / cameraPreviewSize.width,
+              size.height / cameraPreviewSize.height,
+            ),
+          );
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
+        });
+      });
+
+      group('Smaller camera preview size in landscape', () {
+        const cameraPreviewSize = Size(640.0, 480.0);
+        const size = Size(320.0, 120.0);
+
+        test('scp l: BoxFit.fill', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fill,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+        });
+
+        test('scp l: BoxFit.contain', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.contain,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.min(size.width / cameraPreviewSize.width,
+              size.height / cameraPreviewSize.height);
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
+        });
+
+        test('scp l: BoxFit.cover', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.cover,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.max(
+            size.width / cameraPreviewSize.width,
+            size.height / cameraPreviewSize.height,
+          );
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
+        });
+
+        test('scp l: BoxFit.fitWidth', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitWidth,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.heightRatio, size.width / cameraPreviewSize.width);
+        });
+
+        test('scp l: BoxFit.fitHeight', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitHeight,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+        });
+
+        test('scp l: BoxFit.none', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.none,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 1.0);
+          expect(ratio.heightRatio, 1.0);
+        });
+
+        test('scp l: BoxFit.scaleDown', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.scaleDown,
+            cameraPreviewSize,
+            size,
+          );
+          final expectedRatio = math.min(
+              1.0,
+              math.min(size.width / cameraPreviewSize.width,
+                  size.height / cameraPreviewSize.height));
+          expect(ratio.widthRatio, expectedRatio);
+          expect(ratio.heightRatio, expectedRatio);
         });
       });
     },
