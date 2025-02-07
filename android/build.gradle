@@ -25,6 +25,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
+    namespace = "dev.steenbakker.mobile_scanner"
     if (project.android.hasProperty("namespace")) {
         namespace 'dev.steenbakker.mobile_scanner'
     }
