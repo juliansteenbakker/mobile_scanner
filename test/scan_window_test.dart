@@ -156,71 +156,65 @@ void main() {
   );
 
   group(
-    'Calculate Box Fit Ratio',
+    'calculateBoxFitRatio',
     () {
       group('Smaller camera preview size in portrait', () {
         const cameraPreviewSize = Size(480.0, 640.0);
         const size = Size(432.0, 256.0);
 
-        test('scp p: BoxFit.fill', () {
+        test('scpsip: BoxFit.fill', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fill,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
-          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.4);
         });
 
-        test('scp p: BoxFit.contain', () {
+        test('scpsip: BoxFit.contain', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.contain,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.min(
-            size.width / cameraPreviewSize.width,
-            size.height / cameraPreviewSize.height,
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
         });
 
-        test('scp p: BoxFit.cover', () {
+        test('scpsip: BoxFit.cover', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.cover,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.max(
-            size.width / cameraPreviewSize.width,
-            size.height / cameraPreviewSize.height,
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.9);
         });
 
-        test('scp p: BoxFit.fitWidth', () {
+        test('scpsip: BoxFit.fitWidth', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fitWidth,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
-          expect(ratio.heightRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.9);
         });
 
-        test('scp p: BoxFit.fitHeight', () {
+        test('scpsip: BoxFit.fitHeight', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fitHeight,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.height / cameraPreviewSize.height);
-          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
         });
 
-        test('scp p: BoxFit.none', () {
+        test('scpsip: BoxFit.none', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.none,
             cameraPreviewSize,
@@ -230,21 +224,15 @@ void main() {
           expect(ratio.heightRatio, 1.0);
         });
 
-        test('scp p: BoxFit.scaleDown', () {
+        test('scpsip: BoxFit.scaleDown', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.scaleDown,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.min(
-            1.0,
-            math.min(
-              size.width / cameraPreviewSize.width,
-              size.height / cameraPreviewSize.height,
-            ),
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
         });
       });
 
@@ -252,65 +240,59 @@ void main() {
         const cameraPreviewSize = Size(640.0, 480.0);
         const size = Size(320.0, 120.0);
 
-        test('scp l: BoxFit.fill', () {
+        test('scpsil: BoxFit.fill', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fill,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
-          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.25);
         });
 
-        test('scp l: BoxFit.contain', () {
+        test('scpsil: BoxFit.contain', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.contain,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.min(
-            size.width / cameraPreviewSize.width,
-            size.height / cameraPreviewSize.height,
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
         });
 
-        test('scp l: BoxFit.cover', () {
+        test('scpsil: BoxFit.cover', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.cover,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.max(
-            size.width / cameraPreviewSize.width,
-            size.height / cameraPreviewSize.height,
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.5);
         });
 
-        test('scp l: BoxFit.fitWidth', () {
+        test('scpsil: BoxFit.fitWidth', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fitWidth,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.width / cameraPreviewSize.width);
-          expect(ratio.heightRatio, size.width / cameraPreviewSize.width);
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.5);
         });
 
-        test('scp l: BoxFit.fitHeight', () {
+        test('scpsil: BoxFit.fitHeight', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.fitHeight,
             cameraPreviewSize,
             size,
           );
-          expect(ratio.widthRatio, size.height / cameraPreviewSize.height);
-          expect(ratio.heightRatio, size.height / cameraPreviewSize.height);
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
         });
 
-        test('scp l: BoxFit.none', () {
+        test('scpsil: BoxFit.none', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.none,
             cameraPreviewSize,
@@ -320,21 +302,15 @@ void main() {
           expect(ratio.heightRatio, 1.0);
         });
 
-        test('scp l: BoxFit.scaleDown', () {
+        test('scpsil: BoxFit.scaleDown', () {
           final ratio = calculateBoxFitRatio(
             BoxFit.scaleDown,
             cameraPreviewSize,
             size,
           );
-          final expectedRatio = math.min(
-            1.0,
-            math.min(
-              size.width / cameraPreviewSize.width,
-              size.height / cameraPreviewSize.height,
-            ),
-          );
-          expect(ratio.widthRatio, expectedRatio);
-          expect(ratio.heightRatio, expectedRatio);
+
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
         });
       });
     },
