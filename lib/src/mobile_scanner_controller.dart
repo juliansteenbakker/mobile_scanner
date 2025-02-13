@@ -38,7 +38,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         ),
         assert(
           facing != CameraFacing.unknown,
-          'The camera facing direction must be either front, back or external.',
+          'CameraFacing.unknown is not a valid camera direction.',
         ),
         super(const MobileScannerState.uninitialized());
 
@@ -303,6 +303,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         errorDetails: MobileScannerErrorDetails(
           message:
               'The MobileScannerController was used after it has been disposed.',
+        ),
+      );
+    }
+
+    if (cameraDirection == CameraFacing.unknown) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'CameraFacing.unknown is not a valid camera direction.',
         ),
       );
     }
