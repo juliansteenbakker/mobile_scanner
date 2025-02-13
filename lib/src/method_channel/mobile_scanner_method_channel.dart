@@ -319,9 +319,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         startResult,
         cameraDirection,
       );
-      _surfaceProducerDelegate?.startListeningToDeviceOrientation(
-        deviceOrientationChangedStream,
-      );
     }
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
@@ -356,7 +353,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = null;
     _pausing = false;
-    _surfaceProducerDelegate?.dispose();
     _surfaceProducerDelegate = null;
 
     await methodChannel.invokeMethod<void>('stop');

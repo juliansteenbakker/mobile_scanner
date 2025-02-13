@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
@@ -60,24 +58,11 @@ class AndroidSurfaceProducerDelegate {
     DeviceOrientation.landscapeLeft: 270,
   };
 
-  // TODO: remove this flag once the rotation correction functions correctly on Impeller.
-  // See https://github.com/juliansteenbakker/mobile_scanner/pull/1283#discussion_r1927798329
-  static const bool _rotationCorrectionEnabled = false;
-
-  /// The subscription that listens to device orientation changes.
-  StreamSubscription<Object?>? _deviceOrientationSubscription;
-
   /// Whether the current camera is a front facing camera.
   ///
   /// This is used to determine whether the orientation correction
   /// should apply an additional correction for front facing cameras.
   final bool cameraIsFrontFacing;
-
-  /// The current orientation of the device.
-  ///
-  /// When the orientation changes this field is updated by notifications from
-  /// the [_deviceOrientationSubscription].
-  DeviceOrientation? currentDeviceOrientation;
 
   /// Whether the camera preview is pre-transformed,
   /// and thus does not need an orientation correction.
@@ -154,24 +139,5 @@ class AndroidSurfaceProducerDelegate {
       quarterTurns: quarterTurnsToCorrectPreview,
       child: texture,
     );
-  }
-
-  /// Start listening to device orientation changes,
-  /// which are provided by the given [stream].
-  void startListeningToDeviceOrientation(Stream<DeviceOrientation> stream) {
-    if (!_rotationCorrectionEnabled) {
-      return;
-    }
-
-    _deviceOrientationSubscription ??=
-        stream.listen((DeviceOrientation newOrientation) {
-      currentDeviceOrientation = newOrientation;
-    });
-  }
-
-  /// Dispose of this delegate.
-  void dispose() {
-    _deviceOrientationSubscription?.cancel();
-    _deviceOrientationSubscription = null;
   }
 }
