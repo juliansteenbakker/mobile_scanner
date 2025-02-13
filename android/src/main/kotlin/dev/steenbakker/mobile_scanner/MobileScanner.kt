@@ -13,11 +13,14 @@ import android.hardware.display.DisplayManager
 import android.net.Uri
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.util.Size
 import android.view.Surface
 import androidx.annotation.VisibleForTesting
+import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraXConfig
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -42,7 +45,6 @@ import dev.steenbakker.mobile_scanner.utils.serialize
 import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.io.ByteArrayOutputStream
 import java.io.IOException
@@ -57,6 +59,10 @@ class MobileScanner(
     private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
+
+    init {
+        configureCameraProcessProvider()
+    }
 
     /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
@@ -78,6 +84,20 @@ class MobileScanner(
     private var isPaused = false
 
     companion object {
+        // Configure the `ProcessCameraProvider` to only log errors.
+        // This prevents the informational log spam from CameraX.
+        private fun configureCameraProcessProvider() {
+            try {
+                val config = CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig()).apply {
+                    setMinimumLoggingLevel(Log.ERROR)
+                }
+                ProcessCameraProvider.configureInstance(config.build())
+            } catch (_: IllegalStateException) {
+                // The ProcessCameraProvider was already configured.
+                // Do nothing.
+            }
+        }
+
         /**
          * Create a barcode scanner from the given options.
          */
