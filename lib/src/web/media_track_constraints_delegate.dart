@@ -1,5 +1,6 @@
 import 'dart:js_interop';
 
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:web/web.dart';
 
@@ -7,6 +8,31 @@ import 'package:web/web.dart';
 final class MediaTrackConstraintsDelegate {
   /// Constructs a [MediaTrackConstraintsDelegate] instance.
   const MediaTrackConstraintsDelegate();
+
+  /// Get the camera direction from the given [videoStream].
+  CameraFacing getCameraDirection(MediaStream? videoStream) {
+    final MediaTrackSettings? trackSettings = getSettings(videoStream);
+
+    return switch (trackSettings?.facingModeNullable) {
+      'environment' => CameraFacing.back,
+      'user' => CameraFacing.front,
+      _ => CameraFacing.unknown,
+    };
+  }
+
+  /// Convert the given [cameraDirection] into a facing mode string,
+  /// that is suitable as a MediaTrack constraint.
+  String getFacingMode(
+    CameraFacing cameraDirection,
+  ) {
+    return switch (cameraDirection) {
+      CameraFacing.back ||
+      CameraFacing.external ||
+      CameraFacing.unknown =>
+        'environment',
+      CameraFacing.front => 'user',
+    };
+  }
 
   /// Get the settings for the given [mediaStream].
   MediaTrackSettings? getSettings(MediaStream? mediaStream) {
@@ -18,18 +44,9 @@ final class MediaTrackConstraintsDelegate {
 
     final MediaStreamTrack track = tracks.first;
 
-    final MediaTrackCapabilities capabilities;
-
-    if (track.getCapabilitiesNullable != null) {
-      capabilities = track.getCapabilities();
-    } else {
-      capabilities = MediaTrackCapabilities();
-    }
-
     final MediaTrackSettings settings = track.getSettings();
-    final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
 
-    if (facingModes == null || facingModes.toDart.isEmpty) {
+    if (settings.facingModeNullable == null) {
       return MediaTrackSettings(
         width: settings.width,
         height: settings.height,

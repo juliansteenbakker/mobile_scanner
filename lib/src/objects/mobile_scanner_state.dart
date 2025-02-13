@@ -23,10 +23,10 @@ class MobileScannerState {
   });
 
   /// Create a new [MobileScannerState] instance that is uninitialized.
-  const MobileScannerState.uninitialized(CameraFacing facing)
+  const MobileScannerState.uninitialized()
       : this(
           availableCameras: null,
-          cameraDirection: facing,
+          cameraDirection: CameraFacing.unknown,
           isInitialized: false,
           isRunning: false,
           size: Size.zero,

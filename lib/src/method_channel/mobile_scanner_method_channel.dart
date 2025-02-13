@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -307,13 +308,16 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
+    final CameraFacing cameraDirection =
+        CameraFacing.fromRawValue(startResult['cameraDirection'] as int?);
+
     _textureId = textureId;
 
     if (defaultTargetPlatform == TargetPlatform.android) {
       _surfaceProducerDelegate =
           AndroidSurfaceProducerDelegate.fromConfiguration(
         startResult,
-        startOptions.cameraDirection,
+        cameraDirection,
       );
       _surfaceProducerDelegate?.startListeningToDeviceOrientation(
         deviceOrientationChangedStream,
@@ -337,6 +341,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _pausing = false;
 
     return MobileScannerViewAttributes(
+      cameraDirection: cameraDirection,
       currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,

@@ -8,5 +8,6 @@ class MobileScannerStartParameters(
     val isPreviewPreTransformed: Boolean,
     val currentTorchState: Int,
     val id: Long,
-    val numberOfCameras: Int
+    val numberOfCameras: Int,
+    val cameraDirection: Int?,
 )
