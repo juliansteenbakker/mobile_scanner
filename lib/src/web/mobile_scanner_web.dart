@@ -246,7 +246,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
     if (_barcodeReader != null) {
       if (_barcodeReader!.paused ?? false) {
         await _barcodeReader?.resume();
+
+        final CameraFacing cameraDirection =
+            _settingsDelegate.getCameraDirection(
+          _barcodeReader?.videoStream,
+        );
+
         return MobileScannerViewAttributes(
+          cameraDirection: cameraDirection,
           // The torch of a media stream is not available for video tracks.
           // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
           currentTorchMode: TorchState.unavailable,
@@ -336,7 +343,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
         await _barcodeReader?.setTorchState(TorchState.on);
       }
 
+      final CameraFacing cameraDirection = _settingsDelegate.getCameraDirection(
+        videoStream,
+      );
+
       return MobileScannerViewAttributes(
+        cameraDirection: cameraDirection,
         // The torch of a media stream is not available for video tracks.
         // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
         currentTorchMode: TorchState.unavailable,
