@@ -22,6 +22,7 @@ import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.CameraXConfig
 import androidx.camera.core.ExperimentalGetImage
+import androidx.camera.core.ExperimentalLensFacing
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
@@ -278,6 +279,17 @@ class MobileScanner(
         }
     }
 
+    @ExperimentalLensFacing
+    private fun getCameraLensFacing(camera: Camera?): Int? {
+        return when(camera?.cameraInfo?.lensFacing) {
+            CameraSelector.LENS_FACING_BACK -> 1
+            CameraSelector.LENS_FACING_FRONT -> 0
+            CameraSelector.LENS_FACING_EXTERNAL -> 2
+            CameraSelector.LENS_FACING_UNKNOWN -> null
+            else -> null
+        }
+    }
+
     private fun rotateBitmap(bitmap: Bitmap, degrees: Float): Bitmap {
         val matrix = Matrix()
         matrix.postRotate(degrees)
@@ -318,6 +330,7 @@ class MobileScanner(
     /**
      * Start barcode scanning by initializing the camera and barcode scanner.
      */
+    @ExperimentalLensFacing
     @ExperimentalGetImage
     fun start(
         barcodeScannerOptions: BarcodeScannerOptions?,
@@ -343,6 +356,7 @@ class MobileScanner(
 // TODO: resume here for seamless transition
 //            if (isPaused) {
 //                resumeCamera()
+//                val cameraDirection = getCameraLensFacing(camera)
 //                mobileScannerStartedCallback(
 //                  MobileScannerStartParameters(
 //                    if (portrait) width else height,
@@ -352,7 +366,8 @@ class MobileScanner(
 //                    surfaceProducer!!.handlesCropAndRotation(),
 //                    currentTorchState,
 //                    surfaceProducer!!.id(),
-//                    numberOfCameras ?: 0
+//                    numberOfCameras ?: 0,
+//                    cameraDirection
 //                  )
 //                )
 //                return
@@ -465,6 +480,7 @@ class MobileScanner(
             val height = resolution.height.toDouble()
             val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
             val portrait = sensorRotationDegrees % 180 == 0
+            val cameraDirection = getCameraLensFacing(camera)
 
             // Start with 'unavailable' torch state.
             var currentTorchState: Int = -1
@@ -488,7 +504,8 @@ class MobileScanner(
                     surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
                     surfaceProducer!!.id(),
-                    numberOfCameras ?: 0
+                    numberOfCameras ?: 0,
+                    cameraDirection,
                 )
             )
         }, executor)
