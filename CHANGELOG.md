@@ -1,3 +1,8 @@
+## NEXT
+
+Improvements:
+* [Android] Turn off logging for CameraX, except for the `Log.ERROR` logging level.
+
 ## 7.0.0-beta.6
 
 **BREAKING CHANGES:**

@@ -55,5 +55,8 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           cache: true
+          # TODO: move the code to the new tall style once Flutter 3.29 is the new minimum.
+          # https://github.com/juliansteenbakker/mobile_scanner/issues/1326
+          flutter-version: '3.27'
       - name: Format
         run: dart format --set-exit-if-changed .
