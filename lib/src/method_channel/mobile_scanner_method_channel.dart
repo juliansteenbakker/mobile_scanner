@@ -239,9 +239,29 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Widget texture = Texture(textureId: _textureId!);
 
+    // If the preview needs manual orientation corrections,
+    // correct the preview orientation based on the currently reported device orientation.
+    // On Android, the underlying device orientation stream will emit the current orientation
+    // when the first listener is attached.
     if (_surfaceProducerDelegate
-        case final AndroidSurfaceProducerDelegate delegate) {
-      return delegate.applyRotationCorrection(texture);
+        case final AndroidSurfaceProducerDelegate delegate
+        when !delegate.isPreviewPreTransformed) {
+      return StreamBuilder<DeviceOrientation>(
+        stream: deviceOrientationChangedStream,
+        builder:
+            (BuildContext context, AsyncSnapshot<DeviceOrientation> snapshot) {
+          final DeviceOrientation? currentDeviceOrientation = snapshot.data;
+
+          if (currentDeviceOrientation == null) {
+            return texture;
+          }
+
+          return delegate.applyRotationCorrection(
+            texture,
+            currentDeviceOrientation,
+          );
+        },
+      );
     }
 
     return texture;

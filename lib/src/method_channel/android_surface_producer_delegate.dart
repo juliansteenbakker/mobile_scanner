@@ -78,11 +78,13 @@ class AndroidSurfaceProducerDelegate {
   final int sensorOrientation;
 
   /// Apply a rotation correction to the given [texture] widget.
-  Widget applyRotationCorrection(Widget texture) {
-    if (!_rotationCorrectionEnabled) {
-      return texture;
-    }
-
+  ///
+  /// The [currentDeviceOrientation] is the current device orientation
+  /// at the time this method is called.
+  Widget applyRotationCorrection(
+    Widget texture,
+    DeviceOrientation currentDeviceOrientation,
+  ) {
     int naturalDeviceOrientationDegrees =
         _degreesForDeviceOrientation[naturalOrientation]!;
 
