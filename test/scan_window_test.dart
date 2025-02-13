@@ -1,5 +1,7 @@
+import 'dart:math' as math;
 import 'package:flutter/painting.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 void main() {
@@ -148,6 +150,167 @@ void main() {
             BoxFit.scaleDown,
             const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
           );
+        });
+      });
+    },
+  );
+
+  group(
+    'calculateBoxFitRatio',
+    () {
+      group('Smaller camera preview size in portrait', () {
+        const cameraPreviewSize = Size(480.0, 640.0);
+        const size = Size(432.0, 256.0);
+
+        test('scpsip: BoxFit.fill', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fill,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.4);
+        });
+
+        test('scpsip: BoxFit.contain', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.contain,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
+        });
+
+        test('scpsip: BoxFit.cover', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.cover,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.9);
+        });
+
+        test('scpsip: BoxFit.fitWidth', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitWidth,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.9);
+          expect(ratio.heightRatio, 0.9);
+        });
+
+        test('scpsip: BoxFit.fitHeight', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitHeight,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
+        });
+
+        test('scpsip: BoxFit.none', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.none,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 1.0);
+          expect(ratio.heightRatio, 1.0);
+        });
+
+        test('scpsip: BoxFit.scaleDown', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.scaleDown,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.4);
+          expect(ratio.heightRatio, 0.4);
+        });
+      });
+
+      group('Smaller camera preview size in landscape', () {
+        const cameraPreviewSize = Size(640.0, 480.0);
+        const size = Size(320.0, 120.0);
+
+        test('scpsil: BoxFit.fill', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fill,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.25);
+        });
+
+        test('scpsil: BoxFit.contain', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.contain,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
+        });
+
+        test('scpsil: BoxFit.cover', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.cover,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.5);
+        });
+
+        test('scpsil: BoxFit.fitWidth', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitWidth,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.5);
+          expect(ratio.heightRatio, 0.5);
+        });
+
+        test('scpsil: BoxFit.fitHeight', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.fitHeight,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
+        });
+
+        test('scpsil: BoxFit.none', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.none,
+            cameraPreviewSize,
+            size,
+          );
+          expect(ratio.widthRatio, 1.0);
+          expect(ratio.heightRatio, 1.0);
+        });
+
+        test('scpsil: BoxFit.scaleDown', () {
+          final ratio = calculateBoxFitRatio(
+            BoxFit.scaleDown,
+            cameraPreviewSize,
+            size,
+          );
+
+          expect(ratio.widthRatio, 0.25);
+          expect(ratio.heightRatio, 0.25);
         });
       });
     },
