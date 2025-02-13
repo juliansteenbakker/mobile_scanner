@@ -20,7 +20,7 @@ enum CameraFacing {
 
   const CameraFacing(this.rawValue);
 
-  factory CameraFacing.fromRawValue(int value) {
+  factory CameraFacing.fromRawValue(int? value) {
     switch (value) {
       case 0:
         return front;

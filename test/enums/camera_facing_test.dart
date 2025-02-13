@@ -4,14 +4,15 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 void main() {
   group('$CameraFacing tests', () {
     test('can be created from raw value', () {
-      const values = <int, CameraFacing>{
+      const values = <int?, CameraFacing>{
+        null: CameraFacing.unknown,
         0: CameraFacing.front,
         1: CameraFacing.back,
         2: CameraFacing.external,
         -1: CameraFacing.unknown,
       };
 
-      for (final MapEntry<int, CameraFacing> entry in values.entries) {
+      for (final MapEntry<int?, CameraFacing> entry in values.entries) {
         final CameraFacing result = CameraFacing.fromRawValue(entry.key);
 
         expect(result, entry.value);
