@@ -312,10 +312,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    final CameraFacing effectiveDirection = cameraDirection ?? facing;
-
     final StartOptions options = StartOptions(
-      cameraDirection: effectiveDirection,
+      cameraDirection: cameraDirection ?? facing,
       cameraResolution: cameraResolution,
       detectionSpeed: detectionSpeed,
       detectionTimeoutMs: detectionTimeoutMs,
@@ -337,7 +335,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       if (!_isDisposed) {
         value = value.copyWith(
           availableCameras: viewAttributes.numberOfCameras,
-          cameraDirection: effectiveDirection,
+          cameraDirection: viewAttributes.cameraDirection,
           isInitialized: true,
           isRunning: true,
           size: viewAttributes.size,
@@ -355,11 +353,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       }
 
       // The initialization finished with an error.
-      // To avoid stale values, reset the output size,
-      // torch state and zoom scale to the defaults.
+      // To avoid stale values, reset the camera direction,
+      // output size, torch state and zoom scale to the defaults.
       if (!_isDisposed) {
         value = value.copyWith(
-          cameraDirection: facing,
+          cameraDirection: CameraFacing.unknown,
           isInitialized: true,
           isRunning: false,
           error: error,
@@ -396,11 +394,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Switch between the front and back camera.
   ///
-  /// Does nothing if the device has less than 2 cameras.
+  /// Does nothing if the device has less than 2 cameras,
+  /// or if the current camera is an external camera.
   Future<void> switchCamera() async {
     _throwIfNotInitialized();
 
     final int? availableCameras = value.availableCameras;
+    final CameraFacing cameraDirection = value.cameraDirection;
 
     // Do nothing if the amount of cameras is less than 2 cameras.
     // If the the current platform does not provide the amount of cameras,
@@ -409,15 +409,24 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
+    // If the camera direction is not known,
+    // or if the camera is an external camera, do not allow switching cameras.
+    if (cameraDirection == CameraFacing.unknown ||
+        cameraDirection == CameraFacing.external) {
+      return;
+    }
+
     await stop();
 
-    final CameraFacing cameraDirection = value.cameraDirection;
-
-    await start(
-      cameraDirection: cameraDirection == CameraFacing.front
-          ? CameraFacing.back
-          : CameraFacing.front,
-    );
+    switch (value.cameraDirection) {
+      case CameraFacing.front:
+        return start(cameraDirection: CameraFacing.back);
+      case CameraFacing.back:
+        return start(cameraDirection: CameraFacing.front);
+      case CameraFacing.external:
+      case CameraFacing.unknown:
+        return;
+    }
   }
 
   /// Switches the flashlight on or off.
