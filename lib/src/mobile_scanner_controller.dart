@@ -36,7 +36,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           detectionTimeoutMs >= 0,
           'The detection timeout must be greater than or equal to 0.',
         ),
-        super(MobileScannerState.uninitialized(facing));
+        assert(
+          facing != CameraFacing.unknown,
+          'The camera facing direction must be either front, back or external.',
+        ),
+        super(const MobileScannerState.uninitialized());
 
   /// The desired resolution for the camera.
   ///
