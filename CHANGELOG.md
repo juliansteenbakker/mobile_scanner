@@ -2,6 +2,7 @@
 
 Improvements:
 * [Android] Turn off logging for CameraX, except for the `Log.ERROR` logging level.
+* Added `CameraFacing.external` and `CameraFacing.unknown` enum values.
 
 ## 7.0.0-beta.6
 
