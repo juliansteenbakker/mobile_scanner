@@ -15,7 +15,6 @@ import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
-import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
 
@@ -164,13 +163,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
     if (capabilities.isUndefinedOrNull || !capabilities.facingMode) {
       constraints = MediaStreamConstraints(video: true.toJS);
     } else {
-      final String facingMode = switch (cameraDirection) {
-        CameraFacing.back ||
-        CameraFacing.external ||
-        CameraFacing.unknown =>
-          'environment',
-        CameraFacing.front => 'user',
-      };
+      final String facingMode = _settingsDelegate.getFacingMode(
+        cameraDirection,
+      );
 
       constraints = MediaStreamConstraints(
         video: MediaTrackConstraintSet(
