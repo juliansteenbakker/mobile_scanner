@@ -15,6 +15,7 @@ import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
+import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
 
@@ -130,8 +131,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
     HTMLVideoElement videoElement,
     MediaStream videoStream,
   ) {
+    final MediaTrackSettings? settings = _settingsDelegate.getSettings(
+      videoStream,
+    );
+
     // TODO: facingModes is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
-    if (_settingsDelegate.getSettings(videoStream)?.facingMode == 'user') {
+    if (settings?.facingModeNullable?.toDart == 'user') {
       videoElement.style.transform = 'scaleX(-1)';
     }
   }
