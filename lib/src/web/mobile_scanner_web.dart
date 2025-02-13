@@ -135,8 +135,19 @@ class MobileScannerWeb extends MobileScannerPlatform {
       videoStream,
     );
 
-    // TODO: facingModes is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
+    // First try checking the facing mode.
     if (settings?.facingModeNullable?.toDart == 'user') {
+      videoElement.style.transform = 'scaleX(-1)';
+
+      return;
+    }
+
+    final MediaStreamTrack videoTrack =
+        videoStream.getVideoTracks().toDart.first;
+
+    // On MacOS, even though the facing mode is supported, it is not reported.
+    // Use the label for FaceTime cameras to detect the user facing webcam.
+    if (videoTrack.label.contains('FaceTime')) {
       videoElement.style.transform = 'scaleX(-1)';
     }
   }
