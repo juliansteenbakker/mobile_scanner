@@ -14,6 +14,7 @@ import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
+import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
@@ -47,6 +48,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
   final StreamController<MediaTrackSettings> _settingsController =
       StreamController.broadcast();
+
+  /// The delegate that retrieves the media track settings.
+  final MediaTrackConstraintsDelegate _settingsDelegate =
+      const MediaTrackConstraintsDelegate();
 
   /// The texture ID for the camera view.
   int _textureId = 1;
@@ -126,31 +131,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
     HTMLVideoElement videoElement,
     MediaStream videoStream,
   ) {
-    final List<MediaStreamTrack> tracks = videoStream.getVideoTracks().toDart;
-
-    if (tracks.isEmpty) {
-      return;
-    }
-
-    final MediaStreamTrack videoTrack = tracks.first;
-    final MediaTrackCapabilities capabilities;
-
-    if (videoTrack.getCapabilitiesNullable != null) {
-      capabilities = videoTrack.getCapabilities();
-    } else {
-      capabilities = MediaTrackCapabilities();
-    }
-
-    final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
-
-    // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
-    // We might be able to add a workaround, using the label of the video track.
-    // Facing mode is not supported by this track, do nothing.
-    if (facingModes == null || facingModes.toDart.isEmpty) {
-      return;
-    }
-
-    if (videoTrack.getSettings().facingMode == 'user') {
+    // TODO: facingModes is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
+    if (_settingsDelegate.getSettings(videoStream)?.facingMode == 'user') {
       videoElement.style.transform = 'scaleX(-1)';
     }
   }
@@ -183,7 +165,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
       constraints = MediaStreamConstraints(video: true.toJS);
     } else {
       final String facingMode = switch (cameraDirection) {
-        CameraFacing.back => 'environment',
+        CameraFacing.back ||
+        CameraFacing.external ||
+        CameraFacing.unknown =>
+          'environment',
         CameraFacing.front => 'user',
       };
 
