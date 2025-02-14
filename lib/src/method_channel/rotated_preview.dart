@@ -83,13 +83,11 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
       DeviceOrientation.portraitUp => 0,
       DeviceOrientation.landscapeRight => 90,
       DeviceOrientation.portraitDown => 180,
-      DeviceOrientation.landscapeLeft => 270, // FIXME: Should this be -90?
+      DeviceOrientation.landscapeLeft => 270,
     };
-    final double preAppliedRotation = deviceOrientationDegrees;
 
-    return ((sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) %
-            360) -
-        preAppliedRotation;
+    return (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) %
+        360;
   }
 
   @override
