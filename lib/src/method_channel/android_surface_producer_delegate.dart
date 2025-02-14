@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
@@ -10,10 +9,10 @@ import 'package:mobile_scanner/src/utils/parse_device_orientation_extension.dart
 class AndroidSurfaceProducerDelegate {
   /// Construct a new [AndroidSurfaceProducerDelegate].
   AndroidSurfaceProducerDelegate({
-    required this.cameraIsFrontFacing,
-    required this.isPreviewPreTransformed,
-    required this.naturalOrientation,
-    required this.sensorOrientation,
+    required this.cameraFacingDirection,
+    required this.handlesCropAndRotation,
+    required this.initialDeviceOrientation,
+    required this.sensorOrientationDegrees,
   });
 
   /// Construct a new [AndroidSurfaceProducerDelegate]
@@ -26,18 +25,19 @@ class AndroidSurfaceProducerDelegate {
   ) {
     if (config
         case {
-          'isPreviewPreTransformed': final bool isPreviewPreTransformed,
+          'handlesCropAndRotation': final bool handlesCropAndRotation,
           'naturalDeviceOrientation': final String naturalDeviceOrientation,
-          'sensorOrientation': final int sensorOrientation
+          'sensorOrientation': final int sensorOrientation,
         }) {
       final DeviceOrientation naturalOrientation =
           naturalDeviceOrientation.parseDeviceOrientation();
 
       return AndroidSurfaceProducerDelegate(
-        cameraIsFrontFacing: cameraDirection == CameraFacing.front,
-        isPreviewPreTransformed: isPreviewPreTransformed,
-        naturalOrientation: naturalOrientation,
-        sensorOrientation: sensorOrientation,
+        cameraFacingDirection: cameraDirection,
+        handlesCropAndRotation: handlesCropAndRotation,
+        initialDeviceOrientation: naturalOrientation,
+        // FIXME: This is bad, will cause a flash/frame in the wrong rotation if started in another rotation.
+        sensorOrientationDegrees: sensorOrientation.toDouble(),
       );
     }
 
@@ -49,97 +49,17 @@ class AndroidSurfaceProducerDelegate {
     );
   }
 
-  /// The rotation degrees corresponding to each device orientation.
-  static const Map<DeviceOrientation, int> _degreesForDeviceOrientation =
-      <DeviceOrientation, int>{
-    DeviceOrientation.portraitUp: 0,
-    DeviceOrientation.landscapeRight: 90,
-    DeviceOrientation.portraitDown: 180,
-    DeviceOrientation.landscapeLeft: 270,
-  };
+  /// The facing direction of the active camera.
+  final CameraFacing cameraFacingDirection;
 
-  /// Whether the current camera is a front facing camera.
+  /// Whether the underlying surface producer handles crop and rotation.
   ///
-  /// This is used to determine whether the orientation correction
-  /// should apply an additional correction for front facing cameras.
-  final bool cameraIsFrontFacing;
+  /// If this is false, the preview needs to be manually rotated.
+  final bool handlesCropAndRotation;
 
-  /// Whether the camera preview is pre-transformed,
-  /// and thus does not need an orientation correction.
-  final bool isPreviewPreTransformed;
+  /// The initial device orientation when this [AndroidSurfaceProducerDelegate] is created.
+  final DeviceOrientation initialDeviceOrientation;
 
-  /// The initial orientation of the device, when the camera was started.
-  ///
-  /// The camera preview will use this orientation as the natural orientation
-  /// to correct its rotation with respect to, if necessary.
-  final DeviceOrientation naturalOrientation;
-
-  /// The sensor orientation of the current camera, in degrees.
-  final int sensorOrientation;
-
-  /// Apply a rotation correction to the given [texture] widget.
-  ///
-  /// The [currentDeviceOrientation] is the current device orientation
-  /// at the time this method is called.
-  Widget applyRotationCorrection(
-    Widget texture,
-    DeviceOrientation currentDeviceOrientation,
-  ) {
-    int naturalDeviceOrientationDegrees =
-        _degreesForDeviceOrientation[naturalOrientation]!;
-
-    if (isPreviewPreTransformed) {
-      // If the camera preview is backed by a SurfaceTexture, the transformation
-      // needed to correctly rotate the preview has already been applied.
-      //
-      // However, the camera preview rotation may need to be corrected if the
-      // device is naturally landscape-oriented.
-      if (naturalOrientation == DeviceOrientation.landscapeLeft ||
-          naturalOrientation == DeviceOrientation.landscapeRight) {
-        final int quarterTurns = (-naturalDeviceOrientationDegrees + 360) ~/ 4;
-
-        return RotatedBox(
-          quarterTurns: quarterTurns,
-          child: texture,
-        );
-      }
-
-      return texture;
-    }
-
-    // If the camera preview is not backed by a SurfaceTexture,
-    // the camera preview rotation needs to be manually applied,
-    // while also taking into account devices that are naturally landscape-oriented.
-    final int signForCameraDirection = cameraIsFrontFacing ? 1 : -1;
-
-    // For front-facing cameras, the preview is rotated counterclockwise,
-    // so determine the rotation needed to correct the camera preview with
-    // respect to the natural orientation of the device, based on the inverse of
-    // of the natural orientation.
-    if (signForCameraDirection == 1 &&
-        (currentDeviceOrientation == DeviceOrientation.landscapeLeft ||
-            currentDeviceOrientation == DeviceOrientation.landscapeRight)) {
-      naturalDeviceOrientationDegrees += 180;
-    }
-
-    // See https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation
-    final double rotation = (sensorOrientation +
-            naturalDeviceOrientationDegrees * signForCameraDirection +
-            360) %
-        360;
-
-    int quarterTurnsToCorrectPreview = rotation ~/ 90;
-
-    // Correct the camera preview rotation for devices that are naturally landscape-oriented.
-    if (naturalOrientation == DeviceOrientation.landscapeLeft ||
-        naturalOrientation == DeviceOrientation.landscapeRight) {
-      quarterTurnsToCorrectPreview +=
-          (-naturalDeviceOrientationDegrees + 360) ~/ 4;
-    }
-
-    return RotatedBox(
-      quarterTurns: quarterTurnsToCorrectPreview,
-      child: texture,
-    );
-  }
+  /// The orientation of the camera sensor on the device, in degrees.
+  final double sensorOrientationDegrees;
 }

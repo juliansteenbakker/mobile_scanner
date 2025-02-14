@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/android_surface_producer_delegate.dart';
+import 'package:mobile_scanner/src/method_channel/rotated_preview.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -245,22 +246,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     // when the first listener is attached.
     if (_surfaceProducerDelegate
         case final AndroidSurfaceProducerDelegate delegate
-        when !delegate.isPreviewPreTransformed) {
-      return StreamBuilder<DeviceOrientation>(
-        stream: deviceOrientationChangedStream,
-        builder:
-            (BuildContext context, AsyncSnapshot<DeviceOrientation> snapshot) {
-          final DeviceOrientation? currentDeviceOrientation = snapshot.data;
-
-          if (currentDeviceOrientation == null) {
-            return texture;
-          }
-
-          return delegate.applyRotationCorrection(
-            texture,
-            currentDeviceOrientation,
-          );
-        },
+        when !delegate.handlesCropAndRotation) {
+      return RotatedPreview.fromCameraDirection(
+        delegate.cameraFacingDirection,
+        deviceOrientationStream: deviceOrientationChangedStream,
+        initialDeviceOrientation: delegate.initialDeviceOrientation,
+        sensorOrientationDegrees: delegate.sensorOrientationDegrees,
+        child: texture,
       );
     }
 
