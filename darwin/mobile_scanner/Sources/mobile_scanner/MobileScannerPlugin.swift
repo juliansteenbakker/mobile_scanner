@@ -434,10 +434,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 let answer: [String : Any?]
 
                 if let device = self.device {
+                    let cameraDirection: Int? = switch(device.position) {
+                        case .back: 1
+                        case .unspecified: nil
+                        case .front: 0
+                        @unknown default: nil
+                    }
+                    
                     answer = [
                         "textureId": self.textureId,
                         "size": size,
                         "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
+                        "cameraDirection": cameraDirection,
                     ]
                 } else {
                     answer = [

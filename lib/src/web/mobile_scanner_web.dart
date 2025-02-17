@@ -14,6 +14,7 @@ import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
+import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
@@ -47,6 +48,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
   final StreamController<MediaTrackSettings> _settingsController =
       StreamController.broadcast();
+
+  /// The delegate that retrieves the media track settings.
+  final MediaTrackConstraintsDelegate _settingsDelegate =
+      const MediaTrackConstraintsDelegate();
 
   /// The texture ID for the camera view.
   int _textureId = 1;
@@ -126,31 +131,23 @@ class MobileScannerWeb extends MobileScannerPlatform {
     HTMLVideoElement videoElement,
     MediaStream videoStream,
   ) {
-    final List<MediaStreamTrack> tracks = videoStream.getVideoTracks().toDart;
+    final MediaTrackSettings? settings = _settingsDelegate.getSettings(
+      videoStream,
+    );
 
-    if (tracks.isEmpty) {
+    // First try checking the facing mode.
+    if (settings?.facingModeNullable?.toDart == 'user') {
+      videoElement.style.transform = 'scaleX(-1)';
+
       return;
     }
 
-    final MediaStreamTrack videoTrack = tracks.first;
-    final MediaTrackCapabilities capabilities;
+    final MediaStreamTrack videoTrack =
+        videoStream.getVideoTracks().toDart.first;
 
-    if (videoTrack.getCapabilitiesNullable != null) {
-      capabilities = videoTrack.getCapabilities();
-    } else {
-      capabilities = MediaTrackCapabilities();
-    }
-
-    final JSArray<JSString>? facingModes = capabilities.facingModeNullable;
-
-    // TODO: this is an empty array on MacOS Chrome, where there is no facing mode, but one, user facing camera.
-    // We might be able to add a workaround, using the label of the video track.
-    // Facing mode is not supported by this track, do nothing.
-    if (facingModes == null || facingModes.toDart.isEmpty) {
-      return;
-    }
-
-    if (videoTrack.getSettings().facingMode == 'user') {
+    // On MacOS, even though the facing mode is supported, it is not reported.
+    // Use the label for FaceTime cameras to detect the user facing webcam.
+    if (videoTrack.label.contains('FaceTime')) {
       videoElement.style.transform = 'scaleX(-1)';
     }
   }
@@ -182,10 +179,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
     if (capabilities.isUndefinedOrNull || !capabilities.facingMode) {
       constraints = MediaStreamConstraints(video: true.toJS);
     } else {
-      final String facingMode = switch (cameraDirection) {
-        CameraFacing.back => 'environment',
-        CameraFacing.front => 'user',
-      };
+      final String facingMode = _settingsDelegate.getFacingMode(
+        cameraDirection,
+      );
 
       constraints = MediaStreamConstraints(
         video: MediaTrackConstraintSet(
@@ -266,7 +262,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
     if (_barcodeReader != null) {
       if (_barcodeReader!.paused ?? false) {
         await _barcodeReader?.resume();
+
+        final CameraFacing cameraDirection =
+            _settingsDelegate.getCameraDirection(
+          _barcodeReader?.videoStream,
+        );
+
         return MobileScannerViewAttributes(
+          cameraDirection: cameraDirection,
           // The torch of a media stream is not available for video tracks.
           // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
           currentTorchMode: TorchState.unavailable,
@@ -356,7 +359,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
         await _barcodeReader?.setTorchState(TorchState.on);
       }
 
+      final CameraFacing cameraDirection = _settingsDelegate.getCameraDirection(
+        videoStream,
+      );
+
       return MobileScannerViewAttributes(
+        cameraDirection: cameraDirection,
         // The torch of a media stream is not available for video tracks.
         // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
         currentTorchMode: TorchState.unavailable,
