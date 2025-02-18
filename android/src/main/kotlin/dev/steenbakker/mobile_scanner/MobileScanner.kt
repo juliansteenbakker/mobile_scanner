@@ -638,7 +638,7 @@ class MobileScanner(
         }
         val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
 
-        val invertedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config)
+        val invertedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config!!)
         val canvas = Canvas(invertedBitmap)
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
 

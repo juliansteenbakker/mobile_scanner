@@ -197,7 +197,7 @@ class MobileScannerHandler(
                         "textureId" to it.id,
                         "size" to mapOf("width" to it.width, "height" to it.height),
                         "naturalDeviceOrientation" to it.naturalDeviceOrientation,
-                        "isPreviewPreTransformed" to it.isPreviewPreTransformed,
+                        "handlesCropAndRotation" to it.handlesCropAndRotation,
                         "sensorOrientation" to it.sensorOrientation,
                         "currentTorchState" to it.currentTorchState,
                         "numberOfCameras" to it.numberOfCameras,
