@@ -44,7 +44,7 @@ android {
         applicationId "dev.steenbakker.mobile_scanner_example"
         minSdkVersion 24
         targetSdkVersion 35
-        ndkVersion flutter.ndkVersion
+
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
     }
