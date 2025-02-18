@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/picklist/classes/barcode_at_center.dart';
-import 'package:mobile_scanner_example/picklist/widgets/crosshair.dart';
-import 'package:mobile_scanner_example/scanner_error_widget.dart';
+import 'package:mobile_scanner_example/utilities/barcode_at_center.dart';
+import 'package:mobile_scanner_example/widgets/crosshair_widget.dart';
+import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 
 // This sample implements picklist functionality.
 // The scanning can temporarily be suspended by the user by touching the screen.
@@ -36,9 +36,6 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   // temporarily suspended.
   final _scannerEnabled = ValueNotifier(true);
 
-  // This boolean is used to prevent multiple pops.
-  var _validBarcodeFound = false;
-
   @override
   void initState() {
     // Lock to portrait (may not work on iPad with multitasking).
@@ -60,6 +57,8 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
     _mobileScannerController.dispose();
   }
 
+  Barcode? barcode;
+
   // Check the list of barcodes only if scannerEnables is true.
   // Only take the barcode that is at the center of the image.
   // Return the barcode found to the calling page with the help of the
@@ -67,14 +66,10 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   void _handleBarcodes(BarcodeCapture barcodeCapture) {
     // Discard all events when the scanner is disabled or when already a valid
     // barcode is found.
-    if (!_scannerEnabled.value || _validBarcodeFound) {
+    if (!_scannerEnabled.value) {
       return;
     }
-    final barcode = findBarcodeAtCenter(barcodeCapture, orientation);
-    if (barcode != null) {
-      _validBarcodeFound = true;
-      Navigator.of(context).pop(barcode);
-    }
+    barcode = findBarcodeAtCenter(barcodeCapture, orientation);
   }
 
   @override
@@ -88,7 +83,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
         SystemChrome.setPreferredOrientations(<DeviceOrientation>[]);
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Picklist scanner')),
+        appBar: AppBar(title: const Text('Mobile Scanner with Crosshair')),
         backgroundColor: Colors.black,
         body: Listener(
           // Detect if the user touches the screen and disable/enable the scanner accordingly
@@ -107,7 +102,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
                     ScannerErrorWidget(error: error),
                 fit: BoxFit.contain,
               ),
-              Crosshair(_scannerEnabled),
+              CrosshairWidget(_scannerEnabled),
             ],
           ),
         ),

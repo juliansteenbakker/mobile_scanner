@@ -3,8 +3,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 class ScannedBarcodeLabel extends StatelessWidget {
   const ScannedBarcodeLabel({
-    super.key,
     required this.barcodes,
+    super.key,
   });
 
   final Stream<BarcodeCapture> barcodes;

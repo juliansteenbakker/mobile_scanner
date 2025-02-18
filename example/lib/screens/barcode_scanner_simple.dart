@@ -38,7 +38,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Simple scanner')),
+      appBar: AppBar(title: const Text('Simple Mobile Scanner')),
       backgroundColor: Colors.black,
       body: Stack(
         children: [

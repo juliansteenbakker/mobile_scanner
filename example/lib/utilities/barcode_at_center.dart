@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/picklist/classes/fix_coordinate_space.dart';
+import 'package:mobile_scanner_example/utilities/fix_coordinate_space.dart';
 
 /// This function finds the barcode that touches the center of the
 /// image. If no barcode is found that touches the center, null is returned.
@@ -57,9 +57,9 @@ bool _isPointInPolygon({
 }) {
   // Initial variables:
   int i; // Loop variable for current vertex
-  int j = polygon.length -
+  var j = polygon.length -
       1; // Last vertex index, initialized to the last vertex of the polygon
-  bool inside = false; // Boolean flag initialized to false
+  var inside = false; // Boolean flag initialized to false
 
   // Loop through each edge of the polygon
   for (i = 0; i < polygon.length; j = i++) {

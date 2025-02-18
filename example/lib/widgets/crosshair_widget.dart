@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-class Crosshair extends StatelessWidget {
-  const Crosshair(
+class CrosshairWidget extends StatelessWidget {
+  const CrosshairWidget(
     this.scannerEnabled, {
     super.key,
   });

@@ -20,7 +20,7 @@ List<Offset> fixCorners(List<Offset> corners) {
 
   sorted.sort((a, b) {
     // Prioritize y-axis (dy), and within that, the x-axis (dx)
-    int compare = a.dy.compareTo(b.dy);
+    var compare = a.dy.compareTo(b.dy);
     if (compare == 0) {
       compare = a.dx.compareTo(b.dx);
     }
