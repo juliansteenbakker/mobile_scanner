@@ -98,6 +98,8 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
           return const SizedBox.shrink();
         }
 
+        _zoomFactor = state.zoomScale;
+
         final labelStyle = Theme.of(context)
             .textTheme
             .headlineMedium!
