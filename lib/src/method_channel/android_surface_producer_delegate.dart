@@ -36,7 +36,6 @@ class AndroidSurfaceProducerDelegate {
         cameraFacingDirection: cameraDirection,
         handlesCropAndRotation: handlesCropAndRotation,
         initialDeviceOrientation: naturalOrientation,
-        // FIXME: This is bad, will cause a flash/frame in the wrong rotation if started in another rotation.
         sensorOrientationDegrees: sensorOrientation.toDouble(),
       );
     }
