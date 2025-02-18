@@ -272,7 +272,7 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
 
     if (_subscription != null) {
@@ -281,14 +281,14 @@ class _MobileScannerState extends State<MobileScanner>
     }
 
     if (controller.autoStart) {
-      controller.stop();
+      await controller.stop();
     }
     // When this widget is unmounted, reset the scan window.
-    unawaited(controller.updateScanWindow(null));
+    await controller.updateScanWindow(null);
 
     // Dispose default controller if not provided by user
     if (widget.controller == null) {
-      controller.dispose();
+      await controller.dispose();
       WidgetsBinding.instance.removeObserver(this);
     }
   }
@@ -298,7 +298,7 @@ class _MobileScannerState extends State<MobileScanner>
     if (widget.controller != null || !controller.value.hasCameraPermission) {
       return;
     }
-
+    return;
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
