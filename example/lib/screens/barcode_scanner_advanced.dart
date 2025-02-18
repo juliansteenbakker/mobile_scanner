@@ -72,7 +72,6 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    return;
     if (!controller.value.hasCameraPermission || !enableLifecycle) {
       return;
     }
@@ -471,7 +470,7 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
       body: Stack(
         children: [
           MobileScanner(
-            scanWindow:  null,
+            scanWindow: useScanWindow ? scanWindow : null,
             controller: controller,
             errorBuilder: (context, error) {
               return ScannerErrorWidget(error: error);
@@ -538,10 +537,16 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
             alignment: Alignment.bottomCenter,
             child: Container(
               alignment: Alignment.bottomCenter,
-              height: 100,
+              height: 200,
               color: const Color.fromRGBO(0, 0, 0, 0.4),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Expanded(
+                    child: ScannedBarcodeLabel(
+                      barcodes: controller.barcodes,
+                    ),
+                  ),
                   if (!kIsWeb) _buildZoomScaleSlider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -549,13 +554,6 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
                       ToggleFlashlightButton(controller: controller),
                       StartStopButton(controller: controller),
                       PauseButton(controller: controller),
-                      Expanded(
-                        child: Center(
-                          child: ScannedBarcodeLabel(
-                            barcodes: controller.barcodes,
-                          ),
-                        ),
-                      ),
                       SwitchCameraButton(controller: controller),
                       AnalyzeImageButton(controller: controller),
                     ],
