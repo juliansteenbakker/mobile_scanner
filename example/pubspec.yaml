@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  image_picker: ^1.0.4
+  image_picker: ^1.1.2
   mobile_scanner:
     # When depending on this package from a real application you should use:
     #   mobile_scanner: ^x.y.z

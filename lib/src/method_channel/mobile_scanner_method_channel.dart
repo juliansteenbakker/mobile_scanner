@@ -9,6 +9,7 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/android_surface_producer_delegate.dart';
+import 'package:mobile_scanner/src/method_channel/rotated_preview.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -239,9 +240,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Widget texture = Texture(textureId: _textureId!);
 
+    // If the preview needs manual orientation corrections,
+    // correct the preview orientation based on the currently reported device orientation.
+    // On Android, the underlying device orientation stream will emit the current orientation
+    // when the first listener is attached.
     if (_surfaceProducerDelegate
-        case final AndroidSurfaceProducerDelegate delegate) {
-      return delegate.applyRotationCorrection(texture);
+        case final AndroidSurfaceProducerDelegate delegate
+        when !delegate.handlesCropAndRotation) {
+      return RotatedPreview.fromCameraDirection(
+        delegate.cameraFacingDirection,
+        deviceOrientationStream: deviceOrientationChangedStream,
+        initialDeviceOrientation: delegate.initialDeviceOrientation,
+        sensorOrientationDegrees: delegate.sensorOrientationDegrees,
+        child: texture,
+      );
     }
 
     return texture;
@@ -319,9 +331,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         startResult,
         cameraDirection,
       );
-      _surfaceProducerDelegate?.startListeningToDeviceOrientation(
-        deviceOrientationChangedStream,
-      );
     }
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
@@ -356,7 +365,6 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = null;
     _pausing = false;
-    _surfaceProducerDelegate?.dispose();
     _surfaceProducerDelegate = null;
 
     await methodChannel.invokeMethod<void>('stop');
