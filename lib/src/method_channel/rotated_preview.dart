@@ -122,7 +122,6 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
       sign: widget.facingSign,
     );
 
-    // FIXME: Can this be improved?
     return RotatedBox(
       quarterTurns: rotation ~/ 90,
       child: widget.child,
