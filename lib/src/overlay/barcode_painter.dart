@@ -2,9 +2,9 @@ import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-/// This class represents a [CustomPainter] that draws the [barcodeCorners] of a single barcode.
+/// CustomPainter to draw an outlined barcode box with rounded corners and a displayed value.
 class BarcodePainter extends CustomPainter {
-  /// Construct a new [BarcodePainter] instance.
+  /// Constructor for [BarcodePainter]
   const BarcodePainter({
     required this.barcodeCorners,
     required this.barcodeSize,
@@ -12,6 +12,7 @@ class BarcodePainter extends CustomPainter {
     required this.cameraPreviewSize,
     required this.color,
     required this.style,
+    required this.barcodeValue,
   });
 
   /// The corners of the barcode.
@@ -20,22 +21,24 @@ class BarcodePainter extends CustomPainter {
   /// The size of the barcode.
   final Size barcodeSize;
 
-  /// The [BoxFit] to use when painting the barcode box.
+  /// The BoxFit mode for scaling.
   final BoxFit boxFit;
 
-  /// The size of the camera preview,
-  /// relative to which the [barcodeSize] and [barcodeCorners] are positioned.
+  /// The camera preview size.
   final Size cameraPreviewSize;
 
-  /// The color to use when painting the barcode box.
+  /// The color of the outline.
   final Color color;
 
-  /// The style to use when painting the barcode box.
+  /// The drawing style (stroke/fill).
   final PaintingStyle style;
+
+  /// The barcode value to display inside the overlay.
+  final String barcodeValue;
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (barcodeCorners.isEmpty ||
+    if (barcodeCorners.length < 4 ||
         barcodeSize.isEmpty ||
         cameraPreviewSize.isEmpty) {
       return;
@@ -56,25 +59,95 @@ class BarcodePainter extends CustomPainter {
         ),
     ];
 
-    final cutoutPath = Path()..addPolygon(adjustedOffset, true);
+    if (adjustedOffset.length < 4) return;
 
-    final backgroundPaint = Paint()
+    // Draw the rotated rectangle
+    final Path path = Path()..addPolygon(adjustedOffset, true);
+
+    final paint = Paint()
       ..color = color
-      ..style = style;
+      ..style = style
+      ..strokeWidth = 4.0;
 
-    canvas.drawPath(cutoutPath, backgroundPaint);
+    canvas.drawPath(path, paint);
+
+    // Find center point of the barcode
+    final double centerX = (adjustedOffset[0].dx + adjustedOffset[2].dx) / 2;
+    final double centerY = (adjustedOffset[0].dy + adjustedOffset[2].dy) / 2;
+    final Offset center = Offset(centerX, centerY);
+
+    // Calculate rotation angle
+    final double angle = math.atan2(
+      adjustedOffset[1].dy - adjustedOffset[0].dy,
+      adjustedOffset[1].dx - adjustedOffset[0].dx,
+    );
+
+    // Set a smaller font size with auto-resizing logic
+    final double textSize = (barcodeSize.width * ratios.widthRatio) *
+        0.08; // Scales with barcode size
+    const double minTextSize = 6; // Minimum readable size
+    const double maxTextSize = 12; // Maximum size
+    final double finalTextSize = textSize.clamp(minTextSize, maxTextSize);
+
+    // Draw barcode value inside the overlay with rotation
+    final textSpan = TextSpan(
+      text: barcodeValue,
+      style: TextStyle(
+        color: Colors.black, // Ensuring black text
+        fontSize: finalTextSize,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+
+    final textPainter = TextPainter(
+      text: textSpan,
+      textAlign: TextAlign.center,
+      textDirection: TextDirection.ltr,
+    );
+
+    textPainter.layout(maxWidth: barcodeSize.width * ratios.widthRatio * 0.6);
+
+    final double textWidth = textPainter.width;
+    final double textHeight = textPainter.height;
+
+    canvas.save();
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(angle); // Rotate the text to match the barcode
+    canvas.translate(-center.dx, -center.dy);
+
+    final Rect textRect = Rect.fromCenter(
+      center: center,
+      width: textWidth * 1.1,
+      height: textHeight * 1.1,
+    );
+
+    final RRect textBackground = RRect.fromRectAndRadius(
+      textRect,
+      const Radius.circular(6),
+    );
+
+    final textBgPaint = Paint()..color = Colors.white.withValues(alpha: 0.8);
+    canvas.drawRRect(textBackground, textBgPaint);
+
+    textPainter.paint(
+      canvas,
+      Offset(center.dx - textWidth / 2, center.dy - textHeight / 2),
+    );
+
+    canvas.restore();
   }
 
   @override
   bool shouldRepaint(BarcodePainter oldDelegate) {
     const ListEquality<Offset> listEquality = ListEquality<Offset>();
 
-    return listEquality.equals(oldDelegate.barcodeCorners, barcodeCorners) ||
+    return !listEquality.equals(oldDelegate.barcodeCorners, barcodeCorners) ||
         oldDelegate.barcodeSize != barcodeSize ||
         oldDelegate.boxFit != boxFit ||
         oldDelegate.cameraPreviewSize != cameraPreviewSize ||
         oldDelegate.color != color ||
-        oldDelegate.style != style;
+        oldDelegate.style != style ||
+        oldDelegate.barcodeValue != barcodeValue;
   }
 }
 

@@ -61,6 +61,7 @@ class BarcodeOverlay extends StatelessWidget {
                       cameraPreviewSize: barcodeCapture.size,
                       color: color,
                       style: style,
+                      barcodeValue: barcode.rawValue ?? '',
                     ),
                   ),
             ];
