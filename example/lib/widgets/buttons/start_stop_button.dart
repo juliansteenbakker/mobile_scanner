@@ -11,7 +11,7 @@ class StartStopButton extends StatelessWidget {
   }
 
   Future<void> onPressedStart() async {
-    await controller.stop();
+    await controller.start();
   }
 
   @override
