@@ -1,3 +1,38 @@
+## NEXT
+
+**BREAKING CHANGES:**
+
+* The initial state of the `MobileScannerState` camera facing direction is changed to `CameraFacing.unknown`.
+
+Improvements:
+* [Android] Turn off logging for CameraX, except for the `Log.ERROR` logging level.
+* Added `CameraFacing.external` and `CameraFacing.unknown` enum values.
+
+## 7.0.0-beta.6
+
+**BREAKING CHANGES:**
+
+* This release requires Flutter 3.27.0 or higher.
+
+Improvements:
+* [Android] Added support for Impeller.
+* [Apple] Added support for `rawBytes` from the Vision API observations.
+* Export the `MobileScannerViewAttributes` and `StartOptions` types, to allow them in tests.
+
+Bugs fixed:
+* [Apple] Fixed a bug that caused a crash when the capture session could not add the video input.
+
+## 7.0.0-beta.5
+
+Improvements:
+* [Android] Added `autoZoom` parameter to auto zoom if the detected code is to far from the camera.
+* [Android] Added `invertImage` parameter to invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+* [Android] Updated camera-camera2 dependencies.
+* Added pause functionality to all platforms.
+
+Bugs fixed:
+* [Android] Fixed resources not being closed.
+
 ## 7.0.0-beta.4
 
 **BREAKING CHANGES:**
@@ -54,9 +89,20 @@ Known issues:
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
 
+## 6.0.6
+Bugs fixed:
+* [web] Fixed a bug that prevented color inverted barcodes from being scanned.
+
+Improvements:
+* [web] Bump ZXingJS from version 0.19.1 to 0.21.3.
+
+## 6.0.5
+Bugs fixed:
+* [Android] Fixed crash due to imageProxy being closed too early.
+
 ## 6.0.4
 Bugs fixed:
-* [Android] Fixed UI jank when `returnImage` is true.
+* [Android] Fixed UI stutter when `returnImage` is true.
 
 ## 6.0.3
 New features:

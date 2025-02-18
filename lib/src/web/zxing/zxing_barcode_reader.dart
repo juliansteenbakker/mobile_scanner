@@ -36,7 +36,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   ZXingBrowserMultiFormatReader? _reader;
 
   @override
-  bool get isScanning => _reader?.stream != null;
+  bool get isScanning => videoStream != null;
 
   @override
   Size get videoSize {
@@ -53,7 +53,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
-  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.19.1';
+  web.MediaStream? get videoStream => _reader?.stream;
+
+  @override
+  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.21.3';
 
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {

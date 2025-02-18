@@ -18,6 +18,8 @@ struct MobileScannerErrorCodes {
     // The error code 'CAMERA_ERROR' does not have an error message,
     // because it uses the error message from the underlying error.
     static let CAMERA_ERROR = "MOBILE_SCANNER_CAMERA_ERROR"
+    // This error message is used when the active AVCaptureSession cannot add the camera video input.
+    static let CAMERA_ERROR_CAPTURE_SESSION_INPUT_OCCUPIED_MESSAGE = "The camera video input could not be initialized."
     static let GENERIC_ERROR = "MOBILE_SCANNER_GENERIC_ERROR"
     static let GENERIC_ERROR_MESSAGE = "An unknown error occurred."
     // This message is used with the 'GENERIC_ERROR' error code.

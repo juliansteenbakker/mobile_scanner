@@ -358,6 +358,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         // Add device input
         do {
             let input = try AVCaptureDeviceInput(device: device)
+            
+            if (!(captureSession!.canAddInput(input))) {
+                result(FlutterError(
+                    code: MobileScannerErrorCodes.CAMERA_ERROR,
+                    message: MobileScannerErrorCodes.CAMERA_ERROR_CAPTURE_SESSION_INPUT_OCCUPIED_MESSAGE,
+                    details: nil))
+                return
+            }
+            
             captureSession!.addInput(input)
         } catch {
             result(FlutterError(
@@ -425,10 +434,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 let answer: [String : Any?]
 
                 if let device = self.device {
+                    let cameraDirection: Int? = switch(device.position) {
+                        case .back: 1
+                        case .unspecified: nil
+                        case .front: 0
+                        @unknown default: nil
+                    }
+                    
                     answer = [
                         "textureId": self.textureId,
                         "size": size,
                         "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
+                        "cameraDirection": cameraDirection,
                     ]
                 } else {
                     answer = [
@@ -891,6 +908,13 @@ extension VNBarcodeObservation {
         // Calculate the width and height of the barcode based on adjusted coordinates
         let width = distanceBetween(adjustedTopLeft, adjustedTopRight) * CGFloat(imageWidth)
         let height = distanceBetween(adjustedTopLeft, adjustedBottomLeft) * CGFloat(imageHeight)
+        var rawBytes: FlutterStandardTypedData? = nil
+        
+        if #available(iOS 17.0, macOS 14.0, *) {
+            if let payloadData = payloadData {
+                rawBytes = FlutterStandardTypedData(bytes: payloadData)
+            }
+        }
 
         let data = [
             // Clockwise, starting from the top-left corner.
@@ -901,6 +925,7 @@ extension VNBarcodeObservation {
                 ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
+            "rawBytes": rawBytes,
             "rawValue": payloadStringValue ?? "",
             "displayValue": payloadStringValue ?? "",
             "size": [
