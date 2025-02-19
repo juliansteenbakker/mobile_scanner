@@ -42,7 +42,7 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
   int detectionTimeout = 1000; // Default to 1000ms
 
-  bool useScanWindow = false;
+  bool useScanWindow = true;
   bool useBarcodeOverlay = true;
   BoxFit boxFit = BoxFit.contain;
   bool enableLifecycle = false;
