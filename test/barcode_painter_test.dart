@@ -9,10 +9,87 @@ void main() {
   setUpAll(() {
     registerFallbackValue(Paint());
     registerFallbackValue(Offset.zero);
+    registerFallbackValue(Path());
+    registerFallbackValue(Rect.zero);
+    registerFallbackValue(RRect.zero);
   });
 
   group('BarcodePainter Tests', () {
-    test('shouldRepaint returns true when properties change', () {
+    testWidgets('paint should draw barcode outline and text correctly',
+        (tester) async {
+      final mockCanvas = MockCanvas();
+      const barcodePainter = BarcodePainter(
+        barcodeCorners: [
+          Offset(10, 10),
+          Offset(100, 10),
+          Offset(100, 100),
+          Offset(10, 100),
+        ],
+        barcodeSize: Size(100, 50),
+        boxFit: BoxFit.contain,
+        cameraPreviewSize: Size(200, 200),
+        color: Colors.blue,
+        style: PaintingStyle.stroke,
+        barcodeValue: '123456',
+      );
+
+      // Act: Call the paint method
+      barcodePainter.paint(mockCanvas, const Size(200, 200));
+
+      // Assert: Verify drawing operations
+      verify(() => mockCanvas.drawPath(any(), any())).called(1);
+      verify(() => mockCanvas.drawRRect(any(), any())).called(1);
+      verify(() => mockCanvas.save()).called(1);
+      verify(() => mockCanvas.restore()).called(1);
+    });
+
+    testWidgets('paint should not draw if barcodeCorners is invalid',
+        (tester) async {
+      final mockCanvas = MockCanvas();
+      const barcodePainter = BarcodePainter(
+        barcodeCorners: [],
+        barcodeSize: Size.zero,
+        boxFit: BoxFit.contain,
+        cameraPreviewSize: Size.zero,
+        color: Colors.blue,
+        style: PaintingStyle.stroke,
+        barcodeValue: '',
+      );
+
+      barcodePainter.paint(mockCanvas, const Size(200, 200));
+
+      // Verify that NO draw operations happen
+      verifyNever(() => mockCanvas.drawPath(any(), any()));
+      verifyNever(() => mockCanvas.drawRRect(any(), any()));
+      verifyNever(() => mockCanvas.drawLine(any(), any(), any()));
+    });
+
+    testWidgets('paint should rotate text correctly', (tester) async {
+      final mockCanvas = MockCanvas();
+      const barcodePainter = BarcodePainter(
+        barcodeCorners: [
+          Offset(10, 10),
+          Offset(100, 10),
+          Offset(100, 100),
+          Offset(10, 100),
+        ],
+        barcodeSize: Size(100, 50),
+        boxFit: BoxFit.contain,
+        cameraPreviewSize: Size(200, 200),
+        color: Colors.blue,
+        style: PaintingStyle.stroke,
+        barcodeValue: '123456',
+      );
+
+      barcodePainter.paint(mockCanvas, const Size(200, 200));
+
+      // Ensure text rotation is applied
+      verify(() => mockCanvas.translate(any(), any())).called(2);
+      verify(() => mockCanvas.rotate(any())).called(1);
+    });
+
+    testWidgets('shouldRepaint returns true when properties change',
+        (tester) async {
       const painter1 = BarcodePainter(
         barcodeCorners: [
           Offset(10, 10),
@@ -46,7 +123,8 @@ void main() {
       expect(painter1.shouldRepaint(painter2), isTrue);
     });
 
-    test('shouldRepaint returns false when properties are the same', () {
+    testWidgets('shouldRepaint returns false when properties are the same',
+        (tester) async {
       const painter1 = BarcodePainter(
         barcodeCorners: [
           Offset(10, 10),
@@ -142,24 +220,6 @@ void main() {
           const Size(400, 400),
         ),
         (widthRatio: 1.0, heightRatio: 1.0),
-      );
-    });
-
-    test('paint does not crash when barcodeCorners is invalid', () {
-      final mockCanvas = MockCanvas();
-      const painter = BarcodePainter(
-        barcodeCorners: [],
-        barcodeSize: Size.zero,
-        boxFit: BoxFit.contain,
-        cameraPreviewSize: Size.zero,
-        color: Colors.blue,
-        style: PaintingStyle.stroke,
-        barcodeValue: '',
-      );
-
-      expect(
-        () => painter.paint(mockCanvas, const Size(200, 200)),
-        returnsNormally,
       );
     });
   });
