@@ -21,6 +21,7 @@ class MobileScanner extends StatefulWidget {
     this.placeholderBuilder,
     this.scanWindow,
     this.scanWindowUpdateThreshold = 0.0,
+    this.useAppLifecycleState = true,
     super.key,
   });
 
@@ -115,6 +116,11 @@ class MobileScanner extends StatefulWidget {
   ///
   /// Defaults to no threshold for scan window updates.
   final double scanWindowUpdateThreshold;
+
+  /// Whether to pause and resume the barcode scanner on lifecycleState change
+  /// when no controller is passed. If a controller is passed, lifecycleState
+  /// should be handled by the user via the controller.
+  final bool useAppLifecycleState;
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -295,10 +301,11 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null || !controller.value.hasCameraPermission) {
+    if (widget.controller != null ||
+        !controller.value.hasCameraPermission ||
+        !widget.useAppLifecycleState) {
       return;
     }
-    return;
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
