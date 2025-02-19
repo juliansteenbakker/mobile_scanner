@@ -4,7 +4,7 @@ import 'package:mobile_scanner_example/utilities/fix_coordinate_space.dart';
 
 /// This function finds the barcode that touches the center of the
 /// image. If no barcode is found that touches the center, null is returned.
-/// See [_BarcodeScannerPicklistState] and the returnImage option for more info.
+/// See _BarcodeScannerPicklistState and the returnImage option for more info.
 ///
 /// https://github.com/juliansteenbakker/mobile_scanner/issues/1183
 Barcode? findBarcodeAtCenter(
@@ -24,8 +24,8 @@ Barcode? findBarcodeAtCenter(
   return null;
 }
 
-/// Check if the polygon, represented by a list of offsets, touches the center of
-/// an image when the size of the image is given.
+/// Check if the polygon, represented by a list of offsets, touches the center
+/// of an image when the size of the image is given.
 bool _isPolygonTouchingTheCenter({
   required Size imageSize,
   required List<Offset> polygon,
@@ -48,7 +48,8 @@ bool _isPolygonTouchingTheCenter({
 ///   - [polygon]: A List of `Offset` representing the vertices of the polygon.
 ///
 /// Returns:
-///   - A boolean value: `true` if the point is inside the polygon, or `false` otherwise.
+///   - A boolean value: `true` if the point is inside the polygon, or `false`
+///   otherwise.
 ///
 /// Uses the ray-casting algorithm based on the Jordan curve theorem.
 bool _isPointInPolygon({
@@ -69,19 +70,23 @@ bool _isPointInPolygon({
         (point.dx <
             (polygon[j].dx -
                         polygon[i]
-                            .dx) * // Horizontal distance between the vertices of the edge
+                            .dx) * // Horizontal distance between the vertices
+                    // of the edge
                     (point.dy -
                         polygon[i]
-                            .dy) / // Scale factor based on the y-distance of the point to the lower vertex
+                            .dy) / // Scale factor based on the y-distance of
+                    // the point to the lower vertex
                     (polygon[j].dy -
                         polygon[i]
-                            .dy) + // Vertical distance between the vertices of the edge
+                            .dy) + // Vertical distance between the vertices
+                // of the edge
                 polygon[i].dx)) {
       // Horizontal position of the lower vertex
       // If the ray intersects the polygon edge, invert the inside flag
       inside = !inside;
     }
   }
-  // Return the status of the inside flag which tells if the point is inside the polygon or not
+  // Return the status of the inside flag which tells if the point is inside the
+  // polygon or not
   return inside;
 }

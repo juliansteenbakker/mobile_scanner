@@ -15,12 +15,17 @@ void main() {
 class MyHome extends StatelessWidget {
   const MyHome({super.key});
 
-  Widget _buildItem(BuildContext context, String label, String subtitle,
-      Widget page, IconData icon) {
+  Widget _buildItem(
+    BuildContext context,
+    String label,
+    String subtitle,
+    Widget page,
+    IconData icon,
+  ) {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-          MaterialPageRoute(
+          MaterialPageRoute<void>(
             builder: (context) => page,
           ),
         );
@@ -32,7 +37,7 @@ class MyHome extends StatelessWidget {
         ),
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16),
           child: Row(
             children: [
               Icon(icon, size: 40, color: Colors.blueAccent),
@@ -44,7 +49,9 @@ class MyHome extends StatelessWidget {
                     Text(
                       label,
                       style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.w600),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 5),
                     Text(
@@ -66,10 +73,12 @@ class MyHome extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Mobile Scanner Example',
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-            )),
+        title: const Text(
+          'Mobile Scanner Example',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,
         elevation: 0,
@@ -90,21 +99,24 @@ class MyHome extends StatelessWidget {
               _buildItem(
                 context,
                 'Simple Mobile Scanner',
-                'Example of a simple mobile scanner instance without defining a controller.',
+                'Example of a simple mobile scanner instance without defining '
+                    'a controller.',
                 const BarcodeScannerSimple(),
                 Icons.qr_code_scanner,
               ),
               _buildItem(
                 context,
                 'Advanced Mobile Scanner',
-                'Example of an advanced mobile scanner instance with a controller, and multiple control widgets.',
+                'Example of an advanced mobile scanner instance with a '
+                    'controller, and multiple control widgets.',
                 const BarcodeScannerAdvanced(),
                 Icons.settings_remote,
               ),
               _buildItem(
                 context,
                 'Mobile Scanner with Crosshair',
-                'Example of a mobile scanner instance with a crosshair, that only detects barcodes which the crosshair hits.',
+                'Example of a mobile scanner instance with a crosshair, that '
+                    'only detects barcodes which the crosshair hits.',
                 const BarcodeScannerPicklist(),
                 Icons.list,
               ),

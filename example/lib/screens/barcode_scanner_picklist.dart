@@ -76,7 +76,8 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
-        // Reset the page orientation to the system default values, when this page is popped
+        // Reset the page orientation to the system default values, when this
+        // page is popped
         if (!didPop) {
           return;
         }
@@ -92,7 +93,9 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
           onPointerUp: (_) => _scannerEnabled.value = true,
           onPointerCancel: (_) => _scannerEnabled.value = true,
           // A stack containing the image feed and the crosshair
-          // The location of the crosshair must be at the center of the MobileScanner, otherwise the detection area and the visual representation do not line up.
+          // The location of the crosshair must be at the center of the
+          // MobileScanner, otherwise the detection area and the visual
+          // representation do not line up.
           child: Stack(
             fit: StackFit.expand,
             children: [

@@ -16,16 +16,15 @@ Size fixPortraitLandscape(
 
 List<Offset> fixCorners(List<Offset> corners) {
   // Clone the original list to avoid side-effects
-  final sorted = List<Offset>.from(corners);
-
-  sorted.sort((a, b) {
-    // Prioritize y-axis (dy), and within that, the x-axis (dx)
-    var compare = a.dy.compareTo(b.dy);
-    if (compare == 0) {
-      compare = a.dx.compareTo(b.dx);
-    }
-    return compare;
-  });
+  final sorted = List<Offset>.from(corners)
+    ..sort((a, b) {
+      // Prioritize y-axis (dy), and within that, the x-axis (dx)
+      var compare = a.dy.compareTo(b.dy);
+      if (compare == 0) {
+        compare = a.dx.compareTo(b.dx);
+      }
+      return compare;
+    });
 
   final topLeft = sorted.first; // smallest x, smallest y
   final topRight = sorted[1]; // larger x, smaller y
