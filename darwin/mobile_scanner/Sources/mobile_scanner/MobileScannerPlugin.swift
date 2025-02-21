@@ -276,20 +276,36 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
 #if os(iOS)
         var videoOrientation: AVCaptureVideoOrientation
-
-        switch UIDevice.current.orientation {
-        case .portrait:
-            videoOrientation = .portrait
-        case .portraitUpsideDown:
-            videoOrientation = .portraitUpsideDown
-        case .landscapeLeft:
-            videoOrientation = .landscapeLeft
-        case .landscapeRight:
-            videoOrientation = .landscapeRight
-        default:
-            videoOrientation = .portrait
-        }
-
+        if #available(iOS 13.0, *){
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene{
+                let orientation = windowScene.interfaceOrientation
+                switch orientation {
+                case .portrait:
+                    videoOrientation = .portrait
+                case .portraitUpsideDown:
+                    videoOrientation = .portraitUpsideDown
+                case .landscapeLeft:
+                    videoOrientation = .landscapeLeft
+                case .landscapeRight:
+                    videoOrientation = .landscapeRight
+                default:
+                    videoOrientation = .portrait
+                }         
+            }
+        }else{
+            switch UIDevice.current.orientation {
+            case .portrait:
+                videoOrientation = .portrait
+            case .portraitUpsideDown:
+                videoOrientation = .portraitUpsideDown
+            case .landscapeLeft:
+                videoOrientation = .landscapeLeft
+            case .landscapeRight:
+                videoOrientation = .landscapeRight
+            default:
+                videoOrientation = .portrait
+            }
+        } 
         return videoOrientation
 #else
         return .portrait
