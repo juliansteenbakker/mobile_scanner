@@ -1,4 +1,4 @@
-## NEXT
+## 7.0.0-beta.7
 
 **BREAKING CHANGES:**
 
@@ -7,6 +7,9 @@
 Improvements:
 * [Android] Turn off logging for CameraX, except for the `Log.ERROR` logging level.
 * Added `CameraFacing.external` and `CameraFacing.unknown` enum values.
+
+Bugs fixed:
+* [Android] Fixed an issue when compiling with Kotlin 1.8.0 or higher.
 
 ## 7.0.0-beta.6
 
