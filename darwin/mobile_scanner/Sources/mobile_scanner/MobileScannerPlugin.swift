@@ -275,6 +275,26 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
 #if os(iOS)
+        // Get the orientation from the window scene if available
+        // When the app's orientation is fixed and the app orientation is actually different from the device orientation, it malfunctions.
+        if #available(iOS 13.0, *){
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene{
+                let orientation = windowScene.interfaceOrientation
+                switch orientation {
+                case .portrait:
+                    return .portrait
+                case .portraitUpsideDown:
+                    return .portraitUpsideDown
+                case .landscapeLeft:
+                    return .landscapeLeft
+                case .landscapeRight:
+                    return .landscapeRight
+                default:
+                    break
+                }         
+            }
+        }
+
         var videoOrientation: AVCaptureVideoOrientation
 
         switch UIDevice.current.orientation {
