@@ -278,7 +278,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         // Get the orientation from the window scene if available
         // When the app's orientation is fixed and the app orientation is actually different from the device orientation, it malfunctions.
         if #available(iOS 13.0, *) {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene{
+            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
                 let orientation = windowScene.interfaceOrientation
                 switch orientation {
                 case .portrait:
