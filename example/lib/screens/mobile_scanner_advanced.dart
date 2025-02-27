@@ -34,7 +34,7 @@ class MobileScannerAdvanced extends StatefulWidget {
 }
 
 class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
-  // Cannot be changed on runtime while the scanner is running
+  // Cannot be changed while the scanner is running.
   static const useScanWindow = true;
 
   bool autoZoom = false;
