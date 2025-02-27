@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/utilities/fix_coordinate_space.dart';
 
 /// This function finds the barcode that touches the center of the
 /// image. If no barcode is found that touches the center, null is returned.
@@ -11,9 +10,9 @@ Barcode? findBarcodeAtCenter(
   BarcodeCapture barcodeCapture,
   DeviceOrientation orientation,
 ) {
-  final imageSize = fixPortraitLandscape(barcodeCapture.size, orientation);
+  final imageSize = _fixPortraitLandscape(barcodeCapture.size, orientation);
   for (final barcode in barcodeCapture.barcodes) {
-    final corners = fixCorners(barcode.corners);
+    final corners = _fixCorners(barcode.corners);
     if (_isPolygonTouchingTheCenter(
       imageSize: imageSize,
       polygon: corners,
@@ -89,4 +88,38 @@ bool _isPointInPolygon({
   // Return the status of the inside flag which tells if the point is inside the
   // polygon or not
   return inside;
+}
+
+Size _fixPortraitLandscape(
+  Size imageSize,
+  DeviceOrientation orientation,
+) {
+  switch (orientation) {
+    case DeviceOrientation.portraitUp:
+    case DeviceOrientation.portraitDown:
+      return Size(imageSize.shortestSide, imageSize.longestSide);
+    case DeviceOrientation.landscapeLeft:
+    case DeviceOrientation.landscapeRight:
+      return Size(imageSize.longestSide, imageSize.shortestSide);
+  }
+}
+
+List<Offset> _fixCorners(List<Offset> corners) {
+  // Clone the original list to avoid side-effects
+  final sorted = List<Offset>.from(corners)
+    ..sort((a, b) {
+      // Prioritize y-axis (dy), and within that, the x-axis (dx)
+      var compare = a.dy.compareTo(b.dy);
+      if (compare == 0) {
+        compare = a.dx.compareTo(b.dx);
+      }
+      return compare;
+    });
+
+  final topLeft = sorted.first; // smallest x, smallest y
+  final topRight = sorted[1]; // larger x, smaller y
+  final bottomLeft = sorted[2]; // smaller x, larger y
+  final bottomRight = sorted.last; // larger x, larger y
+
+  return [topLeft, topRight, bottomRight, bottomLeft];
 }

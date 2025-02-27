@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-class BarcodeScannerSimple extends StatefulWidget {
-  const BarcodeScannerSimple({super.key});
+/// Implementation of Mobile Scanner example with simple configuration
+class MobileScannerSimple extends StatefulWidget {
+  /// Constructor for simple Mobile Scanner example
+  const MobileScannerSimple({super.key});
 
   @override
-  State<BarcodeScannerSimple> createState() => _BarcodeScannerSimpleState();
+  State<MobileScannerSimple> createState() => _MobileScannerSimpleState();
 }
 
-class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
+class _MobileScannerSimpleState extends State<MobileScannerSimple> {
   Barcode? _barcode;
 
   Widget _buildBarcode(Barcode? value) {

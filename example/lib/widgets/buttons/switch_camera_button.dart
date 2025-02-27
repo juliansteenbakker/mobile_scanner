@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for switch camera function
 class SwitchCameraButton extends StatelessWidget {
+  /// Constructor of button widget for switch camera function
   const SwitchCameraButton({required this.controller, super.key});
 
+  /// Controller which is used to call switchCamera
   final MobileScannerController controller;
 
-  Future<void> onPressed() async {
+  Future<void> _onPressed() async {
     await controller.switchCamera();
   }
 
@@ -42,7 +45,7 @@ class SwitchCameraButton extends StatelessWidget {
           color: Colors.white,
           iconSize: 32,
           icon: icon,
-          onPressed: onPressed,
+          onPressed: _onPressed,
         );
       },
     );

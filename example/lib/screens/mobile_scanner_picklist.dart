@@ -7,21 +7,22 @@ import 'package:mobile_scanner_example/utilities/barcode_at_center.dart';
 import 'package:mobile_scanner_example/widgets/crosshair_widget.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 
-// This sample implements picklist functionality.
-// The scanning can temporarily be suspended by the user by touching the screen.
-// When the scanning is active, the crosshair turns red.
-// When the scanning is suspended, the crosshair turns green.
-// A barcode has to touch the center of viewfinder to be scanned.
-// Therefore the Crosshair widget needs to be placed at the center of the
-// MobileScanner widget to visually line up.
-class BarcodeScannerPicklist extends StatefulWidget {
-  const BarcodeScannerPicklist({super.key});
+/// This sample implements picklist functionality.
+/// The scanning can temporarily be suspended by the user by touching the
+/// screen. When the scanning is active, the crosshair turns red.
+/// When the scanning is suspended, the crosshair turns green.
+/// A barcode has to touch the center of viewfinder to be scanned.
+/// Therefore the crosshair widget needs to be placed at the center of the
+/// MobileScanner widget to visually line up.
+class MobileScannerPicklist extends StatefulWidget {
+  /// Constructor for picklist Mobile Scanner example
+  const MobileScannerPicklist({super.key});
 
   @override
-  State<BarcodeScannerPicklist> createState() => _BarcodeScannerPicklistState();
+  State<MobileScannerPicklist> createState() => _MobileScannerPicklistState();
 }
 
-class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
+class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
   final _mobileScannerController = MobileScannerController(
     // The controller is started from the initState method.
     autoStart: false,

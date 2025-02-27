@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for pause function
 class PauseButton extends StatelessWidget {
+  /// Constructor of button widget for pause function
   const PauseButton({required this.controller, super.key});
 
+  /// Controller which is used to call pause
   final MobileScannerController controller;
 
-  Future<void> onPressed() async {
+  Future<void> _onPressed() async {
     await controller.pause();
   }
 
@@ -23,7 +26,7 @@ class PauseButton extends StatelessWidget {
           color: Colors.white,
           iconSize: 32,
           icon: const Icon(Icons.pause),
-          onPressed: onPressed,
+          onPressed: _onPressed,
         );
       },
     );

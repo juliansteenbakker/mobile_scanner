@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for analyze image function
 class AnalyzeImageButton extends StatelessWidget {
+  /// Constructor of button widget for analyze image function
   const AnalyzeImageButton({required this.controller, super.key});
 
+  /// Controller which is used to call analyzeImage
   final MobileScannerController controller;
 
-  Future<void> onPressed(BuildContext context) async {
+  Future<void> _onPressed(BuildContext context) async {
     if (kIsWeb) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -55,7 +58,7 @@ class AnalyzeImageButton extends StatelessWidget {
       color: Colors.white,
       icon: const Icon(Icons.image),
       iconSize: 32,
-      onPressed: () => onPressed(context),
+      onPressed: () => _onPressed(context),
     );
   }
 }

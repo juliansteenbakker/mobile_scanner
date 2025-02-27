@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for toggle torch (flash) function
 class ToggleFlashlightButton extends StatelessWidget {
+  /// Constructor of button widget for toggle torch (flash) function
   const ToggleFlashlightButton({required this.controller, super.key});
 
+  /// Controller which is used to call toggleTorch
   final MobileScannerController controller;
 
-  Future<void> onPressed() async {
+  Future<void> _onPressed() async {
     await controller.toggleTorch();
   }
 
@@ -25,21 +28,21 @@ class ToggleFlashlightButton extends StatelessWidget {
               color: Colors.white,
               iconSize: 32,
               icon: const Icon(Icons.flash_auto),
-              onPressed: onPressed,
+              onPressed: _onPressed,
             );
           case TorchState.off:
             return IconButton(
               color: Colors.white,
               iconSize: 32,
               icon: const Icon(Icons.flash_off),
-              onPressed: onPressed,
+              onPressed: _onPressed,
             );
           case TorchState.on:
             return IconButton(
               color: Colors.white,
               iconSize: 32,
               icon: const Icon(Icons.flash_on),
-              onPressed: onPressed,
+              onPressed: _onPressed,
             );
           case TorchState.unavailable:
             return const SizedBox.square(

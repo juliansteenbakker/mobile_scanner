@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for analyze image function
 class ScannerErrorWidget extends StatelessWidget {
+  /// Constructor of button widget for analyze image function
   const ScannerErrorWidget({required this.error, super.key});
 
+  /// Error to display
   final MobileScannerException error;
 
   @override

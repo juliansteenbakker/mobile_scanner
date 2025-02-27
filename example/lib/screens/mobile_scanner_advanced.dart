@@ -12,7 +12,7 @@ import 'package:mobile_scanner_example/widgets/buttons/toggle_flashlight_widget.
 import 'package:mobile_scanner_example/widgets/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 
-enum PopupMenuItems {
+enum _PopupMenuItems {
   cameraResolution,
   detectionSpeed,
   detectionTimeout,
@@ -24,14 +24,16 @@ enum PopupMenuItems {
   formats,
 }
 
-class BarcodeScannerAdvanced extends StatefulWidget {
-  const BarcodeScannerAdvanced({super.key});
+/// Implementation of Mobile Scanner example with advanced configuration
+class MobileScannerAdvanced extends StatefulWidget {
+  /// Constructor for advanced Mobile Scanner example
+  const MobileScannerAdvanced({super.key});
 
   @override
-  State<BarcodeScannerAdvanced> createState() => _BarcodeScannerAdvancedState();
+  State<MobileScannerAdvanced> createState() => _MobileScannerAdvancedState();
 }
 
-class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
+class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   // Cannot be changed on runtime while the scanner is running
   static const useScanWindow = true;
 
@@ -358,27 +360,27 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
       appBar: AppBar(
         title: const Text('Advanced Mobile Scanner'),
         actions: [
-          PopupMenuButton<PopupMenuItems>(
+          PopupMenuButton<_PopupMenuItems>(
             tooltip: 'Menu',
             onSelected: (item) async {
               switch (item) {
-                case PopupMenuItems.cameraResolution:
+                case _PopupMenuItems.cameraResolution:
                   await _showResolutionDialog();
-                case PopupMenuItems.detectionSpeed:
+                case _PopupMenuItems.detectionSpeed:
                   await _showDetectionSpeedDialog();
-                case PopupMenuItems.detectionTimeout:
+                case _PopupMenuItems.detectionTimeout:
                   await _showDetectionTimeoutDialog();
-                case PopupMenuItems.formats:
+                case _PopupMenuItems.formats:
                   await _showBarcodeFormatDialog();
-                case PopupMenuItems.boxFit:
+                case _PopupMenuItems.boxFit:
                   await _showBoxFitDialog();
-                case PopupMenuItems.returnImage:
+                case _PopupMenuItems.returnImage:
                   returnImage = !returnImage;
-                case PopupMenuItems.invertImage:
+                case _PopupMenuItems.invertImage:
                   invertImage = !invertImage;
-                case PopupMenuItems.autoZoom:
+                case _PopupMenuItems.autoZoom:
                   autoZoom = !autoZoom;
-                case PopupMenuItems.useBarcodeOverlay:
+                case _PopupMenuItems.useBarcodeOverlay:
                   useBarcodeOverlay = !useBarcodeOverlay;
               }
 
@@ -391,48 +393,48 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
             itemBuilder: (context) => [
               if (Platform.isAndroid)
                 PopupMenuItem(
-                  value: PopupMenuItems.cameraResolution,
-                  child: Text(PopupMenuItems.cameraResolution.name),
+                  value: _PopupMenuItems.cameraResolution,
+                  child: Text(_PopupMenuItems.cameraResolution.name),
                 ),
               PopupMenuItem(
-                value: PopupMenuItems.detectionSpeed,
-                child: Text(PopupMenuItems.detectionSpeed.name),
+                value: _PopupMenuItems.detectionSpeed,
+                child: Text(_PopupMenuItems.detectionSpeed.name),
               ),
               PopupMenuItem(
-                value: PopupMenuItems.detectionTimeout,
+                value: _PopupMenuItems.detectionTimeout,
                 enabled: detectionSpeed == DetectionSpeed.normal,
-                child: Text(PopupMenuItems.detectionTimeout.name),
+                child: Text(_PopupMenuItems.detectionTimeout.name),
               ),
               PopupMenuItem(
-                value: PopupMenuItems.boxFit,
-                child: Text(PopupMenuItems.boxFit.name),
+                value: _PopupMenuItems.boxFit,
+                child: Text(_PopupMenuItems.boxFit.name),
               ),
               PopupMenuItem(
-                value: PopupMenuItems.formats,
-                child: Text(PopupMenuItems.formats.name),
+                value: _PopupMenuItems.formats,
+                child: Text(_PopupMenuItems.formats.name),
               ),
               const PopupMenuDivider(),
               if (Platform.isAndroid)
                 CheckedPopupMenuItem(
-                  value: PopupMenuItems.autoZoom,
+                  value: _PopupMenuItems.autoZoom,
                   checked: autoZoom,
-                  child: Text(PopupMenuItems.autoZoom.name),
+                  child: Text(_PopupMenuItems.autoZoom.name),
                 ),
               if (Platform.isAndroid)
                 CheckedPopupMenuItem(
-                  value: PopupMenuItems.invertImage,
+                  value: _PopupMenuItems.invertImage,
                   checked: invertImage,
-                  child: Text(PopupMenuItems.invertImage.name),
+                  child: Text(_PopupMenuItems.invertImage.name),
                 ),
               CheckedPopupMenuItem(
-                value: PopupMenuItems.returnImage,
+                value: _PopupMenuItems.returnImage,
                 checked: returnImage,
-                child: Text(PopupMenuItems.returnImage.name),
+                child: Text(_PopupMenuItems.returnImage.name),
               ),
               CheckedPopupMenuItem(
-                value: PopupMenuItems.useBarcodeOverlay,
+                value: _PopupMenuItems.useBarcodeOverlay,
                 checked: useBarcodeOverlay,
-                child: Text(PopupMenuItems.useBarcodeOverlay.name),
+                child: Text(_PopupMenuItems.useBarcodeOverlay.name),
               ),
             ],
           ),

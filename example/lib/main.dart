@@ -1,18 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner_example/screens/barcode_scanner_advanced.dart';
-import 'package:mobile_scanner_example/screens/barcode_scanner_simple.dart';
+import 'package:mobile_scanner_example/screens/mobile_scanner_advanced.dart';
+import 'package:mobile_scanner_example/screens/mobile_scanner_simple.dart';
 
 void main() {
   runApp(
     const MaterialApp(
       title: 'Mobile Scanner Example',
-      home: MyHome(),
+      home: _ExampleHome(),
     ),
   );
 }
 
-class MyHome extends StatelessWidget {
-  const MyHome({super.key});
+class _ExampleHome extends StatelessWidget {
+  const _ExampleHome();
 
   Widget _buildItem(
     BuildContext context,
@@ -100,7 +100,7 @@ class MyHome extends StatelessWidget {
                 'Simple Mobile Scanner',
                 'Example of a simple mobile scanner instance without defining '
                     'a controller.',
-                const BarcodeScannerSimple(),
+                const MobileScannerSimple(),
                 Icons.qr_code_scanner,
               ),
               _buildItem(
@@ -108,7 +108,7 @@ class MyHome extends StatelessWidget {
                 'Advanced Mobile Scanner',
                 'Example of an advanced mobile scanner instance with a '
                     'controller, and multiple control widgets.',
-                const BarcodeScannerAdvanced(),
+                const MobileScannerAdvanced(),
                 Icons.settings_remote,
               ),
               // TODO(juliansteenbakker): Fix picklist example
