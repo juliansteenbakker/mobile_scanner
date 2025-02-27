@@ -11,6 +11,7 @@ import 'package:mobile_scanner_example/widgets/buttons/switch_camera_button.dart
 import 'package:mobile_scanner_example/widgets/buttons/toggle_flashlight_button.dart';
 import 'package:mobile_scanner_example/widgets/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
+import 'package:mobile_scanner_example/widgets/zoom_scale_slider_widget.dart';
 
 enum _PopupMenuItems {
   cameraResolution,
@@ -121,9 +122,6 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showResolutionDialog() async {
-    final widthController = TextEditingController();
-    final heightController = TextEditingController();
-
     await showDialog<void>(
       context: context,
       builder: (context) {
@@ -525,7 +523,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                       barcodes: controller.barcodes,
                     ),
                   ),
-                  if (!kIsWeb) _buildZoomScaleSlider(),
+                  if (!kIsWeb) ZoomScaleSlider(controller: controller),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
