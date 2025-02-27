@@ -596,6 +596,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
     
     func getSafeZoomFactor(scale: CGFloat) -> CGFloat {
+#if os(iOS)
         var actualScale = (scale * 4) + 1
         
         // Set a maximum zoom limit of 5x
@@ -605,6 +606,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         actualScale = min(device.activeFormat.videoMaxZoomFactor, actualScale)
         
         return actualScale
+#endif
+        return scale
     }
     
     func getScaleFromZoomFactor(actualScale: CGFloat) -> CGFloat {
@@ -967,7 +970,7 @@ extension VNBarcodeObservation {
                 ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
-            "rawBytes": rawBytes,
+            "rawBytes": rawBytes ?? "",
             "rawValue": payloadStringValue ?? "",
             "displayValue": payloadStringValue ?? "",
             "size": [
