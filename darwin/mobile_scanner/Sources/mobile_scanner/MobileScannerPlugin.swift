@@ -976,14 +976,14 @@ extension VNBarcodeObservation {
                 ["x": bottomLeftX, "y": bottomLeftY],
             ],
             "format": symbology.toInt ?? -1,
-            "rawBytes": rawBytes ?? "",
-            "rawValue": payloadStringValue ?? "",
-            "displayValue": payloadStringValue ?? "",
+            "rawBytes": rawBytes,
+            "rawValue": payloadStringValue,
+            "displayValue": payloadStringValue,
             "size": [
                 "width": width,
                 "height": height,
             ],
-        ] as [String : Any]
+        ] as [String : Any?]
         return data
     }
 }
