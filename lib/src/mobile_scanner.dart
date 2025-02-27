@@ -117,13 +117,13 @@ class MobileScanner extends StatefulWidget {
   /// Defaults to no threshold for scan window updates.
   final double scanWindowUpdateThreshold;
 
-  /// Whether the `MobileScanner` widget should automatically pause and resume when the application lifecycle state changes.
-  /// If this is false, the controller should manually be resumed or paused when the application lifecycle changes.
+  /// Whether the `MobileScanner` widget should automatically pause and resume
+  /// when the application lifecycle state changes.
+  ///
+  /// Only applicable if no controller is passed. Otherwise, lifecycleState
+  /// should be handled by the user via the controller.
   ///
   /// Defaults to true.
-  
-  /// when no controller is passed. If a controller is passed, lifecycleState
-  /// should be handled by the user via the controller.
   final bool useAppLifecycleState;
 
   @override
@@ -306,7 +306,7 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!widget.useAppLifecycleState ||
-        (widget.controller != null && widget.useAppLifecycleState) ||
+        widget.controller != null ||
         !controller.value.hasCameraPermission) {
       return;
     }
