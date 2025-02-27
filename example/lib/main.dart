@@ -115,7 +115,7 @@ class MyHome extends StatelessWidget {
               // _buildItem(
               //   context,
               //   'Mobile Scanner with Crosshair',
-              //   'Example of a mobile scanner instance with a crosshair, that '
+              //  'Example of a mobile scanner instance with a crosshair, that '
               //       'only detects barcodes which the crosshair hits.',
               //   const BarcodeScannerPicklist(),
               //   Icons.list,
