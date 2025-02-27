@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -389,7 +390,7 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
               setState(() {});
             },
             itemBuilder: (context) => [
-              PopupMenuItem(
+              if (Platform.isAndroid) PopupMenuItem(
                 value: PopupMenuItems.cameraResolution,
                 child: Text(PopupMenuItems.cameraResolution.name),
               ),
@@ -411,12 +412,12 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
                 child: Text(PopupMenuItems.formats.name),
               ),
               const PopupMenuDivider(),
-              CheckedPopupMenuItem(
+              if (Platform.isAndroid) CheckedPopupMenuItem(
                 value: PopupMenuItems.autoZoom,
                 checked: autoZoom,
                 child: Text(PopupMenuItems.autoZoom.name),
               ),
-              CheckedPopupMenuItem(
+              if (Platform.isAndroid) CheckedPopupMenuItem(
                 value: PopupMenuItems.invertImage,
                 checked: invertImage,
                 child: Text(PopupMenuItems.invertImage.name),
