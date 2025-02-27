@@ -218,21 +218,21 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 title: const Text('Select BoxFit'),
                 content: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: BoxFit.values.map((fit) {
-                    return RadioListTile<BoxFit>(
-                      title:
-                          Text(fit.toString().split('.').last), // Display name
-                      value: fit,
-                      groupValue: tempBoxFit,
-                      onChanged: (BoxFit? value) {
-                        if (value != null) {
-                          setDialogState(() {
-                            tempBoxFit = value;
-                          });
-                        }
-                      },
-                    );
-                  }).toList(),
+                  children: [
+                    for (final fit in BoxFit.values)
+                      RadioListTile<BoxFit>(
+                        title: Text(fit.name),
+                        value: fit,
+                        groupValue: tempBoxFit,
+                        onChanged: (BoxFit? value) {
+                          if (value != null) {
+                            setDialogState(() {
+                              tempBoxFit = value;
+                            });
+                          }
+                        },
+                      ),
+                  ],
                 ),
                 actions: [
                   TextButton(
