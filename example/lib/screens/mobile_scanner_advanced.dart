@@ -393,7 +393,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
               setState(() {});
             },
             itemBuilder: (context) => [
-              if (Platform.isAndroid)
+              if (!kIsWeb && Platform.isAndroid)
                 PopupMenuItem(
                   value: _PopupMenuItems.cameraResolution,
                   child: Text(_PopupMenuItems.cameraResolution.name),
@@ -416,13 +416,13 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 child: Text(_PopupMenuItems.formats.name),
               ),
               const PopupMenuDivider(),
-              if (Platform.isAndroid)
+              if (!kIsWeb && Platform.isAndroid)
                 CheckedPopupMenuItem(
                   value: _PopupMenuItems.autoZoom,
                   checked: autoZoom,
                   child: Text(_PopupMenuItems.autoZoom.name),
                 ),
-              if (Platform.isAndroid)
+              if (!kIsWeb && Platform.isAndroid)
                 CheckedPopupMenuItem(
                   value: _PopupMenuItems.invertImage,
                   checked: invertImage,
