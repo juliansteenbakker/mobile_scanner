@@ -18,10 +18,8 @@ enum PopupMenuItems {
   returnImage,
   invertImage,
   autoZoom,
-  useScanWindow,
   useBarcodeOverlay,
   boxFit,
-  enableLifecycle,
   formats,
 }
 
@@ -32,8 +30,11 @@ class BarcodeScannerAdvanced extends StatefulWidget {
   State<BarcodeScannerAdvanced> createState() => _BarcodeScannerAdvancedState();
 }
 
-class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
-    with WidgetsBindingObserver {
+class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
+
+  // Cannot be changed on runtime while the scanner is running
+  static const useScanWindow = true;
+
   bool autoZoom = false;
   bool invertImage = false;
   bool returnImage = false;
@@ -42,7 +43,6 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
   int detectionTimeout = 1000; // Default to 1000ms
 
-  bool useScanWindow = true;
   bool useBarcodeOverlay = true;
   BoxFit boxFit = BoxFit.contain;
   bool enableLifecycle = false;
@@ -66,26 +66,7 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     unawaited(controller.start());
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!controller.value.hasCameraPermission || !enableLifecycle) {
-      return;
-    }
-
-    switch (state) {
-      case AppLifecycleState.detached:
-      case AppLifecycleState.hidden:
-      case AppLifecycleState.paused:
-        return;
-      case AppLifecycleState.resumed:
-        unawaited(controller.start());
-      case AppLifecycleState.inactive:
-        unawaited(controller.stop());
-    }
   }
 
   double _zoomFactor = 0;
@@ -397,12 +378,8 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
                   invertImage = !invertImage;
                 case PopupMenuItems.autoZoom:
                   autoZoom = !autoZoom;
-                case PopupMenuItems.useScanWindow:
-                  useScanWindow = !useScanWindow;
                 case PopupMenuItems.useBarcodeOverlay:
                   useBarcodeOverlay = !useBarcodeOverlay;
-                case PopupMenuItems.enableLifecycle:
-                  enableLifecycle = !enableLifecycle;
               }
 
               await controller.dispose();
@@ -450,19 +427,9 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
                 child: Text(PopupMenuItems.returnImage.name),
               ),
               CheckedPopupMenuItem(
-                value: PopupMenuItems.useScanWindow,
-                checked: useScanWindow,
-                child: Text(PopupMenuItems.useScanWindow.name),
-              ),
-              CheckedPopupMenuItem(
                 value: PopupMenuItems.useBarcodeOverlay,
                 checked: useBarcodeOverlay,
                 child: Text(PopupMenuItems.useBarcodeOverlay.name),
-              ),
-              CheckedPopupMenuItem(
-                value: PopupMenuItems.enableLifecycle,
-                checked: enableLifecycle,
-                child: Text(PopupMenuItems.enableLifecycle.name),
               ),
             ],
           ),
@@ -472,6 +439,8 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
       body: Stack(
         children: [
           MobileScanner(
+            // useAppLifecycleState: false, // Only set to false if you want
+            // to handle lifecycle changes yourself
             scanWindow: useScanWindow ? scanWindow : null,
             controller: controller,
             errorBuilder: (context, error) {
@@ -571,7 +540,6 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced>
 
   @override
   Future<void> dispose() async {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
     await controller.dispose();
   }

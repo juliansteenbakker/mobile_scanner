@@ -301,11 +301,12 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null ||
-        !controller.value.hasCameraPermission ||
-        !widget.useAppLifecycleState) {
+    if (!widget.useAppLifecycleState ||
+        (widget.controller != null && widget.useAppLifecycleState) ||
+        !controller.value.hasCameraPermission) {
       return;
     }
+
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
@@ -318,7 +319,7 @@ class _MobileScannerState extends State<MobileScanner>
           cancelOnError: false,
         );
 
-        unawaited(controller.start());
+        controller.start();
       case AppLifecycleState.inactive:
         unawaited(_subscription?.cancel());
         _subscription = null;
