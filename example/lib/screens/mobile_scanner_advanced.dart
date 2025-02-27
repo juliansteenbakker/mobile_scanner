@@ -199,15 +199,14 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showDetectionTimeoutDialog() async => showDialog<void>(
         context: context,
         builder: (context) {
-          var tempTimeout =
-              detectionTimeout; // Temporary variable to hold the slider value
+          var tempTimeout = detectionTimeout;
 
           return StatefulBuilder(
             builder: (context, setDialogState) {
               return AlertDialog(
                 title: const Text('Set Detection Timeout (ms)'),
                 content: SizedBox(
-                  height: 100, // Restrict height
+                  height: 100,
                   child: Column(
                     children: [
                       Slider(
@@ -233,7 +232,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        detectionTimeout = tempTimeout; // Save final selection
+                        detectionTimeout = tempTimeout;
                       });
                       Navigator.pop(context);
                     },
@@ -249,7 +248,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showBoxFitDialog() async => showDialog<void>(
         context: context,
         builder: (context) {
-          var tempBoxFit = boxFit; // Temporary variable for selection
+          var tempBoxFit = boxFit;
 
           return StatefulBuilder(
             builder: (context, setDialogState) {
@@ -281,7 +280,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        boxFit = tempBoxFit; // Save the selected value
+                        boxFit = tempBoxFit;
                       });
                       Navigator.pop(context);
                     },
@@ -335,7 +334,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   TextButton(
                     onPressed: () async {
                       setState(() {
-                        selectedFormats = tempSelectedFormats; // Save selection
+                        selectedFormats = tempSelectedFormats;
                       });
                       Navigator.pop(context);
                     },
