@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// This function finds the barcode that touches the center of the
 /// image. If no barcode is found that touches the center, null is returned.
-/// See _BarcodeScannerPicklistState and the returnImage option for more info.
+/// See `_BarcodeScannerPicklistState` and the returnImage option for more info.
 ///
 /// https://github.com/juliansteenbakker/mobile_scanner/issues/1183
 Barcode? findBarcodeAtCenter(
