@@ -349,6 +349,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
               controller = initController();
               await controller.start();
 
+              if (!mounted) return;
+
               setState(() {});
             },
             itemBuilder: (context) => [
