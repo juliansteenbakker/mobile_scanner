@@ -363,7 +363,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
-        device.addObserver(self, forKeyPath: "videoZoomFactor", options: [.new, .initial], context: nil)
+#if os(iOS)
+        device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor), options: [.new, .initial], context: nil)
+#endif
         captureSession!.beginConfiguration()
         
         // Check the zoom factor at switching from ultra wide camera to wide camera.
@@ -703,7 +705,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             captureSession.removeOutput(output)
         }
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
-        device.removeObserver(self, forKeyPath: "videoZoomFactor")
+#if os(iOS)
+        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+#endif
 
         latestBuffer = nil
         self.captureSession = nil
@@ -809,12 +813,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     // Observer for torch state
     public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
         switch keyPath {
-        case "torchMode":
+        case #keyPath(AVCaptureDevice.torchMode):
             // Off = 0, On = 1, Auto = 2
             let state = change?[.newKey] as? Int
             let event: [String: Any?] = ["name": "torchState", "data": state]
             sink?(event)
-        case "videoZoomFactor":
+#if os(iOS)
+        case #keyPath(AVCaptureDevice.videoZoomFactor):
             if let zoomScale = change?[.newKey] as? CGFloat,
                let device = object as? AVCaptureDevice {
                 
@@ -823,6 +828,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 let event: [String: Any?] = ["name": "zoomScaleState", "data":scale]
                 sink?(event)
             }
+#endif
         default:
             break
         }
