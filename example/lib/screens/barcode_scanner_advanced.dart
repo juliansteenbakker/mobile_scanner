@@ -32,7 +32,6 @@ class BarcodeScannerAdvanced extends StatefulWidget {
 }
 
 class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
-
   // Cannot be changed on runtime while the scanner is running
   static const useScanWindow = true;
 
@@ -390,10 +389,11 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
               setState(() {});
             },
             itemBuilder: (context) => [
-              if (Platform.isAndroid) PopupMenuItem(
-                value: PopupMenuItems.cameraResolution,
-                child: Text(PopupMenuItems.cameraResolution.name),
-              ),
+              if (Platform.isAndroid)
+                PopupMenuItem(
+                  value: PopupMenuItems.cameraResolution,
+                  child: Text(PopupMenuItems.cameraResolution.name),
+                ),
               PopupMenuItem(
                 value: PopupMenuItems.detectionSpeed,
                 child: Text(PopupMenuItems.detectionSpeed.name),
@@ -412,16 +412,18 @@ class _BarcodeScannerAdvancedState extends State<BarcodeScannerAdvanced> {
                 child: Text(PopupMenuItems.formats.name),
               ),
               const PopupMenuDivider(),
-              if (Platform.isAndroid) CheckedPopupMenuItem(
-                value: PopupMenuItems.autoZoom,
-                checked: autoZoom,
-                child: Text(PopupMenuItems.autoZoom.name),
-              ),
-              if (Platform.isAndroid) CheckedPopupMenuItem(
-                value: PopupMenuItems.invertImage,
-                checked: invertImage,
-                child: Text(PopupMenuItems.invertImage.name),
-              ),
+              if (Platform.isAndroid)
+                CheckedPopupMenuItem(
+                  value: PopupMenuItems.autoZoom,
+                  checked: autoZoom,
+                  child: Text(PopupMenuItems.autoZoom.name),
+                ),
+              if (Platform.isAndroid)
+                CheckedPopupMenuItem(
+                  value: PopupMenuItems.invertImage,
+                  checked: invertImage,
+                  child: Text(PopupMenuItems.invertImage.name),
+                ),
               CheckedPopupMenuItem(
                 value: PopupMenuItems.returnImage,
                 checked: returnImage,
