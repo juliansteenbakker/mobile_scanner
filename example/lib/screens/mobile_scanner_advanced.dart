@@ -54,6 +54,9 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
   late MobileScannerController controller = initController();
 
+  final widthController = TextEditingController();
+  final heightController = TextEditingController();
+
   MobileScannerController initController() => MobileScannerController(
         autoStart: false,
         cameraResolution: desiredCameraResolution,
@@ -72,53 +75,12 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     unawaited(controller.start());
   }
 
-  double _zoomFactor = 0;
-
-  Widget _buildZoomScaleSlider() {
-    return ValueListenableBuilder(
-      valueListenable: controller,
-      builder: (context, state, child) {
-        if (!state.isInitialized || !state.isRunning) {
-          return const SizedBox.shrink();
-        }
-
-        _zoomFactor = state.zoomScale;
-
-        final labelStyle = Theme.of(context)
-            .textTheme
-            .headlineMedium!
-            .copyWith(color: Colors.white);
-
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Row(
-            children: [
-              Text(
-                '0%',
-                overflow: TextOverflow.fade,
-                style: labelStyle,
-              ),
-              Expanded(
-                child: Slider(
-                  value: _zoomFactor,
-                  onChanged: (value) {
-                    setState(() {
-                      _zoomFactor = value;
-                      controller.setZoomScale(value);
-                    });
-                  },
-                ),
-              ),
-              Text(
-                '100%',
-                overflow: TextOverflow.fade,
-                style: labelStyle,
-              ),
-            ],
-          ),
-        );
-      },
-    );
+  @override
+  Future<void> dispose() async {
+    super.dispose();
+    await controller.dispose();
+    widthController.dispose();
+    heightController.dispose();
   }
 
   Future<void> _showResolutionDialog() async {
@@ -540,11 +502,5 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         ],
       ),
     );
-  }
-
-  @override
-  Future<void> dispose() async {
-    super.dispose();
-    await controller.dispose();
   }
 }
