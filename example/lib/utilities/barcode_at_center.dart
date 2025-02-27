@@ -67,18 +67,13 @@ bool _isPointInPolygon({
     if (((polygon[i].dy > point.dy) != (polygon[j].dy > point.dy)) &&
         // Check if the point's x-coordinate is to the left of the edge
         (point.dx <
-            (polygon[j].dx -
-                        polygon[i]
-                            .dx) * // Horizontal distance between the vertices
-                    // of the edge
-                    (point.dy -
-                        polygon[i]
-                            .dy) / // Scale factor based on the y-distance of
-                    // the point to the lower vertex
-                    (polygon[j].dy -
-                        polygon[i]
-                            .dy) + // Vertical distance between the vertices
-                // of the edge
+            (polygon[j].dx - polygon[i].dx) *
+                    // Horizontal distance between the vertices of the edge
+                    (point.dy - polygon[i].dy) /
+                    // Scale factor based on the y-distance of the point to the
+                    // lower vertex
+                    (polygon[j].dy - polygon[i].dy) +
+                // Vertical distance between the vertices of the edge
                 polygon[i].dx)) {
       // Horizontal position of the lower vertex
       // If the ray intersects the polygon edge, invert the inside flag
