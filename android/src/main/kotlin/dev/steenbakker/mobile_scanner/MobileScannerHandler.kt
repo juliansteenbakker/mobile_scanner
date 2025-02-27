@@ -42,11 +42,12 @@ class MobileScannerHandler(
 
     private val analyzeImageSuccessCallback: AnalyzerSuccessCallback = {
         Handler(Looper.getMainLooper()).post {
-            // Also publish on controller result
-            barcodeHandler.publishEvent(mapOf(
-                "name" to "barcode",
-                "data" to it,
-            ))
+            // TODO: Open for discussion if we want to publish the results on the barcode stream as well.
+//            // Also publish on controller result
+//            barcodeHandler.publishEvent(mapOf(
+//                "name" to "barcode",
+//                "data" to it,
+//            ))
 
             analyzerResult?.success(mapOf(
                 "name" to "barcode",
