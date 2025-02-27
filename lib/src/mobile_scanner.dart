@@ -117,7 +117,11 @@ class MobileScanner extends StatefulWidget {
   /// Defaults to no threshold for scan window updates.
   final double scanWindowUpdateThreshold;
 
-  /// Whether to pause and resume the barcode scanner on lifecycleState change
+  /// Whether the `MobileScanner` widget should automatically pause and resume when the application lifecycle state changes.
+  /// If this is false, the controller should manually be resumed or paused when the application lifecycle changes.
+  ///
+  /// Defaults to true.
+  
   /// when no controller is passed. If a controller is passed, lifecycleState
   /// should be handled by the user via the controller.
   final bool useAppLifecycleState;
