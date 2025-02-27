@@ -177,21 +177,22 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
             title: const Text('Select Detection Speed'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
-              children: DetectionSpeed.values.map((speed) {
-                return RadioListTile<DetectionSpeed>(
-                  title: Text(speed.name),
-                  value: speed,
-                  groupValue: detectionSpeed,
-                  onChanged: (DetectionSpeed? value) {
-                    if (value != null) {
-                      setState(() {
-                        detectionSpeed = value;
-                      });
-                      Navigator.pop(context);
-                    }
-                  },
-                );
-              }).toList(),
+              children: [
+                for (final speed in DetectionSpeed.values)
+                  RadioListTile<DetectionSpeed>(
+                    title: Text(speed.name),
+                    value: speed,
+                    groupValue: detectionSpeed,
+                    onChanged: (DetectionSpeed? value) {
+                      if (value != null) {
+                        setState(() {
+                          detectionSpeed = value;
+                        });
+                        Navigator.pop(context);
+                      }
+                    },
+                  ),
+              ],
             ),
           );
         },
