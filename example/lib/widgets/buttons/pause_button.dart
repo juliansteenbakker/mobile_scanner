@@ -9,9 +9,7 @@ class PauseButton extends StatelessWidget {
   /// Controller which is used to call pause
   final MobileScannerController controller;
 
-  Future<void> _onPressed() async {
-    await controller.pause();
-  }
+  Future<void> _onPressed() async => controller.pause();
 
   @override
   Widget build(BuildContext context) {

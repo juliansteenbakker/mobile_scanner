@@ -9,13 +9,9 @@ class StartStopButton extends StatelessWidget {
   /// Controller which is used to call stop or start
   final MobileScannerController controller;
 
-  Future<void> _onPressedStop() async {
-    await controller.stop();
-  }
+  Future<void> _onPressedStop() async => controller.stop();
 
-  Future<void> _onPressedStart() async {
-    await controller.start();
-  }
+  Future<void> _onPressedStart() async => controller.start();
 
   @override
   Widget build(BuildContext context) {

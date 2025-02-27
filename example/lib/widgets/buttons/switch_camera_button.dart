@@ -9,9 +9,7 @@ class SwitchCameraButton extends StatelessWidget {
   /// Controller which is used to call switchCamera
   final MobileScannerController controller;
 
-  Future<void> _onPressed() async {
-    await controller.switchCamera();
-  }
+  Future<void> _onPressed() async => controller.switchCamera();
 
   @override
   Widget build(BuildContext context) {
