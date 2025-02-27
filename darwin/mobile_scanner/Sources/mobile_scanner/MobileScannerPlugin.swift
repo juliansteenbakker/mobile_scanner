@@ -262,14 +262,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             result(nil)
             return
         }
-
-        let minX = scanWindowData![0]
-        let minY = scanWindowData![1]
-
-        let width = scanWindowData![2]  - minX
-        let height = scanWindowData![3] - minY
-
-        scanWindow = CGRect(x: minX, y: minY, width: width, height: height)
+        
+        let left = scanWindowData![0]
+        let top = scanWindowData![1]
+        let right = scanWindowData![2]
+        let bottom = scanWindowData![3]
+        
+        scanWindow = CGRect(
+            x: left,                  // Normalized x-position (left)
+            y: 1.0 - bottom,          // Flip Y-axis since Vision uses a different coordinate system
+            width: right - left,      // Width (difference between right and left)
+            height: bottom - top      // Height (difference between bottom and top)
+        )
+        
         result(nil)
     }
     
@@ -358,6 +363,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
+        device.addObserver(self, forKeyPath: "videoZoomFactor", options: [.new, .initial], context: nil)
         captureSession!.beginConfiguration()
         
         // Check the zoom factor at switching from ultra wide camera to wide camera.
@@ -561,18 +567,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         do {
 #if os(iOS)
                 try device.lockForConfiguration()
-                let maxZoomFactor = device.activeFormat.videoMaxZoomFactor
-
-                var actualScale = (scale * 4) + 1
-
-                // Set maximum zoomrate of 5x
-                actualScale = min(5.0, actualScale)
-
-                // Limit to max rate of camera
-                actualScale = min(maxZoomFactor, actualScale)
-
                 // Limit to 1.0 scale
-                device.videoZoomFactor = actualScale
+                device.videoZoomFactor = getSafeZoomFactor(scale: scale)
 
                 device.unlockForConfiguration()
 #endif
@@ -597,6 +593,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         } catch {
             throw MobileScannerError.zoomError(error)
         }
+    }
+    
+    func getSafeZoomFactor(scale: CGFloat) -> CGFloat {
+        var actualScale = (scale * 4) + 1
+        
+        // Set a maximum zoom limit of 5x
+        actualScale = min(5.0, actualScale)
+        
+        // Ensure it does not exceed the camera's max zoom capability
+        actualScale = min(device.activeFormat.videoMaxZoomFactor, actualScale)
+        
+        return actualScale
+    }
+    
+    func getScaleFromZoomFactor(actualScale: CGFloat) -> CGFloat {
+        return (actualScale - 1) / 4
     }
 
     private func toggleTorch(_ result: @escaping FlutterResult) {
@@ -688,6 +700,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             captureSession.removeOutput(output)
         }
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+        device.removeObserver(self, forKeyPath: "videoZoomFactor")
 
         latestBuffer = nil
         self.captureSession = nil
@@ -798,6 +811,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             let state = change?[.newKey] as? Int
             let event: [String: Any?] = ["name": "torchState", "data": state]
             sink?(event)
+        case "videoZoomFactor":
+            if let zoomScale = change?[.newKey] as? CGFloat,
+               let device = object as? AVCaptureDevice {
+                
+                let scale = getScaleFromZoomFactor(actualScale: zoomScale)
+
+                let event: [String: Any?] = ["name": "zoomScaleState", "data":scale]
+                sink?(event)
+            }
         default:
             break
         }
