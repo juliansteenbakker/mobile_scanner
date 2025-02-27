@@ -8,7 +8,7 @@ import 'package:mobile_scanner_example/widgets/buttons/analyze_image_button.dart
 import 'package:mobile_scanner_example/widgets/buttons/pause_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/start_stop_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/switch_camera_button.dart';
-import 'package:mobile_scanner_example/widgets/buttons/toggle_flashlight_widget.dart';
+import 'package:mobile_scanner_example/widgets/buttons/toggle_flashlight_button.dart';
 import 'package:mobile_scanner_example/widgets/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 
