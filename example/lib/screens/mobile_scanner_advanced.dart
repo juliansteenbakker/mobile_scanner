@@ -41,7 +41,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   bool invertImage = false;
   bool returnImage = false;
 
-  Size size = const Size(1920, 1080);
+  Size desiredCameraResolution = const Size(1920, 1080);
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
   int detectionTimeout = 1000; // Default to 1000ms
 
@@ -55,7 +55,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
   MobileScannerController initController() => MobileScannerController(
         autoStart: false,
-        cameraResolution: size,
+        cameraResolution: desiredCameraResolution,
         detectionSpeed: detectionSpeed,
         detectionTimeoutMs: detectionTimeout,
         formats: selectedFormats,
@@ -156,7 +156,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
                 if (width != null && height != null) {
                   setState(() {
-                    size = Size(width.toDouble(), height.toDouble());
+                    desiredCameraResolution =
+                        Size(width.toDouble(), height.toDouble());
                   });
                   Navigator.pop(context);
                 }
