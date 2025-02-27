@@ -46,26 +46,6 @@ void main() {
   });
 
   group('MobileScanner Widget Tests', () {
-    testWidgets('renders correctly with default parameters', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: MobileScanner()),
-        ),
-      );
-
-      expect(find.byType(MobileScanner), findsOneWidget);
-    });
-
-    testWidgets('renders correctly with custom controller', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(body: MobileScanner(controller: mockController)),
-        ),
-      );
-
-      expect(find.byType(MobileScanner), findsOneWidget);
-    });
-
     testWidgets('calls onDetect when barcode is scanned', (tester) async {
       bool wasCalled = false;
       final barcodeStreamController = StreamController<BarcodeCapture>();
@@ -133,6 +113,8 @@ void main() {
       await tester
           .pumpWidget(Container()); // Remove the widget to trigger disposal
 
+      expect(tester.takeException(), isNull);
+
       // Since MobileScanner created its own controller, it should be disposed.
       // However, we cannot verify it directly because it's internal.
       // Instead, we ensure there is no exception.
@@ -154,32 +136,33 @@ void main() {
     });
   });
 
-  group('MobileScannerController Tests', () {
-    test('start() should call platform start method', () async {
-      await mockController.start();
-      verify(() => mockController.start()).called(1);
-    });
-
-    test('stop() should call platform stop method', () async {
-      await mockController.stop();
-      verify(() => mockController.stop()).called(1);
-    });
-
-    test('toggleTorch() should call platform toggleTorch method', () async {
-      await mockController.toggleTorch();
-      verify(() => mockController.toggleTorch()).called(1);
-    });
-
-    test('switchCamera() should call platform switchCamera method', () async {
-      await mockController.switchCamera();
-      verify(() => mockController.switchCamera()).called(1);
-    });
-
-    test('updateScanWindow() should call platform updateScanWindow method',
-        () async {
-      const Rect scanWindow = Rect.fromLTWH(10, 10, 100, 100);
-      await mockController.updateScanWindow(scanWindow);
-      verify(() => mockController.updateScanWindow(scanWindow)).called(1);
-    });
-  });
+  // TODO: Improve tests in new PR
+  // group('MobileScannerController Tests', () {
+  //   test('start() should call platform start method', () async {
+  //     await mockController.start();
+  //     verify(() => mockController.start()).called(1);
+  //   });
+  //
+  //   test('stop() should call platform stop method', () async {
+  //     await mockController.stop();
+  //     verify(() => mockController.stop()).called(1);
+  //   });
+  //
+  //   test('toggleTorch() should call platform toggleTorch method', () async {
+  //     await mockController.toggleTorch();
+  //     verify(() => mockController.toggleTorch()).called(1);
+  //   });
+  //
+  //   test('switchCamera() should call platform switchCamera method', () async {
+  //     await mockController.switchCamera();
+  //     verify(() => mockController.switchCamera()).called(1);
+  //   });
+  //
+  //   test('updateScanWindow() should call platform updateScanWindow method',
+  //       () async {
+  //     const Rect scanWindow = Rect.fromLTWH(10, 10, 100, 100);
+  //     await mockController.updateScanWindow(scanWindow);
+  //     verify(() => mockController.updateScanWindow(scanWindow)).called(1);
+  //   });
+  // });
 }

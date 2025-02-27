@@ -13,6 +13,7 @@ class BarcodePainter extends CustomPainter {
     required this.color,
     required this.style,
     required this.barcodeValue,
+    this.strokeWidth = 4.0,
   });
 
   /// The corners of the barcode.
@@ -32,6 +33,9 @@ class BarcodePainter extends CustomPainter {
 
   /// The drawing style (stroke/fill).
   final PaintingStyle style;
+
+  /// The width of the border.
+  final double strokeWidth;
 
   /// The barcode value to display inside the overlay.
   final String barcodeValue;
@@ -67,7 +71,7 @@ class BarcodePainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = style
-      ..strokeWidth = 4.0;
+      ..strokeWidth = strokeWidth;
 
     canvas.drawPath(path, paint);
 
