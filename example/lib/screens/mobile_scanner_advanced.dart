@@ -38,21 +38,25 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   // Cannot be changed while the scanner is running.
   static const useScanWindow = true;
 
+  final widthController = TextEditingController();
+  final heightController = TextEditingController();
+
+  late MobileScannerController controller = initController();
+
   bool autoZoom = false;
   bool invertImage = false;
   bool returnImage = false;
 
   Size desiredCameraResolution = const Size(1920, 1080);
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
-  int detectionTimeout = 1000; // Default to 1000ms
+  int detectionTimeoutMs = 1000;
 
   bool useBarcodeOverlay = true;
   BoxFit boxFit = BoxFit.contain;
   bool enableLifecycle = false;
 
   List<BarcodeFormat> selectedFormats = [];
-
-  late MobileScannerController controller = initController();
+  double _zoomFactor = 0;
 
   final widthController = TextEditingController();
   final heightController = TextEditingController();
@@ -61,7 +65,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         autoStart: false,
         cameraResolution: desiredCameraResolution,
         detectionSpeed: detectionSpeed,
-        detectionTimeoutMs: detectionTimeout,
+        detectionTimeoutMs: detectionTimeoutMs,
         formats: selectedFormats,
         returnImage: returnImage,
         // torchEnabled: true,
@@ -83,52 +87,99 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     heightController.dispose();
   }
 
-  Future<void> _showResolutionDialog() async {
-    await showDialog<void>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Set Camera Resolution'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: widthController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Width'),
+  Future<void> _showResolutionDialog() async => showDialog<void>(
+        context: context,
+        builder: (context) {
+          widthController.text =
+              desiredCameraResolution.width.toInt().toString();
+          heightController.text =
+              desiredCameraResolution.height.toInt().toString();
+
+          return AlertDialog(
+            title: const Text('Set Camera Resolution'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: widthController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Width'),
+                ),
+                TextField(
+                  controller: heightController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'Height'),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                child: const Text('Cancel'),
               ),
-              TextField(
-                controller: heightController,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Height'),
+              TextButton(
+                onPressed: () {
+                  final widthText = widthController.text.trim();
+                  final heightText = heightController.text.trim();
+
+                  // Check for empty input
+                  if (widthText.isEmpty || heightText.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Width and Height cannot be empty'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  final width = int.tryParse(widthText);
+                  final height = int.tryParse(heightText);
+
+                  // Check if values are valid numbers
+                  if (width == null || height == null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Please enter valid numbers'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // Ensure values are within a reasonable range
+                  if (width <= 144 || height <= 144) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content:
+                            Text('Width and Height must be greater than 144'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  if (width > 4000 || height > 4000) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Width and Height must be 4000 or less'),
+                      ),
+                    );
+                    return;
+                  }
+
+                  // setState(() {
+                  desiredCameraResolution =
+                      Size(width.toDouble(), height.toDouble());
+                  // });
+
+                  Navigator.pop(context);
+                },
+                child: const Text('Save'),
               ),
             ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                final width = int.tryParse(widthController.text);
-                final height = int.tryParse(heightController.text);
-
-                if (width != null && height != null) {
-                  setState(() {
-                    desiredCameraResolution =
-                        Size(width.toDouble(), height.toDouble());
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+          );
+        },
+      );
 
   Future<void> _showDetectionSpeedDialog() async => showDialog<void>(
         context: context,
@@ -161,7 +212,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showDetectionTimeoutDialog() async => showDialog<void>(
         context: context,
         builder: (context) {
-          var tempTimeout = detectionTimeout;
+          var tempTimeout =
+              detectionTimeoutMs; // Temporary variable to hold the slider value
 
           return StatefulBuilder(
             builder: (context, setDialogState) {
@@ -194,7 +246,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        detectionTimeout = tempTimeout;
+                        detectionTimeoutMs =
+                            tempTimeout;
                       });
                       Navigator.pop(context);
                     },

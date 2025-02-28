@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Widget to display scanned barcodes.
 class ScannedBarcodeLabel extends StatelessWidget {
-  /// Constructor of widget to display scanned barcode
+  /// Construct a new [ScannedBarcodeLabel] instance.
   const ScannedBarcodeLabel({
     required this.barcodes,
     super.key,

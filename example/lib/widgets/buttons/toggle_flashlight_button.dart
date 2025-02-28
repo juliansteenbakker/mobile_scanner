@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for toggle torch (flash) function
 class ToggleFlashlightButton extends StatelessWidget {
-  /// Constructor of button widget for toggle torch (flash) function
+  /// Construct a new [ToggleFlashlightButton] instance.
   const ToggleFlashlightButton({required this.controller, super.key});
 
   /// Controller which is used to call toggleTorch

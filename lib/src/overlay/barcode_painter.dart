@@ -2,17 +2,18 @@ import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-/// CustomPainter to draw an outlined barcode box with rounded corners and a displayed value.
+/// A [CustomPainter] that draws the barcode as an outlined barcode box with rounded corners and a displayed value.
 class BarcodePainter extends CustomPainter {
-  /// Constructor for [BarcodePainter]
+  /// Construct a new [BarcodePainter] instance.
   const BarcodePainter({
     required this.barcodeCorners,
     required this.barcodeSize,
+    required this.barcodeValue,
     required this.boxFit,
     required this.cameraPreviewSize,
     required this.color,
     required this.style,
-    required this.barcodeValue,
+    required this.textPainter,
     this.strokeWidth = 4.0,
   });
 
@@ -22,7 +23,10 @@ class BarcodePainter extends CustomPainter {
   /// The size of the barcode.
   final Size barcodeSize;
 
-  /// The BoxFit mode for scaling.
+  /// The barcode value to display inside the overlay.
+  final String barcodeValue;
+
+  /// The BoxFit mode for scaling the barcode bounding box.
   final BoxFit boxFit;
 
   /// The camera preview size.
@@ -34,11 +38,11 @@ class BarcodePainter extends CustomPainter {
   /// The drawing style (stroke/fill).
   final PaintingStyle style;
 
+  /// The painter which paints the text object in the overlay.
+  final TextPainter textPainter;
+
   /// The width of the border.
   final double strokeWidth;
-
-  /// The barcode value to display inside the overlay.
-  final String barcodeValue;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -103,12 +107,7 @@ class BarcodePainter extends CustomPainter {
       ),
     );
 
-    final textPainter = TextPainter(
-      text: textSpan,
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
-
+    textPainter.text = textSpan;
     textPainter.layout(maxWidth: barcodeSize.width * ratios.widthRatio * 0.6);
 
     final double textWidth = textPainter.width;

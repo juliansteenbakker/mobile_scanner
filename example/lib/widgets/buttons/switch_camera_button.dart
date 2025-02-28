@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for switch camera function
 class SwitchCameraButton extends StatelessWidget {
-  /// Constructor of button widget for switch camera function
+  /// Construct a new [SwitchCameraButton] instance.
   const SwitchCameraButton({required this.controller, super.key});
 
   /// Controller which is used to call switchCamera

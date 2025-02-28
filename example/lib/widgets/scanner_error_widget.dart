@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for analyze image function
 class ScannerErrorWidget extends StatelessWidget {
-  /// Constructor of button widget for analyze image function
+  /// Construct a new [ScannerErrorWidget] instance.
   const ScannerErrorWidget({required this.error, super.key});
 
   /// Error to display

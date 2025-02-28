@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for stop or start function
 class StartStopButton extends StatelessWidget {
-  /// Constructor of button widget for stop or start function
+  /// Construct a new [StartStopButton] instance.
   const StartStopButton({required this.controller, super.key});
 
   /// Controller which is used to call stop or start
