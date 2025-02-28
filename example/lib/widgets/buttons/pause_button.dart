@@ -3,7 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for pause function
 class PauseButton extends StatelessWidget {
-  /// Constructor of button widget for pause function
+  /// Construct a new [PauseButton] instance.
   const PauseButton({required this.controller, super.key});
 
   /// Controller which is used to call pause

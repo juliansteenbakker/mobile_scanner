@@ -5,7 +5,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// Button widget for analyze image function
 class AnalyzeImageButton extends StatelessWidget {
-  /// Constructor of button widget for analyze image function
+  /// Construct a new [AnalyzeImageButton] instance.
   const AnalyzeImageButton({required this.controller, super.key});
 
   /// Controller which is used to call analyzeImage

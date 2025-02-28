@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 /// A [CustomPainter] that draws the barcode as an outlined barcode box with rounded corners and a displayed value.
 class BarcodePainter extends CustomPainter {
-  /// Constructor for [BarcodePainter]
+  /// Construct a new [BarcodePainter] instance.
   const BarcodePainter({
     required this.barcodeCorners,
     required this.barcodeSize,
