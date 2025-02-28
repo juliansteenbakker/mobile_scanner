@@ -48,7 +48,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
   Size desiredCameraResolution = const Size(1920, 1080);
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
-  int detectionTimeout = 1000; // Default to 1000ms
+  int detectionTimeoutMs = 1000;
 
   bool useBarcodeOverlay = true;
   BoxFit boxFit = BoxFit.contain;
@@ -61,7 +61,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         autoStart: false,
         cameraResolution: desiredCameraResolution,
         detectionSpeed: detectionSpeed,
-        detectionTimeoutMs: detectionTimeout,
+        detectionTimeoutMs: detectionTimeoutMs,
         formats: selectedFormats,
         returnImage: returnImage,
         // torchEnabled: true,
@@ -256,7 +256,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         context: context,
         builder: (context) {
           var tempTimeout =
-              detectionTimeout; // Temporary variable to hold the slider value
+              detectionTimeoutMs; // Temporary variable to hold the slider value
 
           return StatefulBuilder(
             builder: (context, setDialogState) {
@@ -289,7 +289,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   TextButton(
                     onPressed: () {
                       setState(() {
-                        detectionTimeout = tempTimeout; // Save final selection
+                        detectionTimeoutMs =
+                            tempTimeout; // Save final selection
                       });
                       Navigator.pop(context);
                     },
