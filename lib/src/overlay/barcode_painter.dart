@@ -8,11 +8,11 @@ class BarcodePainter extends CustomPainter {
   const BarcodePainter({
     required this.barcodeCorners,
     required this.barcodeSize,
+    required this.barcodeValue,
     required this.boxFit,
     required this.cameraPreviewSize,
     required this.color,
     required this.style,
-    required this.barcodeValue,
   });
 
   /// The corners of the barcode.
@@ -20,6 +20,9 @@ class BarcodePainter extends CustomPainter {
 
   /// The size of the barcode.
   final Size barcodeSize;
+
+  /// The barcode value to display inside the overlay.
+  final String barcodeValue;
 
   /// The BoxFit mode for scaling.
   final BoxFit boxFit;
@@ -32,9 +35,6 @@ class BarcodePainter extends CustomPainter {
 
   /// The drawing style (stroke/fill).
   final PaintingStyle style;
-
-  /// The barcode value to display inside the overlay.
-  final String barcodeValue;
 
   @override
   void paint(Canvas canvas, Size size) {
