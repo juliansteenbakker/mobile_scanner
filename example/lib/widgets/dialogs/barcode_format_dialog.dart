@@ -1,12 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart'; // Import BarcodeFormat
+import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// A dialog widget that allows users to select multiple barcode formats.
+///
+/// The user can choose from a list of predefined barcode formats using
+/// checkboxes. The selected formats are returned when the user confirms their
+/// choice.
 class BarcodeFormatDialog extends StatefulWidget {
+  /// Creates a [BarcodeFormatDialog].
+  ///
+  /// Requires a list of [selectedFormats] that represents the currently
+  /// selected barcode formats.
   const BarcodeFormatDialog({required this.selectedFormats, super.key});
+
+  /// The list of currently selected [BarcodeFormat] options.
   final List<BarcodeFormat> selectedFormats;
 
   @override
-  _BarcodeFormatDialogState createState() => _BarcodeFormatDialogState();
+  State<BarcodeFormatDialog> createState() => _BarcodeFormatDialogState();
 }
 
 class _BarcodeFormatDialogState extends State<BarcodeFormatDialog> {
