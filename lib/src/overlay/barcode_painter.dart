@@ -24,7 +24,7 @@ class BarcodePainter extends CustomPainter {
   /// The barcode value to display inside the overlay.
   final String barcodeValue;
 
-  /// The BoxFit mode for scaling.
+  /// The BoxFit mode for scaling the barcode bounding box.
   final BoxFit boxFit;
 
   /// The camera preview size.
