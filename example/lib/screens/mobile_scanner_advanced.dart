@@ -56,10 +56,6 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   bool enableLifecycle = false;
 
   List<BarcodeFormat> selectedFormats = [];
-  double _zoomFactor = 0;
-
-  final widthController = TextEditingController();
-  final heightController = TextEditingController();
 
   MobileScannerController initController() => MobileScannerController(
         autoStart: false,
