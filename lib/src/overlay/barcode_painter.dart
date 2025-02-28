@@ -13,6 +13,7 @@ class BarcodePainter extends CustomPainter {
     required this.cameraPreviewSize,
     required this.color,
     required this.style,
+    required this.textPainter,
   });
 
   /// The corners of the barcode.
@@ -35,6 +36,9 @@ class BarcodePainter extends CustomPainter {
 
   /// The drawing style (stroke/fill).
   final PaintingStyle style;
+
+  /// The painter which paints the text object in the overlay.
+  final TextPainter textPainter;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -99,12 +103,7 @@ class BarcodePainter extends CustomPainter {
       ),
     );
 
-    final textPainter = TextPainter(
-      text: textSpan,
-      textAlign: TextAlign.center,
-      textDirection: TextDirection.ltr,
-    );
-
+    textPainter.text = textSpan;
     textPainter.layout(maxWidth: barcodeSize.width * ratios.widthRatio * 0.6);
 
     final double textWidth = textPainter.width;

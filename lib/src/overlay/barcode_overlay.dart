@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// This widget represents an overlay that paints the bounding boxes of detected barcodes.
-class BarcodeOverlay extends StatelessWidget {
+class BarcodeOverlay extends StatefulWidget {
   /// Construct a new [BarcodeOverlay] instance.
   const BarcodeOverlay({
     super.key,
@@ -29,9 +29,25 @@ class BarcodeOverlay extends StatelessWidget {
   final PaintingStyle style;
 
   @override
+  State<BarcodeOverlay> createState() => _BarcodeOverlayState();
+}
+
+class _BarcodeOverlayState extends State<BarcodeOverlay> {
+  final _textPainter = TextPainter(
+    textAlign: TextAlign.center,
+    textDirection: TextDirection.ltr,
+  );
+
+  @override
+  void dispose() {
+    _textPainter.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: controller,
+      valueListenable: widget.controller,
       builder: (context, value, child) {
         // Not ready.
         if (!value.isInitialized || !value.isRunning || value.error != null) {
@@ -39,7 +55,7 @@ class BarcodeOverlay extends StatelessWidget {
         }
 
         return StreamBuilder<BarcodeCapture>(
-          stream: controller.barcodes,
+          stream: widget.controller.barcodes,
           builder: (context, snapshot) {
             final BarcodeCapture? barcodeCapture = snapshot.data;
 
@@ -57,11 +73,12 @@ class BarcodeOverlay extends StatelessWidget {
                     painter: BarcodePainter(
                       barcodeCorners: barcode.corners,
                       barcodeSize: barcode.size,
-                      boxFit: boxFit,
+                      boxFit: widget.boxFit,
                       cameraPreviewSize: barcodeCapture.size,
-                      color: color,
-                      style: style,
+                      color: widget.color,
+                      style: widget.style,
                       barcodeValue: barcode.rawValue ?? '',
+                      textPainter: _textPainter,
                     ),
                   ),
             ];

@@ -5,6 +5,8 @@ import 'package:mocktail/mocktail.dart';
 
 class MockCanvas extends Mock implements Canvas {}
 
+class MockTextPainter extends Mock implements TextPainter {}
+
 void main() {
   setUpAll(() {
     registerFallbackValue(Paint());
@@ -12,25 +14,31 @@ void main() {
     registerFallbackValue(Path());
     registerFallbackValue(Rect.zero);
     registerFallbackValue(RRect.zero);
+    registerFallbackValue(MockTextPainter());
   });
 
   group('BarcodePainter Tests', () {
     testWidgets('paint should draw barcode outline and text correctly',
         (tester) async {
       final mockCanvas = MockCanvas();
-      const barcodePainter = BarcodePainter(
+      final textPainter = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      final barcodePainter = BarcodePainter(
         barcodeCorners: [
-          Offset(10, 10),
-          Offset(100, 10),
-          Offset(100, 100),
-          Offset(10, 100),
+          const Offset(10, 10),
+          const Offset(100, 10),
+          const Offset(100, 100),
+          const Offset(10, 100),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
       // Act: Call the paint method
@@ -46,7 +54,11 @@ void main() {
     testWidgets('paint should not draw if barcodeCorners is invalid',
         (tester) async {
       final mockCanvas = MockCanvas();
-      const barcodePainter = BarcodePainter(
+      final textPainter = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      final barcodePainter = BarcodePainter(
         barcodeCorners: [],
         barcodeSize: Size.zero,
         boxFit: BoxFit.contain,
@@ -54,6 +66,7 @@ void main() {
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '',
+        textPainter: textPainter,
       );
 
       barcodePainter.paint(mockCanvas, const Size(200, 200));
@@ -66,19 +79,24 @@ void main() {
 
     testWidgets('paint should rotate text correctly', (tester) async {
       final mockCanvas = MockCanvas();
-      const barcodePainter = BarcodePainter(
+      final textPainter = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      final barcodePainter = BarcodePainter(
         barcodeCorners: [
-          Offset(10, 10),
-          Offset(100, 10),
-          Offset(100, 100),
-          Offset(10, 100),
+          const Offset(10, 10),
+          const Offset(100, 10),
+          const Offset(100, 100),
+          const Offset(10, 100),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
       barcodePainter.paint(mockCanvas, const Size(200, 200));
@@ -90,34 +108,40 @@ void main() {
 
     testWidgets('shouldRepaint returns true when properties change',
         (tester) async {
-      const painter1 = BarcodePainter(
+      final textPainter = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      final painter1 = BarcodePainter(
         barcodeCorners: [
-          Offset(10, 10),
-          Offset(20, 10),
-          Offset(20, 20),
-          Offset(10, 20),
+          const Offset(10, 10),
+          const Offset(20, 10),
+          const Offset(20, 20),
+          const Offset(10, 20),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
-      const painter2 = BarcodePainter(
+      final painter2 = BarcodePainter(
         barcodeCorners: [
-          Offset(15, 10),
-          Offset(25, 10),
-          Offset(25, 20),
-          Offset(15, 20),
+          const Offset(15, 10),
+          const Offset(25, 10),
+          const Offset(25, 20),
+          const Offset(15, 20),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.red, // Changed color
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
       expect(painter1.shouldRepaint(painter2), isTrue);
@@ -125,34 +149,40 @@ void main() {
 
     testWidgets('shouldRepaint returns false when properties are the same',
         (tester) async {
-      const painter1 = BarcodePainter(
+      final textPainter = TextPainter(
+        textAlign: TextAlign.center,
+        textDirection: TextDirection.ltr,
+      );
+      final painter1 = BarcodePainter(
         barcodeCorners: [
-          Offset(10, 10),
-          Offset(20, 10),
-          Offset(20, 20),
-          Offset(10, 20),
+          const Offset(10, 10),
+          const Offset(20, 10),
+          const Offset(20, 20),
+          const Offset(10, 20),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
-      const painter2 = BarcodePainter(
+      final painter2 = BarcodePainter(
         barcodeCorners: [
-          Offset(10, 10),
-          Offset(20, 10),
-          Offset(20, 20),
-          Offset(10, 20),
+          const Offset(10, 10),
+          const Offset(20, 10),
+          const Offset(20, 20),
+          const Offset(10, 20),
         ],
-        barcodeSize: Size(100, 50),
+        barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
-        cameraPreviewSize: Size(200, 200),
+        cameraPreviewSize: const Size(200, 200),
         color: Colors.blue,
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
+        textPainter: textPainter,
       );
 
       expect(painter1.shouldRepaint(painter2), isFalse);
