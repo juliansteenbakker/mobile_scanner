@@ -9,6 +9,11 @@ import 'package:mobile_scanner_example/widgets/buttons/pause_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/start_stop_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/switch_camera_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/toggle_flashlight_button.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/barcode_format_dialog.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/box_fit_dialog.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/detection_speed_dialog.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/detection_timeout_dialog.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/resolution_dialog.dart';
 import 'package:mobile_scanner_example/widgets/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 import 'package:mobile_scanner_example/widgets/zoom_scale_slider_widget.dart';
@@ -37,9 +42,6 @@ class MobileScannerAdvanced extends StatefulWidget {
 class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   // Cannot be changed while the scanner is running.
   static const useScanWindow = true;
-
-  final widthController = TextEditingController();
-  final heightController = TextEditingController();
 
   late MobileScannerController controller = initController();
 
@@ -79,284 +81,75 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> dispose() async {
     super.dispose();
     await controller.dispose();
-    widthController.dispose();
-    heightController.dispose();
   }
 
-  Future<void> _showResolutionDialog() async => showDialog<void>(
-        context: context,
-        builder: (context) {
-          widthController.text =
-              desiredCameraResolution.width.toInt().toString();
-          heightController.text =
-              desiredCameraResolution.height.toInt().toString();
+  Future<void> _showResolutionDialog() async {
+    final result = await showDialog<Size>(
+      context: context,
+      builder: (context) =>
+          ResolutionDialog(initialResolution: desiredCameraResolution),
+    );
 
-          return AlertDialog(
-            title: const Text('Set Camera Resolution'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                TextField(
-                  controller: widthController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Width'),
-                ),
-                TextField(
-                  controller: heightController,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Height'),
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                child: const Text('Cancel'),
-              ),
-              TextButton(
-                onPressed: () {
-                  final widthText = widthController.text.trim();
-                  final heightText = heightController.text.trim();
+    if (result != null) {
+      setState(() {
+        desiredCameraResolution = result;
+      });
+    }
+  }
 
-                  // Check for empty input
-                  if (widthText.isEmpty || heightText.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Width and Height cannot be empty'),
-                      ),
-                    );
-                    return;
-                  }
+  Future<void> _showDetectionSpeedDialog() async {
+    final result = await showDialog<DetectionSpeed>(
+      context: context,
+      builder: (context) => DetectionSpeedDialog(selectedSpeed: detectionSpeed),
+    );
 
-                  final width = int.tryParse(widthText);
-                  final height = int.tryParse(heightText);
+    if (result != null) {
+      setState(() {
+        detectionSpeed = result;
+      });
+    }
+  }
 
-                  // Check if values are valid numbers
-                  if (width == null || height == null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please enter valid numbers'),
-                      ),
-                    );
-                    return;
-                  }
+  Future<void> _showDetectionTimeoutDialog() async {
+    final result = await showDialog<int>(
+      context: context,
+      builder: (context) =>
+          DetectionTimeoutDialog(initialTimeoutMs: detectionTimeoutMs),
+    );
 
-                  // Ensure values are within a reasonable range
-                  if (width <= 144 || height <= 144) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content:
-                            Text('Width and Height must be greater than 144'),
-                      ),
-                    );
-                    return;
-                  }
+    if (result != null) {
+      setState(() {
+        detectionTimeoutMs = result;
+      });
+    }
+  }
 
-                  if (width > 4000 || height > 4000) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Width and Height must be 4000 or less'),
-                      ),
-                    );
-                    return;
-                  }
+  Future<void> _showBoxFitDialog() async {
+    final result = await showDialog<BoxFit>(
+      context: context,
+      builder: (context) => BoxFitDialog(selectedBoxFit: boxFit),
+    );
 
-                  // setState(() {
-                  desiredCameraResolution =
-                      Size(width.toDouble(), height.toDouble());
-                  // });
+    if (result != null) {
+      setState(() {
+        boxFit = result;
+      });
+    }
+  }
 
-                  Navigator.pop(context);
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
-      );
+  Future<void> _showBarcodeFormatDialog() async {
+    final result = await showDialog<List<BarcodeFormat>>(
+      context: context,
+      builder: (context) =>
+          BarcodeFormatDialog(selectedFormats: selectedFormats),
+    );
 
-  Future<void> _showDetectionSpeedDialog() async => showDialog<void>(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: const Text('Select Detection Speed'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                for (final speed in DetectionSpeed.values)
-                  RadioListTile<DetectionSpeed>(
-                    title: Text(speed.name),
-                    value: speed,
-                    groupValue: detectionSpeed,
-                    onChanged: (DetectionSpeed? value) {
-                      if (value != null) {
-                        setState(() {
-                          detectionSpeed = value;
-                        });
-                        Navigator.pop(context);
-                      }
-                    },
-                  ),
-              ],
-            ),
-          );
-        },
-      );
-
-  Future<void> _showDetectionTimeoutDialog() async => showDialog<void>(
-        context: context,
-        builder: (context) {
-          var tempTimeout =
-              detectionTimeoutMs; // Temporary variable to hold the slider value
-
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: const Text('Set Detection Timeout (ms)'),
-                content: SizedBox(
-                  height: 100,
-                  child: Column(
-                    children: [
-                      Slider(
-                        value: tempTimeout.toDouble(),
-                        max: 5000,
-                        divisions: 50,
-                        label: '$tempTimeout ms',
-                        onChanged: (double value) {
-                          setDialogState(() {
-                            tempTimeout = value.toInt();
-                          });
-                        },
-                      ),
-                      Text('$tempTimeout ms'),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        detectionTimeoutMs =
-                            tempTimeout;
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Save'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-
-  Future<void> _showBoxFitDialog() async => showDialog<void>(
-        context: context,
-        builder: (context) {
-          var tempBoxFit = boxFit;
-
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: const Text('Select BoxFit'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    for (final fit in BoxFit.values)
-                      RadioListTile<BoxFit>(
-                        title: Text(fit.name),
-                        value: fit,
-                        groupValue: tempBoxFit,
-                        onChanged: (BoxFit? value) {
-                          if (value != null) {
-                            setDialogState(() {
-                              tempBoxFit = value;
-                            });
-                          }
-                        },
-                      ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        boxFit = tempBoxFit;
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Save'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
-
-  Future<void> _showBarcodeFormatDialog() async => showDialog<void>(
-        context: context,
-        builder: (context) {
-          final tempSelectedFormats = List<BarcodeFormat>.from(
-            selectedFormats,
-          ); // Copy of selected formats
-
-          return StatefulBuilder(
-            builder: (context, setDialogState) {
-              return AlertDialog(
-                title: const Text('Select Barcode Formats'),
-                content: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: BarcodeFormat.values.map((format) {
-                      return CheckboxListTile(
-                        title: Text(format.name.toUpperCase()),
-                        value: tempSelectedFormats.contains(format),
-                        onChanged: (bool? value) {
-                          setDialogState(() {
-                            if (value ?? false) {
-                              tempSelectedFormats.add(format);
-                            } else {
-                              tempSelectedFormats.remove(format);
-                            }
-                          });
-                        },
-                        controlAffinity: ListTileControlAffinity.leading,
-                        contentPadding: EdgeInsets.zero,
-                      );
-                    }).toList(),
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                  TextButton(
-                    onPressed: () async {
-                      setState(() {
-                        selectedFormats = tempSelectedFormats;
-                      });
-                      Navigator.pop(context);
-                    },
-                    child: const Text('Save'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      );
+    if (result != null) {
+      setState(() {
+        selectedFormats = result;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
