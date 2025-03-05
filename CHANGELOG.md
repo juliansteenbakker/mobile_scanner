@@ -1,3 +1,7 @@
+## 6.0.7
+Improvements:
+* [Android] Updated bundled barcode scanning library to v17.3.0
+
 ## 6.0.6
 Bugs fixed:
 * [web] Fixed a bug that prevented color inverted barcodes from being scanned.
