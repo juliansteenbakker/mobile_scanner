@@ -1,4 +1,4 @@
-## NEXT
+## 7.0.0-beta.8
 
 Improvements:
 * Updated examples in example app.
