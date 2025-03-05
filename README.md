@@ -24,6 +24,17 @@ See the [examples](example/README.md) for runnable examples of various usages, s
 |---------|-----|-------|-----|-------|---------|
 | ✔       | ✔   | ✔     | ✔   | :x:   | :x:     |
 
+### Features Supported
+
+See the example app for detailed implementation information.
+
+| Features     | Android            | iOS                | macOS              | Web |
+|--------------|--------------------|--------------------|--------------------|-----|
+| analyzeImage | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| returnImage  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
+
 ## Installation
 
 Add the dependency in your `pubspec.yaml` file:
