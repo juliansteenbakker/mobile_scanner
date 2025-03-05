@@ -8,8 +8,9 @@ Improvements:
 
 Bugs fixed:
 * [Apple] Fixed barcode corners representation for barcode overlay.
-* [Apple] Fixed zoom callback not working
-* [Apple] Updated zoom scale factor to match Android implementation
+* [Apple] Fixed zoom callback not working.
+* [Apple] Updated zoom scale factor to match Android implementation.
+* Fixed build issues on older kotlin versions.
 
 ## 7.0.0-beta.7
 
