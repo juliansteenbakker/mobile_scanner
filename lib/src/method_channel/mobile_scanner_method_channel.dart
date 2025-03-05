@@ -173,10 +173,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
   }
 
+  /// Handle incoming barcode events.
+  /// The error events are transformed to `MobileScannerBarcodeException` where possible.
   @override
   Stream<BarcodeCapture?> get barcodesStream {
-    // Handle incoming barcode events.
-    // The error events are transformed to `MobileScannerBarcodeException` where possible.
     return eventsStream
         .where((e) => e['name'] == kBarcodeEventName)
         .map((event) => _parseBarcode(event))

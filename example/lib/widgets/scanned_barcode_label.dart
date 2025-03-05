@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Widget to display scanned barcodes.
 class ScannedBarcodeLabel extends StatelessWidget {
+  /// Construct a new [ScannedBarcodeLabel] instance.
   const ScannedBarcodeLabel({
-    super.key,
     required this.barcodes,
+    super.key,
   });
 
+  /// Barcode stream for scanned barcodes to display
   final Stream<BarcodeCapture> barcodes;
 
   @override
@@ -16,7 +19,7 @@ class ScannedBarcodeLabel extends StatelessWidget {
       builder: (context, snapshot) {
         final scannedBarcodes = snapshot.data?.barcodes ?? [];
 
-        final values = scannedBarcodes.map((e) => e.displayValue).join(', ');
+        final values = scannedBarcodes.map((e) => e.displayValue).join('\n');
 
         if (scannedBarcodes.isEmpty) {
           return const Text(

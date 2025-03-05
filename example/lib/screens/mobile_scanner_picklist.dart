@@ -3,25 +3,26 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import 'package:mobile_scanner_example/picklist/classes/barcode_at_center.dart';
-import 'package:mobile_scanner_example/picklist/widgets/crosshair.dart';
-import 'package:mobile_scanner_example/scanner_error_widget.dart';
+import 'package:mobile_scanner_example/utilities/barcode_at_center.dart';
+import 'package:mobile_scanner_example/widgets/crosshair_widget.dart';
+import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 
-// This sample implements picklist functionality.
-// The scanning can temporarily be suspended by the user by touching the screen.
-// When the scanning is active, the crosshair turns red.
-// When the scanning is suspended, the crosshair turns green.
-// A barcode has to touch the center of viewfinder to be scanned.
-// Therefore the Crosshair widget needs to be placed at the center of the
-// MobileScanner widget to visually line up.
-class BarcodeScannerPicklist extends StatefulWidget {
-  const BarcodeScannerPicklist({super.key});
+/// This sample implements picklist functionality.
+/// The scanning can temporarily be suspended by the user by touching the
+/// screen. When the scanning is active, the crosshair turns red.
+/// When the scanning is suspended, the crosshair turns green.
+/// A barcode has to touch the center of viewfinder to be scanned.
+/// Therefore the crosshair widget needs to be placed at the center of the
+/// MobileScanner widget to visually line up.
+class MobileScannerPicklist extends StatefulWidget {
+  /// Constructor for picklist Mobile Scanner example
+  const MobileScannerPicklist({super.key});
 
   @override
-  State<BarcodeScannerPicklist> createState() => _BarcodeScannerPicklistState();
+  State<MobileScannerPicklist> createState() => _MobileScannerPicklistState();
 }
 
-class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
+class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
   final _mobileScannerController = MobileScannerController(
     // The controller is started from the initState method.
     autoStart: false,
@@ -35,9 +36,6 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   // This boolean indicates if the detection of barcodes is enabled or
   // temporarily suspended.
   final _scannerEnabled = ValueNotifier(true);
-
-  // This boolean is used to prevent multiple pops.
-  var _validBarcodeFound = false;
 
   @override
   void initState() {
@@ -60,6 +58,8 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
     _mobileScannerController.dispose();
   }
 
+  Barcode? barcode;
+
   // Check the list of barcodes only if scannerEnables is true.
   // Only take the barcode that is at the center of the image.
   // Return the barcode found to the calling page with the help of the
@@ -67,28 +67,25 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
   void _handleBarcodes(BarcodeCapture barcodeCapture) {
     // Discard all events when the scanner is disabled or when already a valid
     // barcode is found.
-    if (!_scannerEnabled.value || _validBarcodeFound) {
+    if (!_scannerEnabled.value) {
       return;
     }
-    final barcode = findBarcodeAtCenter(barcodeCapture, orientation);
-    if (barcode != null) {
-      _validBarcodeFound = true;
-      Navigator.of(context).pop(barcode);
-    }
+    barcode = findBarcodeAtCenter(barcodeCapture, orientation);
   }
 
   @override
   Widget build(BuildContext context) {
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
-        // Reset the page orientation to the system default values, when this page is popped
+        // Reset the page orientation to the system default values, when this
+        // page is popped
         if (!didPop) {
           return;
         }
         SystemChrome.setPreferredOrientations(<DeviceOrientation>[]);
       },
       child: Scaffold(
-        appBar: AppBar(title: const Text('Picklist scanner')),
+        appBar: AppBar(title: const Text('Mobile Scanner with Crosshair')),
         backgroundColor: Colors.black,
         body: Listener(
           // Detect if the user touches the screen and disable/enable the scanner accordingly
@@ -97,7 +94,9 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
           onPointerUp: (_) => _scannerEnabled.value = true,
           onPointerCancel: (_) => _scannerEnabled.value = true,
           // A stack containing the image feed and the crosshair
-          // The location of the crosshair must be at the center of the MobileScanner, otherwise the detection area and the visual representation do not line up.
+          // The location of the crosshair must be at the center of the
+          // MobileScanner, otherwise the detection area and the visual
+          // representation do not line up.
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -107,7 +106,7 @@ class _BarcodeScannerPicklistState extends State<BarcodeScannerPicklist> {
                     ScannerErrorWidget(error: error),
                 fit: BoxFit.contain,
               ),
-              Crosshair(_scannerEnabled),
+              CrosshairWidget(_scannerEnabled),
             ],
           ),
         ),

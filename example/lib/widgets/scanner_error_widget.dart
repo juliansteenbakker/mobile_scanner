@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
+/// Button widget for analyze image function
 class ScannerErrorWidget extends StatelessWidget {
-  const ScannerErrorWidget({super.key, required this.error});
+  /// Construct a new [ScannerErrorWidget] instance.
+  const ScannerErrorWidget({required this.error, super.key});
 
+  /// Error to display
   final MobileScannerException error;
 
   @override
@@ -17,7 +20,11 @@ class ScannerErrorWidget extends StatelessWidget {
         errorMessage = 'Permission denied';
       case MobileScannerErrorCode.unsupported:
         errorMessage = 'Scanning is unsupported on this device';
-      default:
+      case MobileScannerErrorCode.controllerAlreadyInitialized:
+        errorMessage = 'Controller is already initialized';
+      case MobileScannerErrorCode.controllerDisposed:
+        errorMessage = 'Controller is disposed and cannot be used';
+      case MobileScannerErrorCode.genericError:
         errorMessage = 'Generic Error';
     }
 

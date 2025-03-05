@@ -21,6 +21,7 @@ class MobileScanner extends StatefulWidget {
     this.placeholderBuilder,
     this.scanWindow,
     this.scanWindowUpdateThreshold = 0.0,
+    this.useAppLifecycleState = true,
     super.key,
   });
 
@@ -69,6 +70,8 @@ class MobileScanner extends StatefulWidget {
   final WidgetBuilder? placeholderBuilder;
 
   /// The scan window rectangle for the barcode scanner.
+  /// A scan window is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If this is not null, the barcode scanner will only scan barcodes
   /// which intersect this rectangle.
@@ -104,6 +107,8 @@ class MobileScanner extends StatefulWidget {
   final Rect? scanWindow;
 
   /// The threshold for updates to the [scanWindow].
+  /// A [scanWindow] is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If the [scanWindow] would be updated,
   /// due to new layout constraints for the scanner,
@@ -115,6 +120,15 @@ class MobileScanner extends StatefulWidget {
   ///
   /// Defaults to no threshold for scan window updates.
   final double scanWindowUpdateThreshold;
+
+  /// Whether the `MobileScanner` widget should automatically pause and resume
+  /// when the application lifecycle state changes.
+  ///
+  /// Only applicable if no controller is passed. Otherwise, lifecycleState
+  /// should be handled by the user via the controller.
+  ///
+  /// Defaults to true.
+  final bool useAppLifecycleState;
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -272,30 +286,32 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
+    WidgetsBinding.instance.removeObserver(this);
 
     if (_subscription != null) {
-      _subscription!.cancel();
+      await _subscription!.cancel();
       _subscription = null;
     }
 
     if (controller.autoStart) {
-      controller.stop();
+      await controller.stop();
     }
     // When this widget is unmounted, reset the scan window.
-    unawaited(controller.updateScanWindow(null));
+    await controller.updateScanWindow(null);
 
     // Dispose default controller if not provided by user
     if (widget.controller == null) {
-      controller.dispose();
-      WidgetsBinding.instance.removeObserver(this);
+      await controller.dispose();
     }
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null || !controller.value.hasCameraPermission) {
+    if (!widget.useAppLifecycleState ||
+        widget.controller != null ||
+        !controller.value.hasCameraPermission) {
       return;
     }
 
@@ -311,7 +327,7 @@ class _MobileScannerState extends State<MobileScanner>
           cancelOnError: false,
         );
 
-        unawaited(controller.start());
+        controller.start();
       case AppLifecycleState.inactive:
         unawaited(_subscription?.cancel());
         _subscription = null;

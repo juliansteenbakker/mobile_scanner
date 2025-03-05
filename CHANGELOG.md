@@ -1,3 +1,16 @@
+## NEXT
+
+Improvements:
+* Updated examples in example app.
+* Added [useAppLifecycleState] parameter to enable or disable handling of lifecycle state when no controller is passed.
+* Dispose function of [MobileScanner] is now async.
+* The [BarcodeOverlay] now correctly disposes the text painter.
+
+Bugs fixed:
+* [Apple] Fixed barcode corners representation for barcode overlay.
+* [Apple] Fixed zoom callback not working
+* [Apple] Updated zoom scale factor to match Android implementation
+
 ## 7.0.0-beta.7
 
 **BREAKING CHANGES:**

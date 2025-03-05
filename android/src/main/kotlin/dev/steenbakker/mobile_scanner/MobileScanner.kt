@@ -669,11 +669,7 @@ class MobileScanner(
         barcodeScanner.process(inputImage).addOnSuccessListener { barcodes ->
             val barcodeMap = barcodes.map { barcode -> barcode.data }
 
-            if (barcodeMap.isEmpty()) {
-                onSuccess(null)
-            } else {
-                onSuccess(barcodeMap)
-            }
+            onSuccess(barcodeMap)
         }.addOnFailureListener { e ->
             onError(e.localizedMessage ?: e.toString())
         }.addOnCompleteListener {
