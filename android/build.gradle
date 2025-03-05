@@ -70,7 +70,7 @@ dependencies {
         implementation 'com.google.android.gms:play-services-mlkit-barcode-scanning:18.3.1'
     } else {
         // Bundled model in app
-        implementation 'com.google.mlkit:barcode-scanning:17.2.0'
+        implementation 'com.google.mlkit:barcode-scanning:17.3.0'
     }
 
     // org.jetbrains.kotlin:kotlin-bom artifact purpose is to align kotlin stdlib and related code versions.
