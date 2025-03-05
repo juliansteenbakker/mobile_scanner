@@ -260,7 +260,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
           ),
           if (useBarcodeOverlay)
             BarcodeOverlay(controller: controller, boxFit: boxFit),
-          if (useScanWindow)
+          // The scanWindow is not supported on the web.
+          if (!kIsWeb && useScanWindow)
             ScanWindowOverlay(
               scanWindow: scanWindow,
               controller: controller,

@@ -70,6 +70,8 @@ class MobileScanner extends StatefulWidget {
   final WidgetBuilder? placeholderBuilder;
 
   /// The scan window rectangle for the barcode scanner.
+  /// A scan window is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If this is not null, the barcode scanner will only scan barcodes
   /// which intersect this rectangle.
@@ -105,6 +107,8 @@ class MobileScanner extends StatefulWidget {
   final Rect? scanWindow;
 
   /// The threshold for updates to the [scanWindow].
+  /// A [scanWindow] is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If the [scanWindow] would be updated,
   /// due to new layout constraints for the scanner,
