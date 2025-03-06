@@ -1,3 +1,7 @@
+## 6.0.8
+Improvements:
+* [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.
+
 ## 6.0.7
 Improvements:
 * [Android] Updated bundled barcode scanning library to v17.3.0

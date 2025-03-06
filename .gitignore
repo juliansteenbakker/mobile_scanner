@@ -104,6 +104,10 @@ unlinked_spec.ds
 **/macos/Flutter/GeneratedPluginRegistrant.swift
 **/macos/Flutter/ephemeral
 
+# Swift Package Manager related
+.build/
+.swiftpm/
+
 # Coverage
 coverage/
 
