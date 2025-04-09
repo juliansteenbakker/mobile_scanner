@@ -233,9 +233,7 @@ class MobileScanner(
                             // whenever a new Surface is needed.
                         }
 
-                        // TODO: replace with "onSurfaceCleanup" when available in Flutter 3.28 or later
-                        // See https://github.com/flutter/flutter/pull/160937
-                        override fun onSurfaceDestroyed() {
+                        override fun onSurfaceCleanup() {
                             // Invalidate the SurfaceRequest so that CameraX knows to to make a new request
                             // for a surface.
                             request.invalidate()
