@@ -72,10 +72,11 @@ class BarcodePainter extends CustomPainter {
     // Draw the rotated rectangle
     final Path path = Path()..addPolygon(adjustedOffset, true);
 
-    final paint = Paint()
-      ..color = color
-      ..style = style
-      ..strokeWidth = strokeWidth;
+    final paint =
+        Paint()
+          ..color = color
+          ..style = style
+          ..strokeWidth = strokeWidth;
 
     canvas.drawPath(path, paint);
 
@@ -91,7 +92,8 @@ class BarcodePainter extends CustomPainter {
     );
 
     // Set a smaller font size with auto-resizing logic
-    final double textSize = (barcodeSize.width * ratios.widthRatio) *
+    final double textSize =
+        (barcodeSize.width * ratios.widthRatio) *
         0.08; // Scales with barcode size
     const double minTextSize = 6; // Minimum readable size
     const double maxTextSize = 12; // Maximum size

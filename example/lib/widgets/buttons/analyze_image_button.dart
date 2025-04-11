@@ -23,31 +23,28 @@ class AnalyzeImageButton extends StatelessWidget {
     }
     final picker = ImagePicker();
 
-    final image = await picker.pickImage(
-      source: ImageSource.gallery,
-    );
+    final image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) {
       return;
     }
 
-    final barcodes = await controller.analyzeImage(
-      image.path,
-    );
+    final barcodes = await controller.analyzeImage(image.path);
 
     if (!context.mounted) {
       return;
     }
 
-    final snackBar = barcodes != null && barcodes.barcodes.isNotEmpty
-        ? const SnackBar(
-            content: Text('Barcode found!'),
-            backgroundColor: Colors.green,
-          )
-        : const SnackBar(
-            content: Text('No barcode found!'),
-            backgroundColor: Colors.red,
-          );
+    final snackBar =
+        barcodes != null && barcodes.barcodes.isNotEmpty
+            ? const SnackBar(
+              content: Text('Barcode found!'),
+              backgroundColor: Colors.green,
+            )
+            : const SnackBar(
+              content: Text('No barcode found!'),
+              backgroundColor: Colors.red,
+            );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }

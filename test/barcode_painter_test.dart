@@ -18,8 +18,9 @@ void main() {
   });
 
   group('BarcodePainter Tests', () {
-    testWidgets('paint should draw barcode outline and text correctly',
-        (tester) async {
+    testWidgets('paint should draw barcode outline and text correctly', (
+      tester,
+    ) async {
       final mockCanvas = MockCanvas();
       final textPainter = TextPainter(
         textAlign: TextAlign.center,
@@ -51,8 +52,9 @@ void main() {
       verify(() => mockCanvas.restore()).called(1);
     });
 
-    testWidgets('paint should not draw if barcodeCorners is invalid',
-        (tester) async {
+    testWidgets('paint should not draw if barcodeCorners is invalid', (
+      tester,
+    ) async {
       final mockCanvas = MockCanvas();
       final textPainter = TextPainter(
         textAlign: TextAlign.center,
@@ -106,8 +108,9 @@ void main() {
       verify(() => mockCanvas.rotate(any())).called(1);
     });
 
-    testWidgets('shouldRepaint returns true when properties change',
-        (tester) async {
+    testWidgets('shouldRepaint returns true when properties change', (
+      tester,
+    ) async {
       final textPainter = TextPainter(
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
@@ -147,8 +150,9 @@ void main() {
       expect(painter1.shouldRepaint(painter2), isTrue);
     });
 
-    testWidgets('shouldRepaint returns false when properties are the same',
-        (tester) async {
+    testWidgets('shouldRepaint returns false when properties are the same', (
+      tester,
+    ) async {
       final textPainter = TextPainter(
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,

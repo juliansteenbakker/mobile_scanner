@@ -5,10 +5,7 @@ import 'package:flutter/material.dart';
 /// scanner being enabled or not.
 class CrosshairWidget extends StatelessWidget {
   /// Construct a new [CrosshairWidget] instance.
-  const CrosshairWidget(
-    this.scannerEnabled, {
-    super.key,
-  });
+  const CrosshairWidget(this.scannerEnabled, {super.key});
 
   /// Listener for if scanner is enabled or not
   final ValueListenable<bool> scannerEnabled;

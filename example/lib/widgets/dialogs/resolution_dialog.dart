@@ -48,9 +48,7 @@ class _ResolutionDialogState extends State<ResolutionDialog> {
     // Check for empty input
     if (widthText.isEmpty || heightText.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Width and Height cannot be empty'),
-        ),
+        const SnackBar(content: Text('Width and Height cannot be empty')),
       );
       return;
     }
@@ -61,9 +59,7 @@ class _ResolutionDialogState extends State<ResolutionDialog> {
     // Check if values are valid numbers
     if (width == null || height == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please enter valid numbers'),
-        ),
+        const SnackBar(content: Text('Please enter valid numbers')),
       );
       return;
     }
@@ -80,9 +76,7 @@ class _ResolutionDialogState extends State<ResolutionDialog> {
 
     if (width > 4000 || height > 4000) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Width and Height must be 4000 or less'),
-        ),
+        const SnackBar(content: Text('Width and Height must be 4000 or less')),
       );
       return;
     }

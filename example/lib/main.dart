@@ -4,10 +4,7 @@ import 'package:mobile_scanner_example/screens/mobile_scanner_simple.dart';
 
 void main() {
   runApp(
-    const MaterialApp(
-      title: 'Mobile Scanner Example',
-      home: _ExampleHome(),
-    ),
+    const MaterialApp(title: 'Mobile Scanner Example', home: _ExampleHome()),
   );
 }
 
@@ -23,17 +20,13 @@ class _ExampleHome extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute<void>(
-            builder: (context) => page,
-          ),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (context) => page));
       },
       child: Card(
         elevation: 5,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -74,9 +67,7 @@ class _ExampleHome extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Mobile Scanner Example',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         centerTitle: true,
         backgroundColor: Colors.blueAccent,

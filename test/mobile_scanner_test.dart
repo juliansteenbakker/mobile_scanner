@@ -20,8 +20,9 @@ void main() {
     barcodeStreamController = StreamController<BarcodeCapture>.broadcast();
 
     when(() => mockController.autoStart).thenReturn(true);
-    when(() => mockController.barcodes)
-        .thenAnswer((_) => barcodeStreamController.stream);
+    when(
+      () => mockController.barcodes,
+    ).thenAnswer((_) => barcodeStreamController.stream);
     when(() => mockController.value).thenReturn(
       const MobileScannerState(
         availableCameras: 2,
@@ -50,8 +51,9 @@ void main() {
       bool wasCalled = false;
       final barcodeStreamController = StreamController<BarcodeCapture>();
 
-      when(() => mockController.barcodes)
-          .thenAnswer((_) => barcodeStreamController.stream);
+      when(
+        () => mockController.barcodes,
+      ).thenAnswer((_) => barcodeStreamController.stream);
 
       await tester.pumpWidget(
         MaterialApp(
@@ -102,16 +104,16 @@ void main() {
       expect(find.byIcon(Icons.error), findsOneWidget);
     });
 
-    testWidgets('disposes properly when no controller is provided',
-        (tester) async {
-      const testWidget = MaterialApp(
-        home: Scaffold(body: MobileScanner()),
-      );
+    testWidgets('disposes properly when no controller is provided', (
+      tester,
+    ) async {
+      const testWidget = MaterialApp(home: Scaffold(body: MobileScanner()));
 
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
-      await tester
-          .pumpWidget(Container()); // Remove the widget to trigger disposal
+      await tester.pumpWidget(
+        Container(),
+      ); // Remove the widget to trigger disposal
 
       expect(tester.takeException(), isNull);
 
@@ -120,8 +122,9 @@ void main() {
       // Instead, we ensure there is no exception.
     });
 
-    testWidgets('does not dispose externally provided controller',
-        (tester) async {
+    testWidgets('does not dispose externally provided controller', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(body: MobileScanner(controller: mockController)),

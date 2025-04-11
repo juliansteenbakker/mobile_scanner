@@ -23,29 +23,31 @@ void main() {
       );
     });
 
-    test('throws ArgumentError when parsing invalid device orientation string',
-        () {
-      expect(
-        () => ''.parseDeviceOrientation(),
-        throwsA(
-          isA<ArgumentError>().having(
-            (error) => error.message,
-            'message',
-            'Received an invalid device orientation',
+    test(
+      'throws ArgumentError when parsing invalid device orientation string',
+      () {
+        expect(
+          () => ''.parseDeviceOrientation(),
+          throwsA(
+            isA<ArgumentError>().having(
+              (error) => error.message,
+              'message',
+              'Received an invalid device orientation',
+            ),
           ),
-        ),
-      );
+        );
 
-      expect(
-        () => 'foo'.parseDeviceOrientation(),
-        throwsA(
-          isA<ArgumentError>().having(
-            (error) => error.message,
-            'message',
-            'Received an invalid device orientation',
+        expect(
+          () => 'foo'.parseDeviceOrientation(),
+          throwsA(
+            isA<ArgumentError>().having(
+              (error) => error.message,
+              'message',
+              'Received an invalid device orientation',
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   });
 }

@@ -7,10 +7,7 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 /// This class represents an exception thrown by the [MobileScannerController].
 class MobileScannerException implements Exception {
   /// Construct a new [MobileScannerException] instance.
-  const MobileScannerException({
-    required this.errorCode,
-    this.errorDetails,
-  });
+  const MobileScannerException({required this.errorCode, this.errorDetails});
 
   /// The error code of the exception.
   final MobileScannerErrorCode errorCode;
@@ -30,11 +27,7 @@ class MobileScannerException implements Exception {
 /// The raw error details for a [MobileScannerException].
 class MobileScannerErrorDetails {
   /// Construct a new [MobileScannerErrorDetails] instance.
-  const MobileScannerErrorDetails({
-    this.code,
-    this.details,
-    this.message,
-  });
+  const MobileScannerErrorDetails({this.code, this.details, this.message});
 
   /// The error code from the [PlatformException].
   final String? code;

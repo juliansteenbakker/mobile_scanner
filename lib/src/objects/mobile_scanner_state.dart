@@ -24,15 +24,15 @@ class MobileScannerState {
 
   /// Create a new [MobileScannerState] instance that is uninitialized.
   const MobileScannerState.uninitialized()
-      : this(
-          availableCameras: null,
-          cameraDirection: CameraFacing.unknown,
-          isInitialized: false,
-          isRunning: false,
-          size: Size.zero,
-          torchState: TorchState.unavailable,
-          zoomScale: 1.0,
-        );
+    : this(
+        availableCameras: null,
+        cameraDirection: CameraFacing.unknown,
+        isInitialized: false,
+        isRunning: false,
+        size: Size.zero,
+        torchState: TorchState.unavailable,
+        zoomScale: 1.0,
+      );
 
   /// The number of available cameras.
   ///

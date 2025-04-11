@@ -45,11 +45,7 @@ class ToggleFlashlightButton extends StatelessWidget {
           case TorchState.unavailable:
             return const SizedBox.square(
               dimension: 48,
-              child: Icon(
-                Icons.no_flash,
-                size: 32,
-                color: Colors.grey,
-              ),
+              child: Icon(Icons.no_flash, size: 32, color: Colors.grey),
             );
         }
       },

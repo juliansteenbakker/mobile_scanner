@@ -48,15 +48,16 @@ class ScanWindowPainter extends CustomPainter {
     final backgroundPath = Path()..addRect(Offset.zero & size);
 
     // The cutout rect depends on the border radius.
-    final RRect cutoutRect = borderRadius == BorderRadius.zero
-        ? RRect.fromRectAndCorners(scanWindow)
-        : RRect.fromRectAndCorners(
-            scanWindow,
-            topLeft: borderRadius.topLeft,
-            topRight: borderRadius.topRight,
-            bottomLeft: borderRadius.bottomLeft,
-            bottomRight: borderRadius.bottomRight,
-          );
+    final RRect cutoutRect =
+        borderRadius == BorderRadius.zero
+            ? RRect.fromRectAndCorners(scanWindow)
+            : RRect.fromRectAndCorners(
+              scanWindow,
+              topLeft: borderRadius.topLeft,
+              topRight: borderRadius.topRight,
+              bottomLeft: borderRadius.bottomLeft,
+              bottomRight: borderRadius.bottomRight,
+            );
 
     // The cutout path is always in the center.
     final Path cutoutPath = Path()..addRRect(cutoutRect);
@@ -68,17 +69,19 @@ class ScanWindowPainter extends CustomPainter {
       cutoutPath,
     );
 
-    final Paint overlayWithCutoutPaint = Paint()
-      ..color = color
-      ..style = PaintingStyle.fill
-      ..blendMode = BlendMode.srcOver; // android
+    final Paint overlayWithCutoutPaint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill
+          ..blendMode = BlendMode.srcOver; // android
 
-    final Paint borderPaint = Paint()
-      ..color = borderColor
-      ..style = borderStyle
-      ..strokeWidth = borderWidth
-      ..strokeCap = borderStrokeCap
-      ..strokeJoin = borderStrokeJoin;
+    final Paint borderPaint =
+        Paint()
+          ..color = borderColor
+          ..style = borderStyle
+          ..strokeWidth = borderWidth
+          ..strokeCap = borderStrokeCap
+          ..strokeJoin = borderStrokeJoin;
 
     // Paint the overlay with the cutout.
     canvas.drawPath(overlayWithCutoutPath, overlayWithCutoutPaint);

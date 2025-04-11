@@ -85,36 +85,39 @@ abstract class BarcodeReader {
 
     final Completer<void> completer = Completer();
 
-    final HTMLScriptElement script = HTMLScriptElement()
-      ..id = scriptId
-      ..async = true
-      ..defer = false
-      ..type = 'application/javascript'
-      ..lang = 'javascript'
-      ..crossOrigin = 'anonymous'
-      ..src = alternateScriptUrl ?? scriptUrl
-      ..onload = (JSAny _) {
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      }.toJS;
+    final HTMLScriptElement script =
+        HTMLScriptElement()
+          ..id = scriptId
+          ..async = true
+          ..defer = false
+          ..type = 'application/javascript'
+          ..lang = 'javascript'
+          ..crossOrigin = 'anonymous'
+          ..src = alternateScriptUrl ?? scriptUrl
+          ..onload =
+              (JSAny _) {
+                if (!completer.isCompleted) {
+                  completer.complete();
+                }
+              }.toJS;
 
-    script.onerror = (JSAny _) {
-      if (!completer.isCompleted) {
-        // Remove the script if it did not load.
-        document.head!.removeChild(script);
+    script.onerror =
+        (JSAny _) {
+          if (!completer.isCompleted) {
+            // Remove the script if it did not load.
+            document.head!.removeChild(script);
 
-        completer.completeError(
-          const MobileScannerException(
-            errorCode: MobileScannerErrorCode.genericError,
-            errorDetails: MobileScannerErrorDetails(
-              message:
-                  'Could not load the BarcodeReader script due to a network error.',
-            ),
-          ),
-        );
-      }
-    }.toJS;
+            completer.completeError(
+              const MobileScannerException(
+                errorCode: MobileScannerErrorCode.genericError,
+                errorDetails: MobileScannerErrorDetails(
+                  message:
+                      'Could not load the BarcodeReader script due to a network error.',
+                ),
+              ),
+            );
+          }
+        }.toJS;
 
     document.head!.appendChild(script);
 
