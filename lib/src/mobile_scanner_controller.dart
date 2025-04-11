@@ -30,17 +30,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.torchEnabled = false,
     this.invertImage = false,
     this.autoZoom = false,
-  })  : detectionTimeoutMs =
-            detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
-        assert(
-          detectionTimeoutMs >= 0,
-          'The detection timeout must be greater than or equal to 0.',
-        ),
-        assert(
-          facing != CameraFacing.unknown,
-          'CameraFacing.unknown is not a valid camera direction.',
-        ),
-        super(const MobileScannerState.uninitialized());
+  }) : detectionTimeoutMs =
+           detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
+       assert(
+         detectionTimeoutMs >= 0,
+         'The detection timeout must be greater than or equal to 0.',
+       ),
+       assert(
+         facing != CameraFacing.unknown,
+         'CameraFacing.unknown is not a valid camera direction.',
+       ),
+       super(const MobileScannerState.uninitialized());
 
   /// The desired resolution for the camera.
   ///
@@ -134,43 +134,43 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   }
 
   void _setupListeners() {
-    _barcodesSubscription =
-        MobileScannerPlatform.instance.barcodesStream.listen(
-      (BarcodeCapture? barcode) {
-        if (_barcodesController.isClosed || barcode == null) {
-          return;
-        }
+    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
+        .listen(
+          (BarcodeCapture? barcode) {
+            if (_barcodesController.isClosed || barcode == null) {
+              return;
+            }
 
-        _barcodesController.add(barcode);
-      },
-      onError: (Object error) {
-        if (_barcodesController.isClosed) {
-          return;
-        }
+            _barcodesController.add(barcode);
+          },
+          onError: (Object error) {
+            if (_barcodesController.isClosed) {
+              return;
+            }
 
-        _barcodesController.addError(error);
-      },
-      // Errors are handled gracefully by forwarding them.
-      cancelOnError: false,
-    );
+            _barcodesController.addError(error);
+          },
+          // Errors are handled gracefully by forwarding them.
+          cancelOnError: false,
+        );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(torchState: torchState);
-    });
+          value = value.copyWith(torchState: torchState);
+        });
 
     _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
         .listen((double zoomScale) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(zoomScale: zoomScale);
-    });
+          value = value.copyWith(zoomScale: zoomScale);
+        });
   }
 
   void _throwIfNotInitialized() {
@@ -213,9 +213,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: oldTorchState == TorchState.unavailable
-          ? TorchState.unavailable
-          : TorchState.off,
+      torchState:
+          oldTorchState == TorchState.unavailable
+              ? TorchState.unavailable
+              : TorchState.off,
     );
     return true;
   }
@@ -337,9 +338,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       _setupListeners();
 
       final MobileScannerViewAttributes viewAttributes =
-          await MobileScannerPlatform.instance.start(
-        options,
-      );
+          await MobileScannerPlatform.instance.start(options);
 
       if (!_isDisposed) {
         value = value.copyWith(

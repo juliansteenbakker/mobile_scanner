@@ -4,10 +4,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 /// Slider widget for zoom function
 class ZoomScaleSlider extends StatelessWidget {
   /// Slider widget for zoom function
-  const ZoomScaleSlider({
-    required this.controller,
-    super.key,
-  });
+  const ZoomScaleSlider({required this.controller, super.key});
 
   /// Controller which is used to call the zoom function
   final MobileScannerController controller;
@@ -21,31 +18,22 @@ class ZoomScaleSlider extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final labelStyle = Theme.of(context)
-            .textTheme
-            .headlineMedium!
-            .copyWith(color: Colors.white);
+        final labelStyle = Theme.of(
+          context,
+        ).textTheme.headlineMedium!.copyWith(color: Colors.white);
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
           child: Row(
             children: [
-              Text(
-                '0%',
-                overflow: TextOverflow.fade,
-                style: labelStyle,
-              ),
+              Text('0%', overflow: TextOverflow.fade, style: labelStyle),
               Expanded(
                 child: Slider(
                   value: state.zoomScale,
                   onChanged: controller.setZoomScale,
                 ),
               ),
-              Text(
-                '100%',
-                overflow: TextOverflow.fade,
-                style: labelStyle,
-              ),
+              Text('100%', overflow: TextOverflow.fade, style: labelStyle),
             ],
           ),
         );
