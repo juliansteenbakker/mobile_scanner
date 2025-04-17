@@ -28,9 +28,6 @@ class ScannerErrorWidget extends StatelessWidget {
               message,
               style: const TextStyle(color: Colors.white),
             ),
-              error.errorDetails!.message ?? '',
-              style: const TextStyle(color: Colors.white),
-            ),
             ] else Text(
               MobileScannerErrorCode.genericError.message,
               style: const TextStyle(color: Colors.white),
