@@ -300,7 +300,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _textureId = null;
     _pausing = false;
 
-    await methodChannel.invokeMethod<void>('stop', {'force' : force});
+    await methodChannel.invokeMethod<void>('stop', {'force': force});
   }
 
   @override
@@ -311,7 +311,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _pausing = true;
 
-    await methodChannel.invokeMethod<void>('pause', {'force' : force});
+    await methodChannel.invokeMethod<void>('pause', {'force': force});
   }
 
   @override
