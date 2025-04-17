@@ -200,7 +200,6 @@ class _MobileScannerState extends State<MobileScanner>
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
-        // If the controller is still initializing, show a black screen, or user provided placeholder
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
@@ -209,7 +208,6 @@ class _MobileScannerState extends State<MobileScanner>
         }
 
         final MobileScannerException? error = value.error;
-        // If the controller encountered, show an error screen, or user provided placeholder
         if (error != null) {
           final Widget defaultError = ScannerErrorWidget(error: error);
 
