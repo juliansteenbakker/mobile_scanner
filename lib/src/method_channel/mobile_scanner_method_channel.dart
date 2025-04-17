@@ -292,26 +292,26 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<void> stop() async {
-    if (_textureId == null) {
+  Future<void> stop({bool force = false}) async {
+    if (_textureId == null && !force) {
       return;
     }
 
     _textureId = null;
     _pausing = false;
 
-    await methodChannel.invokeMethod<void>('stop');
+    await methodChannel.invokeMethod<void>('stop', {'force' : force});
   }
 
   @override
-  Future<void> pause() async {
+  Future<void> pause({bool force = false}) async {
     if (_pausing) {
       return;
     }
 
     _pausing = true;
 
-    await methodChannel.invokeMethod<void>('pause');
+    await methodChannel.invokeMethod<void>('pause', {'force' : force});
   }
 
   @override

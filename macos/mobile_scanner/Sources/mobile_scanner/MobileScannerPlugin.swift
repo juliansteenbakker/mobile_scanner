@@ -76,9 +76,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         case "resetScale":
             resetScale(call, result)
         case "pause":
-            pause(result)
+            pause(call, result)
         case "stop":
-            stop(result)
+            stop(call, result)
         case "updateScanWindow":
             updateScanWindow(call, result)
         case "analyzeImage":
@@ -448,19 +448,24 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
-    func pause(_ result: FlutterResult) {
-        if (paused || stopped) {
-            result(nil)
+    func pause(_ call: FlutterMethodCall, _ result: FlutterResult) {
+        let force = (call.arguments as? Bool) ?? false
+        if (!force) {
+            if (paused || stopped) {
+                result(nil)
 
-            return
+                return
+            }
         }
+
         releaseCamera()
 
         result(nil)
     }
 
-    func stop(_ result: FlutterResult) {
-        if (!paused && stopped) {
+    func stop(_ call: FlutterMethodCall, _ result: FlutterResult) {
+        let force = (call.arguments as? Bool) ?? false
+        if (!paused && stopped && !force) {
             result(nil)
 
             return

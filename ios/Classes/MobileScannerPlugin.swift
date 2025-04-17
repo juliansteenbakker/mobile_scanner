@@ -106,9 +106,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
         case "start":
             start(call, result)
         case "pause":
-            pause(result)
+            pause(call, result)
         case "stop":
-            stop(result)
+            stop(call, result)
         case "toggleTorch":
             toggleTorch(result)
         case "analyzeImage":
@@ -170,17 +170,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin {
     }
     
     /// Stops the mobileScanner without closing the texture.
-    private func pause(_ result: @escaping FlutterResult) {
+    private func pause(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let force = (call.arguments as? Bool) ?? false
         do {
-            try mobileScanner.pause()
+            try mobileScanner.pause(force: force)
         } catch {}
         result(nil)
     }
 
     /// Stops the mobileScanner and closes the texture.
-    private func stop(_ result: @escaping FlutterResult) {
+    private func stop(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let force = (call.arguments as? Bool) ?? false
         do {
-            try mobileScanner.stop()
+            try mobileScanner.stop(force: force)
         } catch {}
         result(nil)
     }
