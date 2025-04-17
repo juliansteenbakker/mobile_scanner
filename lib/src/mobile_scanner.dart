@@ -302,7 +302,7 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     controller = widget.controller ?? MobileScannerController();
-    initMobileScanner();
+    unawaited(initMobileScanner());
   }
 
   @override
