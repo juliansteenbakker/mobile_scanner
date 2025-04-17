@@ -339,6 +339,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<void> dispose() async {
+    await updateScanWindow(null);
     await stop();
   }
 }

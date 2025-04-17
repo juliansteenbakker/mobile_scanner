@@ -135,7 +135,7 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
-  late final controller = widget.controller ?? MobileScannerController();
+  late final MobileScannerController controller;
 
   /// The current scan window.
   Rect? scanWindow;
@@ -200,7 +200,6 @@ class _MobileScannerState extends State<MobileScanner>
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
-
         // If the controller is still initializing, show a black screen, or user provided placeholder
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
@@ -259,8 +258,21 @@ class _MobileScannerState extends State<MobileScanner>
 
   StreamSubscription? _subscription;
 
-  @override
-  void initState() {
+  Future<void> initController() async {
+    // TODO: This will be fixed in another PR
+    // If debug mode is enabled, stop the controller first before starting it.
+    // If a hot-restart is initiated, the controller won't be stopped, and because
+    // there is no way of knowing if a hot-restart has happened, we must assume
+    // every start is a hot-restart.
+    // if (kDebugMode) {
+    //   try {
+    //     await controller.stop();
+    //   } catch (e) {
+    //     // Don't do anything if the controller is already stopped.
+    //     debugPrint('$e');
+    //   }
+    // }
+
     if (widget.onDetect != null) {
       WidgetsBinding.instance.addObserver(this);
       _subscription = controller.barcodes.listen(
@@ -270,31 +282,39 @@ class _MobileScannerState extends State<MobileScanner>
       );
     }
     if (controller.autoStart) {
-      controller.start();
+      await controller.start();
     }
+  }
+
+  Future<void> disposeCamera() async {
+    if (controller.autoStart) {
+      await controller.stop();
+    }
+
+    // Dispose default controller if not provided by user
+    if (widget.controller == null) {
+      await controller.dispose();
+      WidgetsBinding.instance.removeObserver(this);
+    }
+  }
+
+  @override
+  void initState() {
     super.initState();
+    controller = widget.controller ?? MobileScannerController();
+    initController();
   }
 
   @override
   void dispose() {
-    super.dispose();
-
     if (_subscription != null) {
       _subscription!.cancel();
       _subscription = null;
     }
 
-    if (controller.autoStart) {
-      controller.stop();
-    }
-    // When this widget is unmounted, reset the scan window.
-    unawaited(controller.updateScanWindow(null));
+    disposeCamera();
 
-    // Dispose default controller if not provided by user
-    if (widget.controller == null) {
-      controller.dispose();
-      WidgetsBinding.instance.removeObserver(this);
-    }
+    super.dispose();
   }
 
   @override
