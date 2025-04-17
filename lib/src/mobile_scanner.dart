@@ -6,6 +6,7 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
+import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 /// The function signature for the error builder.
@@ -199,6 +200,8 @@ class _MobileScannerState extends State<MobileScanner>
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
+
+        // If the controller is still initializing, show a black screen, or user provided placeholder
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
@@ -207,12 +210,9 @@ class _MobileScannerState extends State<MobileScanner>
         }
 
         final MobileScannerException? error = value.error;
-
+        // If the controller encountered, show an error screen, or user provided placeholder
         if (error != null) {
-          const Widget defaultError = ColoredBox(
-            color: Colors.black,
-            child: Center(child: Icon(Icons.error, color: Colors.white)),
-          );
+          final Widget defaultError = ScannerErrorWidget(error: error);
 
           return widget.errorBuilder?.call(context, error, child) ??
               defaultError;

@@ -80,10 +80,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
-    throw const MobileScannerException(
-      errorCode: MobileScannerErrorCode.genericError,
+    throw MobileScannerException(
+      errorCode: MobileScannerErrorCode.unsupported,
       errorDetails: MobileScannerErrorDetails(
-        message: 'Only Android, iOS and macOS are supported.',
+        message:MobileScannerErrorCode.unsupported.message,
       ),
     );
   }
@@ -218,10 +218,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (!_pausing && _textureId != null) {
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started.',
+          message: MobileScannerErrorCode.controllerAlreadyInitialized.message,
         ),
       );
     }
