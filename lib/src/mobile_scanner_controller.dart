@@ -176,8 +176,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
         errorDetails: MobileScannerErrorDetails(
-          message:
-          MobileScannerErrorCode.controllerDisposed.message,
+          message: MobileScannerErrorCode.controllerDisposed.message,
         ),
       );
     }

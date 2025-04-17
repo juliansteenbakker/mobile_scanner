@@ -83,7 +83,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     throw MobileScannerException(
       errorCode: MobileScannerErrorCode.unsupported,
       errorDetails: MobileScannerErrorDetails(
-        message:MobileScannerErrorCode.unsupported.message,
+        message: MobileScannerErrorCode.unsupported.message,
       ),
     );
   }

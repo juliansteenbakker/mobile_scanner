@@ -202,7 +202,6 @@ class _MobileScannerState extends State<MobileScanner>
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
-        // If the controller is still initializing, show a black screen, or user provided placeholder
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
@@ -211,7 +210,6 @@ class _MobileScannerState extends State<MobileScanner>
         }
 
         final MobileScannerException? error = value.error;
-        // If the controller encountered, show an error screen, or user provided placeholder
         if (error != null) {
           final Widget defaultError = ScannerErrorWidget(error: error);
 
@@ -260,7 +258,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   StreamSubscription? _subscription;
 
-  Future<void> initController() async {
+  Future<void> initMobileScanner() async {
     // If debug mode is enabled, stop the controller first before starting it.
     // If a hot-restart is initiated, the controller won't be stopped, and because
     // there is no way of knowing if a hot-restart has happened, we must assume
@@ -290,7 +288,10 @@ class _MobileScannerState extends State<MobileScanner>
     }
   }
 
-  Future<void> disposeCamera() async {
+  Future<void> disposeMobileScanner() async {
+    await _subscription?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+
     if (controller.autoStart) {
       await controller.stop();
     }
@@ -298,7 +299,6 @@ class _MobileScannerState extends State<MobileScanner>
     // Dispose default controller if not provided by user
     if (widget.controller == null) {
       await controller.dispose();
-      WidgetsBinding.instance.removeObserver(this);
     }
   }
 
@@ -306,19 +306,13 @@ class _MobileScannerState extends State<MobileScanner>
   void initState() {
     super.initState();
     controller = widget.controller ?? MobileScannerController();
-    initController();
+    unawaited(initMobileScanner());
   }
 
   @override
   void dispose() {
-    if (_subscription != null) {
-      _subscription!.cancel();
-      _subscription = null;
-    }
-
-    disposeCamera();
-
     super.dispose();
+    disposeMobileScanner();
   }
 
   @override
@@ -342,7 +336,6 @@ class _MobileScannerState extends State<MobileScanner>
         unawaited(controller.start());
       case AppLifecycleState.inactive:
         unawaited(_subscription?.cancel());
-        _subscription = null;
         unawaited(controller.stop());
     }
   }

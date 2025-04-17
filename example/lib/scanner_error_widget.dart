@@ -22,10 +22,11 @@ class ScannerErrorWidget extends StatelessWidget {
               error.errorCode.message,
               style: const TextStyle(color: Colors.white),
             ),
-            if (error.errorDetails != null) Text(
-              error.errorDetails!.message ?? '',
-              style: const TextStyle(color: Colors.white),
-            ),
+            if (error.errorDetails?.message case final String message)
+              Text(
+                message,
+                style: const TextStyle(color: Colors.white),
+              ),
           ],
         ),
       ),
