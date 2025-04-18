@@ -275,7 +275,7 @@ class _MobileScannerState extends State<MobileScanner>
       }
     }
 
-    if (widget.onDetect != null) {
+    if (widget.controller == null) {
       WidgetsBinding.instance.addObserver(this);
       _subscription = controller.barcodes.listen(
         widget.onDetect,
@@ -289,8 +289,12 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   Future<void> disposeMobileScanner() async {
+    if (widget.controller == null) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
+
     await _subscription?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
+    _subscription = null;
 
     if (controller.autoStart) {
       await controller.stop();
@@ -312,12 +316,12 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void dispose() {
     super.dispose();
-    disposeMobileScanner();
+    unawaited(disposeMobileScanner());
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null || !controller.value.hasCameraPermission) {
+    if (!controller.value.hasCameraPermission) {
       return;
     }
 
@@ -327,15 +331,8 @@ class _MobileScannerState extends State<MobileScanner>
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(
-          widget.onDetect,
-          onError: widget.onDetectError,
-          cancelOnError: false,
-        );
-
         unawaited(controller.start());
       case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
         unawaited(controller.stop());
     }
   }
