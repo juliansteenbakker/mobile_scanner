@@ -112,10 +112,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
-    throw const MobileScannerException(
-      errorCode: MobileScannerErrorCode.genericError,
+    throw MobileScannerException(
+      errorCode: MobileScannerErrorCode.unsupported,
       errorDetails: MobileScannerErrorDetails(
-        message: 'Only Android, iOS and macOS are supported.',
+        message: MobileScannerErrorCode.unsupported.message,
       ),
     );
   }
@@ -272,10 +272,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (!_pausing && _textureId != null) {
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started.',
+          message: MobileScannerErrorCode.controllerAlreadyInitialized.message,
         ),
       );
     }
@@ -358,8 +358,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<void> stop() async {
-    if (_textureId == null) {
+  Future<void> stop({bool force = false}) async {
+    if (_textureId == null && !force) {
       return;
     }
 
@@ -367,18 +367,18 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _pausing = false;
     _surfaceProducerDelegate = null;
 
-    await methodChannel.invokeMethod<void>('stop');
+    await methodChannel.invokeMethod<void>('stop', {'force': force});
   }
 
   @override
-  Future<void> pause() async {
+  Future<void> pause({bool force = false}) async {
     if (_pausing) {
       return;
     }
 
     _pausing = true;
 
-    await methodChannel.invokeMethod<void>('pause');
+    await methodChannel.invokeMethod<void>('pause', {'force': force});
   }
 
   @override
@@ -406,6 +406,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<void> dispose() async {
+    await updateScanWindow(null);
     await stop();
   }
 }

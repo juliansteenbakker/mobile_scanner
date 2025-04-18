@@ -115,6 +115,13 @@ Known issues:
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
 
+## 6.0.8
+Improvements:
+* [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.
+* Hot-restart for development purposes is now working correctly
+* Added message to `MobileScannerErrorCode`, which will be shown if kDebugMode is true. Otherwise, a generic error message will appear.
+* Fixed issues regarding initialization of the `MobileScannerController`, which could result in a black screen without error message.
+
 ## 6.0.7
 Improvements:
 * [Android] Updated bundled barcode scanning library to v17.3.0

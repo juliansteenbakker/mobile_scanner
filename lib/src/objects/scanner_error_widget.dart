@@ -1,12 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-/// Button widget for analyze image function
 class ScannerErrorWidget extends StatelessWidget {
-  /// Construct a new [ScannerErrorWidget] instance.
-  const ScannerErrorWidget({required this.error, super.key});
+  const ScannerErrorWidget({super.key, required this.error});
 
-  /// Error to display
   final MobileScannerException error;
 
   @override
@@ -21,13 +19,19 @@ class ScannerErrorWidget extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 16),
               child: Icon(Icons.error, color: Colors.white),
             ),
-            Text(
-              error.errorCode.message,
-              style: const TextStyle(color: Colors.white),
-            ),
-            if (error.errorDetails?.message case final String message)
+            if (kDebugMode) ...[
               Text(
-                message,
+                error.errorCode.message,
+                style: const TextStyle(color: Colors.white),
+              ),
+              if (error.errorDetails?.message case final String message)
+                Text(
+                  message,
+                  style: const TextStyle(color: Colors.white),
+                ),
+            ] else
+              Text(
+                MobileScannerErrorCode.genericError.message,
                 style: const TextStyle(color: Colors.white),
               ),
           ],
