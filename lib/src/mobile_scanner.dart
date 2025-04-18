@@ -6,6 +6,7 @@ import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
+import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 /// The function signature for the error builder.
@@ -134,7 +135,7 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
-  late final controller = widget.controller ?? MobileScannerController();
+  late final MobileScannerController controller;
 
   /// The current scan window.
   Rect? scanWindow;
@@ -207,12 +208,8 @@ class _MobileScannerState extends State<MobileScanner>
         }
 
         final MobileScannerException? error = value.error;
-
         if (error != null) {
-          const Widget defaultError = ColoredBox(
-            color: Colors.black,
-            child: Center(child: Icon(Icons.error, color: Colors.white)),
-          );
+          final Widget defaultError = ScannerErrorWidget(error: error);
 
           return widget.errorBuilder?.call(context, error, child) ??
               defaultError;
@@ -259,9 +256,22 @@ class _MobileScannerState extends State<MobileScanner>
 
   StreamSubscription? _subscription;
 
-  @override
-  void initState() {
-    if (widget.onDetect != null) {
+  Future<void> initMobileScanner() async {
+    // TODO: This will be fixed in another PR
+    // If debug mode is enabled, stop the controller first before starting it.
+    // If a hot-restart is initiated, the controller won't be stopped, and because
+    // there is no way of knowing if a hot-restart has happened, we must assume
+    // every start is a hot-restart.
+    // if (kDebugMode) {
+    //   try {
+    //     await controller.stop();
+    //   } catch (e) {
+    //     // Don't do anything if the controller is already stopped.
+    //     debugPrint('$e');
+    //   }
+    // }
+
+    if (widget.controller == null) {
       WidgetsBinding.instance.addObserver(this);
       _subscription = controller.barcodes.listen(
         widget.onDetect,
@@ -270,36 +280,44 @@ class _MobileScannerState extends State<MobileScanner>
       );
     }
     if (controller.autoStart) {
-      controller.start();
+      await controller.start();
     }
+  }
+
+  Future<void> disposeMobileScanner() async {
+    if (widget.controller == null) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
+
+    await _subscription?.cancel();
+    _subscription = null;
+
+    if (controller.autoStart) {
+      await controller.stop();
+    }
+
+    // Dispose default controller if not provided by user
+    if (widget.controller == null) {
+      await controller.dispose();
+    }
+  }
+
+  @override
+  void initState() {
     super.initState();
+    controller = widget.controller ?? MobileScannerController();
+    unawaited(initMobileScanner());
   }
 
   @override
   void dispose() {
     super.dispose();
-
-    if (_subscription != null) {
-      _subscription!.cancel();
-      _subscription = null;
-    }
-
-    if (controller.autoStart) {
-      controller.stop();
-    }
-    // When this widget is unmounted, reset the scan window.
-    unawaited(controller.updateScanWindow(null));
-
-    // Dispose default controller if not provided by user
-    if (widget.controller == null) {
-      controller.dispose();
-      WidgetsBinding.instance.removeObserver(this);
-    }
+    unawaited(disposeMobileScanner());
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.controller != null || !controller.value.hasCameraPermission) {
+    if (!controller.value.hasCameraPermission) {
       return;
     }
 
@@ -309,16 +327,8 @@ class _MobileScannerState extends State<MobileScanner>
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(
-          widget.onDetect,
-          onError: widget.onDetectError,
-          cancelOnError: false,
-        );
-
         unawaited(controller.start());
       case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
-        _subscription = null;
         unawaited(controller.stop());
     }
   }

@@ -273,10 +273,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
         );
       }
 
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started.',
+          message: MobileScannerErrorCode.controllerAlreadyInitialized.message,
         ),
       );
     }

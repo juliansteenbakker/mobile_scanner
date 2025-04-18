@@ -27,6 +27,23 @@ enum MobileScannerErrorCode {
   /// Scanning is unsupported on the current device.
   unsupported;
 
+  String get message {
+    switch (this) {
+      case MobileScannerErrorCode.controllerUninitialized:
+        return 'The MobileScannerController has not been initialized. Call start() before using it.';
+      case MobileScannerErrorCode.permissionDenied:
+        return 'Camera permission denied.';
+      case MobileScannerErrorCode.unsupported:
+        return 'Scanning is not supported on this device.';
+      case MobileScannerErrorCode.controllerAlreadyInitialized:
+        return 'The MobileScannerController is already running. Stop it before starting again.';
+      case MobileScannerErrorCode.controllerDisposed:
+        return 'The MobileScannerController was used after it was disposed.';
+      case MobileScannerErrorCode.genericError:
+        return 'An unexpected error occurred.';
+    }
+  }
+
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].
   factory MobileScannerErrorCode.fromPlatformException(
     PlatformException exception,

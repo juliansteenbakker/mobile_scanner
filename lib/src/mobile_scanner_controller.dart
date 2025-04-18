@@ -164,20 +164,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   void _throwIfNotInitialized() {
     if (!value.isInitialized) {
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerUninitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The MobileScannerController has not been initialized.',
+          message: MobileScannerErrorCode.controllerUninitialized.message,
         ),
       );
     }
 
     if (_isDisposed) {
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
         errorDetails: MobileScannerErrorDetails(
-          message:
-              'The MobileScannerController was used after it has been disposed.',
+          message: MobileScannerErrorCode.controllerDisposed.message,
         ),
       );
     }
@@ -284,11 +283,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If the permission is denied on iOS, MacOS or Web, there is no way to request it again.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
         errorDetails: MobileScannerErrorDetails(
-          message:
-              'The MobileScannerController was used after it has been disposed.',
+          message: MobileScannerErrorCode.controllerDisposed.message,
         ),
       );
     }
@@ -332,13 +330,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
       }
     } on MobileScannerException catch (error) {
-      // If the controller is already initialized, ignore the error.
-      // Starting the controller while it is already started, or in the process of starting, is redundant.
-      if (error.errorCode ==
-          MobileScannerErrorCode.controllerAlreadyInitialized) {
-        return;
-      }
-
       // The initialization finished with an error.
       // To avoid stale values, reset the output size,
       // torch state and zoom scale to the defaults.
