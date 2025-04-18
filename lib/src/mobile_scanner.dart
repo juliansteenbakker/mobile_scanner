@@ -285,7 +285,7 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   Future<void> disposeMobileScanner() async {
-    if (widget.controller == null) {
+    if (widget.onDetect != null) {
       WidgetsBinding.instance.removeObserver(this);
     }
 
