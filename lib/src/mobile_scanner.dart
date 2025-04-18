@@ -265,7 +265,7 @@ class _MobileScannerState extends State<MobileScanner>
     // every start is a hot-restart.
     if (kDebugMode) {
       final platformInterface = MobileScannerPlatform.instance;
-      if (platformInterface is MethodChannelMobileScanner) {
+      if (MobileScannerPlatform.instance case final MethodChannelMobileScanner implementation) {
         try {
           await platformInterface.stop(force: true);
         } catch (e) {
