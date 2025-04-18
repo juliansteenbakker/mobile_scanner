@@ -262,12 +262,13 @@ class _MobileScannerState extends State<MobileScanner>
     // If debug mode is enabled, stop the controller first before starting it.
     // If a hot-restart is initiated, the controller won't be stopped, and because
     // there is no way of knowing if a hot-restart has happened, we must assume
-    // every start is a hot-restart.
+    // every start is a hot-restart. Related issue:
+    // https://github.com/flutter/flutter/issues/10437
     if (kDebugMode) {
-      final platformInterface = MobileScannerPlatform.instance;
-      if (MobileScannerPlatform.instance case final MethodChannelMobileScanner implementation) {
+      if (MobileScannerPlatform.instance
+          case final MethodChannelMobileScanner implementation) {
         try {
-          await platformInterface.stop(force: true);
+          await implementation.stop(force: true);
         } catch (e) {
           // Don't do anything if the controller is already stopped.
           debugPrint('$e');

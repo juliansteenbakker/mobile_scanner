@@ -496,6 +496,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     }
 
     private func releaseTexture() {
+        if (textureId == nil) {
+            return
+        }
+
         registry.unregisterTexture(textureId)
         textureId = nil
     }
