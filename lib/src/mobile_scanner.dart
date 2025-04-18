@@ -312,7 +312,7 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void dispose() {
     super.dispose();
-    disposeMobileScanner();
+    unawaited(disposeMobileScanner());
   }
 
   @override
