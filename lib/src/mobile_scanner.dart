@@ -1,6 +1,8 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
@@ -257,19 +259,22 @@ class _MobileScannerState extends State<MobileScanner>
   StreamSubscription? _subscription;
 
   Future<void> initMobileScanner() async {
-    // TODO: This will be fixed in another PR
     // If debug mode is enabled, stop the controller first before starting it.
     // If a hot-restart is initiated, the controller won't be stopped, and because
     // there is no way of knowing if a hot-restart has happened, we must assume
-    // every start is a hot-restart.
-    // if (kDebugMode) {
-    //   try {
-    //     await controller.stop();
-    //   } catch (e) {
-    //     // Don't do anything if the controller is already stopped.
-    //     debugPrint('$e');
-    //   }
-    // }
+    // every start is a hot-restart. Related issue:
+    // https://github.com/flutter/flutter/issues/10437
+    if (kDebugMode) {
+      if (MobileScannerPlatform.instance
+          case final MethodChannelMobileScanner implementation) {
+        try {
+          await implementation.stop(force: true);
+        } catch (e) {
+          // Don't do anything if the controller is already stopped.
+          debugPrint('$e');
+        }
+      }
+    }
 
     if (widget.controller == null) {
       WidgetsBinding.instance.addObserver(this);

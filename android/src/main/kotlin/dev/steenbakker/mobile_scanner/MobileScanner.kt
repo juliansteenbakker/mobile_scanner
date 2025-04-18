@@ -440,11 +440,13 @@ class MobileScanner(
     /**
      * Pause barcode scanning.
      */
-    fun pause() {
-        if (isPaused) {
-            throw AlreadyPaused()
-        } else if (isStopped()) {
-            throw AlreadyStopped()
+    fun pause(force: Boolean = false) {
+        if (!force) {
+            if (isPaused) {
+                throw AlreadyPaused()
+            } else if (isStopped()) {
+                throw AlreadyStopped()
+            }
         }
 
         pauseCamera()
@@ -453,9 +455,11 @@ class MobileScanner(
     /**
      * Stop barcode scanning.
      */
-    fun stop() {
-        if (!isPaused && isStopped()) {
-            throw AlreadyStopped()
+    fun stop(force: Boolean = false) {
+        if (!force) {
+            if (!isPaused && isStopped()) {
+                throw AlreadyStopped()
+            }
         }
 
         releaseCamera()

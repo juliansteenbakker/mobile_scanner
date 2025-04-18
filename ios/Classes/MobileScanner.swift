@@ -303,18 +303,20 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     /// Pause scanning for barcodes
-    func pause() throws {
-        if (paused) {
-            throw MobileScannerError.alreadyPaused
-        } else if (stopped) {
-            throw MobileScannerError.alreadyStopped
+    func pause(force: Bool = false) throws {
+        if (!force) {
+            if (paused) {
+                throw MobileScannerError.alreadyPaused
+            } else if (stopped) {
+                throw MobileScannerError.alreadyStopped
+            }
         }
         releaseCamera()
     }
 
     /// Stop scanning for barcodes
-    func stop() throws {
-        if (!paused && stopped) {
+    func stop(force: Bool = false) throws {
+        if (!paused && stopped && !force) {
             throw MobileScannerError.alreadyStopped
         }
         releaseCamera()
@@ -343,7 +345,9 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     private func releaseTexture() {
-        registry?.unregisterTexture(textureId)
+        if (textureId != nil) {
+            registry?.unregisterTexture(textureId)
+        }
         textureId = nil
         scanner = nil
     }

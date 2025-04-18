@@ -118,8 +118,8 @@ class MobileScannerHandler(
                     }
                 })
             "start" -> start(call, result)
-            "pause" -> pause(result)
-            "stop" -> stop(result)
+            "pause" -> pause(call, result)
+            "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
@@ -214,9 +214,10 @@ class MobileScannerHandler(
         )
     }
 
-    private fun pause(result: MethodChannel.Result) {
+    private fun pause(call: MethodCall, result: MethodChannel.Result) {
+        val force: Boolean = call.argument<Boolean>("force") ?: false
         try {
-            mobileScanner!!.pause()
+            mobileScanner!!.pause(force)
             result.success(null)
         } catch (e: Exception) {
             when (e) {
@@ -226,9 +227,10 @@ class MobileScannerHandler(
         }
     }
 
-    private fun stop(result: MethodChannel.Result) {
+    private fun stop(call: MethodCall, result: MethodChannel.Result) {
+        val force: Boolean = call.argument<Boolean>("force") ?: false
         try {
-            mobileScanner!!.stop()
+            mobileScanner!!.stop(force)
             result.success(null)
         } catch (e: AlreadyStopped) {
             result.success(null)
