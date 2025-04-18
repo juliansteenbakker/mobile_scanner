@@ -285,24 +285,12 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   Future<void> disposeMobileScanner() async {
-  Future<void> disposeMobileScanner() async {
     if (widget.controller == null) {
       WidgetsBinding.instance.removeObserver(this);
     }
-  
+
     await _subscription?.cancel();
     _subscription = null;
-    
-    if (controller.autoStart) {
-      await controller.stop();
-    }
-    
-    // Dispose default controller if not provided by user
-    if (widget.controller == null) {
-      await controller.dispose();
-    }    
-  }
-    WidgetsBinding.instance.removeObserver(this);
 
     if (controller.autoStart) {
       await controller.stop();
