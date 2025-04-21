@@ -6,6 +6,7 @@ import 'package:mobile_scanner/src/enums/detection_speed.dart';
 
 /// This class defines the different start options for the mobile scanner.
 class StartOptions {
+  /// Construct a new [StartOptions] instance.
   const StartOptions({
     required this.cameraDirection,
     required this.cameraResolution,
@@ -14,7 +15,8 @@ class StartOptions {
     required this.formats,
     required this.returnImage,
     required this.torchEnabled,
-    required this.useNewCameraSelector,
+    required this.invertImage,
+    required this.autoZoom,
   });
 
   /// The direction for the camera.
@@ -22,6 +24,9 @@ class StartOptions {
 
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
+
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  final bool invertImage;
 
   /// The detection speed for the scanner.
   final DetectionSpeed detectionSpeed;
@@ -38,11 +43,13 @@ class StartOptions {
   /// Whether the torch should be turned on when the scanner starts.
   final bool torchEnabled;
 
-  /// Whether the new resolution selector should be used.
+  /// Whether the camera should auto zoom if the detected code is to far from
+  /// the camera.
   ///
   /// This option is only supported on Android. Other platforms will ignore this option.
-  final bool useNewCameraSelector;
+  final bool autoZoom;
 
+  /// Converts this object to a map.
   Map<String, Object?> toMap() {
     return <String, Object?>{
       if (cameraResolution != null)
@@ -57,7 +64,8 @@ class StartOptions {
       'speed': detectionSpeed.rawValue,
       'timeout': detectionTimeoutMs,
       'torch': torchEnabled,
-      'useNewCameraSelector': useNewCameraSelector,
+      'invertImage': invertImage,
+      'autoZoom': autoZoom,
     };
   }
 }

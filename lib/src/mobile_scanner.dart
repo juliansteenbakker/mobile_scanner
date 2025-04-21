@@ -11,13 +11,6 @@ import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
-/// The function signature for the error builder.
-typedef MobileScannerErrorBuilder = Widget Function(
-  BuildContext,
-  MobileScannerException,
-  Widget?,
-);
-
 /// This widget displays a live camera preview for the barcode scanner.
 class MobileScanner extends StatefulWidget {
   /// Create a new [MobileScanner] using the provided [controller].
@@ -31,6 +24,7 @@ class MobileScanner extends StatefulWidget {
     this.placeholderBuilder,
     this.scanWindow,
     this.scanWindowUpdateThreshold = 0.0,
+    this.useAppLifecycleState = true,
     super.key,
   });
 
@@ -53,7 +47,7 @@ class MobileScanner extends StatefulWidget {
   ///
   /// If this is null, a black [ColoredBox],
   /// with a centered white [Icons.error] icon is used as error widget.
-  final MobileScannerErrorBuilder? errorBuilder;
+  final Widget Function(BuildContext, MobileScannerException)? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
   ///
@@ -76,9 +70,11 @@ class MobileScanner extends StatefulWidget {
   /// If this is null, a black [ColoredBox] is used as placeholder.
   ///
   /// The placeholder is displayed when the camera preview is being initialized.
-  final Widget Function(BuildContext, Widget?)? placeholderBuilder;
+  final WidgetBuilder? placeholderBuilder;
 
   /// The scan window rectangle for the barcode scanner.
+  /// A scan window is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If this is not null, the barcode scanner will only scan barcodes
   /// which intersect this rectangle.
@@ -114,6 +110,8 @@ class MobileScanner extends StatefulWidget {
   final Rect? scanWindow;
 
   /// The threshold for updates to the [scanWindow].
+  /// A [scanWindow] is not supported on the web because the scanner does not
+  /// expose size information for the barcodes.
   ///
   /// If the [scanWindow] would be updated,
   /// due to new layout constraints for the scanner,
@@ -125,6 +123,15 @@ class MobileScanner extends StatefulWidget {
   ///
   /// Defaults to no threshold for scan window updates.
   final double scanWindowUpdateThreshold;
+
+  /// Whether the `MobileScanner` widget should automatically pause and resume
+  /// when the application lifecycle state changes.
+  ///
+  /// Only applicable if no controller is passed. Otherwise, lifecycleState
+  /// should be handled by the user via the controller.
+  ///
+  /// Defaults to true.
+  final bool useAppLifecycleState;
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -149,7 +156,12 @@ class _MobileScannerState extends State<MobileScanner>
     MobileScannerState scannerState,
     BoxConstraints constraints,
   ) {
-    if (widget.scanWindow == null) {
+    if (widget.scanWindow == null && scanWindow == null) {
+      return;
+    } else if (widget.scanWindow == null) {
+      scanWindow = null;
+
+      unawaited(controller.updateScanWindow(null));
       return;
     }
 
@@ -201,20 +213,18 @@ class _MobileScannerState extends State<MobileScanner>
   Widget build(BuildContext context) {
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
-      builder: (BuildContext context, MobileScannerState value, Widget? child) {
+      builder: (BuildContext context, MobileScannerState value, _) {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 
-          return widget.placeholderBuilder?.call(context, child) ??
-              defaultPlaceholder;
+          return widget.placeholderBuilder?.call(context) ?? defaultPlaceholder;
         }
 
         final MobileScannerException? error = value.error;
         if (error != null) {
           final Widget defaultError = ScannerErrorWidget(error: error);
 
-          return widget.errorBuilder?.call(context, error, child) ??
-              defaultError;
+          return widget.errorBuilder?.call(context, error) ?? defaultError;
         }
 
         return LayoutBuilder(
@@ -319,14 +329,15 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  void dispose() {
+  Future<void> dispose() async {
     super.dispose();
     unawaited(disposeMobileScanner());
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!controller.value.hasCameraPermission) {
+    if (!widget.useAppLifecycleState ||
+        !controller.value.hasCameraPermission) {
       return;
     }
 

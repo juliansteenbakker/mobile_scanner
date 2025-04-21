@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner.dart';
+library;
+
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -25,14 +28,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.useNewCameraSelector = false,
+    this.invertImage = false,
+    this.autoZoom = false,
   })  : detectionTimeoutMs =
             detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
         assert(
           detectionTimeoutMs >= 0,
           'The detection timeout must be greater than or equal to 0.',
         ),
-        super(MobileScannerState.uninitialized(facing));
+        assert(
+          facing != CameraFacing.unknown,
+          'CameraFacing.unknown is not a valid camera direction.',
+        ),
+        super(const MobileScannerState.uninitialized());
 
   /// The desired resolution for the camera.
   ///
@@ -82,19 +90,22 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
+  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  /// Usage of this parameter can incur a performance cost, as frames need to be altered during processing.
+  ///
+  /// Defaults to false and is only supported on Android.
+  final bool invertImage;
+
   /// Whether the flashlight should be turned on when the camera is started.
   ///
   /// Defaults to false.
   final bool torchEnabled;
 
-  /// Use the new resolution selector.
-  ///
-  /// This feature is experimental and not fully tested yet.
-  /// Use caution when using this flag,
-  /// as the new resolution selector may produce unwanted or zoomed images.
+  /// Whether the camera should auto zoom if the detected code is to far from
+  /// the camera.
   ///
   /// Only supported on Android.
-  final bool useNewCameraSelector;
+  final bool autoZoom;
 
   /// The internal barcode controller, that listens for detected barcodes.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -214,12 +225,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// The [formats] specify the barcode formats that should be detected in the image.
   /// If the [formats] are omitted or empty, all formats are detected.
   ///
-  /// This is only supported on Android, iOS and MacOS.
+  /// This is only supported on Android, physical iOS devices and MacOS.
+  /// This is not supported on the iOS Simulator, due to restrictions on the Simulator.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   ///
   /// If an error occurred during the analysis of the image,
   /// a [MobileScannerBarcodeException] error is thrown.
+  ///
+  /// If analyzing images from a file is not supported, an [UnsupportedError] is thrown.
   Future<BarcodeCapture?> analyzeImage(
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
@@ -291,22 +305,30 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
+    if (cameraDirection == CameraFacing.unknown) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'CameraFacing.unknown is not a valid camera direction.',
+        ),
+      );
+    }
+
     // Do nothing if the camera is already running.
     if (value.isRunning) {
       return;
     }
 
-    final CameraFacing effectiveDirection = cameraDirection ?? facing;
-
     final StartOptions options = StartOptions(
-      cameraDirection: effectiveDirection,
+      cameraDirection: cameraDirection ?? facing,
       cameraResolution: cameraResolution,
       detectionSpeed: detectionSpeed,
       detectionTimeoutMs: detectionTimeoutMs,
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      useNewCameraSelector: useNewCameraSelector,
+      invertImage: invertImage,
+      autoZoom: autoZoom,
     );
 
     try {
@@ -320,7 +342,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       if (!_isDisposed) {
         value = value.copyWith(
           availableCameras: viewAttributes.numberOfCameras,
-          cameraDirection: effectiveDirection,
+          cameraDirection: viewAttributes.cameraDirection,
           isInitialized: true,
           isRunning: true,
           size: viewAttributes.size,
@@ -331,11 +353,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       }
     } on MobileScannerException catch (error) {
       // The initialization finished with an error.
-      // To avoid stale values, reset the output size,
-      // torch state and zoom scale to the defaults.
+      // To avoid stale values, reset the camera direction,
+      // output size, torch state and zoom scale to the defaults.
       if (!_isDisposed) {
         value = value.copyWith(
-          cameraDirection: facing,
+          cameraDirection: CameraFacing.unknown,
           isInitialized: true,
           isRunning: false,
           error: error,
@@ -372,11 +394,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Switch between the front and back camera.
   ///
-  /// Does nothing if the device has less than 2 cameras.
+  /// Does nothing if the device has less than 2 cameras,
+  /// or if the current camera is an external camera.
   Future<void> switchCamera() async {
     _throwIfNotInitialized();
 
     final int? availableCameras = value.availableCameras;
+    final CameraFacing cameraDirection = value.cameraDirection;
 
     // Do nothing if the amount of cameras is less than 2 cameras.
     // If the the current platform does not provide the amount of cameras,
@@ -385,15 +409,24 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
+    // If the camera direction is not known,
+    // or if the camera is an external camera, do not allow switching cameras.
+    if (cameraDirection == CameraFacing.unknown ||
+        cameraDirection == CameraFacing.external) {
+      return;
+    }
+
     await stop();
 
-    final CameraFacing cameraDirection = value.cameraDirection;
-
-    await start(
-      cameraDirection: cameraDirection == CameraFacing.front
-          ? CameraFacing.back
-          : CameraFacing.front,
-    );
+    switch (value.cameraDirection) {
+      case CameraFacing.front:
+        return start(cameraDirection: CameraFacing.back);
+      case CameraFacing.back:
+        return start(cameraDirection: CameraFacing.front);
+      case CameraFacing.external:
+      case CameraFacing.unknown:
+        return;
+    }
   }
 
   /// Switches the flashlight on or off.

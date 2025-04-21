@@ -30,6 +30,10 @@ class BarcodeHandler(binaryMessenger: BinaryMessenger) : EventChannel.StreamHand
         }
     }
 
+    fun dispose() {
+        eventChannel.setStreamHandler(null)
+    }
+
     override fun onListen(event: Any?, eventSink: EventChannel.EventSink?) {
         this.eventSink = eventSink
     }

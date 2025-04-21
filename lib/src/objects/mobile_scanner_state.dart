@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
+library;
+
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
@@ -20,10 +23,10 @@ class MobileScannerState {
   });
 
   /// Create a new [MobileScannerState] instance that is uninitialized.
-  const MobileScannerState.uninitialized(CameraFacing facing)
+  const MobileScannerState.uninitialized()
       : this(
           availableCameras: null,
-          cameraDirection: facing,
+          cameraDirection: CameraFacing.unknown,
           isInitialized: false,
           isRunning: false,
           size: Size.zero,

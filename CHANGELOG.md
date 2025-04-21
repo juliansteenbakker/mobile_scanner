@@ -1,3 +1,120 @@
+## 7.0.0-beta.9
+
+**BREAKING CHANGES:**
+
+* This release requires Flutter 3.29.0 or higher.
+
+Bugs fixed:
+* [Android] Fixed a timing issue for the SurfaceProducer implementation, by switching to the `onSurfaceCleanup` callback. 
+
+## 7.0.0-beta.8
+
+Improvements:
+* Updated examples in example app.
+* Added [useAppLifecycleState] parameter to enable or disable handling of lifecycle state when no controller is passed.
+* Dispose function of [MobileScanner] is now async.
+* The [BarcodeOverlay] now correctly disposes the text painter.
+
+Bugs fixed:
+* [Apple] Fixed barcode corners representation for barcode overlay.
+* [Apple] Fixed zoom callback not working.
+* [Apple] Updated zoom scale factor to match Android implementation.
+* Fixed build issues on older kotlin versions.
+
+## 7.0.0-beta.7
+
+**BREAKING CHANGES:**
+
+* The initial state of the `MobileScannerState` camera facing direction is changed to `CameraFacing.unknown`.
+
+Improvements:
+* [Android] Turn off logging for CameraX, except for the `Log.ERROR` logging level.
+* Added `CameraFacing.external` and `CameraFacing.unknown` enum values.
+
+Bugs fixed:
+* [Android] Fixed an issue when compiling with Kotlin 1.8.0 or higher.
+
+## 7.0.0-beta.6
+
+**BREAKING CHANGES:**
+
+* This release requires Flutter 3.27.0 or higher.
+
+Improvements:
+* [Android] Added support for Impeller.
+* [Apple] Added support for `rawBytes` from the Vision API observations.
+* Export the `MobileScannerViewAttributes` and `StartOptions` types, to allow them in tests.
+
+Bugs fixed:
+* [Apple] Fixed a bug that caused a crash when the capture session could not add the video input.
+
+## 7.0.0-beta.5
+
+Improvements:
+* [Android] Added `autoZoom` parameter to auto zoom if the detected code is to far from the camera.
+* [Android] Added `invertImage` parameter to invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+* [Android] Updated camera-camera2 dependencies.
+* Added pause functionality to all platforms.
+
+Bugs fixed:
+* [Android] Fixed resources not being closed.
+
+## 7.0.0-beta.4
+
+**BREAKING CHANGES:**
+
+* The `updateScanWindow` method is now private. Instead, update the scan window in the `MobileScanner` widget directly.
+* The deprecated `EncryptionType.none` constant has been removed. Use `EncryptionType.unknown` instead.
+* The `errorBuilder` and `placeholderBuilder` of the `MobileScanner` widget no longer take a Widget argument, as it was unused.
+* The `MobileScannerErrorBuilder` typedef has been removed.
+
+Bugs fixed:
+* [Apple] Fixed an issue which caused the scanWindow to always be present, even when reset to no value.
+* [Apple] Fixed an issue that caused the barcode size to report the wrong height.
+* [Apple] Fixed a bug that caused the corner points to not be returned in clockwise orientation.
+* [Apple] Fixed an issue where `analyzeImage` would not throw an error if no valid image is provided as argument.
+* [Apple] Fixed an issue where `analyzeImage` would not return if no barcodes are found in the image.
+* [Apple] Fixed an issue where the iOS Simulator did not report that analyzing images from a file is unsupported. 
+* [Android] Fixed an issue where `analyzeImage` would not return if no valid image is provided as argument.
+
+Improvements:
+* Added a basic barcode overlay widget, for use with the camera preview.
+* Added a basic scan window overlay widget, for use with the camera preview.
+* Update the bundled MLKit model for Android to version `17.3.0`.
+* Added documentation in places where it was missing.
+* Added `color` and `style` properties to the `BarcodePainter` widget.
+* Enabled Swift Package Manager for the example app.
+
+## 7.0.0-beta.3
+
+* Fixed a build issue on macOS.
+
+## 7.0.0-beta.2
+
+Bugs fixed:
+* [Apple] Fixed an issue with the zoom slider being non-functional.
+* [Apple] Fixed an issue where the flash would briefly show when the camera is turned on.
+* [Apple] Fixed an issue that prevented the scan window from working.
+* [Apple] Fixed an issue that caused the barcode overlay to use the wrong dimensions.
+
+Improvements:
+* [iOS] Adds support for Swift Package Manager.
+
+Known issues:
+* BoxFit.cover & BoxFit.fitHeight produce the wrong width in the barcode overlay.
+
+## 7.0.0-beta.1
+
+Improvements:
+* [iOS] Migrate to the Vision API.
+* [iOS] Updated the minimum iOS version back down to 12.0.
+* [Apple] Merged the iOS and MacOS sources.
+
+Known issues:
+* [Apple] The zoom slider does not work correctly.
+* [Apple] The scan window does not work correctly.
+* [Apple] The camera flash briefly shows when the camera is started.
+
 ## 6.0.8
 Improvements:
 * [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.

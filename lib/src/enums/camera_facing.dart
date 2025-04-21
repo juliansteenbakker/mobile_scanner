@@ -1,21 +1,35 @@
 /// The facing of a camera.
 enum CameraFacing {
-  /// Front facing camera.
+  /// The camera is a front facing camera.
+  ///
+  /// This type of camera always faces the user.
   front(0),
 
-  /// Back facing camera.
-  back(1);
+  /// The camera is a back facing camera.
+  ///
+  /// This type of camera always faces away from the user.
+  back(1),
+
+  /// The camera is an external camera.
+  ///
+  /// For example a USB-camera.
+  external(2),
+
+  /// The camera facing direction is unknown.
+  unknown(-1);
 
   const CameraFacing(this.rawValue);
 
-  factory CameraFacing.fromRawValue(int value) {
+  factory CameraFacing.fromRawValue(int? value) {
     switch (value) {
       case 0:
-        return CameraFacing.front;
+        return front;
       case 1:
-        return CameraFacing.back;
+        return back;
+      case 2:
+        return external;
       default:
-        throw ArgumentError.value(value, 'value', 'Invalid raw value.');
+        return unknown;
     }
   }
 
