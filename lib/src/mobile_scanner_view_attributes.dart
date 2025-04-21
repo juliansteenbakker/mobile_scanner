@@ -27,6 +27,6 @@ class MobileScannerViewAttributes {
   /// The size of the camera output.
   final Size size;
 
-  /// The initial orientation of the device
+  /// The initial orientation of the device.
   final DeviceOrientation? initialDeviceOrientation;
 }

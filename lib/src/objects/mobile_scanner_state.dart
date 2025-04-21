@@ -62,9 +62,6 @@ class MobileScannerState {
   /// The size of the camera output.
   final Size size;
 
-  /// Convenience getter for `previewSize.width / previewSize.height`.
-  double get aspectRatio => size.width / size.height;
-
   /// The current state of the flashlight of the camera.
   final TorchState torchState;
 

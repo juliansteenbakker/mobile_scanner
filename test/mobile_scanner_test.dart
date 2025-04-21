@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mocktail/mocktail.dart';
@@ -31,6 +32,7 @@ void main() {
         size: Size(1920, 1080),
         torchState: TorchState.off,
         zoomScale: 1.0,
+        deviceOrientation: DeviceOrientation.portraitUp,
       ),
     );
     when(() => mockController.start()).thenAnswer((_) async {});
@@ -88,6 +90,7 @@ void main() {
           torchState: TorchState.unavailable,
           zoomScale: 1.0,
           error: exception,
+          deviceOrientation: DeviceOrientation.portraitUp,
         ),
       );
 

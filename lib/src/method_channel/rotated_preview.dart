@@ -66,36 +66,38 @@ final class RotatedPreview extends StatefulWidget {
 
 final class _RotatedPreviewState extends State<RotatedPreview> {
   /// The current device orientation.
-  late DeviceOrientation deviceOrientation;
+  late DeviceOrientation deviceOrientation = widget.initialDeviceOrientation;
 
   /// The subscription for the device orientation stream.
   StreamSubscription<Object?>? _deviceOrientationSubscription;
 
   @override
   void initState() {
-    deviceOrientation = widget.initialDeviceOrientation;
-    _deviceOrientationSubscription = widget.deviceOrientationStream.listen((
-        DeviceOrientation event,
-        ) {
-      // Ensure that we aren't updating the state if the widget is being destroyed.
-      if (!mounted) {
-        return;
-      }
-      setState(() {
-        deviceOrientation = event;
-      });
-    });
+    _deviceOrientationSubscription = widget.deviceOrientationStream.listen(
+      onDeviceOrientationEvent,
+    );
     super.initState();
+  }
+
+  /// Handles a device orientation change event.
+  void onDeviceOrientationEvent(DeviceOrientation event) {
+    // Ensure that we aren't updating the state if the widget is being destroyed.
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      deviceOrientation = event;
+    });
   }
 
   /// Compute the rotation correction for the preview.
   ///
   /// See also: https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation
   double _computeRotationDegrees(
-      DeviceOrientation orientation, {
-        required double sensorOrientationDegrees,
-        required int sign,
-      }) {
+    DeviceOrientation orientation, {
+    required double sensorOrientationDegrees,
+    required int sign,
+  }) {
     final double deviceOrientationDegrees = switch (orientation) {
       DeviceOrientation.portraitUp => 0,
       DeviceOrientation.landscapeRight => 90,
@@ -107,10 +109,9 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
     // https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation.
     double rotationDegrees =
         (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) %
-            360;
+        360;
 
     // Then, subtract the rotation already applied in the CameraPreview widget
-    // (see camera/camera/lib/src/camera_preview.dart).
     return rotationDegrees -= deviceOrientationDegrees;
   }
 

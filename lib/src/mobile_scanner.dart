@@ -240,7 +240,7 @@ class _MobileScannerState extends State<MobileScanner>
                 size: constraints.biggest,
                 child: FittedBox(
                   fit: widget.fit,
-                  child: CameraPreview(controller,),
+                  child: CameraPreview(controller),
                 ),
               ),
             );

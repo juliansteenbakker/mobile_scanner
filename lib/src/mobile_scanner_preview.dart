@@ -15,21 +15,30 @@ class CameraPreview extends StatelessWidget {
   /// The controller for the camera that the preview is shown for.
   final MobileScannerController controller;
 
+  /// Maps the different device orientations to quarter turns that the
+  /// preview should take in account.
+  static const Map<DeviceOrientation, int> turns = <DeviceOrientation, int>{
+    DeviceOrientation.portraitUp: 0,
+    DeviceOrientation.landscapeRight: 1,
+    DeviceOrientation.portraitDown: 2,
+    DeviceOrientation.landscapeLeft: 3,
+  };
+
   @override
   Widget build(BuildContext context) {
     return controller.value.isInitialized
         ? ValueListenableBuilder<MobileScannerState>(
             valueListenable: controller,
             builder: (BuildContext context, MobileScannerState value, Widget? child) {
-              final bool isLand =  _isLandscape();
+              final bool isLandscape =  _isLandscape();
               return SizedBox(
-                width: isLand ? value.size.height : value.size.width,
-                height: isLand ? value.size.width : value.size.height,
+                width: isLandscape ? value.size.height : value.size.width,
+                height: isLandscape ? value.size.width : value.size.height,
                 child: _wrapInRotatedBox(child: controller.buildCameraView()),
               );
             },
           )
-        : Container();
+        : const SizedBox();
   }
 
   Widget _wrapInRotatedBox({required Widget child}) {
@@ -51,12 +60,6 @@ class CameraPreview extends StatelessWidget {
   }
 
   int _getQuarterTurns() {
-    final Map<DeviceOrientation, int> turns = <DeviceOrientation, int>{
-      DeviceOrientation.portraitUp: 0,
-      DeviceOrientation.landscapeRight: 1,
-      DeviceOrientation.portraitDown: 2,
-      DeviceOrientation.landscapeLeft: 3,
-    };
     return turns[_getApplicableOrientation()]!;
   }
 
