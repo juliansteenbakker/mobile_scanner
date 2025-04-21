@@ -73,8 +73,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                             "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: messenger)
         let event = FlutterEventChannel(name:
                                             "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: messenger)
+        let orientationEvent = FlutterEventChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation", binaryMessenger: messenger)
+
         registrar.addMethodCallDelegate(instance, channel: method)
         event.setStreamHandler(instance)
+        orientationEvent.setStreamHandler(DeviceOrientationStreamHandler())
     }
     
     init(_ registry: FlutterTextureRegistry) {
@@ -440,17 +444,17 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 }
 
                 // Return the result on the main thread after the session starts.
-                var width = Double(dimensions.width)
-                var height = Double(dimensions.height)
+                var width = Double(dimensions.height)
+                var height = Double(dimensions.width)
 
-#if os(iOS)
-                // Swap width and height if the image is in portrait mode
-                if orientation == AVCaptureVideoOrientation.portrait || orientation == AVCaptureVideoOrientation.portraitUpsideDown {
-                    let temp = width
-                    width = height
-                    height = temp
-                }
-#endif
+//#if os(iOS)
+//                // Swap width and height if the image is in portrait mode
+//                if orientation == AVCaptureVideoOrientation.portrait || orientation == AVCaptureVideoOrientation.portraitUpsideDown {
+//                    let temp = width
+//                    width = height
+//                    height = temp
+//                }
+//#endif
 
                 // Turn on the torch if requested.
                 if (torch) {
