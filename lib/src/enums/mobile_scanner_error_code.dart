@@ -58,7 +58,6 @@ enum MobileScannerErrorCode {
     }
   }
 
-
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].
   factory MobileScannerErrorCode.fromPlatformException(
     PlatformException exception,
