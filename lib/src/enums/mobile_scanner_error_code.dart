@@ -25,7 +25,19 @@ enum MobileScannerErrorCode {
   permissionDenied,
 
   /// Scanning is unsupported on the current device.
-  unsupported;
+  unsupported,
+
+  /// The controller is currently initializing.
+  ///
+  /// This error occurs when [MobileScannerController.start] is called while
+  /// a previous initialization is still in progress.
+  ///
+  /// To avoid this error:
+  /// - Ensure that [MobileScannerController.start] is awaited before calling it again.
+  /// - Alternatively, disable automatic initialization by setting
+  ///   [MobileScannerController.autoStart] to `false` if you plan to manually
+  ///   start the camera.
+  controllerInitializing;
 
   String get message {
     switch (this) {
@@ -39,10 +51,13 @@ enum MobileScannerErrorCode {
         return 'The MobileScannerController is already running. Stop it before starting again.';
       case MobileScannerErrorCode.controllerDisposed:
         return 'The MobileScannerController was used after it was disposed.';
+      case MobileScannerErrorCode.controllerInitializing:
+        return 'The MobileScannerController is still initializing. Await the previous call to start() or disable autoStart before starting manually.';
       case MobileScannerErrorCode.genericError:
         return 'An unexpected error occurred.';
     }
   }
+
 
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].
   factory MobileScannerErrorCode.fromPlatformException(
