@@ -1,3 +1,6 @@
+## 6.0.10
+* [Apple] Fixed a crash when stopping the camera when the camera device is nil.
+
 ## 6.0.9
 Fixed onDetect not working when a `MobileScannerController` is provided.
 

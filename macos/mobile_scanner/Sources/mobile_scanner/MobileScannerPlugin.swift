@@ -481,6 +481,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
 
+        guard let device = device else {
+            return
+        }
+
         captureSession.stopRunning()
         for input in captureSession.inputs {
             captureSession.removeInput(input)
@@ -492,7 +496,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         latestBuffer = nil
         self.captureSession = nil
-        device = nil
+        self.device = nil
     }
 
     private func releaseTexture() {
