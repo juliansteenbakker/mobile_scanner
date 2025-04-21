@@ -39,6 +39,7 @@ enum MobileScannerErrorCode {
   ///   start the camera.
   controllerInitializing;
 
+  /// Returns a human-readable error message for the given [MobileScannerErrorCode].
   String get message {
     switch (this) {
       case MobileScannerErrorCode.controllerUninitialized:
