@@ -288,12 +288,16 @@ class _MobileScannerState extends State<MobileScanner>
 
     if (widget.controller == null) {
       WidgetsBinding.instance.addObserver(this);
+    }
+
+    if (widget.onDetect != null) {
       _subscription = controller.barcodes.listen(
         widget.onDetect,
         onError: widget.onDetectError,
         cancelOnError: false,
       );
     }
+
     if (controller.autoStart) {
       await controller.start();
     }
