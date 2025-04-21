@@ -324,8 +324,11 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
     }
 
     private func releaseCamera() {
-
         guard let captureSession = captureSession else {
+            return
+        }
+        
+        guard let device = device else {
             return
         }
 
@@ -341,7 +344,7 @@ public class MobileScanner: NSObject, AVCaptureVideoDataOutputSampleBufferDelega
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
         device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
         self.captureSession = nil
-        device = nil
+        self.device = nil
     }
 
     private func releaseTexture() {
