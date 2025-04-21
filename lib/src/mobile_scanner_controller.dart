@@ -3,12 +3,14 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -30,17 +32,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.torchEnabled = false,
     this.invertImage = false,
     this.autoZoom = false,
-  })  : detectionTimeoutMs =
-            detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
-        assert(
-          detectionTimeoutMs >= 0,
-          'The detection timeout must be greater than or equal to 0.',
-        ),
-        assert(
-          facing != CameraFacing.unknown,
-          'CameraFacing.unknown is not a valid camera direction.',
-        ),
-        super(const MobileScannerState.uninitialized());
+  }) : detectionTimeoutMs =
+           detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
+       assert(
+         detectionTimeoutMs >= 0,
+         'The detection timeout must be greater than or equal to 0.',
+       ),
+       assert(
+         facing != CameraFacing.unknown,
+         'CameraFacing.unknown is not a valid camera direction.',
+       ),
+       super(const MobileScannerState.uninitialized());
 
   /// The desired resolution for the camera.
   ///
@@ -120,6 +122,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<BarcodeCapture?>? _barcodesSubscription;
   StreamSubscription<TorchState>? _torchStateSubscription;
   StreamSubscription<double>? _zoomScaleSubscription;
+  StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
   bool _isDisposed = false;
 
@@ -127,50 +130,65 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     _barcodesSubscription?.cancel();
     _torchStateSubscription?.cancel();
     _zoomScaleSubscription?.cancel();
+    _deviceOrientationSubscription?.cancel();
 
     _barcodesSubscription = null;
     _torchStateSubscription = null;
     _zoomScaleSubscription = null;
+    _deviceOrientationSubscription = null;
   }
 
   void _setupListeners() {
-    _barcodesSubscription =
-        MobileScannerPlatform.instance.barcodesStream.listen(
-      (BarcodeCapture? barcode) {
-        if (_barcodesController.isClosed || barcode == null) {
-          return;
-        }
+    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
+        .listen(
+          (BarcodeCapture? barcode) {
+            if (_barcodesController.isClosed || barcode == null) {
+              return;
+            }
 
-        _barcodesController.add(barcode);
-      },
-      onError: (Object error) {
-        if (_barcodesController.isClosed) {
-          return;
-        }
+            _barcodesController.add(barcode);
+          },
+          onError: (Object error) {
+            if (_barcodesController.isClosed) {
+              return;
+            }
 
-        _barcodesController.addError(error);
-      },
-      // Errors are handled gracefully by forwarding them.
-      cancelOnError: false,
-    );
+            _barcodesController.addError(error);
+          },
+          // Errors are handled gracefully by forwarding them.
+          cancelOnError: false,
+        );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(torchState: torchState);
-    });
+          value = value.copyWith(torchState: torchState);
+        });
 
     _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
         .listen((double zoomScale) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(zoomScale: zoomScale);
-    });
+          value = value.copyWith(zoomScale: zoomScale);
+        });
+
+    if (MobileScannerPlatform.instance
+        case final MethodChannelMobileScanner implementation) {
+      _deviceOrientationSubscription = implementation
+          .deviceOrientationChangedStream
+          .listen((DeviceOrientation orientation) {
+            if (_isDisposed) {
+              return;
+            }
+
+            value = value.copyWith(deviceOrientation: orientation);
+          });
+    }
   }
 
   void _throwIfNotInitialized() {
@@ -212,9 +230,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: oldTorchState == TorchState.unavailable
-          ? TorchState.unavailable
-          : TorchState.off,
+      torchState:
+          oldTorchState == TorchState.unavailable
+              ? TorchState.unavailable
+              : TorchState.off,
     );
     return true;
   }
@@ -335,9 +354,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       _setupListeners();
 
       final MobileScannerViewAttributes viewAttributes =
-          await MobileScannerPlatform.instance.start(
-        options,
-      );
+          await MobileScannerPlatform.instance.start(options);
 
       if (!_isDisposed) {
         value = value.copyWith(
@@ -346,6 +363,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           isInitialized: true,
           isRunning: true,
           size: viewAttributes.size,
+          deviceOrientation: viewAttributes.initialDeviceOrientation,
           // Provide the current torch state.
           // Updates are provided by the `torchStateStream`.
           torchState: viewAttributes.currentTorchMode,

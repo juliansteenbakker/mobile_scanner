@@ -354,6 +354,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,
+      initialDeviceOrientation: _surfaceProducerDelegate?.initialDeviceOrientation,
     );
   }
 
