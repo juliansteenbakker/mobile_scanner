@@ -1,11 +1,14 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
+import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 import 'package:mobile_scanner/src/scan_window_calculation.dart';
 
 /// This widget displays a live camera preview for the barcode scanner.
@@ -141,7 +144,7 @@ class MobileScanner extends StatefulWidget {
 
 class _MobileScannerState extends State<MobileScanner>
     with WidgetsBindingObserver {
-  late final controller = widget.controller ?? MobileScannerController();
+  late final MobileScannerController controller;
 
   /// The current scan window.
   Rect? scanWindow;
@@ -218,12 +221,8 @@ class _MobileScannerState extends State<MobileScanner>
         }
 
         final MobileScannerException? error = value.error;
-
         if (error != null) {
-          const Widget defaultError = ColoredBox(
-            color: Colors.black,
-            child: Center(child: Icon(Icons.error, color: Colors.white)),
-          );
+          final Widget defaultError = ScannerErrorWidget(error: error);
 
           return widget.errorBuilder?.call(context, error) ?? defaultError;
         }
@@ -268,37 +267,52 @@ class _MobileScannerState extends State<MobileScanner>
 
   StreamSubscription? _subscription;
 
-  @override
-  void initState() {
-    if (widget.onDetect != null) {
+  Future<void> initMobileScanner() async {
+    // If debug mode is enabled, stop the controller first before starting it.
+    // If a hot-restart is initiated, the controller won't be stopped, and because
+    // there is no way of knowing if a hot-restart has happened, we must assume
+    // every start is a hot-restart. Related issue:
+    // https://github.com/flutter/flutter/issues/10437
+    if (kDebugMode) {
+      if (MobileScannerPlatform.instance
+          case final MethodChannelMobileScanner implementation) {
+        try {
+          await implementation.stop(force: true);
+        } catch (e) {
+          // Don't do anything if the controller is already stopped.
+          debugPrint('$e');
+        }
+      }
+    }
+
+    if (widget.controller == null) {
       WidgetsBinding.instance.addObserver(this);
+    }
+
+    if (widget.onDetect != null) {
       _subscription = controller.barcodes.listen(
         widget.onDetect,
         onError: widget.onDetectError,
         cancelOnError: false,
       );
     }
+
     if (controller.autoStart) {
-      controller.start();
+      await controller.start();
     }
-    super.initState();
   }
 
-  @override
-  Future<void> dispose() async {
-    super.dispose();
-    WidgetsBinding.instance.removeObserver(this);
-
-    if (_subscription != null) {
-      await _subscription!.cancel();
-      _subscription = null;
+  Future<void> disposeMobileScanner() async {
+    if (widget.controller == null) {
+      WidgetsBinding.instance.removeObserver(this);
     }
+
+    await _subscription?.cancel();
+    _subscription = null;
 
     if (controller.autoStart) {
       await controller.stop();
     }
-    // When this widget is unmounted, reset the scan window.
-    await controller.updateScanWindow(null);
 
     // Dispose default controller if not provided by user
     if (widget.controller == null) {
@@ -307,9 +321,21 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
+  void initState() {
+    super.initState();
+    controller = widget.controller ?? MobileScannerController();
+    unawaited(initMobileScanner());
+  }
+
+  @override
+  Future<void> dispose() async {
+    super.dispose();
+    unawaited(disposeMobileScanner());
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (!widget.useAppLifecycleState ||
-        widget.controller != null ||
         !controller.value.hasCameraPermission) {
       return;
     }
@@ -320,16 +346,8 @@ class _MobileScannerState extends State<MobileScanner>
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        _subscription = controller.barcodes.listen(
-          widget.onDetect,
-          onError: widget.onDetectError,
-          cancelOnError: false,
-        );
-
-        controller.start();
+        unawaited(controller.start());
       case AppLifecycleState.inactive:
-        unawaited(_subscription?.cancel());
-        _subscription = null;
         unawaited(controller.stop());
     }
   }
