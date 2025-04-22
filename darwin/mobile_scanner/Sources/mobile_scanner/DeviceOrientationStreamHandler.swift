@@ -6,8 +6,9 @@
 //
 
 
-import Flutter
-import UIKit
+#if os(iOS)
+  import Flutter
+  import UIKit
 
 class DeviceOrientationStreamHandler: NSObject, FlutterStreamHandler {
     
@@ -60,26 +61,10 @@ class DeviceOrientationStreamHandler: NSObject, FlutterStreamHandler {
         if (onOrientationChanged != nil) {
             onOrientationChanged!(orientation)
         }
-        
-        var orientationString: String
-        
-        switch orientation {
-        case .portrait:
-            orientationString = "PORTRAIT_UP"
-        case .portraitUpsideDown:
-            orientationString = "PORTRAIT_DOWN"
-        case .landscapeLeft:
-            orientationString = "LANDSCAPE_LEFT"
-        case .landscapeRight:
-            orientationString = "LANDSCAPE_RIGHT"
-        case .faceUp:
-            orientationString = "PORTRAIT_UP"
-        case .faceDown:
-            orientationString = "PORTRAIT_DOWN"
-        default:
-            orientationString = "PORTRAIT_UP"
-        }
 
+        let orientationString = orientation.toOrientationString
         sink(orientationString)
     }
 }
+
+#endif

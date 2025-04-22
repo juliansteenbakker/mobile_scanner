@@ -45,6 +45,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     var position = AVCaptureDevice.Position.back
     
+    var standardZoomFactor: CGFloat = 1
+    
+#if os(iOS)
+    var deviceOrientation: UIDeviceOrientation = UIDeviceOrientation.unknown
+#endif
+    
     private var stopped: Bool {
         return device == nil || captureSession == nil
     }
@@ -53,21 +59,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         return stopped && textureId != nil
     }
 
-    var standardZoomFactor: CGFloat = 1
-    
-    var deviceOrientation: UIDeviceOrientation = UIDeviceOrientation.unknown
-    var deviceVideoOrientation: AVCaptureVideoOrientation = AVCaptureVideoOrientation.landscapeRight
-
     public static func register(with registrar: FlutterPluginRegistrar) {
 #if os(iOS)
         let textures = registrar.textures()
-#else
-        let textures = registrar.textures
-#endif
-
-#if os(iOS)
         let messenger = registrar.messenger()
 #else
+        let textures = registrar.textures
         let messenger = registrar.messenger
 #endif
 
@@ -76,12 +73,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                                             "dev.steenbakker.mobile_scanner/scanner/method", binaryMessenger: messenger)
         let event = FlutterEventChannel(name:
                                             "dev.steenbakker.mobile_scanner/scanner/event", binaryMessenger: messenger)
-        let orientationEvent = FlutterEventChannel(name:
-                                            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation", binaryMessenger: messenger)
 
         registrar.addMethodCallDelegate(instance, channel: method)
         event.setStreamHandler(instance)
+        
+#if os(iOS)
+        let orientationEvent = FlutterEventChannel(name:
+                                            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation", binaryMessenger: messenger)
         orientationEvent.setStreamHandler(DeviceOrientationStreamHandler(onOrientationChanged: instance.setDeviceOrientation))
+#endif
     }
     
     init(_ registry: FlutterTextureRegistry) {
@@ -285,24 +285,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
-    /// Converts UIDeviceOrientation to correct VideoOrientation
-    func getVideoOrientationForDeviceOrientation(for deviceOrientation: UIDeviceOrientation) -> AVCaptureVideoOrientation {
-        switch deviceOrientation {
-        case .portrait:
-            return .portrait
-        case .landscapeLeft:
-            // Device's landscape left is video’s landscape right
-            return .landscapeRight
-        case .landscapeRight:
-            // Device's landscape right is video’s landscape left
-            return .landscapeLeft
-        case .portraitUpsideDown:
-            return .portraitUpsideDown
-        default:
-            return .portrait
-        }
-    }
-    
     private func getVideoOrientation() -> AVCaptureVideoOrientation {
 #if os(iOS)
         // Get the orientation from the window scene if available
@@ -436,7 +418,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession!.addOutput(videoOutput)
-        deviceVideoOrientation = self.getVideoOrientation()
+        let deviceVideoOrientation = self.getVideoOrientation()
         
 
         // Adjust orientation for the video connection
@@ -490,6 +472,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         "size": size,
                         "currentTorchState": device.hasTorch ? device.torchMode.rawValue : -1,
                         "cameraDirection": cameraDirection,
+                        "initialDeviceOrientation": deviceVideoOrientation.toOrientationString
                     ]
                 } else {
                     answer = [
@@ -596,31 +579,29 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     }
     
+#if os(iOS)
     /// Set the device orientation if it differs from previous orientation
     func setDeviceOrientation(orientation: UIDeviceOrientation) {
-        if (device == nil) {
+        if (device == nil || deviceOrientation == orientation) {
             return
         }
 
-        if deviceOrientation == orientation {
-            return
-        }
-        
         deviceOrientation = orientation
         updateOrientation(orientation: orientation)
     }
-    
+
     /// Update the device orientation of the first open video output
     func updateOrientation(orientation: UIDeviceOrientation) {
         if let videoOutput = captureSession!.outputs.compactMap({ $0 as? AVCaptureVideoDataOutput }).first {
             for connection in videoOutput.connections {
                 if connection.isVideoOrientationSupported {
-                    connection.videoOrientation = getVideoOrientationForDeviceOrientation(for: orientation)
+                    connection.videoOrientation = orientation.videoOrientation
                 }
             }
         }
     }
-
+    
+#endif
 
     /// Reset the zoom factor of the camera
     func resetScaleInternal() throws {
@@ -750,9 +731,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         for output in captureSession.outputs {
             captureSession.removeOutput(output)
         }
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+        device?.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
 #if os(iOS)
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+        device?.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
 #endif
 
         latestBuffer = nil
@@ -1107,3 +1088,62 @@ extension VNBarcodeSymbology {
         }
     }
 }
+
+extension AVCaptureVideoOrientation {
+    var toOrientationString: String {
+        switch self {
+        case .portrait:
+            return "PORTRAIT_UP"
+        case .portraitUpsideDown:
+            return "PORTRAIT_DOWN"
+        case .landscapeLeft:
+            return "LANDSCAPE_LEFT"
+        case .landscapeRight:
+            return "LANDSCAPE_RIGHT"
+        default:
+            return "PORTRAIT_UP"
+        }
+    }
+}
+
+#if os(iOS)
+extension UIDeviceOrientation {
+    var toOrientationString: String {
+        switch self {
+        case .portrait:
+            return "PORTRAIT_UP"
+        case .portraitUpsideDown:
+            return "PORTRAIT_DOWN"
+        case .landscapeLeft:
+            return "LANDSCAPE_LEFT"
+        case .landscapeRight:
+            return "LANDSCAPE_RIGHT"
+        case .faceUp:
+            return "PORTRAIT_UP"
+        case .faceDown:
+            return "PORTRAIT_DOWN"
+        default:
+            return "PORTRAIT_UP"
+        }
+    }
+    
+    /// Converts UIDeviceOrientation to correct VideoOrientation
+    var videoOrientation: AVCaptureVideoOrientation {
+        switch self {
+        case .portrait:
+            return .portrait
+        case .landscapeLeft:
+            return .landscapeRight
+        case .landscapeRight:
+            return .landscapeLeft
+        case .portraitUpsideDown:
+            return .portraitUpsideDown
+        default:
+            return .portrait
+        }
+    }
+}
+#endif
+
+
+

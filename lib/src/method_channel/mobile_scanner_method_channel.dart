@@ -325,12 +325,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     _textureId = textureId;
 
+    DeviceOrientation? initialDeviceOrientation;
+
     if (defaultTargetPlatform == TargetPlatform.android) {
       _surfaceProducerDelegate =
           AndroidSurfaceProducerDelegate.fromConfiguration(
         startResult,
         cameraDirection,
       );
+      initialDeviceOrientation = _surfaceProducerDelegate?.initialDeviceOrientation;
+    } else if (defaultTargetPlatform == TargetPlatform.iOS) {
+      if (startResult['initialDeviceOrientation']
+      case final String orientation) {
+        initialDeviceOrientation = orientation.parseDeviceOrientation();
+      }
     }
 
     final int? numberOfCameras = startResult['numberOfCameras'] as int?;
@@ -354,7 +362,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       currentTorchMode: currentTorchState,
       numberOfCameras: numberOfCameras,
       size: size,
-      initialDeviceOrientation: _surfaceProducerDelegate?.initialDeviceOrientation,
+      initialDeviceOrientation: initialDeviceOrientation,
     );
   }
 
