@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mocktail/mocktail.dart';
 
 /// Mocks
@@ -16,6 +17,7 @@ void main() {
   late StreamController<BarcodeCapture> barcodeStreamController;
 
   setUp(() {
+    MobileScannerPlatform.instance = MockMethodChannelMobileScanner();
     mockController = MockMobileScannerController();
     barcodeStreamController = StreamController<BarcodeCapture>.broadcast();
 
@@ -168,4 +170,12 @@ void main() {
   //     verify(() => mockController.updateScanWindow(scanWindow)).called(1);
   //   });
   // });
+}
+
+class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
+  @override
+  Future<void> stop({bool force = false}) async {
+    // Do nothing instead of calling platform code
+    debugPrint('Mock stop called with force: $force');
+  }
 }
