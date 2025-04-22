@@ -7,9 +7,25 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mocktail/mocktail.dart';
 
-/// Mocks
 class MockMobileScannerController extends Mock
-    implements MobileScannerController {}
+    implements MobileScannerController {
+  @override
+  Widget buildCameraView() {
+    return const Placeholder(
+      fallbackHeight: 100,
+      fallbackWidth: 100,
+      color: Color(0xFF00FF00),
+    );
+  }
+}
+
+class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
+  @override
+  Future<void> stop({bool force = false}) async {
+    // Do nothing instead of calling platform code
+    debugPrint('Mock stop called with force: $force');
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -175,12 +191,4 @@ void main() {
   //     verify(() => mockController.updateScanWindow(scanWindow)).called(1);
   //   });
   // });
-}
-
-class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
-  @override
-  Future<void> stop({bool force = false}) async {
-    // Do nothing instead of calling platform code
-    debugPrint('Mock stop called with force: $force');
-  }
 }
