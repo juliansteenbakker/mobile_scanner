@@ -13,9 +13,7 @@ void main() {
       for (final MapEntry<int, MobileScannerAuthorizationState> entry
           in values.entries) {
         final MobileScannerAuthorizationState result =
-            MobileScannerAuthorizationState.fromRawValue(
-          entry.key,
-        );
+            MobileScannerAuthorizationState.fromRawValue(entry.key);
 
         expect(result, entry.value);
       }

@@ -1,10 +1,7 @@
 /// GPS coordinates from a `GEO:` or similar QRCode type.
 class GeoPoint {
   /// Construct a new [GeoPoint] instance.
-  const GeoPoint({
-    required this.latitude,
-    required this.longitude,
-  });
+  const GeoPoint({required this.latitude, required this.longitude});
 
   /// Construct a [GeoPoint] from the given [data].
   ///
