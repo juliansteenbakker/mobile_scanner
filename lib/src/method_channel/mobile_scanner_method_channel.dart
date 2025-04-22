@@ -125,8 +125,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// If the error is not a [PlatformException],
   /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
   Never _parseBarcodeError(Object error, StackTrace stackTrace) {
-    if (error case PlatformException(:final String code, :final String? message)
-        when code == kBarcodeErrorEventName) {
+    if (error case PlatformException(
+      :final String code,
+      :final String? message,
+    ) when code == kBarcodeErrorEventName) {
       throw MobileScannerBarcodeException(message);
     }
 
@@ -140,8 +142,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     try {
       final MobileScannerAuthorizationState authorizationState =
           MobileScannerAuthorizationState.fromRawValue(
-        await methodChannel.invokeMethod<int>('state') ?? 0,
-      );
+            await methodChannel.invokeMethod<int>('state') ?? 0,
+          );
 
       switch (authorizationState) {
         // Authorization was already granted, no need to request it again.
@@ -203,19 +205,17 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
   }) async {
     try {
-      final Map<Object?, Object?>? result =
-          await methodChannel.invokeMapMethod<Object?, Object?>(
-        'analyzeImage',
-        {
-          'filePath': path,
-          'formats': formats.isEmpty
-              ? null
-              : [
-                  for (final BarcodeFormat format in formats)
-                    if (format != BarcodeFormat.unknown) format.rawValue,
-                ],
-        },
-      );
+      final Map<Object?, Object?>? result = await methodChannel
+          .invokeMapMethod<Object?, Object?>('analyzeImage', {
+            'filePath': path,
+            'formats':
+                formats.isEmpty
+                    ? null
+                    : [
+                      for (final BarcodeFormat format in formats)
+                        if (format != BarcodeFormat.unknown) format.rawValue,
+                    ],
+          });
 
       return _parseBarcode(result);
     } on PlatformException catch (error) {
@@ -320,8 +320,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       );
     }
 
-    final CameraFacing cameraDirection =
-        CameraFacing.fromRawValue(startResult['cameraDirection'] as int?);
+    final CameraFacing cameraDirection = CameraFacing.fromRawValue(
+      startResult['cameraDirection'] as int?,
+    );
 
     _textureId = textureId;
 
@@ -348,8 +349,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     final Size size;
 
-    if (startResult['size']
-        case {'width': final double width, 'height': final double height}) {
+    if (startResult['size'] case {
+      'width': final double width,
+      'height': final double height,
+    }) {
       size = Size(width, height);
     } else {
       size = Size.zero;
@@ -407,10 +410,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       points = [window.left, window.top, window.right, window.bottom];
     }
 
-    await methodChannel.invokeMethod<void>(
-      'updateScanWindow',
-      {'rect': points},
-    );
+    await methodChannel.invokeMethod<void>('updateScanWindow', {
+      'rect': points,
+    });
   }
 
   @override

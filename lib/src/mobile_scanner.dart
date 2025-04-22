@@ -251,10 +251,7 @@ class _MobileScannerState extends State<MobileScanner>
 
             return Stack(
               alignment: Alignment.center,
-              children: <Widget>[
-                scannerWidget,
-                overlay,
-              ],
+              children: <Widget>[scannerWidget, overlay],
             );
           },
         );
@@ -332,8 +329,7 @@ class _MobileScannerState extends State<MobileScanner>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!widget.useAppLifecycleState ||
-        !controller.value.hasCameraPermission) {
+    if (!widget.useAppLifecycleState || !controller.value.hasCameraPermission) {
       return;
     }
 
