@@ -26,10 +26,7 @@ class ScannerErrorWidget extends StatelessWidget {
               style: const TextStyle(color: Colors.white),
             ),
             if (error.errorDetails?.message case final String message)
-              Text(
-                message,
-                style: const TextStyle(color: Colors.white),
-              ),
+              Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
       ),

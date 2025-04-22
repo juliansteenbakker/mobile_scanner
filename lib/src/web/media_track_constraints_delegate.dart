@@ -22,14 +22,11 @@ final class MediaTrackConstraintsDelegate {
 
   /// Convert the given [cameraDirection] into a facing mode string,
   /// that is suitable as a MediaTrack constraint.
-  String getFacingMode(
-    CameraFacing cameraDirection,
-  ) {
+  String getFacingMode(CameraFacing cameraDirection) {
     return switch (cameraDirection) {
       CameraFacing.back ||
       CameraFacing.external ||
-      CameraFacing.unknown =>
-        'environment',
+      CameraFacing.unknown => 'environment',
       CameraFacing.front => 'user',
     };
   }
@@ -47,10 +44,7 @@ final class MediaTrackConstraintsDelegate {
     final MediaTrackSettings settings = track.getSettings();
 
     if (settings.facingModeNullable == null) {
-      return MediaTrackSettings(
-        width: settings.width,
-        height: settings.height,
-      );
+      return MediaTrackSettings(width: settings.width, height: settings.height);
     }
 
     return MediaTrackSettings(

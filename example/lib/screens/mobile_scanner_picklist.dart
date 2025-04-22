@@ -102,8 +102,8 @@ class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
             children: [
               MobileScanner(
                 controller: _mobileScannerController,
-                errorBuilder: (context, error) =>
-                    ScannerErrorWidget(error: error),
+                errorBuilder:
+                    (context, error) => ScannerErrorWidget(error: error),
                 fit: BoxFit.contain,
               ),
               CrosshairWidget(_scannerEnabled),

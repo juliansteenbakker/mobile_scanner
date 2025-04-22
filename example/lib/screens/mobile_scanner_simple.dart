@@ -44,9 +44,7 @@ class _MobileScannerSimpleState extends State<MobileScannerSimple> {
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          MobileScanner(
-            onDetect: _handleBarcode,
-          ),
+          MobileScanner(onDetect: _handleBarcode),
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(

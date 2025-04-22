@@ -69,9 +69,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45
     hints.set(
       2.toJS,
-      [
-        for (final BarcodeFormat format in formats) format.toJS,
-      ].toJS,
+      [for (final BarcodeFormat format in formats) format.toJS].toJS,
     );
 
     return hints;
@@ -86,16 +84,18 @@ final class ZXingBarcodeReader extends BarcodeReader {
     web.HTMLVideoElement videoElement,
     web.MediaStream videoStream,
   ) async {
-    final JSPromise? result = _reader?.attachStreamToVideo.callAsFunction(
-      _reader,
-      videoStream,
-      videoElement,
-    ) as JSPromise?;
+    final JSPromise? result =
+        _reader?.attachStreamToVideo.callAsFunction(
+              _reader,
+              videoStream,
+              videoElement,
+            )
+            as JSPromise?;
 
     await result?.toDart;
 
-    final web.MediaTrackSettings? settings =
-        _mediaTrackConstraintsDelegate.getSettings(videoStream);
+    final web.MediaTrackSettings? settings = _mediaTrackConstraintsDelegate
+        .getSettings(videoStream);
 
     if (settings != null) {
       _onMediaTrackSettingsChanged?.call(settings);
@@ -123,10 +123,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
           if (result != null) {
             controller.add(
-              BarcodeCapture(
-                barcodes: [result.toBarcode],
-                size: videoSize,
-              ),
+              BarcodeCapture(barcodes: [result.toBarcode], size: videoSize),
             );
           }
         }.toJS,
