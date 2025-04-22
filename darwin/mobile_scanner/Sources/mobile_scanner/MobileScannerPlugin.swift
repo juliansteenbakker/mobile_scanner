@@ -352,8 +352,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         timeoutSeconds = Double(timeoutMs) / 1000.0
         detectionSpeed = DetectionSpeed(rawValue: speed)!
 
-        // Set the camera to use
+        // Set the camera to use. In macOS only a front camera is available.
+#if os(iOS)
         position = facing == 0 ? AVCaptureDevice.Position.front : .back
+#else
+        position = AVCaptureDevice.Position.front
+#endif
         
         // Open the camera device
         if #available(macOS 10.15, *) {

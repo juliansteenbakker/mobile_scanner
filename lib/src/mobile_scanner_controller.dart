@@ -3,6 +3,7 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
@@ -177,17 +178,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           value = value.copyWith(zoomScale: zoomScale);
         });
 
-    if (MobileScannerPlatform.instance
-        case final MethodChannelMobileScanner implementation) {
-      _deviceOrientationSubscription = implementation
-          .deviceOrientationChangedStream
-          .listen((DeviceOrientation orientation) {
-            if (_isDisposed) {
-              return;
-            }
+    if (defaultTargetPlatform != TargetPlatform.macOS) {
+      if (MobileScannerPlatform.instance
+          case final MethodChannelMobileScanner implementation) {
+        _deviceOrientationSubscription = implementation
+            .deviceOrientationChangedStream
+            .listen((DeviceOrientation orientation) {
+              if (_isDisposed) {
+                return;
+              }
 
-            value = value.copyWith(deviceOrientation: orientation);
-          });
+              value = value.copyWith(deviceOrientation: orientation);
+            });
+      }
     }
   }
 
