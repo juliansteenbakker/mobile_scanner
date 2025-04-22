@@ -83,10 +83,7 @@ class _BarcodeOverlayState extends State<BarcodeOverlay> {
                   ),
             ];
 
-            return Stack(
-              fit: StackFit.expand,
-              children: overlays,
-            );
+            return Stack(fit: StackFit.expand, children: overlays);
           },
         );
       },

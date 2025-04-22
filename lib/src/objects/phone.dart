@@ -3,10 +3,7 @@ import 'package:mobile_scanner/src/enums/phone_type.dart';
 /// Phone number information from a barcode.
 class Phone {
   /// Construct a new [Phone] instance.
-  const Phone({
-    this.number,
-    this.type = PhoneType.unknown,
-  });
+  const Phone({this.number, this.type = PhoneType.unknown});
 
   /// Create a [Phone] from the given [data].
   factory Phone.fromNative(Map<Object?, Object?> data) {
