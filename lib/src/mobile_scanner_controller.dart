@@ -338,6 +338,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
+    if (value.isStarting) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerInitializing,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerInitializing.message,
+        ),
+      );
+    }
+
+    if (!_isDisposed) {
+      value = value.copyWith(isStarting: true);
+    }
+
     final StartOptions options = StartOptions(
       cameraDirection: cameraDirection ?? facing,
       cameraResolution: cameraResolution,
@@ -361,6 +374,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           availableCameras: viewAttributes.numberOfCameras,
           cameraDirection: viewAttributes.cameraDirection,
           isInitialized: true,
+          isStarting: false,
           isRunning: true,
           size: viewAttributes.size,
           deviceOrientation: viewAttributes.initialDeviceOrientation,
@@ -377,6 +391,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         value = value.copyWith(
           cameraDirection: CameraFacing.unknown,
           isInitialized: true,
+          isStarting: false,
           isRunning: false,
           error: error,
           size: Size.zero,
