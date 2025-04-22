@@ -23,12 +23,11 @@ class AndroidSurfaceProducerDelegate {
     Map<String, Object?> config,
     CameraFacing cameraDirection,
   ) {
-    if (config
-        case {
-          'handlesCropAndRotation': final bool handlesCropAndRotation,
-          'naturalDeviceOrientation': final String naturalDeviceOrientation,
-          'sensorOrientation': final int sensorOrientation,
-        }) {
+    if (config case {
+      'handlesCropAndRotation': final bool handlesCropAndRotation,
+      'naturalDeviceOrientation': final String naturalDeviceOrientation,
+      'sensorOrientation': final int sensorOrientation,
+    }) {
       final DeviceOrientation naturalOrientation =
           naturalDeviceOrientation.parseDeviceOrientation();
 

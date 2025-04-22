@@ -27,6 +27,7 @@ enum MobileScannerErrorCode {
   /// Scanning is unsupported on the current device.
   unsupported;
 
+  /// Get the human-readable message for the error code.
   String get message {
     switch (this) {
       case MobileScannerErrorCode.controllerUninitialized:

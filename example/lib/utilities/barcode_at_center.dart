@@ -13,10 +13,7 @@ Barcode? findBarcodeAtCenter(
   final imageSize = _fixPortraitLandscape(barcodeCapture.size, orientation);
   for (final barcode in barcodeCapture.barcodes) {
     final corners = _fixCorners(barcode.corners);
-    if (_isPolygonTouchingTheCenter(
-      imageSize: imageSize,
-      polygon: corners,
-    )) {
+    if (_isPolygonTouchingTheCenter(imageSize: imageSize, polygon: corners)) {
       return barcode;
     }
   }
@@ -33,10 +30,7 @@ bool _isPolygonTouchingTheCenter({
     imageSize.width / 2,
     imageSize.height / 2,
   );
-  return _isPointInPolygon(
-    point: centerOfCameraOutput,
-    polygon: polygon,
-  );
+  return _isPointInPolygon(point: centerOfCameraOutput, polygon: polygon);
 }
 
 /// Credits to chatGPT:
@@ -51,13 +45,11 @@ bool _isPolygonTouchingTheCenter({
 ///   otherwise.
 ///
 /// Uses the ray-casting algorithm based on the Jordan curve theorem.
-bool _isPointInPolygon({
-  required Offset point,
-  required List<Offset> polygon,
-}) {
+bool _isPointInPolygon({required Offset point, required List<Offset> polygon}) {
   // Initial variables:
   int i; // Loop variable for current vertex
-  var j = polygon.length -
+  var j =
+      polygon.length -
       1; // Last vertex index, initialized to the last vertex of the polygon
   var inside = false; // Boolean flag initialized to false
 
@@ -85,10 +77,7 @@ bool _isPointInPolygon({
   return inside;
 }
 
-Size _fixPortraitLandscape(
-  Size imageSize,
-  DeviceOrientation orientation,
-) {
+Size _fixPortraitLandscape(Size imageSize, DeviceOrientation orientation) {
   switch (orientation) {
     case DeviceOrientation.portraitUp:
     case DeviceOrientation.portraitDown:
@@ -101,15 +90,14 @@ Size _fixPortraitLandscape(
 
 List<Offset> _fixCorners(List<Offset> corners) {
   // Clone the original list to avoid side-effects
-  final sorted = List<Offset>.from(corners)
-    ..sort((a, b) {
-      // Prioritize y-axis (dy), and within that, the x-axis (dx)
-      var compare = a.dy.compareTo(b.dy);
-      if (compare == 0) {
-        compare = a.dx.compareTo(b.dx);
-      }
-      return compare;
-    });
+  final sorted = List<Offset>.from(corners)..sort((a, b) {
+    // Prioritize y-axis (dy), and within that, the x-axis (dx)
+    var compare = a.dy.compareTo(b.dy);
+    if (compare == 0) {
+      compare = a.dx.compareTo(b.dx);
+    }
+    return compare;
+  });
 
   final topLeft = sorted.first; // smallest x, smallest y
   final topRight = sorted[1]; // larger x, smaller y
