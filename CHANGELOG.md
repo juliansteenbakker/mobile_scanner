@@ -115,6 +115,9 @@ Known issues:
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
 
+## 6.0.9
+Fixed onDetect not working when a `MobileScannerController` is provided.
+
 ## 6.0.8
 Improvements:
 * [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.

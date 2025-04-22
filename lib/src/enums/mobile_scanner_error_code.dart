@@ -27,6 +27,7 @@ enum MobileScannerErrorCode {
   /// Scanning is unsupported on the current device.
   unsupported,
 
+  /// Get the human-readable message for the error code.
   /// The controller is currently initializing.
   ///
   /// This error occurs when [MobileScannerController.start] is called while
