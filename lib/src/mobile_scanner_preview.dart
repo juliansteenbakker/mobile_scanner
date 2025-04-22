@@ -24,16 +24,20 @@ class CameraPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return controller.value.isInitialized
         ? ValueListenableBuilder<MobileScannerState>(
-            valueListenable: controller,
-            builder: (BuildContext context, MobileScannerState value, Widget? child) {
-              final bool isLandscape =  _isLandscape();
-              return SizedBox(
-                width: isLandscape ? value.size.height : value.size.width,
-                height: isLandscape ? value.size.width : value.size.height,
-                child: _wrapInRotatedBox(child: controller.buildCameraView()),
-              );
-            },
-          )
+          valueListenable: controller,
+          builder: (
+            BuildContext context,
+            MobileScannerState value,
+            Widget? child,
+          ) {
+            final bool isLandscape = _isLandscape();
+            return SizedBox(
+              width: isLandscape ? value.size.height : value.size.width,
+              height: isLandscape ? value.size.width : value.size.height,
+              child: _wrapInRotatedBox(child: controller.buildCameraView()),
+            );
+          },
+        )
         : const SizedBox();
   }
 
@@ -41,11 +45,8 @@ class CameraPreview extends StatelessWidget {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return child;
     }
-    final turns =  _getQuarterTurns();
-    return RotatedBox(
-      quarterTurns: turns,
-      child: child,
-    );
+    final turns = _getQuarterTurns();
+    return RotatedBox(quarterTurns: turns, child: child);
   }
 
   bool _isLandscape() {

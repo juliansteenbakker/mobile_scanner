@@ -232,8 +232,10 @@ class _MobileScannerState extends State<MobileScanner>
           builder: (context, constraints) {
             _maybeUpdateScanWindow(value, constraints);
 
-            final Widget? overlay =
-                widget.overlayBuilder?.call(context, constraints);
+            final Widget? overlay = widget.overlayBuilder?.call(
+              context,
+              constraints,
+            );
 
             final Widget scannerWidget = ClipRect(
               child: SizedBox.fromSize(
