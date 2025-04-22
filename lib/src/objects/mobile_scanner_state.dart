@@ -1,8 +1,6 @@
 /// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 library;
 
-import 'dart:ui';
-
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
