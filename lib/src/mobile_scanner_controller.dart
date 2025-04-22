@@ -330,9 +330,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     if (!_isDisposed) {
-      value = value.copyWith(
-        isStarting: true,
-      );
+      value = value.copyWith(isStarting: true);
     }
 
     final StartOptions options = StartOptions(
