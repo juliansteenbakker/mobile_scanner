@@ -60,16 +60,16 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   List<BarcodeFormat> selectedFormats = [];
 
   MobileScannerController initController() => MobileScannerController(
-        autoStart: false,
-        cameraResolution: desiredCameraResolution,
-        detectionSpeed: detectionSpeed,
-        detectionTimeoutMs: detectionTimeoutMs,
-        formats: selectedFormats,
-        returnImage: returnImage,
-        // torchEnabled: true,
-        invertImage: invertImage,
-        autoZoom: autoZoom,
-      );
+    autoStart: false,
+    cameraResolution: desiredCameraResolution,
+    detectionSpeed: detectionSpeed,
+    detectionTimeoutMs: detectionTimeoutMs,
+    formats: selectedFormats,
+    returnImage: returnImage,
+    // torchEnabled: true,
+    invertImage: invertImage,
+    autoZoom: autoZoom,
+  );
 
   @override
   void initState() {
@@ -86,8 +86,9 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showResolutionDialog() async {
     final result = await showDialog<Size>(
       context: context,
-      builder: (context) =>
-          ResolutionDialog(initialResolution: desiredCameraResolution),
+      builder:
+          (context) =>
+              ResolutionDialog(initialResolution: desiredCameraResolution),
     );
 
     if (result != null) {
@@ -113,8 +114,9 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showDetectionTimeoutDialog() async {
     final result = await showDialog<int>(
       context: context,
-      builder: (context) =>
-          DetectionTimeoutDialog(initialTimeoutMs: detectionTimeoutMs),
+      builder:
+          (context) =>
+              DetectionTimeoutDialog(initialTimeoutMs: detectionTimeoutMs),
     );
 
     if (result != null) {
@@ -140,8 +142,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showBarcodeFormatDialog() async {
     final result = await showDialog<List<BarcodeFormat>>(
       context: context,
-      builder: (context) =>
-          BarcodeFormatDialog(selectedFormats: selectedFormats),
+      builder:
+          (context) => BarcodeFormatDialog(selectedFormats: selectedFormats),
     );
 
     if (result != null) {
@@ -195,53 +197,54 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
               setState(() {});
             },
-            itemBuilder: (context) => [
-              if (!kIsWeb && Platform.isAndroid)
-                PopupMenuItem(
-                  value: _PopupMenuItems.cameraResolution,
-                  child: Text(_PopupMenuItems.cameraResolution.name),
-                ),
-              PopupMenuItem(
-                value: _PopupMenuItems.detectionSpeed,
-                child: Text(_PopupMenuItems.detectionSpeed.name),
-              ),
-              PopupMenuItem(
-                value: _PopupMenuItems.detectionTimeout,
-                enabled: detectionSpeed == DetectionSpeed.normal,
-                child: Text(_PopupMenuItems.detectionTimeout.name),
-              ),
-              PopupMenuItem(
-                value: _PopupMenuItems.boxFit,
-                child: Text(_PopupMenuItems.boxFit.name),
-              ),
-              PopupMenuItem(
-                value: _PopupMenuItems.formats,
-                child: Text(_PopupMenuItems.formats.name),
-              ),
-              const PopupMenuDivider(),
-              if (!kIsWeb && Platform.isAndroid)
-                CheckedPopupMenuItem(
-                  value: _PopupMenuItems.autoZoom,
-                  checked: autoZoom,
-                  child: Text(_PopupMenuItems.autoZoom.name),
-                ),
-              if (!kIsWeb && Platform.isAndroid)
-                CheckedPopupMenuItem(
-                  value: _PopupMenuItems.invertImage,
-                  checked: invertImage,
-                  child: Text(_PopupMenuItems.invertImage.name),
-                ),
-              CheckedPopupMenuItem(
-                value: _PopupMenuItems.returnImage,
-                checked: returnImage,
-                child: Text(_PopupMenuItems.returnImage.name),
-              ),
-              CheckedPopupMenuItem(
-                value: _PopupMenuItems.useBarcodeOverlay,
-                checked: useBarcodeOverlay,
-                child: Text(_PopupMenuItems.useBarcodeOverlay.name),
-              ),
-            ],
+            itemBuilder:
+                (context) => [
+                  if (!kIsWeb && Platform.isAndroid)
+                    PopupMenuItem(
+                      value: _PopupMenuItems.cameraResolution,
+                      child: Text(_PopupMenuItems.cameraResolution.name),
+                    ),
+                  PopupMenuItem(
+                    value: _PopupMenuItems.detectionSpeed,
+                    child: Text(_PopupMenuItems.detectionSpeed.name),
+                  ),
+                  PopupMenuItem(
+                    value: _PopupMenuItems.detectionTimeout,
+                    enabled: detectionSpeed == DetectionSpeed.normal,
+                    child: Text(_PopupMenuItems.detectionTimeout.name),
+                  ),
+                  PopupMenuItem(
+                    value: _PopupMenuItems.boxFit,
+                    child: Text(_PopupMenuItems.boxFit.name),
+                  ),
+                  PopupMenuItem(
+                    value: _PopupMenuItems.formats,
+                    child: Text(_PopupMenuItems.formats.name),
+                  ),
+                  const PopupMenuDivider(),
+                  if (!kIsWeb && Platform.isAndroid)
+                    CheckedPopupMenuItem(
+                      value: _PopupMenuItems.autoZoom,
+                      checked: autoZoom,
+                      child: Text(_PopupMenuItems.autoZoom.name),
+                    ),
+                  if (!kIsWeb && Platform.isAndroid)
+                    CheckedPopupMenuItem(
+                      value: _PopupMenuItems.invertImage,
+                      checked: invertImage,
+                      child: Text(_PopupMenuItems.invertImage.name),
+                    ),
+                  CheckedPopupMenuItem(
+                    value: _PopupMenuItems.returnImage,
+                    checked: returnImage,
+                    child: Text(_PopupMenuItems.returnImage.name),
+                  ),
+                  CheckedPopupMenuItem(
+                    value: _PopupMenuItems.useBarcodeOverlay,
+                    checked: useBarcodeOverlay,
+                    child: Text(_PopupMenuItems.useBarcodeOverlay.name),
+                  ),
+                ],
           ),
         ],
       ),
@@ -262,10 +265,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
             BarcodeOverlay(controller: controller, boxFit: boxFit),
           // The scanWindow is not supported on the web.
           if (!kIsWeb && useScanWindow)
-            ScanWindowOverlay(
-              scanWindow: scanWindow,
-              controller: controller,
-            ),
+            ScanWindowOverlay(scanWindow: scanWindow, controller: controller),
           if (returnImage)
             Align(
               alignment: Alignment.topRight,
@@ -325,9 +325,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                    child: ScannedBarcodeLabel(
-                      barcodes: controller.barcodes,
-                    ),
+                    child: ScannedBarcodeLabel(barcodes: controller.barcodes),
                   ),
                   if (!kIsWeb) ZoomScaleSlider(controller: controller),
                   Row(
