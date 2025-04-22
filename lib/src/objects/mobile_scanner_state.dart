@@ -14,6 +14,7 @@ class MobileScannerState {
     required this.availableCameras,
     required this.cameraDirection,
     required this.isInitialized,
+    required this.isStarting,
     required this.isRunning,
     required this.size,
     required this.torchState,
@@ -28,6 +29,7 @@ class MobileScannerState {
         availableCameras: null,
         cameraDirection: CameraFacing.unknown,
         isInitialized: false,
+        isStarting: false,
         isRunning: false,
         size: Size.zero,
         torchState: TorchState.unavailable,
@@ -51,6 +53,11 @@ class MobileScannerState {
   /// This does not indicate that the camera permission was granted.
   /// To check if the camera permission was granted, use [hasCameraPermission].
   final bool isInitialized;
+
+  /// Whether the mobile scanner is currently in the process of starting.
+  ///
+  /// This flag helps prevent duplicate calls to [MobileScannerController.start].
+  final bool isStarting;
 
   /// Whether the mobile scanner is currently running.
   ///
@@ -81,6 +88,7 @@ class MobileScannerState {
     CameraFacing? cameraDirection,
     MobileScannerException? error,
     bool? isInitialized,
+    bool? isStarting,
     bool? isRunning,
     Size? size,
     TorchState? torchState,
@@ -92,6 +100,7 @@ class MobileScannerState {
       cameraDirection: cameraDirection ?? this.cameraDirection,
       error: error,
       isInitialized: isInitialized ?? this.isInitialized,
+      isStarting: isStarting ?? this.isStarting,
       isRunning: isRunning ?? this.isRunning,
       size: size ?? this.size,
       torchState: torchState ?? this.torchState,
