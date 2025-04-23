@@ -83,7 +83,8 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
 
   /// Handles a device orientation change event.
   void onDeviceOrientationEvent(DeviceOrientation event) {
-    // Ensure that we aren't updating the state if the widget is being destroyed.
+    // Ensure that we aren't updating the state if the widget is being
+    // destroyed.
     if (!mounted) {
       return;
     }

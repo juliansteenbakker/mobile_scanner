@@ -318,71 +318,67 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     builder: (context, snapshot) {
                       final BarcodeCapture? barcode = snapshot.data;
 
-                              if (barcode == null) {
-                                return const Center(
-                                  child: Text(
-                                    'Your scanned barcode will appear here',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                );
-                              }
+                      if (barcode == null) {
+                        return const Center(
+                          child: Text(
+                            'Your scanned barcode will appear here',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
 
                       final Uint8List? barcodeImage = barcode.image;
 
-                              if (barcodeImage == null) {
-                                return const Center(
-                                  child: Text('No image for this barcode.'),
-                                );
-                              }
+                      if (barcodeImage == null) {
+                        return const Center(
+                          child: Text('No image for this barcode.'),
+                        );
+                      }
 
-                              return Image.memory(
-                                barcodeImage,
-                                fit: BoxFit.cover,
-                                gaplessPlayback: true,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
-                                    child: Text(
-                                      'Could not decode image bytes. $error',
-                                    ),
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ),
-                  Align(
-                    alignment: Alignment.bottomCenter,
-                    child: Container(
-                      alignment: Alignment.bottomCenter,
-                      height: 200,
-                      color: const Color.fromRGBO(0, 0, 0, 0.4),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: ScannedBarcodeLabel(
-                              barcodes: controller!.barcodes,
-                            ),
-                          ),
-                          if (!kIsWeb) ZoomScaleSlider(controller: controller!),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              ToggleFlashlightButton(controller: controller!),
-                              StartStopButton(controller: controller!),
-                              PauseButton(controller: controller!),
-                              SwitchCameraButton(controller: controller!),
-                              AnalyzeImageButton(controller: controller!),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
+                      return Image.memory(
+                        barcodeImage,
+                        fit: BoxFit.cover,
+                        gaplessPlayback: true,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Center(
+                            child: Text('Could not decode image bytes. $error'),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Container(
+              alignment: Alignment.bottomCenter,
+              height: 200,
+              color: const Color.fromRGBO(0, 0, 0, 0.4),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: ScannedBarcodeLabel(barcodes: controller!.barcodes),
+                  ),
+                  if (!kIsWeb) ZoomScaleSlider(controller: controller!),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      ToggleFlashlightButton(controller: controller!),
+                      StartStopButton(controller: controller!),
+                      PauseButton(controller: controller!),
+                      SwitchCameraButton(controller: controller!),
+                      AnalyzeImageButton(controller: controller!),
+                    ],
                   ),
                 ],
               ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
