@@ -11,56 +11,51 @@ class CameraPreview extends StatelessWidget {
   /// The controller for the camera that the preview is shown for.
   final MobileScannerController controller;
 
-  /// Maps the different device orientations to quarter turns that the
-  /// preview should take in account.
-  static const Map<DeviceOrientation, int> turns = <DeviceOrientation, int>{
-    DeviceOrientation.portraitUp: 0,
-    DeviceOrientation.landscapeRight: 1,
-    DeviceOrientation.portraitDown: 2,
-    DeviceOrientation.landscapeLeft: 3,
-  };
-
   @override
   Widget build(BuildContext context) {
-    return controller.value.isInitialized
-        ? ValueListenableBuilder<MobileScannerState>(
-          valueListenable: controller,
-          builder: (
-            BuildContext context,
-            MobileScannerState value,
-            Widget? child,
-          ) {
-            final bool isLandscape = _isLandscape();
-            return SizedBox(
-              width: isLandscape ? value.size.height : value.size.width,
-              height: isLandscape ? value.size.width : value.size.height,
-              child: _wrapInRotatedBox(child: controller.buildCameraView()),
-            );
-          },
-        )
-        : const SizedBox();
+    if (!controller.value.isInitialized) {
+      return const SizedBox();
+    }
+
+    return ValueListenableBuilder<MobileScannerState>(
+      valueListenable: controller,
+      builder: (BuildContext context, MobileScannerState value, Widget? child) {
+        return SizedBox.fromSize(
+          size:
+          controller.value.deviceOrientation.isLandscape
+              ? value.size.flipped
+              : value.size,
+          child: _wrapInRotatedBox(child: controller.buildCameraView()),
+        );
+      },
+    );
   }
 
   Widget _wrapInRotatedBox({required Widget child}) {
     if (kIsWeb || defaultTargetPlatform != TargetPlatform.android) {
       return child;
     }
-    final turns = _getQuarterTurns();
-    return RotatedBox(quarterTurns: turns, child: child);
+    return RotatedBox(
+      quarterTurns: controller.value.deviceOrientation.turns,
+      child: child,
+    );
   }
+}
 
-  bool _isLandscape() {
-    return <DeviceOrientation>[
-      DeviceOrientation.landscapeLeft,
-      DeviceOrientation.landscapeRight,
-    ].contains(_getApplicableOrientation());
-  }
+/// Extension on [DeviceOrientation] that adds helpful properties for
+/// working with screen rotation and camera preview transformations.
+extension on DeviceOrientation {
+  /// Returns `true` if the device orientation is landscape (horizontal).
+  bool get isLandscape =>
+      this == DeviceOrientation.landscapeLeft ||
+          this == DeviceOrientation.landscapeRight;
 
-  int _getQuarterTurns() {
-    return turns[_getApplicableOrientation()]!;
-  }
-
-  DeviceOrientation _getApplicableOrientation() {
-    return controller.value.deviceOrientation;
-  }
+  /// Maps the different device orientations to quarter turns that the
+  /// preview should take in account.
+  int get turns => switch (this) {
+    DeviceOrientation.portraitUp => 0,
+    DeviceOrientation.landscapeRight => 1,
+    DeviceOrientation.portraitDown => 2,
+    DeviceOrientation.landscapeLeft => 3,
+  };
 }
