@@ -1,3 +1,22 @@
+## 7.0.0-rc.1
+
+After six months of development, Version 7.0.0 is finally moving out of beta with this release candidate!
+A stable release is scheduled for next week.
+
+Improvements:
+* [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.
+* [Android] Updated camerax dependencies.
+* Hot-restart for development purposes is now working correctly
+* Added message to `MobileScannerErrorCode`, which will be shown if kDebugMode is true. Otherwise, a generic error message will appear.
+* Fixed issues regarding initialization of the `MobileScannerController`, which could result in a black screen without error message.
+
+Bugs fixed:
+* [Android] Fixed rotation & orientation issues.
+* [Apple] Fixed rotation & orientation issues.
+* [Apple] Fixed a crash when stopping the camera when the camera device is nil.
+* [macOS] Fixed image not being mirrored.
+* [Web] Fixed barcode corners not being passed correctly resulting in no overlay being drawn.
+
 ## 7.0.0-beta.9
 
 **BREAKING CHANGES:**
