@@ -43,7 +43,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   // Cannot be changed while the scanner is running.
   static const useScanWindow = true;
 
-  late MobileScannerController controller = initController();
+  MobileScannerController? controller;
 
   bool autoZoom = false;
   bool invertImage = false;
@@ -56,6 +56,10 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   bool useBarcodeOverlay = true;
   BoxFit boxFit = BoxFit.contain;
   bool enableLifecycle = false;
+
+  /// Hides the MobileScanner widget while the MobileScannerController is
+  /// rebuilding
+  bool hideMobileScannerWidget = false;
 
   List<BarcodeFormat> selectedFormats = [];
 
@@ -74,13 +78,15 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   @override
   void initState() {
     super.initState();
-    unawaited(controller.start());
+    controller = initController();
+    unawaited(controller!.start());
   }
 
   @override
   Future<void> dispose() async {
     super.dispose();
-    await controller.dispose();
+    await controller?.dispose();
+    controller = null;
   }
 
   Future<void> _showResolutionDialog() async {
@@ -153,6 +159,40 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     }
   }
 
+  /// This implementation fully disposes and reinitializes the
+  /// MobileScannerController every time a setting is changed via the menu.
+  ///
+  /// This is NOT optimized for production use.
+  /// Replacing the controller like this should not happen when MobileScanner is
+  /// active. It causes a short visible flicker and can impact user experience.
+  ///
+  /// The settings should be defined once, or be configurable outside of a
+  /// MobileScanner page, not while the MobileScanner is open.
+  ///
+  /// This is only used here to demonstrate dynamic configuration changes
+  /// without restarting the whole app or navigating away from the scanner view.
+  Future<void> _reinitializeController() async {
+    // Hide the MobileScanner widget temporarily
+    setState(() => hideMobileScannerWidget = true);
+
+    // Let the UI settle
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Dispose of the current controller safely
+    await controller?.dispose();
+    controller = null;
+
+    // Create a new controller with updated configuration
+    controller = initController();
+
+    // Show the scanner again
+    setState(() => hideMobileScannerWidget = false);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Start scanning again
+    await controller?.start();
+  }
+
   @override
   Widget build(BuildContext context) {
     late final scanWindow = Rect.fromCenter(
@@ -189,13 +229,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   useBarcodeOverlay = !useBarcodeOverlay;
               }
 
-              await controller.dispose();
-              controller = initController();
-              await controller.start();
-
-              if (!mounted) return;
-
-              setState(() {});
+              // Rebuild and restart the controller with updated settings
+              await _reinitializeController();
             },
             itemBuilder:
                 (context) => [
@@ -249,101 +284,111 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         ],
       ),
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          MobileScanner(
-            // useAppLifecycleState: false, // Only set to false if you want
-            // to handle lifecycle changes yourself
-            scanWindow: useScanWindow ? scanWindow : null,
-            controller: controller,
-            errorBuilder: (context, error) {
-              return ScannerErrorWidget(error: error);
-            },
-            fit: boxFit,
-          ),
-          if (useBarcodeOverlay)
-            BarcodeOverlay(controller: controller, boxFit: boxFit),
-          // The scanWindow is not supported on the web.
-          if (!kIsWeb && useScanWindow)
-            ScanWindowOverlay(scanWindow: scanWindow, controller: controller),
-          if (returnImage)
-            Align(
-              alignment: Alignment.topRight,
-              child: Card(
-                clipBehavior: Clip.hardEdge,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Colors.white),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: StreamBuilder<BarcodeCapture>(
-                    stream: controller.barcodes,
-                    builder: (context, snapshot) {
-                      final barcode = snapshot.data;
-
-                      if (barcode == null) {
-                        return const Center(
-                          child: Text(
-                            'Your scanned barcode will appear here',
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }
-
-                      final barcodeImage = barcode.image;
-
-                      if (barcodeImage == null) {
-                        return const Center(
-                          child: Text('No image for this barcode.'),
-                        );
-                      }
-
-                      return Image.memory(
-                        barcodeImage,
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Text('Could not decode image bytes. $error'),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 200,
-              color: const Color.fromRGBO(0, 0, 0, 0.4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body:
+          controller == null || hideMobileScannerWidget
+              ? const Placeholder()
+              : Stack(
                 children: [
-                  Expanded(
-                    child: ScannedBarcodeLabel(barcodes: controller.barcodes),
+                  MobileScanner(
+                    // useAppLifecycleState: false, // Only set to false if you want
+                    // to handle lifecycle changes yourself
+                    scanWindow: useScanWindow ? scanWindow : null,
+                    controller: controller,
+                    errorBuilder: (context, error) {
+                      return ScannerErrorWidget(error: error);
+                    },
+                    fit: boxFit,
                   ),
-                  if (!kIsWeb) ZoomScaleSlider(controller: controller),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ToggleFlashlightButton(controller: controller),
-                      StartStopButton(controller: controller),
-                      PauseButton(controller: controller),
-                      SwitchCameraButton(controller: controller),
-                      AnalyzeImageButton(controller: controller),
-                    ],
+                  if (useBarcodeOverlay)
+                    BarcodeOverlay(controller: controller!, boxFit: boxFit),
+                  // The scanWindow is not supported on the web.
+                  if (!kIsWeb && useScanWindow)
+                    ScanWindowOverlay(
+                      scanWindow: scanWindow,
+                      controller: controller!,
+                    ),
+                  if (returnImage)
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Card(
+                        clipBehavior: Clip.hardEdge,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: Colors.white),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: StreamBuilder<BarcodeCapture>(
+                            stream: controller!.barcodes,
+                            builder: (context, snapshot) {
+                              final barcode = snapshot.data;
+
+                              if (barcode == null) {
+                                return const Center(
+                                  child: Text(
+                                    'Your scanned barcode will appear here',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+
+                              final barcodeImage = barcode.image;
+
+                              if (barcodeImage == null) {
+                                return const Center(
+                                  child: Text('No image for this barcode.'),
+                                );
+                              }
+
+                              return Image.memory(
+                                barcodeImage,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Text(
+                                      'Could not decode image bytes. $error',
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      alignment: Alignment.bottomCenter,
+                      height: 200,
+                      color: const Color.fromRGBO(0, 0, 0, 0.4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ScannedBarcodeLabel(
+                              barcodes: controller!.barcodes,
+                            ),
+                          ),
+                          if (!kIsWeb) ZoomScaleSlider(controller: controller!),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ToggleFlashlightButton(controller: controller!),
+                              StartStopButton(controller: controller!),
+                              PauseButton(controller: controller!),
+                              SwitchCameraButton(controller: controller!),
+                              AnalyzeImageButton(controller: controller!),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

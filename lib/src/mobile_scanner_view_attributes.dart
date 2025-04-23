@@ -1,5 +1,4 @@
-import 'dart:ui';
-
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 
@@ -11,6 +10,7 @@ class MobileScannerViewAttributes {
     required this.currentTorchMode,
     required this.size,
     this.numberOfCameras,
+    this.initialDeviceOrientation,
   });
 
   /// The direction of the active camera.
@@ -24,4 +24,7 @@ class MobileScannerViewAttributes {
 
   /// The size of the camera output.
   final Size size;
+
+  /// The initial orientation of the device.
+  final DeviceOrientation? initialDeviceOrientation;
 }

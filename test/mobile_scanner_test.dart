@@ -1,14 +1,30 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mocktail/mocktail.dart';
 
-/// Mocks
 class MockMobileScannerController extends Mock
-    implements MobileScannerController {}
+    implements MobileScannerController {
+  @override
+  Widget buildCameraView() {
+    return const Placeholder(
+      fallbackHeight: 100,
+      fallbackWidth: 100,
+      color: Color(0xFF00FF00),
+    );
+  }
+}
+
+class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
+  @override
+  Future<void> stop({bool force = false}) async {
+    // Do nothing instead of calling platform code
+  }
+}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,6 +51,7 @@ void main() {
         size: Size(1920, 1080),
         torchState: TorchState.off,
         zoomScale: 1.0,
+        deviceOrientation: DeviceOrientation.portraitUp,
       ),
     );
     when(() => mockController.start()).thenAnswer((_) async {});
@@ -94,6 +111,7 @@ void main() {
           torchState: TorchState.unavailable,
           zoomScale: 1.0,
           error: exception,
+          deviceOrientation: DeviceOrientation.portraitUp,
         ),
       );
 
@@ -172,12 +190,4 @@ void main() {
   //     verify(() => mockController.updateScanWindow(scanWindow)).called(1);
   //   });
   // });
-}
-
-class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
-  @override
-  Future<void> stop({bool force = false}) async {
-    // Do nothing instead of calling platform code
-    debugPrint('Mock stop called with force: $force');
-  }
 }
