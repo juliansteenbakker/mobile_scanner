@@ -57,6 +57,10 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   BoxFit boxFit = BoxFit.contain;
   bool enableLifecycle = false;
 
+  /// Hides the MobileScanner widget while the MobileScannerController is
+  /// rebuilding
+  bool hideMobileScannerWidget = false;
+
   List<BarcodeFormat> selectedFormats = [];
 
   MobileScannerController initController() => MobileScannerController(
@@ -159,14 +163,17 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   /// MobileScannerController every time a setting is changed via the menu.
   ///
   /// This is NOT optimized for production use.
-  /// Replacing the controller like this causes a short visible flicker and can
-  /// impact user experience, especially on slower devices.
+  /// Replacing the controller like this should not happen when MobileScanner is
+  /// active. It causes a short visible flicker and can impact user experience.
+  ///
+  /// The settings should be defined once, or be configurable outside of a
+  /// MobileScanner page, not while the MobileScanner is open.
   ///
   /// This is only used here to demonstrate dynamic configuration changes
   /// without restarting the whole app or navigating away from the scanner view.
   Future<void> _reinitializeController() async {
     // Hide the MobileScanner widget temporarily
-    setState(() => hide = true);
+    setState(() => hideMobileScannerWidget = true);
 
     // Let the UI settle
     await Future<void>.delayed(const Duration(milliseconds: 300));
@@ -179,16 +186,12 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     controller = initController();
 
     // Show the scanner again
-    setState(() => hide = false);
+    setState(() => hideMobileScannerWidget = false);
     await Future<void>.delayed(const Duration(milliseconds: 300));
 
     // Start scanning again
     await controller?.start();
   }
-
-  /// Hides the MobileScanner widget while the MobileScannerController is
-  /// rebuilding
-  bool hide = false;
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +285,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
       ),
       backgroundColor: Colors.black,
       body:
-          controller == null || hide
+          controller == null || hideMobileScannerWidget
               ? const Placeholder()
               : Stack(
                 children: [
