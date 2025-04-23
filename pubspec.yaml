@@ -1,5 +1,5 @@
 name: mobile_scanner
-description: A universal barcode and QR code scanner for Flutter based on MLKit. Uses CameraX on Android, AVFoundation on iOS and Apple Vision & AVFoundation on macOS.
+Description: A universal Flutter barcode and QR code scanner using CameraX/ML Kit for Android, AVFoundation/Apple Vision for iOS & macOS, and ZXing for web.
 version: 7.0.0-beta.9
 repository: https://github.com/juliansteenbakker/mobile_scanner
 
@@ -33,7 +33,6 @@ dev_dependencies:
     sdk: flutter
   mocktail: ^1.0.4
   very_good_analysis: ^7.0.0
-
 
 flutter:
   plugin:
