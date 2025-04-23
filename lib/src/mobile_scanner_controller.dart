@@ -180,7 +180,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     if (defaultTargetPlatform != TargetPlatform.macOS) {
       if (MobileScannerPlatform.instance
-          case final MethodChannelMobileScanner implementation) {
+          case final MethodChannelMobileScanner implementation when defaultTargetPlatform != TargetPlatform.macOS) {
         _deviceOrientationSubscription = implementation
             .deviceOrientationChangedStream
             .listen((DeviceOrientation orientation) {
