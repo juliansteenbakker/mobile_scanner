@@ -18,7 +18,8 @@ class MobileScannerException implements Exception {
   @override
   String toString() {
     if (errorDetails != null && errorDetails?.message != null) {
-      return 'MobileScannerException(${errorCode.name}, ${errorDetails?.message})';
+      return 'MobileScannerException(${errorCode.name}, '
+          '${errorDetails?.message})';
     }
     return 'MobileScannerException(${errorCode.name})';
   }
@@ -42,7 +43,8 @@ class MobileScannerErrorDetails {
 /// This class represents an exception thrown by the [MobileScannerController]
 /// when a barcode scanning error occurs when processing an input frame.
 class MobileScannerBarcodeException implements Exception {
-  /// Creates a new [MobileScannerBarcodeException] with the given error message.
+  /// Creates a new [MobileScannerBarcodeException] with the given error
+  /// message.
   const MobileScannerBarcodeException(this.message);
 
   /// The error message of the exception.
@@ -54,6 +56,7 @@ class MobileScannerBarcodeException implements Exception {
       return 'MobileScannerBarcodeException($message)';
     }
 
-    return 'MobileScannerBarcodeException(Could not detect a barcode in the input image.)';
+    return 'MobileScannerBarcodeException(Could not detect a barcode in the '
+        'input image.)';
   }
 }

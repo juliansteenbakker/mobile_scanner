@@ -45,12 +45,6 @@ enum BarcodeFormat {
   /// Barcode format constant for AZTEC.
   aztec(4096);
 
-  /// This constant represents the old value for [BarcodeFormat.codabar].
-  ///
-  /// Prefer using the new [BarcodeFormat.codabar] constant,
-  /// as the `codebar` value will be removed in a future release.
-  static const BarcodeFormat codebar = codabar;
-
   const BarcodeFormat(this.rawValue);
 
   factory BarcodeFormat.fromRawValue(int value) {
@@ -89,6 +83,12 @@ enum BarcodeFormat {
         throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
   }
+
+  /// This constant represents the old value for [BarcodeFormat.codabar].
+  ///
+  /// Prefer using the new [BarcodeFormat.codabar] constant,
+  /// as the `codebar` value will be removed in a future release.
+  static const BarcodeFormat codebar = codabar;
 
   /// The raw value of the barcode format.
   final int rawValue;

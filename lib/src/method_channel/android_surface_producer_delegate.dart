@@ -55,7 +55,8 @@ class AndroidSurfaceProducerDelegate {
   /// If this is false, the preview needs to be manually rotated.
   final bool handlesCropAndRotation;
 
-  /// The initial device orientation when this [AndroidSurfaceProducerDelegate] is created.
+  /// The initial device orientation when this [AndroidSurfaceProducerDelegate]
+  /// is created.
   final DeviceOrientation initialDeviceOrientation;
 
   /// The orientation of the camera sensor on the device, in degrees.

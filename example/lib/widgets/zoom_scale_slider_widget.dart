@@ -18,7 +18,7 @@ class ZoomScaleSlider extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final labelStyle = Theme.of(
+        final TextStyle labelStyle = Theme.of(
           context,
         ).textTheme.headlineMedium!.copyWith(color: Colors.white);
 

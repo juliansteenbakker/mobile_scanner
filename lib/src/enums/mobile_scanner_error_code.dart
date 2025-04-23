@@ -18,7 +18,8 @@ enum MobileScannerErrorCode {
 
   /// A generic error occurred.
   ///
-  /// This error code is used for all errors that do not have a specific error code.
+  /// This error code is used for all errors that do not have a specific error
+  /// code.
   genericError,
 
   /// The permission to use the camera was denied.
@@ -34,42 +35,24 @@ enum MobileScannerErrorCode {
   /// a previous initialization is still in progress.
   ///
   /// To avoid this error:
-  /// - Ensure that [MobileScannerController.start] is awaited before calling it again.
+  /// - Ensure that [MobileScannerController.start] is awaited before calling it
+  ///   again.
   /// - Alternatively, disable automatic initialization by setting
   ///   [MobileScannerController.autoStart] to `false` if you plan to manually
   ///   start the camera.
   controllerInitializing;
 
-  /// Returns a human-readable error message for the given [MobileScannerErrorCode].
-  String get message {
-    switch (this) {
-      case MobileScannerErrorCode.controllerUninitialized:
-        return 'The MobileScannerController has not been initialized. Call start() before using it.';
-      case MobileScannerErrorCode.permissionDenied:
-        return 'Camera permission denied.';
-      case MobileScannerErrorCode.unsupported:
-        return 'Scanning is not supported on this device.';
-      case MobileScannerErrorCode.controllerAlreadyInitialized:
-        return 'The MobileScannerController is already running. Stop it before starting again.';
-      case MobileScannerErrorCode.controllerDisposed:
-        return 'The MobileScannerController was used after it was disposed.';
-      case MobileScannerErrorCode.controllerInitializing:
-        return 'The MobileScannerController is still initializing. Await the previous call to start() or disable autoStart before starting manually.';
-      case MobileScannerErrorCode.genericError:
-        return 'An unexpected error occurred.';
-    }
-  }
-
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].
   factory MobileScannerErrorCode.fromPlatformException(
     PlatformException exception,
   ) {
-    // The following error code mapping should be kept in sync with their native counterparts.
-    // These are located in `MobileScannerErrorCodes.kt` and `MobileScannerErrorCodes.swift`.
+    // The following error code mapping should be kept in sync with their native
+    // counterparts. These are located in `MobileScannerErrorCodes.kt` and
+    // `MobileScannerErrorCodes.swift`.
     return switch (exception.code) {
       // In case the scanner was already started, report the right error code.
-      // If the scanner is already starting,
-      // this error code is a signal to the controller to just ignore the attempt.
+      // If the scanner is already starting, this error code is a signal to the
+      // controller to just ignore the attempt.
       'MOBILE_SCANNER_ALREADY_STARTED_ERROR' =>
         MobileScannerErrorCode.controllerAlreadyInitialized,
       // In case no cameras are available, using the scanner is not supported.
@@ -78,5 +61,30 @@ enum MobileScannerErrorCode {
         MobileScannerErrorCode.permissionDenied,
       _ => MobileScannerErrorCode.genericError,
     };
+  }
+
+  /// Returns a human-readable error message for the given
+  /// [MobileScannerErrorCode].
+  String get message {
+    switch (this) {
+      case MobileScannerErrorCode.controllerUninitialized:
+        return 'The MobileScannerController has not been initialized. '
+            'Call start() before using it.';
+      case MobileScannerErrorCode.permissionDenied:
+        return 'Camera permission denied.';
+      case MobileScannerErrorCode.unsupported:
+        return 'Scanning is not supported on this device.';
+      case MobileScannerErrorCode.controllerAlreadyInitialized:
+        return 'The MobileScannerController is already running. '
+            'Stop it before starting again.';
+      case MobileScannerErrorCode.controllerDisposed:
+        return 'The MobileScannerController was used after it was disposed.';
+      case MobileScannerErrorCode.controllerInitializing:
+        return 'The MobileScannerController is still initializing. '
+            'Await the previous call to start() or disable autoStart before '
+            'starting manually.';
+      case MobileScannerErrorCode.genericError:
+        return 'An unexpected error occurred.';
+    }
   }
 }

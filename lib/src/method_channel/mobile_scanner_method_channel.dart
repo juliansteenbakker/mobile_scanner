@@ -28,7 +28,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kBarcodeErrorEventName = 'MOBILE_SCANNER_BARCODE_ERROR';
 
-  /// The name of the error event that is sent when an operation is not supported.
+  /// The name of the error event that is sent when an operation is not
+  /// supported.
   @visibleForTesting
   static const String kUnsupportdOperationErrorEventName =
       'MOBILE_SCANNER_UNSUPPORTED_OPERATION';
@@ -120,10 +121,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     );
   }
 
-  /// Parse a [MobileScannerBarcodeException] from the given [error] and [stackTrace], and throw it.
+  /// Parse a [MobileScannerBarcodeException] from the given [error] and
+  /// [stackTrace], and throw it.
   ///
   /// If the error is not a [PlatformException],
-  /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is rethrown as-is.
+  /// with [kBarcodeErrorEventName] as [PlatformException.code], the error is
+  /// rethrown as-is.
   Never _parseBarcodeError(Object error, StackTrace stackTrace) {
     if (error case PlatformException(
       :final String code,
@@ -176,12 +179,13 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   /// Handle incoming barcode events.
-  /// The error events are transformed to `MobileScannerBarcodeException` where possible.
+  /// The error events are transformed to `MobileScannerBarcodeException` where
+  /// possible.
   @override
   Stream<BarcodeCapture?> get barcodesStream {
     return eventsStream
         .where((e) => e['name'] == kBarcodeEventName)
-        .map((event) => _parseBarcode(event))
+        .map(_parseBarcode)
         .handleError(_parseBarcodeError);
   }
 
@@ -241,8 +245,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     final Widget texture = Texture(textureId: _textureId!);
 
     // If the preview needs manual orientation corrections,
-    // correct the preview orientation based on the currently reported device orientation.
-    // On Android, the underlying device orientation stream will emit the current orientation
+    // correct the preview orientation based on the currently reported device
+    // orientation.
+    // On Android, the underlying device orientation stream will emit the
+    // current orientation
     // when the first listener is attached.
     if (_surfaceProducerDelegate
         case final AndroidSurfaceProducerDelegate delegate

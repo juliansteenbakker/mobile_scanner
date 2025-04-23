@@ -20,7 +20,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
   /// Construct a new [ZXingBarcodeReader] instance.
   ZXingBarcodeReader();
 
-  /// ZXing reports an error with this message if the code could not be detected.
+  /// ZXing reports an error with this message if the code could not be
+  /// detected.
   @visibleForTesting
   static const String kNoCodeDetectedErrorMessage =
       'No MultiFormat Readers were able to detect the code.';
@@ -63,23 +64,24 @@ final class ZXingBarcodeReader extends BarcodeReader {
       return null;
     }
 
-    final JSMap hints = JSMap();
-
-    // Set the formats hint.
-    // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45
-    hints.set(
-      2.toJS,
-      [for (final BarcodeFormat format in formats) format.toJS].toJS,
-    );
+    final JSMap hints =
+        JSMap()
+          // Set the formats hint.
+          // See https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts#L45
+          ..set(
+            2.toJS,
+            [for (final BarcodeFormat format in formats) format.toJS].toJS,
+          );
 
     return hints;
   }
 
   /// Prepare the video element for the barcode reader.
   ///
-  /// The given [videoElement] is assumed to already be attached to the DOM at this point.
-  /// The camera video output is then attached to both the barcode reader (to detect barcodes),
-  /// and the video element (to display the camera output).
+  /// The given [videoElement] is assumed to already be attached to the DOM at
+  /// this point. The camera video output is then attached to both the barcode
+  /// reader (to detect barcodes), and the video element (to display the camera
+  /// output).
   Future<void> _prepareVideoElement(
     web.HTMLVideoElement videoElement,
     web.MediaStream videoStream,
@@ -106,38 +108,39 @@ final class ZXingBarcodeReader extends BarcodeReader {
   Stream<BarcodeCapture> detectBarcodes() {
     final controller = StreamController<BarcodeCapture>();
 
-    controller.onListen = () {
-      _reader?.decodeContinuously.callAsFunction(
-        _reader,
-        _reader?.videoElement,
-        (Result? result, ZXingException? error) {
-          if (controller.isClosed) {
-            return;
-          }
+    controller
+      ..onListen = () {
+        _reader?.decodeContinuously.callAsFunction(
+          _reader,
+          _reader?.videoElement,
+          (Result? result, ZXingException? error) {
+            if (controller.isClosed) {
+              return;
+            }
 
-          // Skip the event if no code was detected.
-          if (error != null && error.message != kNoCodeDetectedErrorMessage) {
-            controller.addError(MobileScannerBarcodeException(error.message));
-            return;
-          }
+            // Skip the event if no code was detected.
+            if (error != null && error.message != kNoCodeDetectedErrorMessage) {
+              controller.addError(MobileScannerBarcodeException(error.message));
+              return;
+            }
 
-          if (result != null) {
-            controller.add(
-              BarcodeCapture(barcodes: [result.toBarcode], size: videoSize),
-            );
-          }
-        }.toJS,
-      );
-    };
-
-    // The onCancel() method of the controller is called
-    // when the stream subscription returned by this method is cancelled in `MobileScannerWeb.stop()`.
-    // This avoids both leaving the barcode scanner running and a memory leak for the stream subscription.
-    controller.onCancel = () async {
-      _reader?.stopContinuousDecode.callAsFunction(_reader);
-      _reader?.reset.callAsFunction(_reader);
-      await controller.close();
-    };
+            if (result != null) {
+              controller.add(
+                BarcodeCapture(barcodes: [result.toBarcode], size: videoSize),
+              );
+            }
+          }.toJS,
+        );
+      }
+      // The onCancel() method of the controller is called
+      // when the stream subscription returned by this method is cancelled in
+      // `MobileScannerWeb.stop()`. This avoids both leaving the barcode scanner
+      // running and a memory leak for the stream subscription.
+      ..onCancel = () async {
+        _reader?.stopContinuousDecode.callAsFunction(_reader);
+        _reader?.reset.callAsFunction(_reader);
+        await controller.close();
+      };
 
     return controller.stream;
   }
@@ -177,7 +180,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   @override
   Future<void> resume() async {
-    final result = _reader?.videoElement?.play();
+    final JSPromise<JSAny?>? result = _reader?.videoElement?.play();
     await result?.toDart;
   }
 

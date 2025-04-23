@@ -90,7 +90,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showResolutionDialog() async {
-    final result = await showDialog<Size>(
+    final Size? result = await showDialog<Size>(
       context: context,
       builder:
           (context) =>
@@ -105,7 +105,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showDetectionSpeedDialog() async {
-    final result = await showDialog<DetectionSpeed>(
+    final DetectionSpeed? result = await showDialog<DetectionSpeed>(
       context: context,
       builder: (context) => DetectionSpeedDialog(selectedSpeed: detectionSpeed),
     );
@@ -118,7 +118,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showDetectionTimeoutDialog() async {
-    final result = await showDialog<int>(
+    final int? result = await showDialog<int>(
       context: context,
       builder:
           (context) =>
@@ -133,7 +133,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showBoxFitDialog() async {
-    final result = await showDialog<BoxFit>(
+    final BoxFit? result = await showDialog<BoxFit>(
       context: context,
       builder: (context) => BoxFitDialog(selectedBoxFit: boxFit),
     );
@@ -146,7 +146,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   }
 
   Future<void> _showBarcodeFormatDialog() async {
-    final result = await showDialog<List<BarcodeFormat>>(
+    final List<BarcodeFormat>? result = await showDialog<List<BarcodeFormat>>(
       context: context,
       builder:
           (context) => BarcodeFormatDialog(selectedFormats: selectedFormats),
@@ -322,7 +322,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                           child: StreamBuilder<BarcodeCapture>(
                             stream: controller!.barcodes,
                             builder: (context, snapshot) {
-                              final barcode = snapshot.data;
+                              final BarcodeCapture? barcode = snapshot.data;
 
                               if (barcode == null) {
                                 return const Center(
@@ -333,7 +333,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                                 );
                               }
 
-                              final barcodeImage = barcode.image;
+                              final Uint8List? barcodeImage = barcode.image;
 
                               if (barcodeImage == null) {
                                 return const Center(

@@ -85,9 +85,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
 
   /// Start the barcode scanner and prepare a scanner view.
   ///
-  /// Upon calling this method, the necessary camera permission will be requested.
+  /// Upon calling this method, the necessary camera permission will be
+  /// requested.
   ///
-  /// The given [StartOptions.cameraDirection] is used as the direction for the camera that needs to be set up.
+  /// The given [StartOptions.cameraDirection] is used as the direction for the
+  /// camera that needs to be set up.
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) {
     throw UnimplementedError('start() has not been implemented.');
   }
@@ -109,7 +111,8 @@ abstract class MobileScannerPlatform extends PlatformInterface {
 
   /// Update the scan window to the given [window] rectangle.
   ///
-  /// Any barcodes that do not intersect with the given [window] will be ignored.
+  /// Any barcodes that do not intersect with the given [window] will be
+  /// ignored.
   ///
   /// If [window] is `null`, the scan window will be reset to the full screen.
   Future<void> updateScanWindow(Rect? window) {

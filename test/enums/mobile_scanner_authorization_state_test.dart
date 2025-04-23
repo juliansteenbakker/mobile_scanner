@@ -4,7 +4,7 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart
 void main() {
   group('$MobileScannerAuthorizationState tests', () {
     test('can be created from raw value', () {
-      const values = {
+      const Map<int, MobileScannerAuthorizationState> values = {
         0: MobileScannerAuthorizationState.undetermined,
         1: MobileScannerAuthorizationState.authorized,
         2: MobileScannerAuthorizationState.denied,

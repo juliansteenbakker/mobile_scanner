@@ -19,7 +19,8 @@ import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
 import 'package:web/web.dart';
 
-/// A web implementation of the MobileScannerPlatform of the MobileScanner plugin.
+/// A web implementation of the MobileScannerPlatform of the MobileScanner
+/// plugin.
 class MobileScannerWeb extends MobileScannerPlatform {
   /// Constructs a [MobileScannerWeb] instance.
   MobileScannerWeb();
@@ -78,7 +79,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Stream<double> get zoomScaleStateStream =>
       _settingsController.stream.map((_) => 1.0);
 
-  /// Create the [HTMLVideoElement] along with its parent container [HTMLDivElement].
+  /// Create the [HTMLVideoElement] along with its parent container
+  /// [HTMLDivElement].
   HTMLVideoElement _createVideoElement(int textureId) {
     final HTMLVideoElement videoElement = HTMLVideoElement();
 
@@ -91,17 +93,16 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     // Do not show the media controls, as this is a preview element.
     // Also prevent play/pause events from changing the media controls.
-    videoElement.controls = false;
-
-    videoElement.onplay =
-        (JSAny _) {
-          videoElement.controls = false;
-        }.toJS;
-
-    videoElement.onpause =
-        (JSAny _) {
-          videoElement.controls = false;
-        }.toJS;
+    videoElement
+      ..controls = false
+      ..onplay =
+          (JSAny _) {
+            videoElement.controls = false;
+          }.toJS
+      ..onpause =
+          (JSAny _) {
+            videoElement.controls = false;
+          }.toJS;
 
     // Attach the video element to its parent container
     // and setup the PlatformView factory for this `textureId`.
@@ -160,7 +161,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// This method requests permission to use the camera.
   ///
   /// Throws a [MobileScannerException] if the permission was denied,
-  /// or if using a video stream, with the given set of constraints, is unsupported.
+  /// or if using a video stream, with the given set of constraints, is
+  /// unsupported.
   Future<MediaStream> _prepareVideoStream(CameraFacing cameraDirection) async {
     if (window.navigator.mediaDevices.isUndefinedOrNull) {
       throw const MobileScannerException(
