@@ -60,7 +60,8 @@ extension type Result(JSObject _) implements JSObject {
   /// Get the raw bytes of the result.
   Uint8List? get rawBytes => _rawBytes?.toDart;
 
-  /// Get the corner points of the result, sorted in clockwise order if four points exist.
+  /// Get the corner points of the result, sorted in clockwise order if four
+  /// points exist.
   List<Offset> get resultPoints {
     final JSArray<ResultPoint>? points = _resultPoints;
 
@@ -68,9 +69,10 @@ extension type Result(JSObject _) implements JSObject {
       return const [];
     }
 
-    final List<Offset> pointList = points.toDart.map((point) {
-      return Offset(point.x, point.y);
-    }).toList();
+    final List<Offset> pointList =
+        points.toDart.map((point) {
+          return Offset(point.x, point.y);
+        }).toList();
 
     return processBarcodeCorners(pointList);
   }
@@ -88,7 +90,8 @@ extension type Result(JSObject _) implements JSObject {
     return points; // Return original if no special handling is needed.
   }
 
-  /// Sorts four detected points into [Top-Left, Top-Right, Bottom-Right, Bottom-Left]
+  /// Sorts four detected points into
+  /// [Top-Left, Top-Right, Bottom-Right, Bottom-Left]
   List<Offset> sortCornersClockwise(List<Offset> points) {
     points.sort((a, b) {
       if (a.dy == b.dy) {
@@ -97,10 +100,10 @@ extension type Result(JSObject _) implements JSObject {
       return a.dy.compareTo(b.dy);
     });
 
-    final topLeft = points[3];
-    final topRight = points[2];
-    final bottomRight = points[1];
-    final bottomLeft = points[0];
+    final Offset topLeft = points[3];
+    final Offset topRight = points[2];
+    final Offset bottomRight = points[1];
+    final Offset bottomLeft = points[0];
 
     return [topLeft, topRight, bottomRight, bottomLeft];
   }
@@ -108,26 +111,24 @@ extension type Result(JSObject _) implements JSObject {
   /// Estimate missing fourth corner when given three points (for QR codes)
   List<Offset> estimateFourthPoint(List<Offset> points) {
     // Assume a parallelogram based on three known points
-    final a = points[0];
-    final b = points[1];
-    final c = points[2];
+    final Offset a = points[0];
+    final Offset b = points[1];
+    final Offset c = points[2];
 
     // Compute the missing point (approximate)
-    final d = Offset(
-      a.dx + (c.dx - b.dx),
-      a.dy + (c.dy - b.dy),
-    );
+    final d = Offset(a.dx + (c.dx - b.dx), a.dy + (c.dy - b.dy));
 
     return sortCornersClockwise([a, b, c, d]);
   }
 
-  /// Estimate remaining corners when only two points are given (for 1D barcodes)
+  /// Estimate remaining corners when only two points are given
+  /// (for 1D barcodes)
   List<Offset> estimateRemainingPoints(List<Offset> points) {
-    final start = points[0];
-    final end = points[1];
+    final Offset start = points[0];
+    final Offset end = points[1];
 
     // Approximate barcode height (arbitrary small value for 1D barcodes)
-    const double heightOffset = 10.0;
+    const double heightOffset = 10;
 
     final topLeft = Offset(start.dx, start.dy - heightOffset);
     final topRight = Offset(end.dx, end.dy - heightOffset);
