@@ -68,15 +68,34 @@ final class RotatedPreview extends StatefulWidget {
 
 final class _RotatedPreviewState extends State<RotatedPreview> {
   /// The current device orientation.
-  late DeviceOrientation deviceOrientation;
+  late DeviceOrientation deviceOrientation = widget.initialDeviceOrientation;
 
   /// The subscription for the device orientation stream.
   StreamSubscription<Object?>? _deviceOrientationSubscription;
 
+  @override
+  void initState() {
+    _deviceOrientationSubscription = widget.deviceOrientationStream.listen(
+      onDeviceOrientationEvent,
+    );
+    super.initState();
+  }
+
+  /// Handles a device orientation change event.
+  void onDeviceOrientationEvent(DeviceOrientation event) {
+    // Ensure that we aren't updating the state if the widget is being destroyed.
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      deviceOrientation = event;
+    });
+  }
+
   /// Compute the rotation correction for the preview.
   ///
   /// See also: https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation
-  double _computeRotation(
+  double _computeRotationDegrees(
     DeviceOrientation orientation, {
     required double sensorOrientationDegrees,
     required int sign,
@@ -88,43 +107,30 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
       DeviceOrientation.landscapeLeft => 270,
     };
 
-    return (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) %
+    // Rotate the camera preview according to
+    // https://developer.android.com/media/camera/camera2/camera-preview#orientation_calculation.
+    double rotationDegrees =
+        (sensorOrientationDegrees - deviceOrientationDegrees * sign + 360) %
         360;
-  }
 
-  @override
-  void initState() {
-    super.initState();
-
-    deviceOrientation = widget.initialDeviceOrientation;
-    _deviceOrientationSubscription = widget.deviceOrientationStream.listen((
-      DeviceOrientation event,
-    ) {
-      if (!mounted || deviceOrientation == event) {
-        return;
-      }
-
-      setState(() {
-        deviceOrientation = event;
-      });
-    });
+    // Then, subtract the rotation already applied in the CameraPreview widget
+    return rotationDegrees -= deviceOrientationDegrees;
   }
 
   @override
   void dispose() {
-    unawaited(_deviceOrientationSubscription?.cancel());
+    _deviceOrientationSubscription?.cancel();
     _deviceOrientationSubscription = null;
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final double rotation = _computeRotation(
+    final double rotationDegrees = _computeRotationDegrees(
       deviceOrientation,
       sensorOrientationDegrees: widget.sensorOrientationDegrees,
       sign: widget.facingSign,
     );
-
-    return RotatedBox(quarterTurns: rotation ~/ 90, child: widget.child);
+    return RotatedBox(quarterTurns: rotationDegrees ~/ 90, child: widget.child);
   }
 }

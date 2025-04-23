@@ -6,6 +6,7 @@ import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
+import 'package:mobile_scanner/src/mobile_scanner_preview.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
@@ -237,18 +238,13 @@ class _MobileScannerState extends State<MobileScanner>
               context,
               constraints,
             );
-            final Size cameraPreviewSize = value.size;
 
             final Widget scannerWidget = ClipRect(
               child: SizedBox.fromSize(
                 size: constraints.biggest,
                 child: FittedBox(
                   fit: widget.fit,
-                  child: SizedBox(
-                    width: cameraPreviewSize.width,
-                    height: cameraPreviewSize.height,
-                    child: MobileScannerPlatform.instance.buildCameraView(),
-                  ),
+                  child: CameraPreview(controller),
                 ),
               ),
             );
