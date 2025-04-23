@@ -23,7 +23,6 @@ class MockMethodChannelMobileScanner extends MethodChannelMobileScanner {
   @override
   Future<void> stop({bool force = false}) async {
     // Do nothing instead of calling platform code
-    debugPrint('Mock stop called with force: $force');
   }
 }
 
