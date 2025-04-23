@@ -20,7 +20,7 @@ class SwitchCameraButton extends StatelessWidget {
           return const SizedBox.shrink();
         }
 
-        final availableCameras = state.availableCameras;
+        final int? availableCameras = state.availableCameras;
 
         if (availableCameras != null && availableCameras < 2) {
           return const SizedBox.shrink();

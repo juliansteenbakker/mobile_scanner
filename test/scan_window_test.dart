@@ -19,7 +19,7 @@ void main() {
         ),
       );
 
-      final testCases = [
+      final List<Map<String, Object>> testCases = [
         {
           'name': 'BoxFit.none',
           'fit': BoxFit.none,
@@ -91,7 +91,7 @@ void main() {
         ),
       );
 
-      final testCases = [
+      final List<Map<String, Object>> testCases = [
         {
           'name': 'BoxFit.none',
           'fit': BoxFit.none,
@@ -142,7 +142,7 @@ void main() {
 
   group('calculateBoxFitRatio', () {
     group('Standard cases', () {
-      final testCases = [
+      final List<Map<String, Object>> testCases = [
         {
           'name': 'BoxFit.fill',
           'boxFit': BoxFit.fill,
@@ -192,11 +192,12 @@ void main() {
 
       for (final testCase in testCases) {
         test('${testCase['name']} scaling', () {
-          final ratio = calculateBoxFitRatio(
-            testCase['boxFit']! as BoxFit,
-            cameraPreviewSize,
-            size,
-          );
+          final ({double heightRatio, double widthRatio}) ratio =
+              calculateBoxFitRatio(
+                testCase['boxFit']! as BoxFit,
+                cameraPreviewSize,
+                size,
+              );
           expect(ratio.widthRatio, testCase['expectedWidth']);
           expect(ratio.heightRatio, testCase['expectedHeight']);
         });
@@ -205,31 +206,34 @@ void main() {
 
     group('Edge cases', () {
       test('Zero width/height in cameraPreviewSize', () {
-        final ratio = calculateBoxFitRatio(
-          BoxFit.fill,
-          const Size(0, 640),
-          const Size(432, 256),
-        );
+        final ({double heightRatio, double widthRatio}) ratio =
+            calculateBoxFitRatio(
+              BoxFit.fill,
+              const Size(0, 640),
+              const Size(432, 256),
+            );
         expect(ratio.widthRatio, 1.0);
         expect(ratio.heightRatio, 1.0);
       });
 
       test('Zero width/height in target size', () {
-        final ratio = calculateBoxFitRatio(
-          BoxFit.fill,
-          const Size(480, 640),
-          const Size(0, 256),
-        );
+        final ({double heightRatio, double widthRatio}) ratio =
+            calculateBoxFitRatio(
+              BoxFit.fill,
+              const Size(480, 640),
+              const Size(0, 256),
+            );
         expect(ratio.widthRatio, 1.0);
         expect(ratio.heightRatio, 1.0);
       });
 
       test('Equal sizes (no scaling)', () {
-        final ratio = calculateBoxFitRatio(
-          BoxFit.fill,
-          const Size(480, 640),
-          const Size(480, 640),
-        );
+        final ({double heightRatio, double widthRatio}) ratio =
+            calculateBoxFitRatio(
+              BoxFit.fill,
+              const Size(480, 640),
+              const Size(480, 640),
+            );
         expect(ratio.widthRatio, 1.0);
         expect(ratio.heightRatio, 1.0);
       });
@@ -249,7 +253,7 @@ class ScanWindowTestContext {
   final Rect scanWindow;
 
   void testScanWindow(BoxFit fit, Rect expected) {
-    final actual = calculateScanWindowRelativeToTextureInPercentage(
+    final Rect actual = calculateScanWindowRelativeToTextureInPercentage(
       fit,
       scanWindow,
       textureSize: textureSize,

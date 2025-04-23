@@ -180,7 +180,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
 
   @override
   Future<void> resume() async {
-    final result = _reader?.videoElement?.play();
+    final JSPromise<JSAny?>? result = _reader?.videoElement?.play();
     await result?.toDart;
   }
 

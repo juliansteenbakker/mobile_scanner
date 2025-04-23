@@ -53,7 +53,8 @@ class BarcodePainter extends CustomPainter {
       return;
     }
 
-    final ratios = calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
+    final ({double heightRatio, double widthRatio}) ratios =
+        calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
 
     final double horizontalPadding =
         (cameraPreviewSize.width * ratios.widthRatio - size.width) / 2;
@@ -176,8 +177,8 @@ class BarcodePainter extends CustomPainter {
   }
 
   // Calculate the scaling ratios for width and height
-  final widthRatio = size.width / cameraPreviewSize.width;
-  final heightRatio = size.height / cameraPreviewSize.height;
+  final double widthRatio = size.width / cameraPreviewSize.width;
+  final double heightRatio = size.height / cameraPreviewSize.height;
 
   switch (boxFit) {
     case BoxFit.fill:
@@ -187,12 +188,12 @@ class BarcodePainter extends CustomPainter {
     case BoxFit.contain:
       // Maintain aspect ratio, ensure the content fits entirely within the
       // large box
-      final ratio = math.min(widthRatio, heightRatio);
+      final double ratio = math.min(widthRatio, heightRatio);
       return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.cover:
       // Maintain aspect ratio, ensure the content fully covers the large box
-      final ratio = math.max(widthRatio, heightRatio);
+      final double ratio = math.max(widthRatio, heightRatio);
       return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.fitWidth:
@@ -210,7 +211,8 @@ class BarcodePainter extends CustomPainter {
     case BoxFit.scaleDown:
       // If the content is larger than the large box, scale down to fit;
       // otherwise, no scaling
-      final ratio = math.min(1, math.min(widthRatio, heightRatio)).toDouble();
+      final double ratio =
+          math.min(1, math.min(widthRatio, heightRatio)).toDouble();
       return (widthRatio: ratio, heightRatio: ratio);
   }
 }

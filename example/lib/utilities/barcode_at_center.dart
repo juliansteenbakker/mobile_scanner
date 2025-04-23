@@ -10,9 +10,12 @@ Barcode? findBarcodeAtCenter(
   BarcodeCapture barcodeCapture,
   DeviceOrientation orientation,
 ) {
-  final imageSize = _fixPortraitLandscape(barcodeCapture.size, orientation);
-  for (final barcode in barcodeCapture.barcodes) {
-    final corners = _fixCorners(barcode.corners);
+  final Size imageSize = _fixPortraitLandscape(
+    barcodeCapture.size,
+    orientation,
+  );
+  for (final Barcode barcode in barcodeCapture.barcodes) {
+    final List<Offset> corners = _fixCorners(barcode.corners);
     if (_isPolygonTouchingTheCenter(imageSize: imageSize, polygon: corners)) {
       return barcode;
     }
@@ -48,7 +51,7 @@ bool _isPolygonTouchingTheCenter({
 bool _isPointInPolygon({required Offset point, required List<Offset> polygon}) {
   // Initial variables:
   int i; // Loop variable for current vertex
-  var j =
+  int j =
       polygon.length -
       1; // Last vertex index, initialized to the last vertex of the polygon
   var inside = false; // Boolean flag initialized to false
@@ -92,17 +95,17 @@ List<Offset> _fixCorners(List<Offset> corners) {
   // Clone the original list to avoid side-effects
   final sorted = List<Offset>.from(corners)..sort((a, b) {
     // Prioritize y-axis (dy), and within that, the x-axis (dx)
-    var compare = a.dy.compareTo(b.dy);
+    int compare = a.dy.compareTo(b.dy);
     if (compare == 0) {
       compare = a.dx.compareTo(b.dx);
     }
     return compare;
   });
 
-  final topLeft = sorted.first; // smallest x, smallest y
-  final topRight = sorted[1]; // larger x, smaller y
-  final bottomLeft = sorted[2]; // smaller x, larger y
-  final bottomRight = sorted.last; // larger x, larger y
+  final Offset topLeft = sorted.first; // smallest x, smallest y
+  final Offset topRight = sorted[1]; // larger x, smaller y
+  final Offset bottomLeft = sorted[2]; // smaller x, larger y
+  final Offset bottomRight = sorted.last; // larger x, larger y
 
   return [topLeft, topRight, bottomRight, bottomLeft];
 }

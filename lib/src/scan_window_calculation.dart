@@ -25,7 +25,11 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
 }) {
   // Convert the texture size to a size in widget-space, with the box fit
   // applied.
-  final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
+  final FittedSizes fittedTextureSize = applyBoxFit(
+    fit,
+    textureSize,
+    widgetSize,
+  );
 
   // Get the correct scaling values depending on the given BoxFit mode
   double sx = fittedTextureSize.destination.width / textureSize.width;
@@ -36,11 +40,11 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
       // No-op, just use sx and sy.
       break;
     case BoxFit.contain:
-      final s = min(sx, sy);
+      final double s = min(sx, sy);
       sx = s;
       sy = s;
     case BoxFit.cover:
-      final s = max(sx, sy);
+      final double s = max(sx, sy);
       sx = s;
       sy = s;
     case BoxFit.fitWidth:
@@ -51,14 +55,14 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
       sx = 1.0;
       sy = 1.0;
     case BoxFit.scaleDown:
-      final s = min(sx, sy);
+      final double s = min(sx, sy);
       sx = s;
       sy = s;
   }
 
   // Fit the texture size to the widget rectangle given by the scaling values
   // above.
-  final textureWindow = Alignment.center.inscribe(
+  final Rect textureWindow = Alignment.center.inscribe(
     Size(textureSize.width * sx, textureSize.height * sy),
     Rect.fromLTWH(0, 0, widgetSize.width, widgetSize.height),
   );
@@ -73,16 +77,20 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
 
   // Clip the scan window in texture coordinates with the texture bounds.
   // This prevents percentages outside the range [0; 1].
-  final clippedScanWndInTexSpace = scanWindowInTexSpace.intersect(
+  final Rect clippedScanWndInTexSpace = scanWindowInTexSpace.intersect(
     Rect.fromLTWH(0, 0, textureSize.width, textureSize.height),
   );
 
   // Compute relative rectangle coordinates,
   // with respect to the texture size, i.e. scan image.
-  final percentageLeft = clippedScanWndInTexSpace.left / textureSize.width;
-  final percentageTop = clippedScanWndInTexSpace.top / textureSize.height;
-  final percentageRight = clippedScanWndInTexSpace.right / textureSize.width;
-  final percentageBottom = clippedScanWndInTexSpace.bottom / textureSize.height;
+  final double percentageLeft =
+      clippedScanWndInTexSpace.left / textureSize.width;
+  final double percentageTop =
+      clippedScanWndInTexSpace.top / textureSize.height;
+  final double percentageRight =
+      clippedScanWndInTexSpace.right / textureSize.width;
+  final double percentageBottom =
+      clippedScanWndInTexSpace.bottom / textureSize.height;
 
   // This rectangle can be used to cut out a rectangle of the scan image.
   return Rect.fromLTRB(
