@@ -1,4 +1,13 @@
-## NEXT
+## 7.0.0-beta.9
+
+**BREAKING CHANGES:**
+
+* This release requires Flutter 3.29.0 or higher.
+
+Bugs fixed:
+* [Android] Fixed a timing issue for the SurfaceProducer implementation, by switching to the `onSurfaceCleanup` callback. 
+
+## 7.0.0-beta.8
 
 Improvements:
 * Updated examples in example app.
@@ -8,8 +17,9 @@ Improvements:
 
 Bugs fixed:
 * [Apple] Fixed barcode corners representation for barcode overlay.
-* [Apple] Fixed zoom callback not working
-* [Apple] Updated zoom scale factor to match Android implementation
+* [Apple] Fixed zoom callback not working.
+* [Apple] Updated zoom scale factor to match Android implementation.
+* Fixed build issues on older kotlin versions.
 
 ## 7.0.0-beta.7
 
@@ -104,6 +114,20 @@ Known issues:
 * [Apple] The zoom slider does not work correctly.
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
+
+## 6.0.9
+Fixed onDetect not working when a `MobileScannerController` is provided.
+
+## 6.0.8
+Improvements:
+* [Android] Remove the dependency on `org.jetbrains.kotlin:kotlin-bom`.
+* Hot-restart for development purposes is now working correctly
+* Added message to `MobileScannerErrorCode`, which will be shown if kDebugMode is true. Otherwise, a generic error message will appear.
+* Fixed issues regarding initialization of the `MobileScannerController`, which could result in a black screen without error message.
+
+## 6.0.7
+Improvements:
+* [Android] Updated bundled barcode scanning library to v17.3.0
 
 ## 6.0.6
 Bugs fixed:

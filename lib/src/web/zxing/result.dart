@@ -53,7 +53,7 @@ extension type Result(JSObject _) implements JSObject {
       15 => BarcodeFormat.upcE,
       // UPC/EAN extension
       16 => BarcodeFormat.unknown,
-      _ => BarcodeFormat.unknown
+      _ => BarcodeFormat.unknown,
     };
   }
 

@@ -93,21 +93,24 @@ class MobileScannerWeb extends MobileScannerPlatform {
     // Also prevent play/pause events from changing the media controls.
     videoElement.controls = false;
 
-    videoElement.onplay = (JSAny _) {
-      videoElement.controls = false;
-    }.toJS;
+    videoElement.onplay =
+        (JSAny _) {
+          videoElement.controls = false;
+        }.toJS;
 
-    videoElement.onpause = (JSAny _) {
-      videoElement.controls = false;
-    }.toJS;
+    videoElement.onpause =
+        (JSAny _) {
+          videoElement.controls = false;
+        }.toJS;
 
     // Attach the video element to its parent container
     // and setup the PlatformView factory for this `textureId`.
-    _divElement = HTMLDivElement()
-      ..style.objectFit = 'cover'
-      ..style.height = '100%'
-      ..style.width = '100%'
-      ..append(videoElement);
+    _divElement =
+        HTMLDivElement()
+          ..style.objectFit = 'cover'
+          ..style.height = '100%'
+          ..style.width = '100%'
+          ..append(videoElement);
 
     ui_web.platformViewRegistry.registerViewFactory(
       _getViewType(textureId),
@@ -158,9 +161,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   ///
   /// Throws a [MobileScannerException] if the permission was denied,
   /// or if using a video stream, with the given set of constraints, is unsupported.
-  Future<MediaStream> _prepareVideoStream(
-    CameraFacing cameraDirection,
-  ) async {
+  Future<MediaStream> _prepareVideoStream(CameraFacing cameraDirection) async {
     if (window.navigator.mediaDevices.isUndefinedOrNull) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.unsupported,
@@ -184,9 +185,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       );
 
       constraints = MediaStreamConstraints(
-        video: MediaTrackConstraintSet(
-          facingMode: facingMode.toJS,
-        ),
+        video: MediaTrackConstraintSet(facingMode: facingMode.toJS),
       );
     }
 
@@ -263,10 +262,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
       if (_barcodeReader!.paused ?? false) {
         await _barcodeReader?.resume();
 
-        final CameraFacing cameraDirection =
-            _settingsDelegate.getCameraDirection(
-          _barcodeReader?.videoStream,
-        );
+        final CameraFacing cameraDirection = _settingsDelegate
+            .getCameraDirection(_barcodeReader?.videoStream);
 
         return MobileScannerViewAttributes(
           cameraDirection: cameraDirection,
@@ -277,10 +274,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
         );
       }
 
-      throw const MobileScannerException(
+      throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
         errorDetails: MobileScannerErrorDetails(
-          message: 'The scanner was already started.',
+          message: MobileScannerErrorCode.controllerAlreadyInitialized.message,
         ),
       );
     }

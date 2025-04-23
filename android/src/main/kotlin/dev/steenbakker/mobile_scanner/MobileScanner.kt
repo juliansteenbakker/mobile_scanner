@@ -233,9 +233,7 @@ class MobileScanner(
                             // whenever a new Surface is needed.
                         }
 
-                        // TODO: replace with "onSurfaceCleanup" when available in Flutter 3.28 or later
-                        // See https://github.com/flutter/flutter/pull/160937
-                        override fun onSurfaceDestroyed() {
+                        override fun onSurfaceCleanup() {
                             // Invalidate the SurfaceRequest so that CameraX knows to to make a new request
                             // for a surface.
                             request.invalidate()
@@ -515,11 +513,13 @@ class MobileScanner(
     /**
      * Pause barcode scanning.
      */
-    fun pause() {
-        if (isPaused) {
-            throw AlreadyPaused()
-        } else if (isStopped()) {
-            throw AlreadyStopped()
+    fun pause(force: Boolean = false) {
+        if (!force) {
+            if (isPaused) {
+                throw AlreadyPaused()
+            } else if (isStopped()) {
+                throw AlreadyStopped()
+            }
         }
 
         deviceOrientationListener.stop()
@@ -529,9 +529,11 @@ class MobileScanner(
     /**
      * Stop barcode scanning.
      */
-    fun stop() {
-        if (!isPaused && isStopped()) {
-            throw AlreadyStopped()
+    fun stop(force: Boolean = false) {
+        if (!force) {
+            if (!isPaused && isStopped()) {
+                throw AlreadyStopped()
+            }
         }
 
         deviceOrientationListener.stop()

@@ -11,23 +11,6 @@ class ScannerErrorWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String errorMessage;
-
-    switch (error.errorCode) {
-      case MobileScannerErrorCode.controllerUninitialized:
-        errorMessage = 'Controller not ready.';
-      case MobileScannerErrorCode.permissionDenied:
-        errorMessage = 'Permission denied';
-      case MobileScannerErrorCode.unsupported:
-        errorMessage = 'Scanning is unsupported on this device';
-      case MobileScannerErrorCode.controllerAlreadyInitialized:
-        errorMessage = 'Controller is already initialized';
-      case MobileScannerErrorCode.controllerDisposed:
-        errorMessage = 'Controller is disposed and cannot be used';
-      case MobileScannerErrorCode.genericError:
-        errorMessage = 'Generic Error';
-    }
-
     return ColoredBox(
       color: Colors.black,
       child: Center(
@@ -39,13 +22,11 @@ class ScannerErrorWidget extends StatelessWidget {
               child: Icon(Icons.error, color: Colors.white),
             ),
             Text(
-              errorMessage,
+              error.errorCode.message,
               style: const TextStyle(color: Colors.white),
             ),
-            Text(
-              error.errorDetails?.message ?? '',
-              style: const TextStyle(color: Colors.white),
-            ),
+            if (error.errorDetails?.message case final String message)
+              Text(message, style: const TextStyle(color: Colors.white)),
           ],
         ),
       ),
