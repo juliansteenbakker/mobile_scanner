@@ -5,7 +5,6 @@
 //  Created by Julian Steenbakker on 21/04/2025.
 //
 
-
 #if os(iOS)
   import Flutter
   import UIKit

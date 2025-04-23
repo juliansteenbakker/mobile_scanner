@@ -1148,6 +1148,3 @@ extension UIDeviceOrientation {
     }
 }
 #endif
-
-
-

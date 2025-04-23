@@ -178,19 +178,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           value = value.copyWith(zoomScale: zoomScale);
         });
 
-    if (defaultTargetPlatform != TargetPlatform.macOS) {
-      if (MobileScannerPlatform.instance
-          case final MethodChannelMobileScanner implementation when defaultTargetPlatform != TargetPlatform.macOS) {
-        _deviceOrientationSubscription = implementation
-            .deviceOrientationChangedStream
-            .listen((DeviceOrientation orientation) {
-              if (_isDisposed) {
-                return;
-              }
+    if (MobileScannerPlatform.instance
+        case final MethodChannelMobileScanner implementation
+        when defaultTargetPlatform != TargetPlatform.macOS) {
+      _deviceOrientationSubscription = implementation
+          .deviceOrientationChangedStream
+          .listen((DeviceOrientation orientation) {
+            if (_isDisposed) {
+              return;
+            }
 
-              value = value.copyWith(deviceOrientation: orientation);
-            });
-      }
+            value = value.copyWith(deviceOrientation: orientation);
+          });
     }
   }
 
