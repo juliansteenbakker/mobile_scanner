@@ -2,7 +2,8 @@ import 'dart:math' as math;
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 
-/// A [CustomPainter] that draws the barcode as an outlined barcode box with rounded corners and a displayed value.
+/// A [CustomPainter] that draws the barcode as an outlined barcode box with
+/// rounded corners and a displayed value.
 class BarcodePainter extends CustomPainter {
   /// Construct a new [BarcodePainter] instance.
   const BarcodePainter({
@@ -52,7 +53,8 @@ class BarcodePainter extends CustomPainter {
       return;
     }
 
-    final ratios = calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
+    final ({double heightRatio, double widthRatio}) ratios =
+        calculateBoxFitRatio(boxFit, cameraPreviewSize, size);
 
     final double horizontalPadding =
         (cameraPreviewSize.width * ratios.widthRatio - size.width) / 2;
@@ -115,10 +117,11 @@ class BarcodePainter extends CustomPainter {
     final double textWidth = textPainter.width;
     final double textHeight = textPainter.height;
 
-    canvas.save();
-    canvas.translate(center.dx, center.dy);
-    canvas.rotate(angle); // Rotate the text to match the barcode
-    canvas.translate(-center.dx, -center.dy);
+    canvas
+      ..save()
+      ..translate(center.dx, center.dy)
+      ..rotate(angle) // Rotate the text to match the barcode
+      ..translate(-center.dx, -center.dy);
 
     final Rect textRect = Rect.fromCenter(
       center: center,
@@ -156,15 +159,16 @@ class BarcodePainter extends CustomPainter {
   }
 }
 
-/// Calculate the scaling ratios for width and height to fit the small box (cameraPreviewSize)
-/// into the large box (size) based on the specified BoxFit mode.
-/// Returns a record containing the width and height scaling ratios.
+/// Calculate the scaling ratios for width and height to fit the small box
+/// (cameraPreviewSize) into the large box (size) based on the specified BoxFit
+/// mode. Returns a record containing the width and height scaling ratios.
 ({double widthRatio, double heightRatio}) calculateBoxFitRatio(
   BoxFit boxFit,
   Size cameraPreviewSize,
   Size size,
 ) {
-  // If the width or height of cameraPreviewSize or size is 0, return (1.0, 1.0) (no scaling)
+  // If the width or height of cameraPreviewSize or size is 0, return (1.0, 1.0)
+  // (no scaling)
   if (cameraPreviewSize.width <= 0 ||
       cameraPreviewSize.height <= 0 ||
       size.width <= 0 ||
@@ -173,8 +177,8 @@ class BarcodePainter extends CustomPainter {
   }
 
   // Calculate the scaling ratios for width and height
-  final widthRatio = size.width / cameraPreviewSize.width;
-  final heightRatio = size.height / cameraPreviewSize.height;
+  final double widthRatio = size.width / cameraPreviewSize.width;
+  final double heightRatio = size.height / cameraPreviewSize.height;
 
   switch (boxFit) {
     case BoxFit.fill:
@@ -182,13 +186,14 @@ class BarcodePainter extends CustomPainter {
       return (widthRatio: widthRatio, heightRatio: heightRatio);
 
     case BoxFit.contain:
-      // Maintain aspect ratio, ensure the content fits entirely within the large box
-      final ratio = math.min(widthRatio, heightRatio);
+      // Maintain aspect ratio, ensure the content fits entirely within the
+      // large box
+      final double ratio = math.min(widthRatio, heightRatio);
       return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.cover:
       // Maintain aspect ratio, ensure the content fully covers the large box
-      final ratio = math.max(widthRatio, heightRatio);
+      final double ratio = math.max(widthRatio, heightRatio);
       return (widthRatio: ratio, heightRatio: ratio);
 
     case BoxFit.fitWidth:
@@ -204,8 +209,10 @@ class BarcodePainter extends CustomPainter {
       return (widthRatio: 1.0, heightRatio: 1.0);
 
     case BoxFit.scaleDown:
-      // If the content is larger than the large box, scale down to fit; otherwise, no scaling
-      final ratio = math.min(1.0, math.min(widthRatio, heightRatio));
+      // If the content is larger than the large box, scale down to fit;
+      // otherwise, no scaling
+      final double ratio =
+          math.min(1, math.min(widthRatio, heightRatio)).toDouble();
       return (widthRatio: ratio, heightRatio: ratio);
   }
 }

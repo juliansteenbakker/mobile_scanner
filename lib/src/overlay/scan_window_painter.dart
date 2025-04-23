@@ -84,10 +84,10 @@ class ScanWindowPainter extends CustomPainter {
           ..strokeJoin = borderStrokeJoin;
 
     // Paint the overlay with the cutout.
-    canvas.drawPath(overlayWithCutoutPath, overlayWithCutoutPaint);
-
-    // Then, draw the border around the cutout area.
-    canvas.drawRRect(cutoutRect, borderPaint);
+    canvas
+      ..drawPath(overlayWithCutoutPath, overlayWithCutoutPaint)
+      // Then, draw the border around the cutout area.
+      ..drawRRect(cutoutRect, borderPaint);
   }
 
   @override

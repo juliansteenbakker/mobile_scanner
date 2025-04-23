@@ -42,8 +42,8 @@ class _ResolutionDialogState extends State<ResolutionDialog> {
   }
 
   void _saveResolution(BuildContext context) {
-    final widthText = widthController.text.trim();
-    final heightText = heightController.text.trim();
+    final String widthText = widthController.text.trim();
+    final String heightText = heightController.text.trim();
 
     // Check for empty input
     if (widthText.isEmpty || heightText.isEmpty) {
@@ -53,8 +53,8 @@ class _ResolutionDialogState extends State<ResolutionDialog> {
       return;
     }
 
-    final width = int.tryParse(widthText);
-    final height = int.tryParse(heightText);
+    final int? width = int.tryParse(widthText);
+    final int? height = int.tryParse(heightText);
 
     // Check if values are valid numbers
     if (width == null || height == null) {

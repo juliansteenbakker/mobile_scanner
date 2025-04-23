@@ -31,8 +31,9 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lint: ">=1.10.0 <3.0.0"
   mocktail: ^1.0.4
+  very_good_analysis: ^7.0.0
+
 
 flutter:
   plugin:

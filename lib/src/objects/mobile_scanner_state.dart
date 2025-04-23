@@ -1,8 +1,7 @@
 /// @docImport 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 library;
 
-import 'dart:ui';
-
+import 'package:flutter/services.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
@@ -20,6 +19,7 @@ class MobileScannerState {
     required this.size,
     required this.torchState,
     required this.zoomScale,
+    required this.deviceOrientation,
     this.error,
   });
 
@@ -33,7 +33,8 @@ class MobileScannerState {
         isRunning: false,
         size: Size.zero,
         torchState: TorchState.unavailable,
-        zoomScale: 1.0,
+        deviceOrientation: DeviceOrientation.portraitUp,
+        zoomScale: 1,
       );
 
   /// The number of available cameras.
@@ -55,7 +56,8 @@ class MobileScannerState {
 
   /// Whether the mobile scanner is currently in the process of starting.
   ///
-  /// This flag helps prevent duplicate calls to [MobileScannerController.start].
+  /// This flag helps prevent duplicate calls to
+  /// [MobileScannerController.start].
   final bool isStarting;
 
   /// Whether the mobile scanner is currently running.
@@ -71,6 +73,9 @@ class MobileScannerState {
 
   /// The current zoom scale of the camera.
   final double zoomScale;
+
+  /// The current device UI orientation.
+  final DeviceOrientation deviceOrientation;
 
   /// Whether permission to access the camera was granted.
   bool get hasCameraPermission {
@@ -88,6 +93,7 @@ class MobileScannerState {
     bool? isRunning,
     Size? size,
     TorchState? torchState,
+    DeviceOrientation? deviceOrientation,
     double? zoomScale,
   }) {
     return MobileScannerState(
@@ -99,6 +105,7 @@ class MobileScannerState {
       isRunning: isRunning ?? this.isRunning,
       size: size ?? this.size,
       torchState: torchState ?? this.torchState,
+      deviceOrientation: deviceOrientation ?? this.deviceOrientation,
       zoomScale: zoomScale ?? this.zoomScale,
     );
   }

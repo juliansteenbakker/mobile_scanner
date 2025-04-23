@@ -14,9 +14,11 @@ class ScannedBarcodeLabel extends StatelessWidget {
     return StreamBuilder(
       stream: barcodes,
       builder: (context, snapshot) {
-        final scannedBarcodes = snapshot.data?.barcodes ?? [];
+        final List<Barcode> scannedBarcodes = snapshot.data?.barcodes ?? [];
 
-        final values = scannedBarcodes.map((e) => e.displayValue).join('\n');
+        final String values = scannedBarcodes
+            .map((e) => e.displayValue)
+            .join('\n');
 
         if (scannedBarcodes.isEmpty) {
           return const Text(

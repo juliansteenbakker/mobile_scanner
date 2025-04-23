@@ -6,9 +6,9 @@ import 'package:mobile_scanner/src/overlay/scan_window_painter.dart';
 class ScanWindowOverlay extends StatelessWidget {
   /// Construct a new [ScanWindowOverlay] instance.
   const ScanWindowOverlay({
-    super.key,
     required this.controller,
     required this.scanWindow,
+    super.key,
     this.borderColor = Colors.white,
     this.borderRadius = BorderRadius.zero,
     this.borderStrokeCap = StrokeCap.butt,

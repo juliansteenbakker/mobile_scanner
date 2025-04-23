@@ -23,13 +23,13 @@ class AnalyzeImageButton extends StatelessWidget {
     }
     final picker = ImagePicker();
 
-    final image = await picker.pickImage(source: ImageSource.gallery);
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
 
     if (image == null) {
       return;
     }
 
-    final barcodes = await controller.analyzeImage(image.path);
+    final BarcodeCapture? barcodes = await controller.analyzeImage(image.path);
 
     if (!context.mounted) {
       return;
