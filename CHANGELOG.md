@@ -115,6 +115,9 @@ Known issues:
 * [Apple] The scan window does not work correctly.
 * [Apple] The camera flash briefly shows when the camera is started.
 
+## 6.0.10
+* [Apple] Fixed a crash when stopping the camera when the camera device is nil.
+
 ## 6.0.9
 Fixed onDetect not working when a `MobileScannerController` is provided.
 
