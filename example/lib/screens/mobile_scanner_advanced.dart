@@ -284,101 +284,111 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
         ],
       ),
       backgroundColor: Colors.black,
-      body: Stack(
-        children: [
-          MobileScanner(
-            // useAppLifecycleState: false, // Only set to false if you want
-            // to handle lifecycle changes yourself
-            scanWindow: useScanWindow ? scanWindow : null,
-            controller: controller,
-            errorBuilder: (context, error) {
-              return ScannerErrorWidget(error: error);
-            },
-            fit: boxFit,
-          ),
-          if (useBarcodeOverlay)
-            BarcodeOverlay(controller: controller, boxFit: boxFit),
-          // The scanWindow is not supported on the web.
-          if (!kIsWeb && useScanWindow)
-            ScanWindowOverlay(scanWindow: scanWindow, controller: controller),
-          if (returnImage)
-            Align(
-              alignment: Alignment.topRight,
-              child: Card(
-                clipBehavior: Clip.hardEdge,
-                shape: RoundedRectangleBorder(
-                  side: const BorderSide(color: Colors.white),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: SizedBox(
-                  width: 100,
-                  height: 100,
-                  child: StreamBuilder<BarcodeCapture>(
-                    stream: controller.barcodes,
-                    builder: (context, snapshot) {
-                      final BarcodeCapture? barcode = snapshot.data;
-
-                      if (barcode == null) {
-                        return const Center(
-                          child: Text(
-                            'Your scanned barcode will appear here',
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }
-
-                      final Uint8List? barcodeImage = barcode.image;
-
-                      if (barcodeImage == null) {
-                        return const Center(
-                          child: Text('No image for this barcode.'),
-                        );
-                      }
-
-                      return Image.memory(
-                        barcodeImage,
-                        fit: BoxFit.cover,
-                        gaplessPlayback: true,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Center(
-                            child: Text('Could not decode image bytes. $error'),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              alignment: Alignment.bottomCenter,
-              height: 200,
-              color: const Color.fromRGBO(0, 0, 0, 0.4),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      body:
+          controller == null || hideMobileScannerWidget
+              ? const Placeholder()
+              : Stack(
                 children: [
-                  Expanded(
-                    child: ScannedBarcodeLabel(barcodes: controller!.barcodes),
+                  MobileScanner(
+                    // useAppLifecycleState: false, // Only set to false if you want
+                    // to handle lifecycle changes yourself
+                    scanWindow: useScanWindow ? scanWindow : null,
+                    controller: controller,
+                    errorBuilder: (context, error) {
+                      return ScannerErrorWidget(error: error);
+                    },
+                    fit: boxFit,
                   ),
-                  if (!kIsWeb) ZoomScaleSlider(controller: controller!),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      ToggleFlashlightButton(controller: controller!),
-                      StartStopButton(controller: controller!),
-                      PauseButton(controller: controller!),
-                      SwitchCameraButton(controller: controller!),
-                      AnalyzeImageButton(controller: controller!),
-                    ],
+                  if (useBarcodeOverlay)
+                    BarcodeOverlay(controller: controller!, boxFit: boxFit),
+                  // The scanWindow is not supported on the web.
+                  if (!kIsWeb && useScanWindow)
+                    ScanWindowOverlay(
+                      scanWindow: scanWindow,
+                      controller: controller!,
+                    ),
+                  if (returnImage)
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: Card(
+                        clipBehavior: Clip.hardEdge,
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: Colors.white),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: SizedBox(
+                          width: 100,
+                          height: 100,
+                          child: StreamBuilder<BarcodeCapture>(
+                            stream: controller!.barcodes,
+                            builder: (context, snapshot) {
+                              final BarcodeCapture? barcode = snapshot.data;
+
+                              if (barcode == null) {
+                                return const Center(
+                                  child: Text(
+                                    'Your scanned barcode will appear here',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                );
+                              }
+
+                              final Uint8List? barcodeImage = barcode.image;
+
+                              if (barcodeImage == null) {
+                                return const Center(
+                                  child: Text('No image for this barcode.'),
+                                );
+                              }
+
+                              return Image.memory(
+                                barcodeImage,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Center(
+                                    child: Text(
+                                      'Could not decode image bytes. $error',
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      alignment: Alignment.bottomCenter,
+                      height: 200,
+                      color: const Color.fromRGBO(0, 0, 0, 0.4),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: ScannedBarcodeLabel(
+                              barcodes: controller!.barcodes,
+                            ),
+                          ),
+                          if (!kIsWeb) ZoomScaleSlider(controller: controller!),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              ToggleFlashlightButton(controller: controller!),
+                              StartStopButton(controller: controller!),
+                              PauseButton(controller: controller!),
+                              SwitchCameraButton(controller: controller!),
+                              AnalyzeImageButton(controller: controller!),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
