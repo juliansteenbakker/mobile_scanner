@@ -28,6 +28,7 @@ enum _PopupMenuItems {
   useBarcodeOverlay,
   boxFit,
   formats,
+  scanWindow,
 }
 
 /// Implementation of Mobile Scanner example with advanced configuration
@@ -40,10 +41,11 @@ class MobileScannerAdvanced extends StatefulWidget {
 }
 
 class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
-  // Cannot be changed while the scanner is running.
-  static const useScanWindow = true;
-
   MobileScannerController? controller;
+
+  // A scan window does work on web, but not the overlay to preview the scan
+  // window. This is why we disable it here for web examples.
+  bool useScanWindow = !kIsWeb;
 
   bool autoZoom = false;
   bool invertImage = false;
@@ -227,6 +229,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   autoZoom = !autoZoom;
                 case _PopupMenuItems.useBarcodeOverlay:
                   useBarcodeOverlay = !useBarcodeOverlay;
+                case _PopupMenuItems.scanWindow:
+                  useScanWindow = !useScanWindow;
               }
 
               // Rebuild and restart the controller with updated settings
@@ -279,6 +283,11 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     checked: useBarcodeOverlay,
                     child: Text(_PopupMenuItems.useBarcodeOverlay.name),
                   ),
+                  CheckedPopupMenuItem(
+                    value: _PopupMenuItems.scanWindow,
+                    checked: useScanWindow,
+                    child: Text(_PopupMenuItems.scanWindow.name),
+                  ),
                 ],
           ),
         ],
@@ -302,7 +311,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   if (useBarcodeOverlay)
                     BarcodeOverlay(controller: controller!, boxFit: boxFit),
                   // The scanWindow is not supported on the web.
-                  if (!kIsWeb && useScanWindow)
+                  if (useScanWindow)
                     ScanWindowOverlay(
                       scanWindow: scanWindow,
                       controller: controller!,
