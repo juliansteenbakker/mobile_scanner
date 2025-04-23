@@ -34,7 +34,7 @@ void main() {
         isRunning: true,
         size: Size(1920, 1080),
         torchState: TorchState.off,
-        zoomScale: 1.0,
+        zoomScale: 1,
       ),
     );
     when(() => mockController.start()).thenAnswer((_) async {});
@@ -92,7 +92,7 @@ void main() {
           isRunning: false,
           size: Size.zero,
           torchState: TorchState.unavailable,
-          zoomScale: 1.0,
+          zoomScale: 1,
           error: exception,
         ),
       );
@@ -143,7 +143,7 @@ void main() {
     });
   });
 
-  // TODO: Improve tests in new PR
+  // TODO(juliansteenbakker): Improve tests in new PR
   // group('MobileScannerController Tests', () {
   //   test('start() should call platform start method', () async {
   //     await mockController.start();
@@ -160,7 +160,8 @@ void main() {
   //     verify(() => mockController.toggleTorch()).called(1);
   //   });
   //
-  //   test('switchCamera() should call platform switchCamera method', () async {
+  //   test('switchCamera() should call platform switchCamera method',
+  //       () async {
   //     await mockController.switchCamera();
   //     verify(() => mockController.switchCamera()).called(1);
   //   });

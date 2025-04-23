@@ -31,7 +31,8 @@ class MobileScanner extends StatefulWidget {
   /// The controller for the camera preview.
   final MobileScannerController? controller;
 
-  /// The function that signals when new codes were detected by the [controller].
+  /// The function that signals when new codes were detected by the
+  /// [controller].
   ///
   /// To handle both [BarcodeCapture]s and [MobileScannerBarcodeException]s,
   /// use the [MobileScannerController.barcodes] stream directly (recommended),
@@ -60,7 +61,8 @@ class MobileScanner extends StatefulWidget {
   /// to create a cutout for the camera preview.
   ///
   /// The [BoxConstraints] for this builder
-  /// are the same constraints that are used to compute the effective [scanWindow].
+  /// are the same constraints that are used to compute the effective
+  /// [scanWindow].
   ///
   /// The overlay is only displayed when the camera preview is visible.
   final LayoutWidgetBuilder? overlayBuilder;
@@ -85,8 +87,8 @@ class MobileScanner extends StatefulWidget {
   /// This is because the size of the camera preview widget
   /// might not be the same as the size of the camera output.
   ///
-  /// For example, the applied [fit] has an effect on the size of the camera preview widget,
-  /// while the camera preview size remains the same.
+  /// For example, the applied [fit] has an effect on the size of the camera
+  /// preview widget, while the camera preview size remains the same.
   ///
   /// The following example shows a scan window that is centered,
   /// fills half the height and one third of the width of the layout:
@@ -115,8 +117,8 @@ class MobileScanner extends StatefulWidget {
   ///
   /// If the [scanWindow] would be updated,
   /// due to new layout constraints for the scanner,
-  /// and the width or height of the new scan window have not changed by this threshold,
-  /// then the scan window is not updated.
+  /// and the width or height of the new scan window have not changed by this
+  /// threshold, then the scan window is not updated.
   ///
   /// It is recommended to set this threshold
   /// if scan window updates cause performance issues.
@@ -265,20 +267,20 @@ class _MobileScannerState extends State<MobileScanner>
     );
   }
 
-  StreamSubscription? _subscription;
+  StreamSubscription<BarcodeCapture>? _subscription;
 
   Future<void> initMobileScanner() async {
     // If debug mode is enabled, stop the controller first before starting it.
-    // If a hot-restart is initiated, the controller won't be stopped, and because
-    // there is no way of knowing if a hot-restart has happened, we must assume
-    // every start is a hot-restart. Related issue:
+    // If a hot-restart is initiated, the controller won't be stopped, and
+    // because there is no way of knowing if a hot-restart has happened,
+    // we must assume every start is a hot-restart. Related issue:
     // https://github.com/flutter/flutter/issues/10437
     if (kDebugMode) {
       if (MobileScannerPlatform.instance
           case final MethodChannelMobileScanner implementation) {
         try {
           await implementation.stop(force: true);
-        } catch (e) {
+        } on Exception catch (e) {
           // Don't do anything if the controller is already stopped.
           debugPrint('$e');
         }

@@ -6,8 +6,8 @@ import 'package:mobile_scanner/src/scan_window_calculation.dart';
 void main() {
   group('Scan window relative to texture', () {
     group('Landscape widget inside portrait texture', () {
-      const textureSize = Size(480.0, 640.0);
-      const widgetSize = Size(432.0, 256.0);
+      const textureSize = Size(480, 640);
+      const widgetSize = Size(432, 256);
       final ctx = ScanWindowTestContext(
         textureSize: textureSize,
         widgetSize: widgetSize,
@@ -33,7 +33,7 @@ void main() {
         {
           'name': 'BoxFit.fitHeight',
           'fit': BoxFit.fitHeight,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
         {
           'name': 'BoxFit.fitWidth',
@@ -58,12 +58,12 @@ void main() {
         {
           'name': 'BoxFit.contain',
           'fit': BoxFit.contain,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
         {
           'name': 'BoxFit.scaleDown',
           'fit': BoxFit.scaleDown,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
       ];
 
@@ -78,8 +78,8 @@ void main() {
     });
 
     group('Landscape widget inside landscape texture', () {
-      const textureSize = Size(640.0, 480.0);
-      const widgetSize = Size(320.0, 120.0);
+      const textureSize = Size(640, 480);
+      const widgetSize = Size(320, 120);
       final ctx = ScanWindowTestContext(
         textureSize: textureSize,
         widgetSize: widgetSize,
@@ -105,7 +105,7 @@ void main() {
         {
           'name': 'BoxFit.fitHeight',
           'fit': BoxFit.fitHeight,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
         {
           'name': 'BoxFit.fitWidth',
@@ -120,12 +120,12 @@ void main() {
         {
           'name': 'BoxFit.contain',
           'fit': BoxFit.contain,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
         {
           'name': 'BoxFit.scaleDown',
           'fit': BoxFit.scaleDown,
-          'expected': const Rect.fromLTRB(0.0, 0.25, 1.0, 0.75),
+          'expected': const Rect.fromLTRB(0, 0.25, 1, 0.75),
         },
       ];
 
@@ -187,8 +187,8 @@ void main() {
         },
       ];
 
-      const cameraPreviewSize = Size(480.0, 640.0);
-      const size = Size(432.0, 256.0);
+      const cameraPreviewSize = Size(480, 640);
+      const size = Size(432, 256);
 
       for (final testCase in testCases) {
         test('${testCase['name']} scaling', () {

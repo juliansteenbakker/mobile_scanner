@@ -17,7 +17,8 @@ final class RotatedPreview extends StatefulWidget {
     super.key,
   });
 
-  /// Construct a new [RotatedPreview] instance, from the given [cameraFacingDirection].
+  /// Construct a new [RotatedPreview] instance, from the given
+  /// [cameraFacingDirection].
   factory RotatedPreview.fromCameraDirection(
     CameraFacing cameraFacingDirection, {
     required Widget child,
@@ -54,7 +55,8 @@ final class RotatedPreview extends StatefulWidget {
   /// The facing sign for the camera facing direction.
   final int facingSign;
 
-  /// The initial device orientation when this [RotatedPreview] widget is created.
+  /// The initial device orientation when this [RotatedPreview] widget is
+  /// created.
   final DeviceOrientation initialDeviceOrientation;
 
   /// The orientation of the camera sensor on the device, in degrees.

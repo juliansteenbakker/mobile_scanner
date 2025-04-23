@@ -25,7 +25,8 @@ class StartOptions {
   /// The desired camera resolution for the scanner.
   final Size? cameraResolution;
 
-  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
+  /// Invert image colors for analyzer to support white-on-black barcodes, which
+  /// are not supported by MLKit.
   final bool invertImage;
 
   /// The detection speed for the scanner.
@@ -46,7 +47,8 @@ class StartOptions {
   /// Whether the camera should auto zoom if the detected code is to far from
   /// the camera.
   ///
-  /// This option is only supported on Android. Other platforms will ignore this option.
+  /// This option is only supported on Android. Other platforms will ignore this
+  /// option.
   final bool autoZoom;
 
   /// Converts this object to a map.

@@ -26,7 +26,7 @@ void main() {
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
-      final barcodePainter = BarcodePainter(
+      BarcodePainter(
         barcodeCorners: [
           const Offset(10, 10),
           const Offset(100, 10),
@@ -40,16 +40,15 @@ void main() {
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,
-      );
-
+      )
       // Act: Call the paint method
-      barcodePainter.paint(mockCanvas, const Size(200, 200));
+      .paint(mockCanvas, const Size(200, 200));
 
       // Assert: Verify drawing operations
       verify(() => mockCanvas.drawPath(any(), any())).called(1);
       verify(() => mockCanvas.drawRRect(any(), any())).called(1);
-      verify(() => mockCanvas.save()).called(1);
-      verify(() => mockCanvas.restore()).called(1);
+      verify(mockCanvas.save).called(1);
+      verify(mockCanvas.restore).called(1);
     });
 
     testWidgets('paint should not draw if barcodeCorners is invalid', (
@@ -60,7 +59,7 @@ void main() {
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
-      final barcodePainter = BarcodePainter(
+      BarcodePainter(
         barcodeCorners: [],
         barcodeSize: Size.zero,
         boxFit: BoxFit.contain,
@@ -69,9 +68,7 @@ void main() {
         style: PaintingStyle.stroke,
         barcodeValue: '',
         textPainter: textPainter,
-      );
-
-      barcodePainter.paint(mockCanvas, const Size(200, 200));
+      ).paint(mockCanvas, const Size(200, 200));
 
       // Verify that NO draw operations happen
       verifyNever(() => mockCanvas.drawPath(any(), any()));
@@ -85,7 +82,7 @@ void main() {
         textAlign: TextAlign.center,
         textDirection: TextDirection.ltr,
       );
-      final barcodePainter = BarcodePainter(
+      BarcodePainter(
         barcodeCorners: [
           const Offset(10, 10),
           const Offset(100, 10),
@@ -99,9 +96,7 @@ void main() {
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,
-      );
-
-      barcodePainter.paint(mockCanvas, const Size(200, 200));
+      ).paint(mockCanvas, const Size(200, 200));
 
       // Ensure text rotation is applied
       verify(() => mockCanvas.translate(any(), any())).called(2);

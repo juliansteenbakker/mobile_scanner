@@ -4,25 +4,27 @@ import 'package:flutter/rendering.dart';
 
 /// Calculate the scan window rectangle relative to the texture size.
 ///
-/// The [scanWindow] rectangle will be relative and scaled to [widgetSize], not [textureSize].
-/// Depending on the given [fit], the [scanWindow] can partially overlap the [textureSize],
-/// or not at all.
+/// The [scanWindow] rectangle will be relative and scaled to [widgetSize], not
+/// [textureSize]. Depending on the given [fit], the [scanWindow] can partially
+/// overlap the [textureSize], or not at all.
 ///
 /// Due to using [BoxFit] the content will always be centered on its parent,
 /// which enables converting the rectangle to be relative to the texture.
 ///
-/// Because the size of the actual texture and the size of the texture in widget-space
-/// can be different, calculate the size of the scan window in percentages,
-/// rather than pixels.
+/// Because the size of the actual texture and the size of the texture in
+/// widget-space can be different, calculate the size of the scan window in
+/// percentages, rather than pixels.
 ///
-/// Returns a [Rect] that represents the position and size of the scan window in the texture.
+/// Returns a [Rect] that represents the position and size of the scan window
+/// in the texture.
 Rect calculateScanWindowRelativeToTextureInPercentage(
   BoxFit fit,
   Rect scanWindow, {
   required Size textureSize,
   required Size widgetSize,
 }) {
-  // Convert the texture size to a size in widget-space, with the box fit applied.
+  // Convert the texture size to a size in widget-space, with the box fit
+  // applied.
   final fittedTextureSize = applyBoxFit(fit, textureSize, widgetSize);
 
   // Get the correct scaling values depending on the given BoxFit mode
@@ -54,7 +56,8 @@ Rect calculateScanWindowRelativeToTextureInPercentage(
       sy = s;
   }
 
-  // Fit the texture size to the widget rectangle given by the scaling values above.
+  // Fit the texture size to the widget rectangle given by the scaling values
+  // above.
   final textureWindow = Alignment.center.inscribe(
     Size(textureSize.width * sx, textureSize.height * sy),
     Rect.fromLTWH(0, 0, widgetSize.width, widgetSize.height),

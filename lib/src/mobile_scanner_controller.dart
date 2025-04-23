@@ -48,7 +48,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// or fallback to the closest available resolution.
   /// When this is null, Android defaults to a resolution of 640x480.
   ///
-  /// Bear in mind that changing the resolution has an effect on the aspect ratio.
+  /// Bear in mind that changing the resolution has an effect on the aspect
+  /// ratio.
   ///
   /// When the camera orientation changes,
   /// the resolution will be flipped to match the new dimensions of the display.
@@ -90,8 +91,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
-  /// Invert image colors for analyzer to support white-on-black barcodes, which are not supported by MLKit.
-  /// Usage of this parameter can incur a performance cost, as frames need to be altered during processing.
+  /// Invert image colors for analyzer to support white-on-black barcodes, which
+  /// are not supported by MLKit. Usage of this parameter can incur a
+  /// performance cost, as frames need to be altered during processing.
   ///
   /// Defaults to false and is only supported on Android.
   final bool invertImage;
@@ -193,10 +195,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
-  /// Returns false if stop is called but not necessary, otherwise true is returned.
+  /// Returns false if stop is called but not necessary, otherwise true is
+  /// returned.
   bool _stop() {
     // Do nothing if not initialized or already stopped.
-    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
+    // On the web, the permission popup triggers a lifecycle change from resumed
+    // to inactive,
     // due to the permission popup gaining focus.
     // This would 'stop' the camera while it is not ready yet.
     if (!value.isInitialized || !value.isRunning || _isDisposed) {
@@ -223,18 +227,21 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
-  /// The [formats] specify the barcode formats that should be detected in the image.
+  /// The [formats] specify the barcode formats that should be detected in the
+  /// image.
   /// If the [formats] are omitted or empty, all formats are detected.
   ///
   /// This is only supported on Android, physical iOS devices and MacOS.
-  /// This is not supported on the iOS Simulator, due to restrictions on the Simulator.
+  /// This is not supported on the iOS Simulator, due to restrictions on the
+  /// Simulator.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   ///
   /// If an error occurred during the analysis of the image,
   /// a [MobileScannerBarcodeException] error is thrown.
   ///
-  /// If analyzing images from a file is not supported, an [UnsupportedError] is thrown.
+  /// If analyzing images from a file is not supported, an [UnsupportedError]
+  /// is thrown.
   Future<BarcodeCapture?> analyzeImage(
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
@@ -293,9 +300,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If this is null, this defaults to the [facing] value.
   ///
   /// Does nothing if the camera is already running.
-  /// Upon calling this method, the necessary camera permission will be requested.
+  /// Upon calling this method, the necessary camera permission will be
+  /// requested.
   ///
-  /// If the permission is denied on iOS, MacOS or Web, there is no way to request it again.
+  /// If the permission is denied on iOS, MacOS or Web, there is no way to
+  /// request it again.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw MobileScannerException(
@@ -377,7 +386,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           error: error,
           size: Size.zero,
           torchState: TorchState.unavailable,
-          zoomScale: 1.0,
+          zoomScale: 1,
         );
       }
     }
@@ -471,7 +480,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Update the scan window with the given [window] rectangle.
   ///
-  /// If [window] is null, the scan window will be reset to the full camera preview.
+  /// If [window] is null, the scan window will be reset to the full camera
+  /// preview.
   Future<void> updateScanWindow(Rect? window) async {
     if (_isDisposed || !value.isInitialized) {
       return;

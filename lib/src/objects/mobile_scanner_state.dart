@@ -33,7 +33,7 @@ class MobileScannerState {
         isRunning: false,
         size: Size.zero,
         torchState: TorchState.unavailable,
-        zoomScale: 1.0,
+        zoomScale: 1,
       );
 
   /// The number of available cameras.
@@ -55,7 +55,8 @@ class MobileScannerState {
 
   /// Whether the mobile scanner is currently in the process of starting.
   ///
-  /// This flag helps prevent duplicate calls to [MobileScannerController.start].
+  /// This flag helps prevent duplicate calls to
+  /// [MobileScannerController.start].
   final bool isStarting;
 
   /// Whether the mobile scanner is currently running.
