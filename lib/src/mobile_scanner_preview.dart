@@ -22,9 +22,9 @@ class CameraPreview extends StatelessWidget {
       builder: (BuildContext context, MobileScannerState value, Widget? child) {
         return SizedBox.fromSize(
           size:
-          controller.value.deviceOrientation.isLandscape
-              ? value.size.flipped
-              : value.size,
+              controller.value.deviceOrientation.isLandscape
+                  ? value.size.flipped
+                  : value.size,
           child: _wrapInRotatedBox(child: controller.buildCameraView()),
         );
       },
@@ -48,7 +48,7 @@ extension on DeviceOrientation {
   /// Returns `true` if the device orientation is landscape (horizontal).
   bool get isLandscape =>
       this == DeviceOrientation.landscapeLeft ||
-          this == DeviceOrientation.landscapeRight;
+      this == DeviceOrientation.landscapeRight;
 
   /// Maps the different device orientations to quarter turns that the
   /// preview should take in account.
