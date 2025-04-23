@@ -336,7 +336,9 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
           );
       initialDeviceOrientation =
           _surfaceProducerDelegate?.initialDeviceOrientation;
-    } else if (defaultTargetPlatform == TargetPlatform.iOS ||
+    } else if (startResult case {'initialDeviceOrientation': final String orientation} when defaultTargetPlatform == TargetPlatform.iOS || defaultTargetPlatform == TargetPlatform.macOS) {
+       initialDeviceOrientation = orientation.parseDeviceOrientation();
+    }
         defaultTargetPlatform == TargetPlatform.macOS) {
       if (startResult['initialDeviceOrientation']
           case final String orientation) {
