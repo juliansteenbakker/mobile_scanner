@@ -155,6 +155,39 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     }
   }
 
+  /// This implementation fully disposes and reinitializes the
+  /// MobileScannerController every time a setting is changed via the menu.
+  ///
+  /// This is NOT optimized for production use.
+  /// Replacing the controller like this causes a short visible flicker and can
+  /// impact user experience, especially on slower devices.
+  ///
+  /// This is only used here to demonstrate dynamic configuration changes
+  /// without restarting the whole app or navigating away from the scanner view.
+  Future<void> _reinitializeController() async {
+    // Hide the MobileScanner widget temporarily
+    setState(() => hide = true);
+
+    // Let the UI settle
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Dispose of the current controller safely
+    await controller?.dispose();
+    controller = null;
+
+    // Create a new controller with updated configuration
+    controller = initController();
+
+    // Show the scanner again
+    setState(() => hide = false);
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    // Start scanning again
+    await controller?.start();
+  }
+
+  /// Hides the MobileScanner widget while the MobileScannerController is
+  /// rebuilding
   bool hide = false;
 
   @override
@@ -193,26 +226,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   useBarcodeOverlay = !useBarcodeOverlay;
               }
 
-              // In order to refresh the controller without leaving the screen
-              // hide the current MobileScanner widget, dispose and remove the
-              // current controller, initiate new controller, and show widget
-              // again while starting the controller.
-              hide = true;
-              setState(() {});
-              // Wait for the UI to settle
-              await Future<void>.delayed(const Duration(milliseconds: 300));
-
-              await controller!.dispose();
-              if (!mounted) return;
-              controller = null;
-
-              controller = initController();
-              hide = false;
-              setState(() {});
-              // Wait for the UI to settle
-              await Future<void>.delayed(const Duration(milliseconds: 300));
-
-              await controller!.start();
+              // Rebuild and restart the controller with updated settings
+              await _reinitializeController();
             },
             itemBuilder:
                 (context) => [
