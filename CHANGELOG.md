@@ -1,3 +1,8 @@
+## 7.0.0-rc.2
+
+Bugs fixed:
+* [Apple] Fixed build issues "Cannot use optional chaining on non-optional value".
+
 ## 7.0.0-rc.1
 
 After six months of development, Version 7.0.0 is finally moving out of beta with this release candidate!
