@@ -739,9 +739,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         for output in captureSession.outputs {
             captureSession.removeOutput(output)
         }
-        device?.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
 #if os(iOS)
-        device?.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
 #endif
 
         latestBuffer = nil
