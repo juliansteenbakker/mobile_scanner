@@ -266,6 +266,9 @@ class _MobileScannerState extends State<MobileScanner>
   StreamSubscription<BarcodeCapture>? _subscription;
 
   Future<void> initMobileScanner() async {
+    controller = widget.controller ?? MobileScannerController();
+
+    controller.attach();
     // If debug mode is enabled, stop the controller first before starting it.
     // If a hot-restart is initiated, the controller won't be stopped, and
     // because there is no way of knowing if a hot-restart has happened,
@@ -321,7 +324,6 @@ class _MobileScannerState extends State<MobileScanner>
   @override
   void initState() {
     super.initState();
-    controller = widget.controller ?? MobileScannerController();
     unawaited(initMobileScanner());
   }
 
