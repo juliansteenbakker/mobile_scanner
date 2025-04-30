@@ -456,10 +456,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     self.turnTorchOn()
                 }
 
-                // The height and width are swapped because the default video orientation is landscape right, but mobile_scanner operates in portrait mode.
+#if os(iOS)
+                // The height and width are swapped because the default video orientation for ios is landscape right, but mobile_scanner operates in portrait mode.
                 // When mobile_scanner is opened in landscape mode, the Dart code automatically swaps the width and height parameters back to match the correct orientation.
                 let size = ["width": Double(dimensions.height), "height": Double(dimensions.width)]
-                
+#else
+                let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
+#endif
                 // Return the result on the main thread after the session starts.
                 let answer: [String : Any?]
 
