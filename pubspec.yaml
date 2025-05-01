@@ -4,16 +4,12 @@ version: 7.0.0-rc.2
 repository: https://github.com/juliansteenbakker/mobile_scanner
 
 screenshots:
-- description: 'Flutter Demo Home Page'
+- description: 'Mobile Scanner Example Homepage'
   path: example/screenshots/homepage.png
-- description: 'Mobile Scanner with controller'
-  path: example/screenshots/controller.png
-- description: 'Mobile Scanner with controller (returning image)'
-  path: example/screenshots/returningImage.png
-- description: 'Mobile Scanner with zoom slider'
-  path: example/screenshots/zoomSlider.png
-- description: 'Mobile Scanner with overlay'
-  path: example/screenshots/overlay.png
+- description: 'Mobile Scanner Example'
+  path: example/screenshots/example_advanced.png
+- description: 'Mobile Scanner Example Settings'
+  path: example/screenshots/example_advanced_settings.png
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
