@@ -1,6 +1,6 @@
 # mobile_scanner_example
 
-Demonstrates how to use the mobile_scanner plugin.
+Demonstrates how to use the `mobile_scanner` plugin.
 
 ## Run Examples
 
@@ -11,57 +11,28 @@ Demonstrates how to use the mobile_scanner plugin.
 
 ## Examples Overview
 
-### With Controller
+### Basic
 
-Scanner widget with control buttons overlay. Shows first detected barcode.
-(See ListView example for detecting and displaying multiple barcodes at the same time.)
+A minimal example showing the simplest way to get `mobile_scanner` up and running.
 
-* Displays Flashlight, SwitchCamera and Start/Stop buttons.
-* Uses `MobileScannerController` to start/stop, toggle flashlight, switch camera.
-* Displays Gallery button to use images as source for analysis.
-* Handles changes in AppLifecycleState.
+* Uses the default `MobileScanner` widget.
+* Automatically detects and displays the first barcode.
+* No controller or UI controls.
+* Ideal starting point for understanding core functionality.
 
-### With ListView
+### Advanced
 
-Scanner widget with control buttons overlay. Shows all barcodes detected at the same time in a ListView.
+A complete example demonstrating all available features combined into one app.
 
-* Displays Flashlight, SwitchCamera and Start/Stop buttons.
-* Uses `MobileScannerController` to start/stop, toggle flashlight, switch camera.
-* Displays Gallery button to use images as source for analysis.
-
-### With Zoom Slider
-
-Scanner widget with control buttons and zoom slider overlay. Shows first detected barcode.
-
-* Displays Flashlight, SwitchCamera and Start/Stop buttons and zoom slider.
-* Uses `MobileScannerController` to start/stop, toggle flashlight, switch camera, set zoom scale.
-* Displays Gallery button to use images as source for analysis.
-
-### With Controller (returning image)
-
-Scanner widget with control buttons overlay. Shows the first detected barcode and the captured image.
-
-* Displays Flashlight, SwitchCamera and Start/Stop buttons.
-* Uses `MobileScannerController` to start/stop, toggle flashlight, switch camera.
-* Displays captured image that contains the detected barcode.
-
-### With Page View
-
-Scanner widget in one of many pages that can be swiped horizontally. Starts and stops scanner depending on page visibility.
-
-* Shows first detected barcode.
-
-### With Scan Window
-
-Scanner widget with scan window overlay. Barcodes are only detected inside the scan window.
-
-* Draws scan window - a half-transparent overlay with a cut out middle part.
-* Draws bounding box around (first) detected barcode. (not working on every device)
-
-### With Overlay
-
-Scanner widget with scan window overlay. Barcodes are only detected inside the scan window.
-
-* Draws scan window - a half-transparent overlay with a cut out middle part that has a border with rounded corners.
-* Displays Flashlight, SwitchCamera buttons.
-* Uses `MobileScannerController` to toggle flashlight, switch camera.
+* Uses `MobileScannerController` for full control.
+* Includes:
+    - Flashlight toggle
+    - Camera switch
+    - Start/stop scanner
+    - Zoom control
+    - Image picker from gallery
+    - Scan window overlays
+    - ListView of detected barcodes
+    - Lifecycle handling
+    - PageView integration
+* Best suited for exploring the full capabilities of the plugin.
