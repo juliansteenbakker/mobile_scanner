@@ -531,6 +531,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     _isDisposed = true;
+    _isAttached = false;
     unawaited(_barcodesController.close());
     super.dispose();
 
