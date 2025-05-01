@@ -128,6 +128,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
   bool _isDisposed = false;
+  bool _isAttached = false;
 
   void _disposeListeners() {
     _barcodesSubscription?.cancel();
@@ -335,6 +336,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
+    if (!_isAttached) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerDisposed.message,
+        ),
+      );
+    }
+
     if (cameraDirection == CameraFacing.unknown) {
       throw const MobileScannerException(
         errorCode: MobileScannerErrorCode.genericError,
@@ -525,5 +535,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     super.dispose();
 
     await MobileScannerPlatform.instance.dispose();
+  }
+
+  /// Keeps track if the controller is correctly attached to the MobileScanner
+  /// widget.
+  void attach() {
+    _isAttached = true;
   }
 }

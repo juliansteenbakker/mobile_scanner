@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:mobile_scanner/src/mobile_scanner.dart' show MobileScanner;
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 
 /// This enum defines the different error codes for the mobile scanner.
@@ -28,7 +29,6 @@ enum MobileScannerErrorCode {
   /// Scanning is unsupported on the current device.
   unsupported,
 
-  /// Get the human-readable message for the error code.
   /// The controller is currently initializing.
   ///
   /// This error occurs when [MobileScannerController.start] is called while
@@ -40,7 +40,20 @@ enum MobileScannerErrorCode {
   /// - Alternatively, disable automatic initialization by setting
   ///   [MobileScannerController.autoStart] to `false` if you plan to manually
   ///   start the camera.
-  controllerInitializing;
+  controllerInitializing,
+
+  /// The controller is not attached to any widget.
+  ///
+  /// This error occurs when [MobileScannerController.start] is called
+  /// before the controller has been attached to a [MobileScanner] widget.
+  ///
+  /// To fix this error:
+  /// - Ensure that a [MobileScanner] widget is built and linked to the
+  ///   controller.
+  /// - The [MobileScanner] widget automatically attaches the controller
+  ///   when it is initialized.
+  /// - Wait until the widget is fully built before calling start.
+  controllerNotAttached;
 
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].
   factory MobileScannerErrorCode.fromPlatformException(
@@ -85,6 +98,10 @@ enum MobileScannerErrorCode {
             'starting manually.';
       case MobileScannerErrorCode.genericError:
         return 'An unexpected error occurred.';
+      case MobileScannerErrorCode.controllerNotAttached:
+        return 'The MobileScannerController has not been attached to '
+            'MobileScanner. Call start() after the MobileScanner widget is '
+            'built.';
     }
   }
 }
