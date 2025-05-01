@@ -338,9 +338,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     if (!_isAttached) {
       throw MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorCode: MobileScannerErrorCode.controllerNotAttached,
         errorDetails: MobileScannerErrorDetails(
-          message: MobileScannerErrorCode.controllerDisposed.message,
+          message: MobileScannerErrorCode.controllerNotAttached.message,
         ),
       );
     }
