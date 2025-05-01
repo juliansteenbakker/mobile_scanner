@@ -4,12 +4,12 @@ version: 7.0.0-rc.2
 repository: https://github.com/juliansteenbakker/mobile_scanner
 
 screenshots:
-- description: 'Mobile Scanner Example Homepage'
-  path: example/screenshots/homepage.png
 - description: 'Mobile Scanner Example'
   path: example/screenshots/example_advanced.png
 - description: 'Mobile Scanner Example Settings'
   path: example/screenshots/example_advanced_settings.png
+- description: 'Mobile Scanner Example Homepage'
+  path: example/screenshots/homepage.png
 
 environment:
   sdk: ">=3.7.0 <4.0.0"
