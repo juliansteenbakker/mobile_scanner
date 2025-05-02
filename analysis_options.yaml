@@ -1,8 +1,6 @@
-include: package:lint/analysis_options_package.yaml
+include: package:very_good_analysis/analysis_options.yaml
 
 linter:
   rules:
-    - combinators_ordering
-    - require_trailing_commas
-    - unnecessary_library_directive
-    - prefer_single_quotes
+    omit_local_variable_types: false
+    specify_nonobvious_local_variable_types: true

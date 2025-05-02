@@ -1,3 +1,5 @@
+
+
 package dev.steenbakker.mobile_scanner.utils
 
 import android.content.Context

@@ -1,10 +1,18 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner.dart';
+library;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 
+/// This widget represents the default error widget for the [MobileScanner]
+/// widget.
 class ScannerErrorWidget extends StatelessWidget {
-  const ScannerErrorWidget({super.key, required this.error});
+  /// Creates a new [ScannerErrorWidget] for the given [error].
+  const ScannerErrorWidget({required this.error, super.key});
 
+  /// The error that occurred.
   final MobileScannerException error;
 
   @override
@@ -25,10 +33,7 @@ class ScannerErrorWidget extends StatelessWidget {
                 style: const TextStyle(color: Colors.white),
               ),
               if (error.errorDetails?.message case final String message)
-                Text(
-                  message,
-                  style: const TextStyle(color: Colors.white),
-                ),
+                Text(message, style: const TextStyle(color: Colors.white)),
             ] else
               Text(
                 MobileScannerErrorCode.genericError.message,

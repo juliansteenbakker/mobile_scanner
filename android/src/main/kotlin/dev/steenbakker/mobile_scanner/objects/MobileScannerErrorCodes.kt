@@ -4,6 +4,7 @@ class MobileScannerErrorCodes {
     companion object {
         const val ALREADY_STARTED_ERROR = "MOBILE_SCANNER_ALREADY_STARTED_ERROR"
         const val ALREADY_STARTED_ERROR_MESSAGE = "The scanner was already started."
+        const val ANALYZE_IMAGE_NO_VALID_IMAGE_ERROR_MESSAGE = "The provided file is not an image."
         // The error code 'BARCODE_ERROR' does not have an error message,
         // because it uses the error message from the underlying error.
         const val BARCODE_ERROR = "MOBILE_SCANNER_BARCODE_ERROR"
@@ -21,5 +22,6 @@ class MobileScannerErrorCodes {
         const val NO_CAMERA_ERROR_MESSAGE = "No cameras available."
         const val SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
         const val SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
+        const val UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION" // Reserved for future use.
     }
 }

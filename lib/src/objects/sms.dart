@@ -1,10 +1,7 @@
 /// An sms message from a `SMS:` or similar QRCode type.
 class SMS {
   /// Construct a new [SMS] instance.
-  const SMS({
-    this.message,
-    required this.phoneNumber,
-  });
+  const SMS({required this.phoneNumber, this.message});
 
   /// Construct a new [SMS] instance from the given [data].
   factory SMS.fromNative(Map<Object?, Object?> data) {

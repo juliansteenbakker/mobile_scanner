@@ -1,11 +1,17 @@
+/// @docImport 'package:mobile_scanner/src/mobile_scanner.dart';
+library;
+
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -25,14 +31,19 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
-    this.useNewCameraSelector = false,
-  })  : detectionTimeoutMs =
-            detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
-        assert(
-          detectionTimeoutMs >= 0,
-          'The detection timeout must be greater than or equal to 0.',
-        ),
-        super(MobileScannerState.uninitialized(facing));
+    this.invertImage = false,
+    this.autoZoom = false,
+  }) : detectionTimeoutMs =
+           detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
+       assert(
+         detectionTimeoutMs >= 0,
+         'The detection timeout must be greater than or equal to 0.',
+       ),
+       assert(
+         facing != CameraFacing.unknown,
+         'CameraFacing.unknown is not a valid camera direction.',
+       ),
+       super(const MobileScannerState.uninitialized());
 
   /// The desired resolution for the camera.
   ///
@@ -40,7 +51,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// or fallback to the closest available resolution.
   /// When this is null, Android defaults to a resolution of 640x480.
   ///
-  /// Bear in mind that changing the resolution has an effect on the aspect ratio.
+  /// Bear in mind that changing the resolution has an effect on the aspect
+  /// ratio.
   ///
   /// When the camera orientation changes,
   /// the resolution will be flipped to match the new dimensions of the display.
@@ -82,19 +94,23 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Defaults to false, and is only supported on iOS, MacOS and Android.
   final bool returnImage;
 
+  /// Invert image colors for analyzer to support white-on-black barcodes, which
+  /// are not supported by MLKit. Usage of this parameter can incur a
+  /// performance cost, as frames need to be altered during processing.
+  ///
+  /// Defaults to false and is only supported on Android.
+  final bool invertImage;
+
   /// Whether the flashlight should be turned on when the camera is started.
   ///
   /// Defaults to false.
   final bool torchEnabled;
 
-  /// Use the new resolution selector.
-  ///
-  /// This feature is experimental and not fully tested yet.
-  /// Use caution when using this flag,
-  /// as the new resolution selector may produce unwanted or zoomed images.
+  /// Whether the camera should auto zoom if the detected code is to far from
+  /// the camera.
   ///
   /// Only supported on Android.
-  final bool useNewCameraSelector;
+  final bool autoZoom;
 
   /// The internal barcode controller, that listens for detected barcodes.
   final StreamController<BarcodeCapture> _barcodesController =
@@ -109,57 +125,75 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<BarcodeCapture?>? _barcodesSubscription;
   StreamSubscription<TorchState>? _torchStateSubscription;
   StreamSubscription<double>? _zoomScaleSubscription;
+  StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
   bool _isDisposed = false;
+  bool _isAttached = false;
 
   void _disposeListeners() {
     _barcodesSubscription?.cancel();
     _torchStateSubscription?.cancel();
     _zoomScaleSubscription?.cancel();
+    _deviceOrientationSubscription?.cancel();
 
     _barcodesSubscription = null;
     _torchStateSubscription = null;
     _zoomScaleSubscription = null;
+    _deviceOrientationSubscription = null;
   }
 
   void _setupListeners() {
-    _barcodesSubscription =
-        MobileScannerPlatform.instance.barcodesStream.listen(
-      (BarcodeCapture? barcode) {
-        if (_barcodesController.isClosed || barcode == null) {
-          return;
-        }
+    _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
+        .listen(
+          (BarcodeCapture? barcode) {
+            if (_barcodesController.isClosed || barcode == null) {
+              return;
+            }
 
-        _barcodesController.add(barcode);
-      },
-      onError: (Object error) {
-        if (_barcodesController.isClosed) {
-          return;
-        }
+            _barcodesController.add(barcode);
+          },
+          onError: (Object error) {
+            if (_barcodesController.isClosed) {
+              return;
+            }
 
-        _barcodesController.addError(error);
-      },
-      // Errors are handled gracefully by forwarding them.
-      cancelOnError: false,
-    );
+            _barcodesController.addError(error);
+          },
+          // Errors are handled gracefully by forwarding them.
+          cancelOnError: false,
+        );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
         .listen((TorchState torchState) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(torchState: torchState);
-    });
+          value = value.copyWith(torchState: torchState);
+        });
 
     _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
         .listen((double zoomScale) {
-      if (_isDisposed) {
-        return;
-      }
+          if (_isDisposed) {
+            return;
+          }
 
-      value = value.copyWith(zoomScale: zoomScale);
-    });
+          value = value.copyWith(zoomScale: zoomScale);
+        });
+
+    if (MobileScannerPlatform.instance
+        case final MethodChannelMobileScanner implementation
+        when defaultTargetPlatform != TargetPlatform.macOS) {
+      _deviceOrientationSubscription = implementation
+          .deviceOrientationChangedStream
+          .listen((DeviceOrientation orientation) {
+            if (_isDisposed) {
+              return;
+            }
+
+            value = value.copyWith(deviceOrientation: orientation);
+          });
+    }
   }
 
   void _throwIfNotInitialized() {
@@ -182,10 +216,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
-  /// Returns false if stop is called but not necessary, otherwise true is returned.
+  /// Returns false if stop is called but not necessary, otherwise true is
+  /// returned.
   bool _stop() {
     // Do nothing if not initialized or already stopped.
-    // On the web, the permission popup triggers a lifecycle change from resumed to inactive,
+    // On the web, the permission popup triggers a lifecycle change from resumed
+    // to inactive,
     // due to the permission popup gaining focus.
     // This would 'stop' the camera while it is not ready yet.
     if (!value.isInitialized || !value.isRunning || _isDisposed) {
@@ -201,9 +237,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     // If the device does not have a torch, do not report "off".
     value = value.copyWith(
       isRunning: false,
-      torchState: oldTorchState == TorchState.unavailable
-          ? TorchState.unavailable
-          : TorchState.off,
+      torchState:
+          oldTorchState == TorchState.unavailable
+              ? TorchState.unavailable
+              : TorchState.off,
     );
     return true;
   }
@@ -211,15 +248,21 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Analyze an image file.
   ///
   /// The [path] points to a file on the device.
-  /// The [formats] specify the barcode formats that should be detected in the image.
+  /// The [formats] specify the barcode formats that should be detected in the
+  /// image.
   /// If the [formats] are omitted or empty, all formats are detected.
   ///
-  /// This is only supported on Android, iOS and MacOS.
+  /// This is only supported on Android, physical iOS devices and MacOS.
+  /// This is not supported on the iOS Simulator, due to restrictions on the
+  /// Simulator.
   ///
   /// Returns the [BarcodeCapture] that was found in the image.
   ///
   /// If an error occurred during the analysis of the image,
   /// a [MobileScannerBarcodeException] error is thrown.
+  ///
+  /// If analyzing images from a file is not supported, an [UnsupportedError]
+  /// is thrown.
   Future<BarcodeCapture?> analyzeImage(
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
@@ -278,9 +321,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// If this is null, this defaults to the [facing] value.
   ///
   /// Does nothing if the camera is already running.
-  /// Upon calling this method, the necessary camera permission will be requested.
+  /// Upon calling this method, the necessary camera permission will be
+  /// requested.
   ///
-  /// If the permission is denied on iOS, MacOS or Web, there is no way to request it again.
+  /// If the permission is denied on iOS, MacOS or Web, there is no way to
+  /// request it again.
   Future<void> start({CameraFacing? cameraDirection}) async {
     if (_isDisposed) {
       throw MobileScannerException(
@@ -291,39 +336,69 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
+    if (!_isAttached) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerNotAttached,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerNotAttached.message,
+        ),
+      );
+    }
+
+    if (cameraDirection == CameraFacing.unknown) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'CameraFacing.unknown is not a valid camera direction.',
+        ),
+      );
+    }
+
     // Do nothing if the camera is already running.
     if (value.isRunning) {
       return;
     }
 
-    final CameraFacing effectiveDirection = cameraDirection ?? facing;
+    if (value.isStarting) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerInitializing,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerInitializing.message,
+        ),
+      );
+    }
+
+    if (!_isDisposed) {
+      value = value.copyWith(isStarting: true);
+    }
 
     final StartOptions options = StartOptions(
-      cameraDirection: effectiveDirection,
+      cameraDirection: cameraDirection ?? facing,
       cameraResolution: cameraResolution,
       detectionSpeed: detectionSpeed,
       detectionTimeoutMs: detectionTimeoutMs,
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
-      useNewCameraSelector: useNewCameraSelector,
+      invertImage: invertImage,
+      autoZoom: autoZoom,
     );
 
     try {
       _setupListeners();
 
       final MobileScannerViewAttributes viewAttributes =
-          await MobileScannerPlatform.instance.start(
-        options,
-      );
+          await MobileScannerPlatform.instance.start(options);
 
       if (!_isDisposed) {
         value = value.copyWith(
           availableCameras: viewAttributes.numberOfCameras,
-          cameraDirection: effectiveDirection,
+          cameraDirection: viewAttributes.cameraDirection,
           isInitialized: true,
+          isStarting: false,
           isRunning: true,
           size: viewAttributes.size,
+          deviceOrientation: viewAttributes.initialDeviceOrientation,
           // Provide the current torch state.
           // Updates are provided by the `torchStateStream`.
           torchState: viewAttributes.currentTorchMode,
@@ -331,17 +406,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       }
     } on MobileScannerException catch (error) {
       // The initialization finished with an error.
-      // To avoid stale values, reset the output size,
-      // torch state and zoom scale to the defaults.
+      // To avoid stale values, reset the camera direction,
+      // output size, torch state and zoom scale to the defaults.
       if (!_isDisposed) {
         value = value.copyWith(
-          cameraDirection: facing,
+          cameraDirection: CameraFacing.unknown,
           isInitialized: true,
+          isStarting: false,
           isRunning: false,
           error: error,
           size: Size.zero,
           torchState: TorchState.unavailable,
-          zoomScale: 1.0,
+          zoomScale: 1,
         );
       }
     }
@@ -372,11 +448,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Switch between the front and back camera.
   ///
-  /// Does nothing if the device has less than 2 cameras.
+  /// Does nothing if the device has less than 2 cameras,
+  /// or if the current camera is an external camera.
   Future<void> switchCamera() async {
     _throwIfNotInitialized();
 
     final int? availableCameras = value.availableCameras;
+    final CameraFacing cameraDirection = value.cameraDirection;
 
     // Do nothing if the amount of cameras is less than 2 cameras.
     // If the the current platform does not provide the amount of cameras,
@@ -385,15 +463,24 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
+    // If the camera direction is not known,
+    // or if the camera is an external camera, do not allow switching cameras.
+    if (cameraDirection == CameraFacing.unknown ||
+        cameraDirection == CameraFacing.external) {
+      return;
+    }
+
     await stop();
 
-    final CameraFacing cameraDirection = value.cameraDirection;
-
-    await start(
-      cameraDirection: cameraDirection == CameraFacing.front
-          ? CameraFacing.back
-          : CameraFacing.front,
-    );
+    switch (value.cameraDirection) {
+      case CameraFacing.front:
+        return start(cameraDirection: CameraFacing.back);
+      case CameraFacing.back:
+        return start(cameraDirection: CameraFacing.front);
+      case CameraFacing.external:
+      case CameraFacing.unknown:
+        return;
+    }
   }
 
   /// Switches the flashlight on or off.
@@ -424,7 +511,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Update the scan window with the given [window] rectangle.
   ///
-  /// If [window] is null, the scan window will be reset to the full camera preview.
+  /// If [window] is null, the scan window will be reset to the full camera
+  /// preview.
   Future<void> updateScanWindow(Rect? window) async {
     if (_isDisposed || !value.isInitialized) {
       return;
@@ -443,9 +531,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     _isDisposed = true;
+    _isAttached = false;
     unawaited(_barcodesController.close());
     super.dispose();
 
     await MobileScannerPlatform.instance.dispose();
+  }
+
+  /// Keeps track if the controller is correctly attached to the MobileScanner
+  /// widget.
+  void attach() {
+    _isAttached = true;
   }
 }

@@ -1,43 +1,22 @@
 # mobile_scanner
 
-[![pub package](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
-[![style: lint](https://img.shields.io/badge/style-lint-4BC0F5.svg)](https://pub.dev/packages/lint)
-[![mobile_scanner](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/flutter.yml)
-[![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker?label=like%20my%20work?%20sponsor%20me!)](https://github.com/sponsors/juliansteenbakker)
+[![Pub Version](https://img.shields.io/pub/v/mobile_scanner.svg)](https://pub.dev/packages/mobile_scanner)
+[![Pub Version Prerelease](https://img.shields.io/pub/v/mobile_scanner.svg?include_prereleases)](https://pub.dev/packages/mobile_scanner)
+[![Build Status](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/code-coverage.yml/badge.svg)](https://github.com/juliansteenbakker/mobile_scanner/actions/workflows/code-coverage.yml)
+[![Style: Very Good Analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
+[![Codecov](https://codecov.io/gh/juliansteenbakker/mobile_scanner/graph/badge.svg?token=RGE4XVOGJ5)](https://codecov.io/gh/juliansteenbakker/mobile_scanner)
+[![GitHub Sponsors](https://img.shields.io/github/sponsors/juliansteenbakker)](https://github.com/sponsors/juliansteenbakker)
 
-A universal scanner for Flutter based on MLKit. Uses CameraX on Android and AVFoundation on iOS.
+A fast and lightweight Flutter plugin for scanning barcodes and QR codes using the device’s camera. It supports multiple barcode formats, real-time detection, and customization options for an optimized scanning experience on multiple platforms.
 
-## Breaking Changes v5.0.0
-Version 5.0.0 brings some breaking changes. However, some are reverted in version 5.1.0. Please see the list below for all breaking changes, and Changelog.md for a more detailed list.
+## Features
 
-* ~~The `autoStart` attribute has been removed from the `MobileScannerController`. The controller should be manually started on-demand.~~ (Reverted in version 5.1.0)
-* ~~A controller is now required for the `MobileScanner` widget.~~ (Reverted in version 5.1.0)
-* ~~The `onDetect` method has been removed from the `MobileScanner` widget. Instead, listen to `MobileScannerController.barcodes` directly.~~ (Reverted in version 5.1.0)
-* The `width` and `height` of `BarcodeCapture` have been removed, in favor of `size`.
-* The `raw` attribute is now `Object?` instead of `dynamic`, so that it participates in type promotion.
-* The `MobileScannerArguments` class has been removed from the public API, as it is an internal type.
-* The `cameraFacingOverride` named argument for the `start()` method has been renamed to `cameraDirection`.
-* The `analyzeImage` function now correctly returns a `BarcodeCapture?` instead of a boolean.
-* The `formats` attribute of the `MobileScannerController` is now non-null.
-* The `MobileScannerState` enum has been renamed to `MobileScannerAuthorizationState`.
-* The various `ValueNotifier`s for the camera state have been removed. Use the `value` of the `MobileScannerController` instead.
-* The `hasTorch` getter has been removed. Instead, use the torch state of the controller's value.
-* The `TorchState` enum now provides a new value for unavailable flashlights.
-* The  `onPermissionSet`, `onStart` and `onScannerStarted` methods have been removed from the `MobileScanner` widget. Instead, await `MobileScannerController.start()`.
-* The `startDelay` has been removed from the `MobileScanner` widget. Instead, use a delay between manual starts of one or more controllers.
-* The `overlay` widget of the `MobileScanner` has been replaced by a new property, `overlayBuilder`, which provides the constraints for the overlay.
-* The torch can no longer be toggled on the web, as this is only available for image tracks and not video tracks. As a result the torch state for the web will always be `TorchState.unavailable`.
-* The zoom scale can no longer be modified on the web, as this is only available for image tracks and not video tracks. As a result, the zoom scale will always be `1.0`.
+- Fast barcode and QR code scanning
+- Supports multiple barcode formats
+- Real-time detection
+- Customizable camera and scanner behavior
 
-## Features Supported
-
-See the example app for detailed implementation information.
-
-| Features               | Android            | iOS                | macOS                | Web |
-|------------------------|--------------------|--------------------|----------------------|-----|
-| analyzeImage (Gallery) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
-| returnImage            | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
-| scanWindow             | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark:   | :x: |
+See the [examples](example/README.md) for runnable examples of various usages, such as the basic usage, applying a scan window, or retrieving images from the barcodes.
 
 ## Platform Support
 
@@ -45,7 +24,31 @@ See the example app for detailed implementation information.
 |---------|-----|-------|-----|-------|---------|
 | ✔       | ✔   | ✔     | ✔   | :x:   | :x:     |
 
-## Platform specific setup
+### Features Supported
+
+See the example app for detailed implementation information.
+
+| Features     | Android            | iOS                | macOS              | Web |
+|--------------|--------------------|--------------------|--------------------|-----|
+| analyzeImage | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| returnImage  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
+| autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
+
+## Installation
+
+Add the dependency in your `pubspec.yaml` file:
+
+```
+dependencies:
+  mobile_scanner: ^<latest_version>
+```
+
+Then run:
+
+`flutter pub get`
+
+## Configuration
 
 ### Android
 This package uses by default the **bundled version** of MLKit Barcode-scanning for Android. This version is immediately available to the device. But it will increase the size of the app by approximately 3 to 10 MB.
@@ -61,23 +64,23 @@ dev.steenbakker.mobile_scanner.useUnbundled=true
 
 ### iOS
 
-_iOS arm64 Simulators are currently not yet supported, until the migration to the Vision API is complete._
-_See_ https://github.com/juliansteenbakker/mobile_scanner/issues/1225
 
-**Add the following keys to your Info.plist file, located in <project root>/ios/Runner/Info.plist:**
+Since the scanner needs to use the camera, add the following keys to your Info.plist file. (located in <project root>/ios/Runner/Info.plist)
+
 NSCameraUsageDescription - describe why your app needs access to the camera. This is called Privacy - Camera Usage Description in the visual editor.
 
-**If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker)**
+If you want to use the local gallery feature from [image_picker](https://pub.dev/packages/image_picker), you also need to add the following key.
+
 NSPhotoLibraryUsageDescription - describe why your app needs permission for the photo library. This is called Privacy - Photo Library Usage Description in the visual editor.
 
-  Example,
-  ```
-  <key>NSCameraUsageDescription</key>
-  <string>This app needs camera access to scan QR codes</string>
+Example,
+```
+<key>NSCameraUsageDescription</key>
+<string>This app needs camera access to scan QR codes</string>
 
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>This app needs photos access to get QR code from photo library</string>
-  ```
+<key>NSPhotoLibraryUsageDescription</key>
+<string>This app needs photos access to get QR code from photo library</string>
+```
 
 
 ### macOS
@@ -85,12 +88,12 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 <img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
 
-## Web
+### Web
 
 As of version 5.0.0 adding the barcode scanning library script to the `index.html` is no longer required,
 as the script is automatically loaded on first use.
 
-### Providing a mirror for the barcode scanning library
+#### Providing a mirror for the barcode scanning library
 
 If a different mirror is needed to load the barcode scanning library,
 the source URL can be set beforehand.
@@ -108,20 +111,58 @@ if (kIsWeb) {
 
 ## Usage
 
-Import the package with `package:mobile_scanner/mobile_scanner.dart`.
+### Simple
 
-Create a new `MobileScannerController` controller, using the required options.
-Provide a `StreamSubscription` for the barcode events.
+Import the package with `package:mobile_scanner/mobile_scanner.dart`. The only required parameter is `onDetect`, which returns the scanned barcode or qr code.
+
+```dart
+MobileScanner(
+  onDetect: (result) {
+    print(result.barcodes.first.rawValue);
+  },
+),
+```
+
+### Advanced
+
+If you want more control over the scanner, you need to create a new `MobileScannerController` controller. The controller contains multiple parameters to adjust the scanner.
+```dart
+final MobileScannerController controller = MobileScannerController(
+  cameraResolution: size,
+  detectionSpeed: detectionSpeed,
+  detectionTimeoutMs: detectionTimeout,
+  formats: selectedFormats,
+  returnImage: returnImage,
+  torchEnabled: true,
+  invertImage: invertImage,
+  autoZoom: autoZoom,
+);
+```
+
+```dart
+MobileScanner(
+  controller: controller,
+  onDetect: (result) {
+    print(result.barcodes.first.rawValue);
+  },
+);
+```
+
+#### Lifecycle changes
+
+If you want to pause the scanner when the app is inactive, you need to use `WidgetsBindingObserver`.
+
+First, provide a `StreamSubscription` for the barcode events. Also, make sure to create a `MobileScannerController` with `autoStart` set to false, since we will be handling the lifecycle ourself.
 
 ```dart
 final MobileScannerController controller = MobileScannerController(
-  // required options for the scanner
+  autoStart: false,
 );
 
 StreamSubscription<Object?>? _subscription;
 ```
 
-Ensure that your `State` class mixes in `WidgetsBindingObserver`, to handle lifecyle changes:
+Then, ensure that your `State` class mixes in `WidgetsBindingObserver`, to handle lifecyle changes, and add the required logic to the `didChangeAppLifecycleState` function:
 
 ```dart
 class MyState extends State<MyStatefulWidget> with WidgetsBindingObserver {
@@ -192,8 +233,3 @@ Future<void> dispose() async {
   await controller.dispose();
 }
 ```
-
-To display the camera preview, pass the controller to a `MobileScanner` widget.
-
-See the [examples](example/README.md) for runnable examples of various usages,
-such as the basic usage, applying a scan window, or retrieving images from the barcodes.

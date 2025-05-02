@@ -6,8 +6,8 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 0.0.1
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
-  flutter: ">=3.19.0"
+  sdk: ">=3.7.0 <4.0.0"
+  flutter: ">=3.29.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -19,7 +19,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  image_picker: ^1.0.4
+  image_picker: ^1.1.2
   mobile_scanner:
     # When depending on this package from a real application you should use:
     #   mobile_scanner: ^x.y.z
@@ -33,7 +33,7 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
-  lint: ^2.0.20
+  very_good_analysis: ^7.0.0
 
 flutter:
   uses-material-design: true

@@ -9,20 +9,33 @@ import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:web/web.dart';
 
-/// This class represents the base interface for a barcode reader implementation.
+/// This class represents the base interface for a barcode reader
+/// implementation.
 abstract class BarcodeReader {
+  /// Construct a new [BarcodeReader] instance.
+  ///
+  /// This constructor is const, for subclasses.
   const BarcodeReader();
 
-  /// Whether the video feed is paused
-  bool? get paused =>
-      throw UnimplementedError('paused has not been implemented.');
+  /// Whether the video feed is paused.
+  bool? get paused {
+    throw UnimplementedError('paused has not been implemented.');
+  }
+
+  /// Get the video feed as a [MediaStream].
+  MediaStream? get videoStream {
+    throw UnimplementedError('videoStream has not been implemented.');
+  }
 
   /// Pause the barcode reader.
-  void pause() => throw UnimplementedError('pause() has not been implemented.');
+  void pause() {
+    throw UnimplementedError('pause() has not been implemented.');
+  }
 
   /// Resume the barcode reader.
-  Future<void> resume() =>
-      throw UnimplementedError('resume() has not been implemented.');
+  Future<void> resume() {
+    throw UnimplementedError('resume() has not been implemented.');
+  }
 
   /// Whether the scanner is currently scanning for barcodes.
   bool get isScanning {
@@ -47,7 +60,8 @@ abstract class BarcodeReader {
 
   /// Start detecting barcodes.
   ///
-  /// The returned stream will emit a [BarcodeCapture] for each detected barcode.
+  /// The returned stream will emit a [BarcodeCapture] for each detected
+  /// barcode.
   Stream<BarcodeCapture> detectBarcodes() {
     throw UnimplementedError('detectBarcodes() has not been implemented.');
   }
@@ -73,36 +87,40 @@ abstract class BarcodeReader {
 
     final Completer<void> completer = Completer();
 
-    final HTMLScriptElement script = HTMLScriptElement()
-      ..id = scriptId
-      ..async = true
-      ..defer = false
-      ..type = 'application/javascript'
-      ..lang = 'javascript'
-      ..crossOrigin = 'anonymous'
-      ..src = alternateScriptUrl ?? scriptUrl
-      ..onload = (JSAny _) {
-        if (!completer.isCompleted) {
-          completer.complete();
-        }
-      }.toJS;
+    final HTMLScriptElement script =
+        HTMLScriptElement()
+          ..id = scriptId
+          ..async = true
+          ..defer = false
+          ..type = 'application/javascript'
+          ..lang = 'javascript'
+          ..crossOrigin = 'anonymous'
+          ..src = alternateScriptUrl ?? scriptUrl
+          ..onload =
+              (JSAny _) {
+                if (!completer.isCompleted) {
+                  completer.complete();
+                }
+              }.toJS;
 
-    script.onerror = (JSAny _) {
-      if (!completer.isCompleted) {
-        // Remove the script if it did not load.
-        document.head!.removeChild(script);
+    script.onerror =
+        (JSAny _) {
+          if (!completer.isCompleted) {
+            // Remove the script if it did not load.
+            document.head!.removeChild(script);
 
-        completer.completeError(
-          const MobileScannerException(
-            errorCode: MobileScannerErrorCode.genericError,
-            errorDetails: MobileScannerErrorDetails(
-              message:
-                  'Could not load the BarcodeReader script due to a network error.',
-            ),
-          ),
-        );
-      }
-    }.toJS;
+            completer.completeError(
+              const MobileScannerException(
+                errorCode: MobileScannerErrorCode.genericError,
+                errorDetails: MobileScannerErrorDetails(
+                  message:
+                      'Could not load the BarcodeReader script due to a network'
+                      ' error.',
+                ),
+              ),
+            );
+          }
+        }.toJS;
 
     document.head!.appendChild(script);
 
@@ -130,7 +148,8 @@ abstract class BarcodeReader {
   ///
   /// The [options] are used to configure the barcode reader.
   /// The [videoElement] will become the video output element.
-  /// The [videoStream] is the input for the barcode reader and video preview element.
+  /// The [videoStream] is the input for the barcode reader and video preview
+  /// element.
   Future<void> start(
     StartOptions options, {
     required HTMLVideoElement videoElement,

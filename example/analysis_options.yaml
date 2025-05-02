@@ -1,1 +1,6 @@
-include: package:lint/strict.yaml
+include: package:very_good_analysis/analysis_options.yaml
+
+linter:
+  rules:
+    omit_local_variable_types: false
+    specify_nonobvious_local_variable_types: true

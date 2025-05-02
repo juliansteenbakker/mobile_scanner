@@ -1,10 +1,7 @@
 /// GPS coordinates from a `GEO:` or similar QRCode type.
 class GeoPoint {
   /// Construct a new [GeoPoint] instance.
-  const GeoPoint({
-    required this.latitude,
-    required this.longitude,
-  });
+  const GeoPoint({required this.latitude, required this.longitude});
 
   /// Construct a [GeoPoint] from the given [data].
   ///
@@ -17,7 +14,7 @@ class GeoPoint {
     // If either is not set, then this GeoPoint is invalid.
     // Return the geographic center as fallback.
     if (latitude == null || longitude == null) {
-      return const GeoPoint(latitude: 0.0, longitude: 0.0);
+      return const GeoPoint(latitude: 0, longitude: 0);
     }
 
     return GeoPoint(latitude: latitude, longitude: longitude);

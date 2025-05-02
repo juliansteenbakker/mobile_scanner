@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/web/zxing/result.dart';
+library;
+
 import 'dart:js_interop';
 
 import 'package:mobile_scanner/src/web/javascript_map.dart';
@@ -11,7 +14,8 @@ extension type ZXingBrowserMultiFormatReader._(JSObject _) implements JSObject {
   /// Construct a new `ZXing.BrowserMultiFormatReader`.
   ///
   /// The [hints] are the configuration options for the reader.
-  /// The [timeBetweenScansMillis] is the allowed time between scans in milliseconds.
+  /// The [timeBetweenScansMillis] is the allowed time between scans in
+  /// milliseconds.
   ///
   /// See also: https://github.com/zxing-js/library/blob/master/src/core/DecodeHintType.ts
   external factory ZXingBrowserMultiFormatReader(
@@ -21,8 +25,8 @@ extension type ZXingBrowserMultiFormatReader._(JSObject _) implements JSObject {
 
   /// Attach a [MediaStream] to a [HTMLVideoElement].
   ///
-  /// This function accepts a [MediaStream] and a [HTMLVideoElement] as arguments,
-  /// and returns a [JSPromise].
+  /// This function accepts a [MediaStream] and a [HTMLVideoElement] as
+  /// arguments,and returns a [JSPromise].
   ///
   /// See https://github.com/zxing-js/library/blob/master/src/browser/BrowserCodeReader.ts#L406
   external JSFunction attachStreamToVideo;
@@ -30,7 +34,8 @@ extension type ZXingBrowserMultiFormatReader._(JSObject _) implements JSObject {
   /// Continuously decode barcodes from a [HTMLVideoElement].
   ///
   /// When a barcode is found, a callback function is called with the result.
-  /// The callback function receives a [Result] and an exception object as arguments.
+  /// The callback function receives a [Result] and an exception object as
+  /// arguments.
   ///
   /// See also: https://github.com/zxing-js/library/blob/master/src/browser/DecodeContinuouslyCallback.ts
   external JSFunction decodeContinuously;
