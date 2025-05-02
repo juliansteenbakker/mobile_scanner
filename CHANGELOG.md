@@ -1,3 +1,42 @@
+## 7.0.0
+
+This version finalizes all changes from the beta and release candidate cycles and introduces major improvements, bug fixes, and breaking changes.
+
+**BREAKING CHANGES:**
+
+* Requires Flutter 3.29.0 or higher.
+* The initial camera facing direction in `MobileScannerState` is now `CameraFacing.unknown`.
+* Removed the deprecated `EncryptionType.none`. Use `EncryptionType.unknown` instead.
+* The `errorBuilder` and `placeholderBuilder` no longer have a Widget argument.
+* Removed the `MobileScannerErrorBuilder` typedef.
+
+**Highlights**
+
+* [iOS/macOS] Migrated to the Vision API with a unified Apple codebase.
+* [Android] Removed dependency on `kotlin-bom` and updated CameraX and camera-camera2 dependencies.
+* Support for pause/resume functionality across platforms.
+* `MobileScannerErrorCode` now includes readable error messages in debug mode.
+* Hot-restart during development now works correctly.
+* Added overlay widgets for barcode and scan window visualization.
+* Exposed new API parameters like `autoZoom`, `invertImage`, and lifecycle handling.
+
+**Bug Fixes and Improvements**
+
+* [Apple]
+  * Fixed rotation, orientation, and zoom behavior.
+  * Resolved incorrect barcode overlay dimensions and corner coordinates.
+  * Fixed a crash when stopping the camera with a nil device.
+  * Fixed build issues including optional chaining on non-optional values.
+* [Android]
+  * Fixed rotation and orientation issues.
+  * Resolved timing issues in `SurfaceProducer` with Kotlin 1.8+.
+  * Fixed resource leaks and improved image analysis compatibility.
+  * Improved logging behavior (CameraX logs only errors).
+* [macOS]
+  * Fixed mirrored images and build issues.
+* [Web]
+  * Fixed barcode overlay not displaying due to incorrect corner point data.
+
 ## 7.0.0-rc.2
 
 Bugs fixed:
