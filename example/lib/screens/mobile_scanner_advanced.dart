@@ -80,6 +80,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> with Widg
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     controller = initController();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (mounted) {
@@ -90,6 +91,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> with Widg
 
   @override
   Future<void> dispose() async {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
     await controller?.dispose();
     controller = null;
