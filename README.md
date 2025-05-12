@@ -213,7 +213,11 @@ void initState() {
   _subscription = controller.barcodes.listen(_handleBarcode);
 
   // Finally, start the scanner itself.
-  unawaited(controller.start());
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (mounted) {
+      unawaited(controller.start());
+    }
+  });
 }
 ```
 
