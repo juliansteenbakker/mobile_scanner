@@ -81,7 +81,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   void initState() {
     super.initState();
     controller = initController();
-    unawaited(controller!.start());
+    Future.microtask(() => unawaited(controller?.start()));
   }
 
   @override

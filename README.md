@@ -213,7 +213,7 @@ void initState() {
   _subscription = controller.barcodes.listen(_handleBarcode);
 
   // Finally, start the scanner itself.
-  unawaited(controller.start());
+  Future.microtask(() => unawaited(controller?.start()));
 }
 ```
 
