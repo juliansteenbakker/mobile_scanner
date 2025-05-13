@@ -40,7 +40,7 @@ class MobileScannerAdvanced extends StatefulWidget {
   State<MobileScannerAdvanced> createState() => _MobileScannerAdvancedState();
 }
 
-class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> with WidgetsBindingObserver {
+class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   MobileScannerController? controller;
 
   // A scan window does work on web, but not the overlay to preview the scan
@@ -80,18 +80,12 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> with Widg
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     controller = initController();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (mounted) {
-        unawaited(controller?.start());
-      }
-    });
+    Future.microtask(() => unawaited(controller?.start()));
   }
 
   @override
   Future<void> dispose() async {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
     await controller?.dispose();
     controller = null;
