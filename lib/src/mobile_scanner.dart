@@ -328,7 +328,7 @@ class _MobileScannerState extends State<MobileScanner>
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     super.dispose();
     unawaited(disposeMobileScanner());
   }
