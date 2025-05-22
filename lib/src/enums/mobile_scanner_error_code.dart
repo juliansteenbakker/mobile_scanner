@@ -45,14 +45,122 @@ enum MobileScannerErrorCode {
   /// The controller is not attached to any widget.
   ///
   /// This error occurs when [MobileScannerController.start] is called
-  /// before the controller has been attached to a [MobileScanner] widget.
+  /// but there is no active [MobileScanner] widget
+  /// for the [MobileScannerController] in the widget tree.
   ///
-  /// To fix this error:
-  /// - Ensure that a [MobileScanner] widget is built and linked to the
-  ///   controller.
-  /// - The [MobileScanner] widget automatically attaches the controller
-  ///   when it is initialized.
-  /// - Wait until the widget is fully built before calling start.
+  /// To avoid this error, ensure that a [MobileScanner] widget
+  /// is attached to the widget tree
+  /// when [MobileScannerController.start] is called.
+  ///
+  /// BAD:
+  ///
+  /// ```dart
+  /// class ScannerExample extends StatefulWidget {
+  ///   const ScannerExample({super.key});
+  ///
+  ///   @override
+  ///   State<ScannerExample> createState() => _ScannerExampleState();
+  /// }
+  ///
+  /// class _ScannerExampleState extends State<ScannerExample> {
+  ///   final MobileScannerController controller = MobileScannerController();
+  ///
+  ///   bool _showScanner = false;
+  ///
+  ///   @override
+  ///   void initState() {
+  ///     super.initState();
+  ///     // The MobileScanner is only in the widget tree after the button is pressed.
+  ///     controller.start();
+  ///   }
+  ///
+  ///   @override
+  ///   Widget build(BuildContext context) {
+  ///     return Column(
+  ///       children: [
+  ///         ElevatedButton(
+  ///           onPressed: () {
+  ///             setState(() {
+  ///               _showScanner = true;
+  ///             });
+  ///           },
+  ///           child: const Text('Button'),
+  ///         ),
+  ///         if (_showScanner)
+  ///           Expanded(child: MobileScanner(controller: controller)),
+  ///       ],
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// GOOD:
+  ///
+  /// ```dart
+  /// class ScannerExample extends StatefulWidget {
+  ///   const ScannerExample({super.key});
+  ///
+  ///   @override
+  ///   State<ScannerExample> createState() => _ScannerExampleState();
+  /// }
+  ///
+  /// class _ScannerExampleState extends State<ScannerExample> {
+  ///   final MobileScannerController controller = MobileScannerController();
+  ///
+  ///   @override
+  ///   Widget build(BuildContext context) {
+  ///     return Column(
+  ///       children: [
+  ///         ElevatedButton(
+  ///           // The MobileScanner is already in the widget tree.
+  ///           onPressed: controller.start,
+  ///           child: const Text('Button'),
+  ///         ),
+  ///         Expanded(child: MobileScanner(controller: controller)),
+  ///       ],
+  ///     );
+  ///   }
+  /// }
+  /// ```
+  ///
+  /// GOOD:
+  ///
+  /// ```dart
+  /// class ScannerExample extends StatefulWidget {
+  ///   const ScannerExample({super.key});
+  ///
+  ///   @override
+  ///   State<ScannerExample> createState() => _ScannerExampleState();
+  /// }
+  ///
+  /// class _ScannerExampleState extends State<ScannerExample> {
+  ///   final MobileScannerController controller = MobileScannerController();
+  ///
+  ///   bool _showScanner = false;
+  ///
+  ///   void start() {
+  ///     if (_showScanner) return;
+  ///
+  ///     setState(() {
+  ///       _showScanner = true;
+  ///     });
+  ///
+  ///     // The MobileScanner will be in the widget tree in the next frame.
+  ///     controller.start();
+  ///   }
+  ///
+  ///   @override
+  ///   Widget build(BuildContext context) {
+  ///     return Column(
+  ///       children: [
+  ///         ElevatedButton(onPressed: start, child: const Text('Button')),
+  ///         if (_showScanner)
+  ///           Expanded(child: MobileScanner(controller: controller)),
+  ///       ],
+  ///     );
+  ///   }
+  /// }
+  /// ```
   controllerNotAttached;
 
   /// Convert the given [PlatformException.code] to a [MobileScannerErrorCode].

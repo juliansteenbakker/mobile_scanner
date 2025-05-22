@@ -1,3 +1,7 @@
+## 7.0.1
+
+* Added error handling for when `MobileScannerController.start` is called without an active `MobileScanner` widget.
+
 ## 7.0.0
 
 This version finalizes all changes from the beta and release candidate cycles and introduces major improvements, bug fixes, and breaking changes.

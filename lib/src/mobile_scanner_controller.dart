@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
@@ -128,7 +129,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
   bool _isDisposed = false;
-  bool _isAttached = false;
+  // This completer keeps track of whether the MobileScanner widget,
+  // that is attached to this controller,
+  // called its `initState()` lifecycle method.
+  final Completer<void> _isAttachedCompleter = Completer<void>();
 
   void _disposeListeners() {
     _barcodesSubscription?.cancel();
@@ -336,13 +340,35 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    if (!_isAttached) {
-      throw MobileScannerException(
-        errorCode: MobileScannerErrorCode.controllerNotAttached,
-        errorDetails: MobileScannerErrorDetails(
-          message: MobileScannerErrorCode.controllerNotAttached.message,
-        ),
-      );
+    // If start was called before the MobileScanner widget
+    // had a chance to call its initState method,
+    // wait for it to be called, using a timeout.
+    if (!_isAttachedCompleter.isCompleted) {
+      // The timeout is currently an arbitrary value,
+      // which should be long enough for the next frame
+      // to propagate any pending changes to the widget tree.
+      await _isAttachedCompleter.future
+          .timeout(const Duration(milliseconds: 500))
+          .catchError((Object error, StackTrace stackTrace) {
+            throw MobileScannerException(
+              errorCode: MobileScannerErrorCode.controllerNotAttached,
+              errorDetails: MobileScannerErrorDetails(
+                message: MobileScannerErrorCode.controllerNotAttached.message,
+                details: stackTrace.toString(),
+              ),
+            );
+          });
+
+      // Abort if the controller was disposed
+      // while waiting for the widget to be attached.
+      if (_isDisposed) {
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.controllerDisposed,
+          errorDetails: MobileScannerErrorDetails(
+            message: MobileScannerErrorCode.controllerDisposed.message,
+          ),
+        );
+      }
     }
 
     if (cameraDirection == CameraFacing.unknown) {
@@ -531,16 +557,23 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     _isDisposed = true;
-    _isAttached = false;
     unawaited(_barcodesController.close());
     super.dispose();
 
     await MobileScannerPlatform.instance.dispose();
   }
 
-  /// Keeps track if the controller is correctly attached to the MobileScanner
-  /// widget.
+  /// Signal to this [MobileScannerController] that it is attached
+  /// to a [MobileScanner] widget.
+  ///
+  /// This method is called by `_MobileScannerState.initState()`
+  /// and is not intended to be used directly.
+  @internal
   void attach() {
-    _isAttached = true;
+    if (_isAttachedCompleter.isCompleted) {
+      return;
+    }
+
+    _isAttachedCompleter.complete();
   }
 }
