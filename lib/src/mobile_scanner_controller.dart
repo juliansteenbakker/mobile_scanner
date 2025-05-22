@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
@@ -565,7 +566,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Signal to this [MobileScannerController] that it is attached
   /// to a [MobileScanner] widget.
   ///
-  /// This method is called by `_MobileScannerState.initState()`.
+  /// This method is called by `_MobileScannerState.initState()`
+  /// and is not intended to be used directly.
+  @internal
   void attach() {
     if (_isAttachedCompleter.isCompleted) {
       return;
