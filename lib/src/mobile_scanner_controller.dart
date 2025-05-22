@@ -357,6 +357,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               ),
             );
           });
+
+      // Abort if the controller was disposed
+      // while waiting for the widget to be attached.
+      if (_isDisposed) {
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.controllerDisposed,
+          errorDetails: MobileScannerErrorDetails(
+            message: MobileScannerErrorCode.controllerDisposed.message,
+          ),
+        );
+      }
     }
 
     if (cameraDirection == CameraFacing.unknown) {
