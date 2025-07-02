@@ -464,14 +464,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
 #endif
                 // Return the result on the main thread after the session starts.
-                let answer: [String : Any?]
+                var answer: [String : Any?]
 
                 if let device = self.device {
-                    let cameraDirection: Int? = switch(device.position) {
-                        case .back: 1
-                        case .unspecified: nil
-                        case .front: 0
-                        @unknown default: nil
+                    var cameraDirection: Int?
+                    switch(device.position) {
+                        case .back:
+                            cameraDirection = 1
+                        case .front:
+                            cameraDirection = 0
+                        case .unspecified:
+                            cameraDirection = nil
+                        @unknown default:
+                            cameraDirection = nil
                     }
                     
                     answer = [
@@ -1003,11 +1008,11 @@ extension VNBarcodeObservation {
         let height = distanceBetween(adjustedTopLeft, adjustedBottomLeft) * CGFloat(imageHeight)
         var rawBytes: FlutterStandardTypedData? = nil
         
-        if #available(iOS 17.0, macOS 14.0, *) {
-            if let payloadData = payloadData {
-                rawBytes = FlutterStandardTypedData(bytes: payloadData)
-            }
-        }
+        // if #available(iOS 17.0, macOS 14.0, *) {
+        //     if let dataBytes = self.payloadData {
+        //         rawBytes = FlutterStandardTypedData(bytes: dataBytes)
+        //     }
+        // }
 
         let data = [
             // Clockwise, starting from the top-left corner.
