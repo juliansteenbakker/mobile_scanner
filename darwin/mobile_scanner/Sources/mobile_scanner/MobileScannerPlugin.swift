@@ -30,6 +30,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     // Image to be sent to the texture
     var latestBuffer: CVImageBuffer!
 
+    // Photo output for taking pictures
+    var photoOutput: AVCapturePhotoOutput?
+
+    // Completion handler for photo capture
+    var photoCompletionHandler: ((Data?, Error?) -> Void)?
+
     // optional window to limit scan search
     var scanWindow: CGRect?
 
@@ -111,6 +117,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             updateScanWindow(call, result)
         case "analyzeImage":
             analyzeImage(call, result)
+        case "takePicture":
+            takePicture(result)
         default:
             result(FlutterMethodNotImplemented)
         }
@@ -422,6 +430,16 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
         captureSession!.addOutput(videoOutput)
+        
+        if #available(macOS 10.15, *) {
+            let photoOut = AVCapturePhotoOutput()
+            if captureSession!.canAddOutput(photoOut) {
+                captureSession!.sessionPreset = .photo
+                captureSession!.addOutput(photoOut)
+                photoOutput = photoOut
+            }
+        }
+        
         let deviceVideoOrientation = self.getVideoOrientation()
         
 
@@ -698,6 +716,78 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
+    private func takePicture(_ result: @escaping FlutterResult) {
+        guard let device = self.device else {
+            result(nil)
+            return
+        }
+        
+        if #available(macOS 10.15, *) {
+            guard let photoOutput = self.photoOutput as? AVCapturePhotoOutput else {
+                result(FlutterError(
+                    code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                    message: MobileScannerErrorCodes.PHOTO_OUTPUT_NOT_AVAILABLE_ERROR_MESSAGE,
+                    details: nil))
+                return
+            }
+            
+            photoCompletionHandler = { [weak self] (data, error) in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        result(FlutterError(
+                            code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                            message: "\(MobileScannerErrorCodes.PHOTO_CAPTURE_FAILED_ERROR_MESSAGE): \(error.localizedDescription)",
+                            details: nil))
+                    } else if let data = data {
+                        result(FlutterStandardTypedData(bytes: data))
+                    } else {
+                        result(FlutterError(
+                            code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                            message: MobileScannerErrorCodes.PHOTO_NO_IMAGE_DATA_ERROR_MESSAGE,
+                            details: nil))
+                    }
+                    self?.photoCompletionHandler = nil
+                }
+            }
+            
+            photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: self)
+        } else {
+            // For older macOS versions, use the current frame from the video stream
+            takePictureFromVideoBuffer(result)
+        }
+    }
+    
+    private func takePictureFromVideoBuffer(_ result: @escaping FlutterResult) {
+        guard let latestBuffer = self.latestBuffer else {
+            result(FlutterError(
+                code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                message: MobileScannerErrorCodes.VIDEO_BUFFER_NOT_AVAILABLE_ERROR_MESSAGE,
+                details: nil))
+            return
+        }
+        
+        var cgImage: CGImage?
+        let status = VTCreateCGImageFromCVPixelBuffer(latestBuffer, options: nil, imageOut: &cgImage)
+        
+        guard status == kCVReturnSuccess, let image = cgImage else {
+            result(FlutterError(
+                code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                message: MobileScannerErrorCodes.VIDEO_BUFFER_TO_IMAGE_CONVERSION_ERROR_MESSAGE,
+                details: nil))
+            return
+        }
+        
+        guard let imageData = image.jpegData(compressionQuality: 0.8) else {
+            result(FlutterError(
+                code: MobileScannerErrorCodes.PHOTO_CAPTURE_ERROR,
+                message: MobileScannerErrorCodes.IMAGE_ENCODING_ERROR_MESSAGE,
+                details: nil))
+            return
+        }
+        
+        result(FlutterStandardTypedData(bytes: imageData))
+    }
+
     func pause(_ call: FlutterMethodCall, _ result: FlutterResult) {
         let force = (call.arguments as? Bool) ?? false
         if (!force) {
@@ -750,6 +840,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         latestBuffer = nil
         self.captureSession = nil
         self.device = nil
+        self.photoOutput = nil
+        self.photoCompletionHandler = nil
     }
 
     private func releaseTexture() {
@@ -873,6 +965,30 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #endif
         default:
             break
+        }
+    }
+}
+
+// MARK: - AVCapturePhotoCaptureDelegate (macOS 10.15+)
+@available(macOS 10.15, *)
+extension MobileScannerPlugin: AVCapturePhotoCaptureDelegate {
+    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+        if let error = error {
+            photoCompletionHandler?(nil, error)
+            return
+        }
+        
+        guard let imageData = photo.fileDataRepresentation() else {
+            photoCompletionHandler?(nil, NSError(domain: "MobileScannerPlugin", code: -1, userInfo: [NSLocalizedDescriptionKey: "Failed to get image data"]))
+            return
+        }
+        
+        photoCompletionHandler?(imageData, nil)
+    }
+    
+    public func photoOutput(_ output: AVCapturePhotoOutput, didFinishCaptureFor resolvedSettings: AVCaptureResolvedPhotoSettings, error: Error?) {
+        if let error = error {
+            photoCompletionHandler?(nil, error)
         }
     }
 }

@@ -28,5 +28,13 @@ struct MobileScannerErrorCodes {
     static let NO_CAMERA_ERROR_MESSAGE = "No cameras available."
     static let SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
     static let SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
+    // Photo capture related errors
+    static let PHOTO_CAPTURE_ERROR = "MOBILE_SCANNER_PHOTO_CAPTURE_ERROR"
+    static let PHOTO_OUTPUT_NOT_AVAILABLE_ERROR_MESSAGE = "Photo output is not available."
+    static let PHOTO_CAPTURE_FAILED_ERROR_MESSAGE = "Failed to capture photo."
+    static let PHOTO_NO_IMAGE_DATA_ERROR_MESSAGE = "No image data received from photo capture."
+    static let VIDEO_BUFFER_NOT_AVAILABLE_ERROR_MESSAGE = "No video frame available for photo capture."
+    static let VIDEO_BUFFER_TO_IMAGE_CONVERSION_ERROR_MESSAGE = "Failed to create image from video buffer."
+    static let IMAGE_ENCODING_ERROR_MESSAGE = "Failed to encode image to JPEG."
     static let UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION"
 }

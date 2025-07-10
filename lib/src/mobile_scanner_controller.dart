@@ -547,6 +547,27 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     await MobileScannerPlatform.instance.updateScanWindow(window);
   }
 
+  /// Take a picture using the camera.
+  ///
+  /// Returns the captured image as a [Uint8List] in JPEG format.
+  ///
+  /// Throws a [MobileScannerException] if the camera is not started or if
+  /// taking a picture fails.
+  Future<Uint8List> takePicture() async {
+    _throwIfNotInitialized();
+
+    if (!value.isRunning) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.genericError,
+        errorDetails: MobileScannerErrorDetails(
+          message: 'Camera is not running. Cannot take picture.',
+        ),
+      );
+    }
+
+    return MobileScannerPlatform.instance.takePicture();
+  }
+
   /// Dispose the controller.
   ///
   /// Once the controller is disposed, it cannot be used anymore.

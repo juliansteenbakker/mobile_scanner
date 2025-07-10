@@ -23,5 +23,13 @@ class MobileScannerErrorCodes {
         const val SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
         const val SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
         const val UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION" // Reserved for future use.
+        const val IMAGE_CAPTURE_NOT_AVAILABLE_ERROR = "MOBILE_SCANNER_IMAGE_CAPTURE_NOT_AVAILABLE_ERROR"
+        const val IMAGE_CAPTURE_NOT_AVAILABLE_ERROR_MESSAGE = "Camera not started or image capture not available."
+        const val IMAGE_CAPTURE_READ_ERROR = "MOBILE_SCANNER_IMAGE_CAPTURE_READ_ERROR"
+        const val IMAGE_CAPTURE_READ_ERROR_MESSAGE = "Failed to read captured image."
+        const val IMAGE_CAPTURE_PROCESS_ERROR = "MOBILE_SCANNER_IMAGE_CAPTURE_PROCESS_ERROR"
+        const val IMAGE_CAPTURE_PROCESS_ERROR_MESSAGE = "Failed to process captured image."
+        const val IMAGE_CAPTURE_FAILED_ERROR = "MOBILE_SCANNER_IMAGE_CAPTURE_FAILED_ERROR"
+        const val IMAGE_CAPTURE_FAILED_ERROR_MESSAGE = "Image capture failed."
     }
 }

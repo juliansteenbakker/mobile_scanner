@@ -148,6 +148,7 @@ class MobileScannerHandler(
             "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
             "analyzeImage" -> analyzeImage(call, result)
+            "takePicture" -> takePicture(result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call, result)
@@ -280,6 +281,57 @@ class MobileScannerHandler(
             buildBarcodeScannerOptions(formats, false),
             analyzeImageSuccessCallback,
             analyzeImageErrorCallback)
+    }
+
+    private fun takePicture(result: MethodChannel.Result) {
+        mobileScanner?.takePicture(
+            onSuccess = {
+                Handler(Looper.getMainLooper()).post {
+                    result.success(it)
+                }
+            },
+            onError = { 
+                Handler(Looper.getMainLooper()).post {
+                    when (it) {
+                        is ImageCaptureNotAvailable -> {
+                            result.error(
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_NOT_AVAILABLE_ERROR,
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_NOT_AVAILABLE_ERROR_MESSAGE,
+                                null
+                            )
+                        }
+                        is ImageCaptureReadError -> {
+                            result.error(
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_READ_ERROR,
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_READ_ERROR_MESSAGE,
+                                null
+                            )
+                        }
+                        is ImageCaptureProcessError -> {
+                            result.error(
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_PROCESS_ERROR,
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_PROCESS_ERROR_MESSAGE,
+                                null
+                            )
+                        }
+                        is ImageCaptureFailed -> {
+                            result.error(
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_FAILED_ERROR,
+                                MobileScannerErrorCodes.IMAGE_CAPTURE_FAILED_ERROR_MESSAGE,
+                                null
+                            )
+                        }
+                        else -> {
+                            result.error(
+                                MobileScannerErrorCodes.GENERIC_ERROR,
+                                MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
+                                null
+                            )
+                        }
+                    }
+                }
+            }
+        )
     }
 
     private fun toggleTorch(result: MethodChannel.Result) {
