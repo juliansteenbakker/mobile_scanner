@@ -114,8 +114,6 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Take a picture using the camera.
   ///
   /// Returns the image as a [Uint8List] in JPEG format.
-  ///
-  /// Throws an exception if the camera is not started or if taking a picture fails.
   Future<Uint8List> takePicture() {
     throw UnimplementedError('takePicture() has not been implemented.');
   }
