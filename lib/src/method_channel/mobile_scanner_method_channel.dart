@@ -276,6 +276,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
+  Future<String?> capturePhoto() async {
+    if (_textureId == null) {
+      return null;
+    }
+    return methodChannel.invokeMethod<String>('capturePhoto');
+  }
+
+  @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (!_pausing && _textureId != null) {
       throw MobileScannerException(

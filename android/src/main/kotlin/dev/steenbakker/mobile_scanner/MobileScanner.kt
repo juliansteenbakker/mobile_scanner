@@ -15,6 +15,10 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.util.Size
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import io.flutter.plugin.common.MethodChannel
+import java.io.File
 import android.view.Surface
 import androidx.annotation.VisibleForTesting
 import androidx.camera.camera2.Camera2Config
@@ -74,6 +78,7 @@ class MobileScanner(
     private var scanner: BarcodeScanner? = null
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
+    private var imageCapture: ImageCapture? = null
     private var displayListener: DisplayManager.DisplayListener? = null
 
     /// Configurable variables
@@ -441,19 +446,21 @@ class MobileScanner(
 
             val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
 
-            try {
-                camera = cameraProvider?.bindToLifecycle(
-                    activity as LifecycleOwner,
-                    cameraPosition,
-                    preview,
-                    analysis
-                )
-                cameraSelector = cameraPosition
-            } catch(exception: Exception) {
-                mobileScannerErrorCallback(NoCamera())
+            imageCapture = ImageCapture.Builder().build()
 
-                return@addListener
-            }
+try {
+    camera = cameraProvider?.bindToLifecycle(
+        activity as LifecycleOwner,
+        cameraPosition,
+        preview,
+        analysis,
+        imageCapture
+    )
+    cameraSelector = cameraPosition
+} catch(exception: Exception) {
+    mobileScannerErrorCallback(NoCamera())
+    return@addListener
+}
 
             camera?.let {
                 // Register the torch listener
@@ -508,6 +515,26 @@ class MobileScanner(
             )
         }, executor)
 
+    }
+    fun capturePhoto(result: MethodChannel.Result) {
+        val imageCapture = this.imageCapture ?: return
+
+        val photoFile = File(activity.externalMediaDirs.first(), "${System.currentTimeMillis()}.jpg")
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions,
+            ContextCompat.getMainExecutor(activity),
+            object : ImageCapture.OnImageSavedCallback {
+                override fun onError(exc: ImageCaptureException) {
+                    result.error("CAPTURE_ERROR", "Failed to capture image: ${exc.message}", null)
+                }
+
+                override fun onImageSaved(output: ImageCapture.OutputFileResults) {
+                    result.success(photoFile.absolutePath)
+                }
+            })
     }
 
     /**

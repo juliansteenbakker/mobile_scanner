@@ -151,6 +151,7 @@ class MobileScannerHandler(
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call, result)
+            "capturePhoto" -> mobileScanner?.capturePhoto(result)
             else -> result.notImplemented()
         }
     }

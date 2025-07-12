@@ -281,6 +281,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     return MobileScannerPlatform.instance.buildCameraView();
   }
 
+  Future<String?> capturePhoto() async {
+    _throwIfNotInitialized();
+    if (!value.isRunning) {
+      return null;
+    }
+    return MobileScannerPlatform.instance.capturePhoto();
+  }
+
   /// Reset the zoom scale of the camera.
   ///
   /// Does nothing if the camera is not running.

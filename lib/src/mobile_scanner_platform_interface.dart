@@ -64,6 +64,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('buildCameraView() has not been implemented.');
   }
 
+  /// Captures a photo and returns the path to the saved image.
+  Future<String?> capturePhoto() {
+    throw UnimplementedError('capturePhoto() has not been implemented.');
+  }
+
   /// Reset the zoom scale, so that the camera is fully zoomed out.
   Future<void> resetZoomScale() {
     throw UnimplementedError('resetZoomScale() has not been implemented.');
