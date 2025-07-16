@@ -379,134 +379,153 @@ class MobileScanner(
         scanner = barcodeScannerFactory(barcodeScannerOptions)
 
         val cameraProviderFuture = ProcessCameraProvider.getInstance(activity)
+
         val executor = ContextCompat.getMainExecutor(activity)
 
+
         cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
-            val numberOfCameras = cameraProvider?.availableCameraInfos?.size
 
-            if (cameraProvider == null) {
-                mobileScannerErrorCallback(CameraError())
+            try {
+                cameraProvider = cameraProviderFuture.get()
 
-                return@addListener
-            }
+                val numberOfCameras = cameraProvider?.availableCameraInfos?.size
 
-            cameraProvider?.unbindAll()
-            surfaceProducer = surfaceProducer ?: textureRegistry.createSurfaceProducer()
-            val surfaceProvider: Preview.SurfaceProvider = createSurfaceProvider(surfaceProducer!!)
+                if (cameraProvider == null) {
+                    mobileScannerErrorCallback(CameraError())
 
-            // Preview
+                    return@addListener
+                }
+                if (cameraProvider!!.availableCameraInfos.isEmpty()) {
+                    mobileScannerErrorCallback(NoCamera())
+                    // Handle no camera scenario
+                    return@addListener
+                }
 
-            // Build the preview to be shown on the Flutter texture
-            val previewBuilder = Preview.Builder()
-            preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
+                cameraProvider?.unbindAll()
+                surfaceProducer = surfaceProducer ?: textureRegistry.createSurfaceProducer()
+                val surfaceProvider: Preview.SurfaceProvider =
+                    createSurfaceProvider(surfaceProducer!!)
 
-            // Build the analyzer to be passed on to MLKit
-            val analysisBuilder = ImageAnalysis.Builder()
-                .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-            val displayManager = activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+                // Preview
 
-            val cameraResolution =  cameraResolutionWanted ?: Size(1920, 1080)
+                // Build the preview to be shown on the Flutter texture
+                val previewBuilder = Preview.Builder()
+                preview = previewBuilder.build().apply { setSurfaceProvider(surfaceProvider) }
 
-            val selectorBuilder = ResolutionSelector.Builder()
-            selectorBuilder.setResolutionStrategy(
-                ResolutionStrategy(
-                    cameraResolution,
-                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                // Build the analyzer to be passed on to MLKit
+                val analysisBuilder = ImageAnalysis.Builder()
+                    .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                val displayManager =
+                    activity.applicationContext.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+
+                val cameraResolution = cameraResolutionWanted ?: Size(1920, 1080)
+
+                val selectorBuilder = ResolutionSelector.Builder()
+                selectorBuilder.setResolutionStrategy(
+                    ResolutionStrategy(
+                        cameraResolution,
+                        ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                    )
                 )
-            )
-            analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
+                analysisBuilder.setResolutionSelector(selectorBuilder.build()).build()
 
-            if (displayListener == null) {
-                displayListener = object : DisplayManager.DisplayListener {
-                    override fun onDisplayAdded(displayId: Int) {}
+                if (displayListener == null) {
+                    displayListener = object : DisplayManager.DisplayListener {
+                        override fun onDisplayAdded(displayId: Int) {}
 
-                    override fun onDisplayRemoved(displayId: Int) {}
+                        override fun onDisplayRemoved(displayId: Int) {}
 
-                    override fun onDisplayChanged(displayId: Int) {
-                        val selector = ResolutionSelector.Builder().setResolutionStrategy(
-                            ResolutionStrategy(
-                                cameraResolution,
-                                ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                        override fun onDisplayChanged(displayId: Int) {
+                            val selector = ResolutionSelector.Builder().setResolutionStrategy(
+                                ResolutionStrategy(
+                                    cameraResolution,
+                                    ResolutionStrategy.FALLBACK_RULE_CLOSEST_HIGHER_THEN_LOWER
+                                )
                             )
-                        )
-                        analysisBuilder.setResolutionSelector(selector.build()).build()
+                            analysisBuilder.setResolutionSelector(selector.build()).build()
+                        }
+                    }
+
+                    displayManager.registerDisplayListener(
+                        displayListener, null,
+                    )
+                }
+
+                val analysis =
+                    analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
+
+                try {
+                    camera = cameraProvider?.bindToLifecycle(
+                        activity as LifecycleOwner,
+                        cameraPosition,
+                        preview,
+                        analysis
+                    )
+                    cameraSelector = cameraPosition
+                } catch (exception: Exception) {
+                    mobileScannerErrorCallback(NoCamera())
+
+                    return@addListener
+                }
+
+                camera?.let {
+                    // Register the torch listener
+                    it.cameraInfo.torchState.observe(activity as LifecycleOwner) { state ->
+                        // TorchState.OFF = 0; TorchState.ON = 1
+                        torchStateCallback(state)
+                    }
+
+                    // Register the zoom scale listener
+                    it.cameraInfo.zoomState.observe(activity) { state ->
+                        zoomScaleStateCallback(state.linearZoom.toDouble())
+                    }
+
+                    // Enable torch if provided
+                    if (it.cameraInfo.hasFlashUnit()) {
+                        it.cameraControl.enableTorch(torch)
                     }
                 }
 
-                displayManager.registerDisplayListener(
-                    displayListener, null,
-                )
-            }
+                val resolution = analysis.resolutionInfo!!.resolution
+                val width = resolution.width.toDouble()
+                val height = resolution.height.toDouble()
+                val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
+                val portrait = sensorRotationDegrees % 180 == 0
+                val cameraDirection = getCameraLensFacing(camera)
 
-            val analysis = analysisBuilder.build().apply { setAnalyzer(executor, captureOutput) }
+                // Start with 'unavailable' torch state.
+                var currentTorchState: Int = -1
 
-            try {
-                camera = cameraProvider?.bindToLifecycle(
-                    activity as LifecycleOwner,
-                    cameraPosition,
-                    preview,
-                    analysis
+                camera?.cameraInfo?.let {
+                    if (!it.hasFlashUnit()) {
+                        return@let
+                    }
+
+                    currentTorchState = it.torchState.value ?: -1
+                }
+
+                deviceOrientationListener.start()
+
+                mobileScannerStartedCallback(
+                    MobileScannerStartParameters(
+                        if (portrait) width else height,
+                        if (portrait) height else width,
+                        deviceOrientationListener.getUIOrientation().serialize(),
+                        sensorRotationDegrees,
+                        surfaceProducer!!.handlesCropAndRotation(),
+                        currentTorchState,
+                        surfaceProducer!!.id(),
+                        numberOfCameras ?: 0,
+                        cameraDirection,
+                    )
                 )
-                cameraSelector = cameraPosition
-            } catch(exception: Exception) {
+            }catch (e:Exception){
                 mobileScannerErrorCallback(NoCamera())
 
                 return@addListener
             }
-
-            camera?.let {
-                // Register the torch listener
-                it.cameraInfo.torchState.observe(activity as LifecycleOwner) { state ->
-                    // TorchState.OFF = 0; TorchState.ON = 1
-                    torchStateCallback(state)
-                }
-
-                // Register the zoom scale listener
-                it.cameraInfo.zoomState.observe(activity) { state ->
-                    zoomScaleStateCallback(state.linearZoom.toDouble())
-                }
-
-                // Enable torch if provided
-                if (it.cameraInfo.hasFlashUnit()) {
-                    it.cameraControl.enableTorch(torch)
-                }
-            }
-
-            val resolution = analysis.resolutionInfo!!.resolution
-            val width = resolution.width.toDouble()
-            val height = resolution.height.toDouble()
-            val sensorRotationDegrees = camera?.cameraInfo?.sensorRotationDegrees ?: 0
-            val portrait = sensorRotationDegrees % 180 == 0
-            val cameraDirection = getCameraLensFacing(camera)
-
-            // Start with 'unavailable' torch state.
-            var currentTorchState: Int = -1
-
-            camera?.cameraInfo?.let {
-                if (!it.hasFlashUnit()) {
-                    return@let
-                }
-
-                currentTorchState = it.torchState.value ?: -1
-            }
-
-            deviceOrientationListener.start()
-
-            mobileScannerStartedCallback(
-                MobileScannerStartParameters(
-                    if (portrait) width else height,
-                    if (portrait) height else width,
-                    deviceOrientationListener.getUIOrientation().serialize(),
-                    sensorRotationDegrees,
-                    surfaceProducer!!.handlesCropAndRotation(),
-                    currentTorchState,
-                    surfaceProducer!!.id(),
-                    numberOfCameras ?: 0,
-                    cameraDirection,
-                )
-            )
         }, executor)
+
 
     }
 

@@ -1,8 +1,10 @@
 package dev.steenbakker.mobile_scanner
 
+import androidx.annotation.NonNull
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
+import io.flutter.plugin.common.BinaryMessenger
 
 /** MobileScannerPlugin */
 class MobileScannerPlugin : FlutterPlugin, ActivityAware {
@@ -18,32 +20,58 @@ class MobileScannerPlugin : FlutterPlugin, ActivityAware {
         this.flutterPluginBinding = null
     }
 
-    override fun onAttachedToActivity(activityPluginBinding: ActivityPluginBinding) {
-        val binaryMessenger = this.flutterPluginBinding!!.binaryMessenger
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        this.activityPluginBinding = binding
 
-        methodCallHandler = MobileScannerHandler(
-            activityPluginBinding.activity,
-            BarcodeHandler(binaryMessenger),
-            binaryMessenger,
-            MobileScannerPermissions(),
-            activityPluginBinding::addRequestPermissionsResultListener,
-            this.flutterPluginBinding!!.textureRegistry,
-        )
+        initializeMethodCallHandler()
 
-        this.activityPluginBinding = activityPluginBinding
+    }
+
+    private fun initializeMethodCallHandler() {
+
+        val currentActivityBinding = activityPluginBinding
+        val currentFlutterBinding = flutterPluginBinding
+
+        if (currentActivityBinding != null && currentFlutterBinding != null) {
+
+
+            val binaryMessenger: BinaryMessenger = currentFlutterBinding.binaryMessenger
+            val textureRegistry = currentFlutterBinding.textureRegistry
+
+
+            methodCallHandler?.dispose(currentActivityBinding)
+            methodCallHandler = null
+
+            methodCallHandler = MobileScannerHandler(
+                currentActivityBinding.activity,
+                BarcodeHandler(binaryMessenger),
+                binaryMessenger,
+                MobileScannerPermissions(),
+                currentActivityBinding::addRequestPermissionsResultListener,
+                textureRegistry
+            )
+        } else {
+
+        }
     }
 
     override fun onDetachedFromActivity() {
-        methodCallHandler?.dispose(this.activityPluginBinding!!)
+
+        val localActivityPluginBinding = activityPluginBinding
+        if (localActivityPluginBinding != null) {
+            methodCallHandler?.dispose(localActivityPluginBinding)
+        }
         methodCallHandler = null
-        activityPluginBinding = null
+        this.activityPluginBinding = null
     }
 
     override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
-        onAttachedToActivity(binding)
+        this.activityPluginBinding = binding
+        initializeMethodCallHandler()
     }
 
     override fun onDetachedFromActivityForConfigChanges() {
+
         onDetachedFromActivity()
     }
 }
