@@ -29,7 +29,7 @@ android {
         namespace 'dev.steenbakker.mobile_scanner'
     }
 
-    compileSdk 35
+    compileSdk 36
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -75,7 +75,7 @@ dependencies {
 
     implementation 'androidx.camera:camera-lifecycle:1.4.2'
     implementation 'androidx.camera:camera-camera2:1.4.2'
-    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
     testImplementation 'org.mockito:mockito-core:5.18.0'

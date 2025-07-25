@@ -51,6 +51,7 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
+import androidx.core.graphics.createBitmap
 
 class MobileScanner(
     private val activity: Activity,
@@ -75,6 +76,7 @@ class MobileScanner(
     private var lastScanned: List<String?>? = null
     private var scannerTimeout = false
     private var displayListener: DisplayManager.DisplayListener? = null
+    private var isSurfaceProducerReleased = false
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -175,7 +177,7 @@ class MobileScanner(
                 }
 
                 CoroutineScope(Dispatchers.IO).launch {
-                    val bitmap = Bitmap.createBitmap(mediaImage.width, mediaImage.height, Bitmap.Config.ARGB_8888)
+                    val bitmap = createBitmap(mediaImage.width, mediaImage.height)
                     val imageFormat = YuvToRgbConverter(activity.applicationContext)
 
                     imageFormat.yuvToRgb(mediaImage, bitmap)
@@ -402,6 +404,7 @@ class MobileScanner(
                 }
 
                 cameraProvider?.unbindAll()
+
                 surfaceProducer = surfaceProducer ?: textureRegistry.createSurfaceProducer()
                 val surfaceProvider: Preview.SurfaceProvider =
                     createSurfaceProvider(surfaceProducer!!)
@@ -593,9 +596,12 @@ class MobileScanner(
         // Unbind the camera use cases, the preview is a use case.
         // The camera will be closed when the last use case is unbound.
         cameraProvider?.unbindAll()
-
+        if (surfaceProducer != null) {
         // Release the surface for the preview.
-        surfaceProducer?.release()
+
+            releaseSurface()
+        }
+
         surfaceProducer = null
 
         // Release the scanner.
@@ -621,7 +627,17 @@ class MobileScanner(
             }
         }
     }
+    private  fun  releaseSurface(){
+        try {
+            surfaceProducer?.release()
 
+            surfaceProducer = null
+            Log.d("MobileScanner", "SurfaceProducer succes")
+        } catch (e: Exception) {
+            surfaceProducer = null
+            Log.e("MobileScanner", "SurfaceProducer error $e")
+        }
+    }
     /**
      * Inverts the image colours respecting the alpha channel
      */
@@ -630,7 +646,7 @@ class MobileScanner(
         val image = imageProxy.image ?: throw IllegalArgumentException("Image is null")
 
         // Convert YUV_420_888 image to RGB Bitmap
-        val bitmap = Bitmap.createBitmap(image.width, image.height, Bitmap.Config.ARGB_8888)
+        val bitmap = createBitmap(image.width, image.height)
         try {
             val imageFormat = YuvToRgbConverter(activity.applicationContext)
             imageFormat.yuvToRgb(image, bitmap)
@@ -659,7 +675,7 @@ class MobileScanner(
         }
         val paint = Paint().apply { colorFilter = ColorMatrixColorFilter(colorMatrix) }
 
-        val invertedBitmap = Bitmap.createBitmap(bitmap.width, bitmap.height, bitmap.config!!)
+        val invertedBitmap = createBitmap(bitmap.width, bitmap.height, bitmap.config!!)
         val canvas = Canvas(invertedBitmap)
         canvas.drawBitmap(bitmap, 0f, 0f, paint)
 
