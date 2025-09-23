@@ -26,6 +26,7 @@ class MobileScanner extends StatefulWidget {
     this.scanWindow,
     this.scanWindowUpdateThreshold = 0.0,
     this.useAppLifecycleState = true,
+    this.tapToFocus = false,
     super.key,
   });
 
@@ -135,6 +136,20 @@ class MobileScanner extends StatefulWidget {
   ///
   /// Defaults to true.
   final bool useAppLifecycleState;
+
+  /// Enables or disables tap-to-focus functionality on the camera preview.
+  ///
+  /// When set to `true`, the camera will adjust focus automatically when the
+  /// user taps on a specific point in the preview view.
+  /// When set to `false`, tap gestures are ignored, and the camera remains in
+  /// continuous autofocus mode.
+  ///
+  /// If this is `true`, the preview (or part of it) should be able to receive
+  /// gestures, as other widgets overlaid over the preview will prevent it to
+  /// receive gestures in those areas.
+  ///
+  /// Defaults to false and is only supported on iOS and Android.
+  final bool tapToFocus;
 
   @override
   State<MobileScanner> createState() => _MobileScannerState();
@@ -249,13 +264,42 @@ class _MobileScannerState extends State<MobileScanner>
               ),
             );
 
+            final Widget tapToFocusScannerWidget = Builder(
+              builder: (context) {
+                return GestureDetector(
+                  child: scannerWidget,
+                  onTapUp: (details) async {
+                    final Size size = MediaQuery.sizeOf(context);
+                    final double relativeX =
+                        details.globalPosition.dx / size.width;
+                    final double relativeY =
+                        details.globalPosition.dy / size.height;
+
+                    await controller.setFocusPoint(
+                      Offset(relativeX, relativeY),
+                    );
+                  },
+                );
+              },
+            );
+
             if (overlay == null) {
+              if (widget.tapToFocus) {
+                return tapToFocusScannerWidget;
+              }
+
               return scannerWidget;
             }
 
             return Stack(
               alignment: Alignment.center,
-              children: <Widget>[scannerWidget, overlay],
+              children: <Widget>[
+                if (widget.tapToFocus)
+                  tapToFocusScannerWidget
+                else
+                  scannerWidget,
+                IgnorePointer(child: overlay),
+              ],
             );
           },
         );

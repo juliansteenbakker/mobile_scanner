@@ -50,6 +50,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   bool autoZoom = false;
   bool invertImage = false;
   bool returnImage = false;
+  bool tapToFocus = true;
 
   Size desiredCameraResolution = const Size(1920, 1080);
   DetectionSpeed detectionSpeed = DetectionSpeed.unrestricted;
@@ -302,6 +303,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     // useAppLifecycleState: false, // Only set to false if you want
                     // to handle lifecycle changes yourself
                     scanWindow: useScanWindow ? scanWindow : null,
+                    tapToFocus: true,
                     controller: controller,
                     errorBuilder: (context, error) {
                       return ScannerErrorWidget(error: error);
@@ -309,60 +311,72 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     fit: boxFit,
                   ),
                   if (useBarcodeOverlay)
-                    BarcodeOverlay(controller: controller!, boxFit: boxFit),
+                    // Needed for tapToFocus
+                    IgnorePointer(
+                      child: BarcodeOverlay(
+                        controller: controller!,
+                        boxFit: boxFit,
+                      ),
+                    ),
                   // The scanWindow is not supported on the web.
                   if (useScanWindow)
-                    ScanWindowOverlay(
-                      scanWindow: scanWindow,
-                      controller: controller!,
+                    // Needed for tapToFocus
+                    IgnorePointer(
+                      child: ScanWindowOverlay(
+                        scanWindow: scanWindow,
+                        controller: controller!,
+                      ),
                     ),
                   if (returnImage)
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: Card(
-                        clipBehavior: Clip.hardEdge,
-                        shape: RoundedRectangleBorder(
-                          side: const BorderSide(color: Colors.white),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: SizedBox(
-                          width: 100,
-                          height: 100,
-                          child: StreamBuilder<BarcodeCapture>(
-                            stream: controller!.barcodes,
-                            builder: (context, snapshot) {
-                              final BarcodeCapture? barcode = snapshot.data;
+                    // Needed for tapToFocus
+                    IgnorePointer(
+                      child: Align(
+                        alignment: Alignment.topRight,
+                        child: Card(
+                          clipBehavior: Clip.hardEdge,
+                          shape: RoundedRectangleBorder(
+                            side: const BorderSide(color: Colors.white),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: SizedBox(
+                            width: 100,
+                            height: 100,
+                            child: StreamBuilder<BarcodeCapture>(
+                              stream: controller!.barcodes,
+                              builder: (context, snapshot) {
+                                final BarcodeCapture? barcode = snapshot.data;
 
-                              if (barcode == null) {
-                                return const Center(
-                                  child: Text(
-                                    'Your scanned barcode will appear here',
-                                    textAlign: TextAlign.center,
-                                  ),
-                                );
-                              }
-
-                              final Uint8List? barcodeImage = barcode.image;
-
-                              if (barcodeImage == null) {
-                                return const Center(
-                                  child: Text('No image for this barcode.'),
-                                );
-                              }
-
-                              return Image.memory(
-                                barcodeImage,
-                                fit: BoxFit.cover,
-                                gaplessPlayback: true,
-                                errorBuilder: (context, error, stackTrace) {
-                                  return Center(
+                                if (barcode == null) {
+                                  return const Center(
                                     child: Text(
-                                      'Could not decode image bytes. $error',
+                                      'Your scanned barcode will appear here',
+                                      textAlign: TextAlign.center,
                                     ),
                                   );
-                                },
-                              );
-                            },
+                                }
+
+                                final Uint8List? barcodeImage = barcode.image;
+
+                                if (barcodeImage == null) {
+                                  return const Center(
+                                    child: Text('No image for this barcode.'),
+                                  );
+                                }
+
+                                return Image.memory(
+                                  barcodeImage,
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Center(
+                                      child: Text(
+                                        'Could not decode image bytes. $error',
+                                      ),
+                                    );
+                                  },
+                                );
+                              },
+                            ),
                           ),
                         ),
                       ),

@@ -17,6 +17,7 @@ class StartOptions {
     required this.torchEnabled,
     required this.invertImage,
     required this.autoZoom,
+    required this.initialZoom,
   });
 
   /// The direction for the camera.
@@ -51,6 +52,11 @@ class StartOptions {
   /// option.
   final bool autoZoom;
 
+  /// The initial zoom scale factor for the camera.
+  ///
+  /// Currently only supported on iOS, MacOS and Android.
+  final double initialZoom;
+
   /// Converts this object to a map.
   Map<String, Object?> toMap() {
     return <String, Object?>{
@@ -68,6 +74,7 @@ class StartOptions {
       'torch': torchEnabled,
       'invertImage': invertImage,
       'autoZoom': autoZoom,
+      'initialZoom': initialZoom,
     };
   }
 }

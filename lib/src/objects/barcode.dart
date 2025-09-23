@@ -1,3 +1,6 @@
+/// @docImport 'package:mobile_scanner/src/objects/barcode_capture.dart';
+library;
+
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -106,7 +109,7 @@ class Barcode {
   /// The contact information that is embedded in the barcode.
   final ContactInfo? contactInfo;
 
-  /// The corner points of the barcode.
+  /// The corner points of the barcode, relative to the [size] of the barcode.
   ///
   /// On Android, iOS and MacOS, this is a list of four points,
   /// in clockwise direction, starting with the top left.
@@ -118,6 +121,8 @@ class Barcode {
   /// the points do not necessarily form a rectangle.
   ///
   /// This list is empty if the corners can not be determined.
+  ///
+  /// See also [scaleCorners], to scale the corners to a different size.
   final List<Offset> corners;
 
   /// The barcode value in a user-friendly format.
@@ -162,7 +167,8 @@ class Barcode {
   /// This is null if the raw value is not available.
   final String? rawValue;
 
-  /// The normalized size of the barcode bounding box.
+  /// The normalized size of the barcode bounding box,
+  /// relative to the [BarcodeCapture.size] of the original barcode capture.
   ///
   /// If the bounding box is unavailable, this will be [Size.zero].
   final Size size;
@@ -188,4 +194,44 @@ class Barcode {
 
   /// The Wireless network information that is embedded in the barcode.
   final WiFi? wifi;
+
+  /// Scale the [corners] of this [Barcode] to the given [targetSize].
+  ///
+  /// Returns the list of scaled offsets,
+  /// or an empty list, if the [corners] is empty.
+  ///
+  /// This method can be used to scale the [corners] of a [Barcode]
+  /// from the original camera coordinate space, into widget coordinate space.
+  ///
+  /// For example, given the `BuildContext` of a widget:
+  ///
+  /// ```dart
+  /// final BuildContext context;
+  ///
+  /// final Barcode barcode = Barcode(
+  ///   size: Size(60, 60),
+  ///   corners: [
+  ///     Offset(10, 10),
+  ///     Offset(50, 10),
+  ///     Offset(50, 50),
+  ///     Offset(10, 50),
+  ///   ],
+  /// );
+  ///
+  /// final List<Offset> scaledCorners = barcode.scaleCorners(
+  ///   context.size ?? Size.zero
+  /// );
+  /// ```
+  List<Offset> scaleCorners(Size targetSize) {
+    // The size and corners are in the same coordinate space,
+    // which is the camera input.
+    // If the barcode size is unknown, scale to 0,0.
+    final double scaleX = size.width > 0 ? targetSize.width / size.width : 0;
+    final double scaleY = size.height > 0 ? targetSize.height / size.height : 0;
+
+    return [
+      for (final Offset offset in corners)
+        Offset(offset.dx * scaleX, offset.dy * scaleY),
+    ];
+  }
 }

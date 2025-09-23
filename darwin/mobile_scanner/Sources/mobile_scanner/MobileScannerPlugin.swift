@@ -101,6 +101,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             toggleTorch(result)
         case "setScale":
             setScale(call, result)
+        case "setFocus":
+            setFocus(call, result)
         case "resetScale":
             resetScale(call, result)
         case "pause":
@@ -157,11 +159,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                if self!.latestBuffer == nil {
+                guard let self = self else { return }
+                if self.latestBuffer == nil {
                     return
                 }
                 var cgImage: CGImage?
-                VTCreateCGImageFromCVPixelBuffer(self!.latestBuffer, options: nil, imageOut: &cgImage)
+                VTCreateCGImageFromCVPixelBuffer(self.latestBuffer, options: nil, imageOut: &cgImage)
                 let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
                 do {
                     let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
@@ -346,6 +349,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let facing:Int = argReader.int(key: "facing") ?? 1
         let speed:Int = argReader.int(key: "speed") ?? 0
         let timeoutMs:Int = argReader.int(key: "timeout") ?? 0
+        let initialZoom: CGFloat = CGFloat(argReader.float(key: "initialZoom") ?? 1)
         symbologies = argReader.toSymbology()
         MobileScannerPlugin.returnImage = argReader.bool(key: "returnImage") ?? false
 
@@ -360,10 +364,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #endif
         
         // Open the camera device
+#if os(iOS)
+        if #available(iOS 13.0, *) {
+            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTripleCamera, .builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: position).devices.first
+        }
+#else
         if #available(macOS 10.15, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
-        } else {
+        }
+#endif
+        
+        if (device == nil) {
             device = AVCaptureDevice.devices(for: .video).filter({$0.position == position}).first
+        }
+        
+        if (device == nil) {
+            device = AVCaptureDevice.default(for: .video)
         }
         
         if (device == nil) {
@@ -380,7 +396,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         captureSession!.beginConfiguration()
         
         // Check the zoom factor at switching from ultra wide camera to wide camera.
-        standardZoomFactor = 1
+        standardZoomFactor = initialZoom
 #if os(iOS)
         if #available(iOS 13.0, *) {
             for (index, actualDevice) in device.constituentDevices.enumerated() {
@@ -413,7 +429,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 message: error.localizedDescription, details: nil))
             return
         }
-        captureSession!.sessionPreset = AVCaptureSession.Preset.photo
+        captureSession!.sessionPreset = AVCaptureSession.Preset.high
 
         // Add video output
         let videoOutput = AVCaptureVideoDataOutput()
@@ -454,6 +470,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 // Turn on the torch if requested.
                 if (torch) {
                     self.turnTorchOn()
+                }
+                
+                // Set the initial zoom factor
+                do {
+                    try self.setScaleInternal(initialZoom)
+                } catch {
+                    // Do nothing.
                 }
 
 #if os(iOS)
@@ -586,6 +609,43 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
     }
     
+    private func setFocus(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        guard let args = call.arguments as? [String: Any],
+                  let dx = args["dx"] as? CGFloat,
+                  let dy = args["dy"] as? CGFloat else {
+                result(FlutterError(code: MobileScannerErrorCodes.INVALID_FOCUS_POINT,
+                                    message: MobileScannerErrorCodes.INVALID_FOCUS_POINT_MESSAGE,
+                                    details: nil))
+                return
+            }
+            let focusPoint = CGPoint(x: dx, y: dy)
+        
+        do {
+            if (device == nil) {
+                throw MobileScannerError.zoomWhenStopped
+            }
+
+    #if os(iOS)
+                if device.isFocusPointOfInterestSupported {
+                    do {
+                        try device.lockForConfiguration()
+                        device.focusPointOfInterest = focusPoint
+                        device.focusMode = .autoFocus
+                        device.unlockForConfiguration()
+                    } catch {
+                        throw MobileScannerError.zoomError(error)
+                    }
+                }
+    #endif
+        
+            result(nil)
+        } catch {
+            result(FlutterError(code: MobileScannerErrorCodes.GENERIC_ERROR,
+                                message: MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
+                                details: nil))
+        }
+    }
+
 #if os(iOS)
     /// Set the device orientation if it differs from previous orientation
     func setDeviceOrientation(orientation: UIDeviceOrientation) {
@@ -890,6 +950,10 @@ class MapArgumentReader {
 
     func int(key: String) -> Int? {
         return (args?[key] as? NSNumber)?.intValue
+    }
+    
+    func float(key: String) -> Float? {
+        return (args?[key] as? NSNumber)?.floatValue
     }
 
     func bool(key: String) -> Bool? {

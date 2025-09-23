@@ -151,6 +151,7 @@ class MobileScannerHandler(
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
             "updateScanWindow" -> updateScanWindow(call, result)
+            "setFocus" -> setFocus(call, result)
             else -> result.notImplemented()
         }
     }
@@ -172,6 +173,7 @@ class MobileScannerHandler(
             null
         }
         val invertImage: Boolean = call.argument<Boolean>("invertImage") ?: false
+        val initialZoom: Double = call.argument<Double>("initialZoom") ?: 1.0
 
         val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats, autoZoom)
 
@@ -243,6 +245,7 @@ class MobileScannerHandler(
             timeout.toLong(),
             cameraResolution,
             invertImage,
+            initialZoom
         )
     }
 
@@ -327,7 +330,7 @@ class MobileScannerHandler(
     private fun buildBarcodeScannerOptions(formats: List<Int>?, autoZoom: Boolean): BarcodeScannerOptions? {
         val builder : BarcodeScannerOptions.Builder?
         if (formats == null) {
-           builder = BarcodeScannerOptions.Builder()
+            builder = BarcodeScannerOptions.Builder()
         } else {
             val formatsList: MutableList<Int> = mutableListOf()
 
@@ -374,4 +377,36 @@ class MobileScannerHandler(
         }
         return maxZoom
     }
+
+    private fun setFocus(call: MethodCall, result: MethodChannel.Result) {
+        val dx = call.argument<Double>("dx")?.toFloat()
+        val dy = call.argument<Double>("dy")?.toFloat()
+
+        if (dx == null || dy == null || dx !in 0f..1f || dy !in 0f..1f) {
+            result.error(
+                MobileScannerErrorCodes.INVALID_FOCUS_POINT,
+                MobileScannerErrorCodes.INVALID_FOCUS_POINT_MESSAGE,
+                null
+            )
+            return
+        }
+
+        try {
+            mobileScanner?.setFocus(dx, dy)
+            result.success(null)
+        } catch (e: ZoomWhenStopped) {
+            result.error(
+                MobileScannerErrorCodes.GENERIC_ERROR,
+                "Cannot set focus when camera is stopped.",
+                null
+            )
+        } catch (e: Exception) {
+            result.error(
+                MobileScannerErrorCodes.GENERIC_ERROR,
+                MobileScannerErrorCodes.GENERIC_ERROR_MESSAGE,
+                e.localizedMessage
+            )
+        }
+    }
+
 }

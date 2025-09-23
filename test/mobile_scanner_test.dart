@@ -63,7 +63,7 @@ void main() {
   });
 
   tearDown(() {
-    barcodeStreamController.close();
+    unawaited(barcodeStreamController.close());
   });
 
   group('MobileScanner Widget Tests', () {

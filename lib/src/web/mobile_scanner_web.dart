@@ -459,6 +459,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<void> setFocusPoint(Offset position) {
+    throw UnimplementedError('setFocusPoint() has not been implemented.');
+  }
+
+  @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
     if (_barcodeReader != null) {
       if (_barcodeReader!.paused ?? false) {

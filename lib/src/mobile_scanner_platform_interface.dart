@@ -83,6 +83,14 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('setZoomScale() has not been implemented.');
   }
 
+  /// Set the focus position for the camera.
+  ///
+  /// The provided point should be in the range `(0,0) - (1,1)`, both inclusive,
+  /// where `(0,0)` is the top left and `(1,1)` is the bottom right.
+  Future<void> setFocusPoint(Offset position) {
+    throw UnimplementedError('setFocusPoint() has not been implemented.');
+  }
+
   /// Start the barcode scanner and prepare a scanner view.
   ///
   /// Upon calling this method, the necessary camera permission will be

@@ -23,5 +23,7 @@ class MobileScannerErrorCodes {
         const val SET_SCALE_WHEN_STOPPED_ERROR = "MOBILE_SCANNER_SET_SCALE_WHEN_STOPPED_ERROR"
         const val SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE = "The zoom scale cannot be changed when the camera is stopped."
         const val UNSUPPORTED_OPERATION_ERROR = "MOBILE_SCANNER_UNSUPPORTED_OPERATION" // Reserved for future use.
+        const val INVALID_FOCUS_POINT = "MOBILE_SCANNER_INVALID_FOCUS_POINT"
+        const val INVALID_FOCUS_POINT_MESSAGE = "The focus coordinates are not valid."
     }
 }

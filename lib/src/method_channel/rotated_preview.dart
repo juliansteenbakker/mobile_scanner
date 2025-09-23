@@ -120,7 +120,7 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
 
   @override
   void dispose() {
-    _deviceOrientationSubscription?.cancel();
+    unawaited(_deviceOrientationSubscription?.cancel());
     _deviceOrientationSubscription = null;
     super.dispose();
   }

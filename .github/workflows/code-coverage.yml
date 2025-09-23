@@ -14,7 +14,7 @@ jobs:
     steps:
       # Checkout the Repository
       - name: 📥 Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # Setup Flutter SDK with Cache
       - name: ⚡ Set Up Flutter
