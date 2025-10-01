@@ -51,6 +51,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var deviceOrientation: UIDeviceOrientation = UIDeviceOrientation.unknown
 #endif
     
+    // ADDED: Observer tracking to prevent crashes
+    private var isTorchObserverAdded = false
+    private var isZoomObserverAdded = false
+    
     private var stopped: Bool {
         return device == nil || captureSession == nil
     }
@@ -141,7 +145,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var nextScanTime = 0.0
     var imagesCurrentlyBeingProcessed = false
     
-    // Gets called when a new image is added to the buffer
+    // FIXED: Complete crash-safe version of captureOutput
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         // Ignore invalid texture id.
         if textureId == nil {
@@ -160,12 +164,24 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             imagesCurrentlyBeingProcessed = true
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 guard let self = self else { return }
-                if self.latestBuffer == nil {
+                
+                // FIXED: Capture buffer reference to avoid race conditions
+                guard let buffer = self.latestBuffer else {
+                    self.imagesCurrentlyBeingProcessed = false
                     return
                 }
+                
                 var cgImage: CGImage?
-                VTCreateCGImageFromCVPixelBuffer(self.latestBuffer, options: nil, imageOut: &cgImage)
-                let imageRequestHandler = VNImageRequestHandler(cgImage: cgImage!)
+                let status = VTCreateCGImageFromCVPixelBuffer(buffer, options: nil, imageOut: &cgImage)
+                
+                // FIXED: Check if image creation succeeded before using
+                guard status == kCVReturnSuccess, let validImage = cgImage else {
+                    self.imagesCurrentlyBeingProcessed = false
+                    return
+                }
+                
+                // FIXED: Use validImage (already safely unwrapped)
+                let imageRequestHandler = VNImageRequestHandler(cgImage: validImage)
                 do {
                     let barcodeRequest: VNDetectBarcodesRequest = VNDetectBarcodesRequest(completionHandler: { [weak self] (request, error) in
                         self?.imagesCurrentlyBeingProcessed = false
@@ -192,26 +208,23 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                         })
 
                         DispatchQueue.main.async {
-                            // If the image is nil, use zero as the size.
-                            guard let image = cgImage else {
-                                self?.sink?([
-                                    "name": "barcode",
-                                    "data": barcodes.map({ $0.toMap(imageWidth: 0, imageHeight: 0, scanWindow: nil)}),
-                                ])
-                                return
+                            // FIXED: Safely handle jpegData conversion (can return nil)
+                            var imageBytes: FlutterStandardTypedData? = nil
+                            if MobileScannerPlugin.returnImage {
+                                if let jpegData = validImage.jpegData(compressionQuality: 0.8) {
+                                    imageBytes = FlutterStandardTypedData(bytes: jpegData)
+                                }
                             }
-
-                            // The image dimensions are always provided.
-                            // The image bytes are only non-null when `returnImage` is true.
+                            
                             let imageData: [String: Any?] = [
-                                "bytes": MobileScannerPlugin.returnImage ? FlutterStandardTypedData(bytes: image.jpegData(compressionQuality: 0.8)!) : nil,
-                                "width": Double(image.width),
-                                "height": Double(image.height),
+                                "bytes": imageBytes,
+                                "width": Double(validImage.width),
+                                "height": Double(validImage.height),
                             ]
 
                             self?.sink?([
                                 "name": "barcode",
-                                "data": barcodes.map({ $0.toMap(imageWidth: image.width, imageHeight: image.height, scanWindow: self?.scanWindow) }),
+                                "data": barcodes.map({ $0.toMap(imageWidth: validImage.width, imageHeight: validImage.height, scanWindow: self?.scanWindow) }),
                                 "image": imageData,
                             ])
                         }
@@ -229,6 +242,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
                     try imageRequestHandler.perform([barcodeRequest])
                 } catch let error {
+                    // FIXED: Reset flag on error
+                    self.imagesCurrentlyBeingProcessed = false
                     DispatchQueue.main.async {
                         self.sink?(FlutterError(
                             code: MobileScannerErrorCodes.BARCODE_ERROR,
@@ -263,9 +278,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
 
+    // FIXED: Validate array bounds before access
     func updateScanWindow(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
-        let scanWindowData: Array? = argReader.floatArray(key: "rect")
+        let scanWindowData: [CGFloat]? = argReader.floatArray(key: "rect")
 
         if (scanWindowData == nil) {
             scanWindow = nil
@@ -273,16 +289,34 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         
-        let left = scanWindowData![0]
-        let top = scanWindowData![1]
-        let right = scanWindowData![2]
-        let bottom = scanWindowData![3]
+        // FIXED: Validate array has exactly 4 elements
+        guard let windowData = scanWindowData, windowData.count == 4 else {
+            result(FlutterError(
+                code: MobileScannerErrorCodes.GENERIC_ERROR,
+                message: "Invalid scan window data: expected array of 4 values",
+                details: "Received \(scanWindowData?.count ?? 0) values"))
+            return
+        }
+        
+        let left = windowData[0]
+        let top = windowData[1]
+        let right = windowData[2]
+        let bottom = windowData[3]
+        
+        // FIXED: Validate rectangle values
+        guard right > left && bottom > top else {
+            result(FlutterError(
+                code: MobileScannerErrorCodes.GENERIC_ERROR,
+                message: "Invalid scan window: right must be > left and bottom must be > top",
+                details: nil))
+            return
+        }
         
         scanWindow = CGRect(
-            x: left,                  // Normalized x-position (left)
-            y: 1.0 - bottom,          // Flip Y-axis since Vision uses a different coordinate system
-            width: right - left,      // Width (difference between right and left)
-            height: bottom - top      // Height (difference between bottom and top)
+            x: left,
+            y: 1.0 - bottom,
+            width: right - left,
+            height: bottom - top
         )
         
         result(nil)
@@ -395,9 +429,16 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
 
-        device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
+        // FIXED: Track observer additions to prevent crashes
+        if !isTorchObserverAdded {
+            device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode), options: .new, context: nil)
+            isTorchObserverAdded = true
+        }
 #if os(iOS)
-        device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor), options: [.new, .initial], context: nil)
+        if !isZoomObserverAdded {
+            device.addObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor), options: [.new, .initial], context: nil)
+            isZoomObserverAdded = true
+        }
 #endif
         captureSession!.beginConfiguration()
         
@@ -794,6 +835,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         result(nil)
     }
 
+    // FIXED: Safe observer removal with tracking
     private func releaseCamera() {
         guard let captureSession = captureSession else {
             return
@@ -810,9 +852,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         for output in captureSession.outputs {
             captureSession.removeOutput(output)
         }
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+        
+        // FIXED: Only remove observers if they were added
+        if isTorchObserverAdded {
+            device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.torchMode))
+            isTorchObserverAdded = false
+        }
+        
 #if os(iOS)
-        device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+        if isZoomObserverAdded {
+            device.removeObserver(self, forKeyPath: #keyPath(AVCaptureDevice.videoZoomFactor))
+            isZoomObserverAdded = false
+        }
 #endif
 
         latestBuffer = nil
