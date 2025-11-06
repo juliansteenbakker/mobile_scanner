@@ -528,16 +528,15 @@ class MobileScanner(
             }
 
             // Create and start the device orientation listener only when needed
-            if (deviceOrientationListener == null) {
-                deviceOrientationListener = deviceOrientationListenerFactory()
-            }
-            deviceOrientationListener?.start()
+            val listener = deviceOrientationListener ?: deviceOrientationListenerFactory()
+            deviceOrientationListener = listener
+            listener.start()
 
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
-                    deviceOrientationListener?.getOrientation()?.serialize() ?: "PORTRAIT_UP",
+                    listener.getOrientation().serialize(),
                     sensorRotationDegrees,
                     surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
