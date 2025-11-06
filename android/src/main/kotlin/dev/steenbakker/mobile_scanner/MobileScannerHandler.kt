@@ -80,6 +80,9 @@ class MobileScannerHandler(
     private var methodChannel: MethodChannel? = null
     private var deviceOrientationChannel: EventChannel? = null
 
+    // Lazy initialization to avoid accessing sensors before user consent
+    private var deviceOrientationListener: DeviceOrientationListener? = null
+
     private var mobileScanner: MobileScanner? = null
 
     private val torchStateCallback: TorchStateCallback = {state: Int ->
@@ -96,14 +99,36 @@ class MobileScannerHandler(
             "dev.steenbakker.mobile_scanner/scanner/method")
         methodChannel!!.setMethodCallHandler(this)
 
-        val deviceOrientationListener = DeviceOrientationListener(activity)
+        // Create a proxy StreamHandler that delays DeviceOrientationListener creation
+        // until onListen is called (i.e., when Flutter actually subscribes)
+        val streamHandler = object : EventChannel.StreamHandler {
+            override fun onListen(arguments: Any?, events: EventChannel.EventSink?) {
+                getOrCreateDeviceOrientationListener().onListen(arguments, events)
+            }
+
+            override fun onCancel(arguments: Any?) {
+                deviceOrientationListener?.onCancel(arguments)
+            }
+        }
 
         deviceOrientationChannel = EventChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/deviceOrientation")
-        deviceOrientationChannel!!.setStreamHandler(deviceOrientationListener)
+        deviceOrientationChannel!!.setStreamHandler(streamHandler)
 
         mobileScanner = MobileScanner(
-            activity, textureRegistry, callback, errorCallback, deviceOrientationListener)
+            activity, textureRegistry, callback, errorCallback, ::getOrCreateDeviceOrientationListener)
+    }
+
+    /**
+     * Get or create the DeviceOrientationListener instance.
+     * This ensures the listener is only created when actually needed,
+     * avoiding sensor access before user consent.
+     */
+    private fun getOrCreateDeviceOrientationListener(): DeviceOrientationListener {
+        if (deviceOrientationListener == null) {
+            deviceOrientationListener = DeviceOrientationListener(activity)
+        }
+        return deviceOrientationListener!!
     }
 
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
@@ -111,6 +136,11 @@ class MobileScannerHandler(
         methodChannel = null
         deviceOrientationChannel?.setStreamHandler(null)
         deviceOrientationChannel = null
+
+        // Stop and cleanup the device orientation listener if it was created
+        deviceOrientationListener?.stop()
+        deviceOrientationListener = null
+
         barcodeHandler.dispose()
         mobileScanner?.dispose()
         mobileScanner = null

@@ -29,6 +29,7 @@ internal class MobileScannerTest {
             Mockito.mock(TextureRegistry::class.java),
             { _: List<Map<String, Any?>>, _: ByteArray?, _: Int?, _: Int? -> },
             { _: String  -> },
+            { Mockito.mock(DeviceOrientationListener::class.java) },
             { _: BarcodeScannerOptions? -> barcodeScannerMock }
         )
 

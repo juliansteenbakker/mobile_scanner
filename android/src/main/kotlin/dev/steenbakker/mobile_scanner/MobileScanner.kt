@@ -58,7 +58,7 @@ class MobileScanner(
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
-    private val deviceOrientationListener: DeviceOrientationListener,
+    private val deviceOrientationListenerFactory: () -> DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
 
@@ -68,6 +68,8 @@ class MobileScanner(
 
     /// Internal variables
     private var cameraProvider: ProcessCameraProvider? = null
+    // Lazy initialization: only create when actually needed (privacy compliance)
+    private var deviceOrientationListener: DeviceOrientationListener? = null
     private var camera: Camera? = null
     private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
@@ -525,13 +527,17 @@ class MobileScanner(
                 currentTorchState = it.torchState.value ?: -1
             }
 
-            deviceOrientationListener.start()
+            // Create and start the device orientation listener only when needed
+            if (deviceOrientationListener == null) {
+                deviceOrientationListener = deviceOrientationListenerFactory()
+            }
+            deviceOrientationListener?.start()
 
             mobileScannerStartedCallback(
                 MobileScannerStartParameters(
                     if (portrait) width else height,
                     if (portrait) height else width,
-                    deviceOrientationListener.getOrientation().serialize(),
+                    deviceOrientationListener?.getOrientation()?.serialize() ?: 0,
                     sensorRotationDegrees,
                     surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
@@ -556,7 +562,7 @@ class MobileScanner(
             }
         }
 
-        deviceOrientationListener.stop()
+        deviceOrientationListener?.stop()
         pauseCamera()
     }
 
@@ -570,7 +576,7 @@ class MobileScanner(
             }
         }
 
-        deviceOrientationListener.stop()
+        deviceOrientationListener?.stop()
         releaseCamera()
     }
 
@@ -612,6 +618,10 @@ class MobileScanner(
         // Release the surface for the preview.
         surfaceProducer?.release()
         surfaceProducer = null
+
+        // Release the device orientation listener
+        deviceOrientationListener?.stop()
+        deviceOrientationListener = null
 
         // Release the scanner.
         scanner?.close()
