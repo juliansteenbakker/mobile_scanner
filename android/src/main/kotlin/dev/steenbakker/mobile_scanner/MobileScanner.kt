@@ -53,6 +53,7 @@ import java.io.IOException
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
 
+@ExperimentalGetImage
 class MobileScanner(
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
@@ -499,7 +500,7 @@ class MobileScanner(
                         } else {
                             it.cameraControl.setZoomRatio(initialZoom.toFloat())
                         }
-                    } catch (e: Exception) {
+                    } catch (_: Exception) {
                         mobileScannerErrorCallback(ZoomNotInRange())
 
                         return@addListener
@@ -678,7 +679,7 @@ class MobileScanner(
      * Set the zoom rate of the camera.
      */
     fun setScale(scale: Double) {
-        if (scale > 1.0 || scale < 0) throw ZoomNotInRange()
+        if (scale !in 0.0..1.0) throw ZoomNotInRange()
         if (camera == null) throw ZoomWhenStopped()
         camera?.cameraControl?.setLinearZoom(scale.toFloat())
     }

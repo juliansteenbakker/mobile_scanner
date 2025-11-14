@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Size
+import androidx.annotation.OptIn
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ExperimentalLensFacing
@@ -25,6 +26,7 @@ import io.flutter.view.TextureRegistry
 import java.io.File
 import com.google.mlkit.vision.barcode.ZoomSuggestionOptions
 
+@OptIn(ExperimentalGetImage::class)
 class MobileScannerHandler(
     private val activity: Activity,
     private val barcodeHandler: BarcodeHandler,
@@ -175,7 +177,7 @@ class MobileScannerHandler(
         val invertImage: Boolean = call.argument<Boolean>("invertImage") ?: false
         val initialZoom: Double? = call.argument<Double?>("initialZoom")
 
-        val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats, autoZoom)
+        val barcodeScannerOptions: BarcodeScannerOptions = buildBarcodeScannerOptions(formats, autoZoom)
 
         val position =
             if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
@@ -267,7 +269,7 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.stop(force)
             result.success(null)
-        } catch (e: AlreadyStopped) {
+        } catch (_: AlreadyStopped) {
             result.success(null)
         }
     }
@@ -294,10 +296,10 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.setScale(call.arguments as Double)
             result.success(null)
-        } catch (e: ZoomWhenStopped) {
+        } catch (_: ZoomWhenStopped) {
             result.error(
                 MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
-        } catch (e: ZoomNotInRange) {
+        } catch (_: ZoomNotInRange) {
             result.error(
                 MobileScannerErrorCodes.GENERIC_ERROR, MobileScannerErrorCodes.INVALID_ZOOM_SCALE_ERROR_MESSAGE, null)
         }
@@ -307,7 +309,7 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.setZoomRatio(scale.toDouble())
             return true
-        } catch (e: ZoomWhenStopped) { }
+        } catch (_: ZoomWhenStopped) { }
         return false
     }
 
@@ -315,7 +317,7 @@ class MobileScannerHandler(
         try {
             mobileScanner!!.resetScale()
             result.success(null)
-        } catch (e: ZoomWhenStopped) {
+        } catch (_: ZoomWhenStopped) {
             result.error(
                 MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR, MobileScannerErrorCodes.SET_SCALE_WHEN_STOPPED_ERROR_MESSAGE, null)
         }
@@ -327,8 +329,8 @@ class MobileScannerHandler(
         result.success(null)
     }
 
-    private fun buildBarcodeScannerOptions(formats: List<Int>?, autoZoom: Boolean): BarcodeScannerOptions? {
-        val builder : BarcodeScannerOptions.Builder?
+    private fun buildBarcodeScannerOptions(formats: List<Int>?, autoZoom: Boolean): BarcodeScannerOptions {
+        val builder : BarcodeScannerOptions.Builder
         if (formats == null) {
             builder = BarcodeScannerOptions.Builder()
         } else {
@@ -338,10 +340,10 @@ class MobileScannerHandler(
                 formatsList.add(BarcodeFormats.fromRawValue(formatValue).intValue)
             }
 
-            if (formatsList.size == 1) {
-                builder = BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
+            builder = if (formatsList.size == 1) {
+                BarcodeScannerOptions.Builder().setBarcodeFormats(formatsList.first())
             } else {
-                builder = BarcodeScannerOptions.Builder().setBarcodeFormats(
+                BarcodeScannerOptions.Builder().setBarcodeFormats(
                     formatsList.first(),
                     *formatsList.subList(1, formatsList.size).toIntArray()
                 )
@@ -394,7 +396,7 @@ class MobileScannerHandler(
         try {
             mobileScanner?.setFocus(dx, dy)
             result.success(null)
-        } catch (e: ZoomWhenStopped) {
+        } catch (_: ZoomWhenStopped) {
             result.error(
                 MobileScannerErrorCodes.GENERIC_ERROR,
                 "Cannot set focus when camera is stopped.",
