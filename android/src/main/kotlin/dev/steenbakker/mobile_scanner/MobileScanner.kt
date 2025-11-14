@@ -44,6 +44,9 @@ import dev.steenbakker.mobile_scanner.objects.MobileScannerStartParameters
 import dev.steenbakker.mobile_scanner.utils.invertBitmapColors
 import dev.steenbakker.mobile_scanner.utils.rotateBitmap
 import dev.steenbakker.mobile_scanner.utils.serialize
+import io.flutter.plugin.common.BinaryMessenger
+import io.flutter.plugin.common.EventChannel
+import io.flutter.plugin.common.MethodChannel
 import io.flutter.view.TextureRegistry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -55,16 +58,37 @@ import kotlin.math.roundToInt
 
 @ExperimentalGetImage
 class MobileScanner(
+    binaryMessenger: BinaryMessenger,
+    methodCallHandler: MethodChannel.MethodCallHandler,
     private val activity: Activity,
     private val textureRegistry: TextureRegistry,
     private val mobileScannerCallback: MobileScannerCallback,
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
-    private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
 ) {
 
+    private val methodChannel: MethodChannel
+    private val deviceOrientationChannel: EventChannel
+
     init {
         configureCameraProcessProvider()
+        methodChannel = MethodChannel(binaryMessenger,
+            "dev.steenbakker.mobile_scanner/scanner/method")
+        methodChannel.setMethodCallHandler(methodCallHandler)
+        deviceOrientationChannel = EventChannel(binaryMessenger,
+            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation")
+    }
+
+    // The device orientation listener is a lazy property,
+    // because eagerly initializing it during `init {}`
+    // leads to privacy warnings with more restrictive Play Store vendors.
+    private val deviceOrientationListener by lazy {
+        val listener = DeviceOrientationListener(activity)
+
+        // Only attach the listener to the event channel when it actually exists.
+        deviceOrientationChannel.setStreamHandler(listener)
+
+        return@lazy listener
     }
 
     /// Internal variables
@@ -718,6 +742,9 @@ class MobileScanner(
      * Dispose of this scanner instance.
      */
     fun dispose() {
+        methodChannel.setMethodCallHandler(null)
+        deviceOrientationChannel.setStreamHandler(null)
+
         if (isStopped()) {
             return
         }

@@ -21,7 +21,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.PluginRegistry.RequestPermissionsResultListener
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
-import io.flutter.plugin.common.EventChannel
 import io.flutter.view.TextureRegistry
 import java.io.File
 import com.google.mlkit.vision.barcode.ZoomSuggestionOptions
@@ -79,9 +78,6 @@ class MobileScannerHandler(
         barcodeHandler.publishError(MobileScannerErrorCodes.BARCODE_ERROR, error, null)
     }
 
-    private var methodChannel: MethodChannel? = null
-    private var deviceOrientationChannel: EventChannel? = null
-
     private var mobileScanner: MobileScanner? = null
 
     private val torchStateCallback: TorchStateCallback = {state: Int ->
@@ -94,25 +90,17 @@ class MobileScannerHandler(
     }
 
     init {
-        methodChannel = MethodChannel(binaryMessenger,
-            "dev.steenbakker.mobile_scanner/scanner/method")
-        methodChannel!!.setMethodCallHandler(this)
-
-        val deviceOrientationListener = DeviceOrientationListener(activity)
-
-        deviceOrientationChannel = EventChannel(binaryMessenger,
-            "dev.steenbakker.mobile_scanner/scanner/deviceOrientation")
-        deviceOrientationChannel!!.setStreamHandler(deviceOrientationListener)
-
         mobileScanner = MobileScanner(
-            activity, textureRegistry, callback, errorCallback, deviceOrientationListener)
+            binaryMessenger,
+            this,
+            activity,
+            textureRegistry,
+            callback,
+            errorCallback
+        )
     }
 
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
-        methodChannel?.setMethodCallHandler(null)
-        methodChannel = null
-        deviceOrientationChannel?.setStreamHandler(null)
-        deviceOrientationChannel = null
         barcodeHandler.dispose()
         mobileScanner?.dispose()
         mobileScanner = null
