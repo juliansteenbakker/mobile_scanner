@@ -1,3 +1,7 @@
+### 7.1.4
+
+* [Android] Only allocate a device orientation listener when needed, to fix a privacy violation in some Play Store vendor regions.
+
 ### 7.1.3
 
 * Overlay: Updated `BarcodePainter` to receive `deviceOrientation` and dynamically adjust `cameraPreviewSize`, fixing barcode overlay misalignment during device rotation changes [](https://github.com/juliansteenbakker/mobile_scanner/issues/1462).
