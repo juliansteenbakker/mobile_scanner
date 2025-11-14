@@ -1,12 +1,10 @@
 package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
-import android.content.Context
 import android.hardware.SensorManager
 import android.os.Handler
 import android.os.Looper
 import android.view.OrientationEventListener
-import android.view.Surface
 import dev.steenbakker.mobile_scanner.utils.serialize
 import io.flutter.embedding.engine.systemchannels.PlatformChannel
 import io.flutter.plugin.common.EventChannel
@@ -17,7 +15,7 @@ import io.flutter.plugin.common.EventChannel
  * When a new orientation is received, the registered listener will be invoked.
  */
 class DeviceOrientationListener(
-    private val activity: Activity,
+    activity: Activity,
 ) : OrientationEventListener(activity, SensorManager.SENSOR_DELAY_NORMAL), EventChannel.StreamHandler {
 
     // The event sink that handles device orientation events.
