@@ -42,9 +42,8 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
       final List<CameraLensType> supportedLenses =
           await widget.controller.getSupportedLenses();
       // Filter out 'any' from the list and keep only specific lens types
-      final List<CameraLensType> specificLenses = supportedLenses
-          .where((lens) => lens != CameraLensType.any)
-          .toList();
+      final List<CameraLensType> specificLenses =
+          supportedLenses.where((lens) => lens != CameraLensType.any).toList();
 
       if (specificLenses.isNotEmpty && mounted) {
         setState(() {
@@ -62,8 +61,7 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
       return CameraLensType.any;
     }
 
-    final int currentIndex =
-        _availableLenses.indexOf(widget.currentLensType);
+    final int currentIndex = _availableLenses.indexOf(widget.currentLensType);
 
     // If current lens is not in available lenses, return the first one
     if (currentIndex == -1) {
@@ -119,10 +117,7 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
         ),
         Text(
           _getLensLabel(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 10,
-          ),
+          style: const TextStyle(color: Colors.white, fontSize: 10),
         ),
       ],
     );
