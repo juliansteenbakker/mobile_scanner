@@ -39,9 +39,10 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
 
   Future<void> _loadSupportedLenses() async {
     try {
-      final supportedLenses = await widget.controller.getSupportedLenses();
+      final List<CameraLensType> supportedLenses =
+          await widget.controller.getSupportedLenses();
       // Filter out 'any' from the list and keep only specific lens types
-      final specificLenses = supportedLenses
+      final List<CameraLensType> specificLenses = supportedLenses
           .where((lens) => lens != CameraLensType.any)
           .toList();
 
@@ -50,13 +51,19 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
           _availableLenses = specificLenses;
         });
       }
-    } catch (e) {
+    } on Exception {
       // Keep default list if there's an error
     }
   }
 
   CameraLensType _getNextLensType() {
-    final currentIndex = _availableLenses.indexOf(widget.currentLensType);
+    // Safety check: return 'any' if no lenses are available
+    if (_availableLenses.isEmpty) {
+      return CameraLensType.any;
+    }
+
+    final int currentIndex =
+        _availableLenses.indexOf(widget.currentLensType);
 
     // If current lens is not in available lenses, return the first one
     if (currentIndex == -1) {
@@ -64,7 +71,7 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
     }
 
     // Get next lens, wrapping around to the first if we're at the end
-    final nextIndex = (currentIndex + 1) % _availableLenses.length;
+    final int nextIndex = (currentIndex + 1) % _availableLenses.length;
     return _availableLenses[nextIndex];
   }
 

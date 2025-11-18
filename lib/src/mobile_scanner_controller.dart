@@ -580,8 +580,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
   /// Get the list of supported camera lens types for the current device.
   ///
-  /// Returns a list of [CameraLensType] values that are available on the device.
-  /// This can be used to determine which lens types can be used with the scanner.
+  /// Returns a list of [CameraLensType] values that are available on the
+  /// device. This can be used to determine which lens types can be used
+  /// with the scanner.
   ///
   /// The returned list will always contain at least one lens type.
   ///

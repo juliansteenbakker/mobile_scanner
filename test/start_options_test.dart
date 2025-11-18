@@ -146,7 +146,9 @@ void main() {
         expect(
           map['lensType'],
           lensType.rawValue,
-          reason: 'Lens type $lensType should map to raw value ${lensType.rawValue}',
+          reason:
+              'Lens type $lensType should map to raw value '
+              '${lensType.rawValue}',
         );
       }
     });
@@ -163,12 +165,12 @@ void main() {
         torchEnabled: false,
         invertImage: false,
         autoZoom: false,
-        initialZoom: 2.0,
+        initialZoom: 2,
       );
 
       final map = options.toMap();
 
-      expect(map['initialZoom'], 2.0);
+      expect(map['initialZoom'], 2);
     });
 
     test('toMap handles all camera facing directions', () {
@@ -198,7 +200,9 @@ void main() {
         expect(
           map['facing'],
           facing.rawValue,
-          reason: 'Camera facing $facing should map to raw value ${facing.rawValue}',
+          reason:
+              'Camera facing $facing should map to raw value '
+              '${facing.rawValue}',
         );
       }
     });

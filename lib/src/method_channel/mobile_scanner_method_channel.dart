@@ -424,7 +424,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
   @override
   Future<List<CameraLensType>> getSupportedLenses() async {
-    final List<Object?>? lensTypes =
+    final lensTypes =
         await methodChannel.invokeListMethod<Object?>('getSupportedLenses');
 
     if (lensTypes == null || lensTypes.isEmpty) {
@@ -434,7 +434,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     return lensTypes
         .whereType<int>()
-        .map((rawValue) => CameraLensType.fromRawValue(rawValue))
+        .map(CameraLensType.fromRawValue)
         .toList();
   }
 

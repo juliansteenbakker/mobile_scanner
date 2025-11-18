@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
@@ -11,7 +13,7 @@ void main() {
 
       expect(controller.lensType, CameraLensType.any);
 
-      controller.dispose();
+      unawaited(controller.dispose());
     });
 
     test('controller initializes with normal lens type', () {
@@ -21,7 +23,7 @@ void main() {
 
       expect(controller.lensType, CameraLensType.normal);
 
-      controller.dispose();
+      unawaited(controller.dispose());
     });
 
     test('controller initializes with wide lens type', () {
@@ -31,7 +33,7 @@ void main() {
 
       expect(controller.lensType, CameraLensType.wide);
 
-      controller.dispose();
+      unawaited(controller.dispose());
     });
 
     test('controller initializes with zoom lens type', () {
@@ -41,7 +43,7 @@ void main() {
 
       expect(controller.lensType, CameraLensType.zoom);
 
-      controller.dispose();
+      unawaited(controller.dispose());
     });
 
     test('lens type persists throughout controller lifecycle', () {
@@ -55,7 +57,7 @@ void main() {
       // Lens type should remain the same even after operations
       expect(controller.lensType, CameraLensType.zoom);
 
-      controller.dispose();
+      unawaited(controller.dispose());
 
       // Even after disposal, the property should still be accessible
       expect(controller.lensType, CameraLensType.zoom);
@@ -79,9 +81,9 @@ void main() {
       expect(wideController.lensType, CameraLensType.wide);
       expect(zoomController.lensType, CameraLensType.zoom);
 
-      normalController.dispose();
-      wideController.dispose();
-      zoomController.dispose();
+      unawaited(normalController.dispose());
+      unawaited(wideController.dispose());
+      unawaited(zoomController.dispose());
     });
 
     test('controller with all lens types can be created', () {
@@ -92,7 +94,7 @@ void main() {
         );
 
         expect(controller.lensType, lensType);
-        controller.dispose();
+        unawaited(controller.dispose());
       }
     });
 
@@ -107,7 +109,7 @@ void main() {
       // The lens type should remain the same (it's a final property)
       expect(controller.lensType, initialLensType);
 
-      controller.dispose();
+      unawaited(controller.dispose());
     });
   });
 }
