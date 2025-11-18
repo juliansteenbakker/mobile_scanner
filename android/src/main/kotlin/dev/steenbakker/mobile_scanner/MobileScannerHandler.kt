@@ -11,6 +11,7 @@ import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ExperimentalLensFacing
+import androidx.camera.camera2.interop.Camera2CameraInfo
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import dev.steenbakker.mobile_scanner.objects.BarcodeFormats
 import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
@@ -147,6 +148,7 @@ class MobileScannerHandler(
             "pause" -> pause(call, result)
             "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
+            "getSupportedLenses" -> getSupportedLenses(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
@@ -161,6 +163,7 @@ class MobileScannerHandler(
     private fun start(call: MethodCall, result: MethodChannel.Result) {
         val torch: Boolean = call.argument<Boolean>("torch") ?: false
         val facing: Int = call.argument<Int>("facing") ?: 0
+        val lensType: Int = call.argument<Int>("lensType") ?: -1
         val formats: List<Int>? = call.argument<List<Int>>("formats")
         val returnImage: Boolean = call.argument<Boolean>("returnImage") ?: false
         val speed: Int = call.argument<Int>("speed") ?: 1
@@ -177,8 +180,7 @@ class MobileScannerHandler(
 
         val barcodeScannerOptions: BarcodeScannerOptions? = buildBarcodeScannerOptions(formats, autoZoom)
 
-        val position =
-            if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+        val position = selectCamera(facing, lensType)
 
         val detectionSpeed: DetectionSpeed = when (speed) {
             0 -> DetectionSpeed.NO_DUPLICATES
@@ -288,6 +290,47 @@ class MobileScannerHandler(
     private fun toggleTorch(result: MethodChannel.Result) {
         mobileScanner?.toggleTorch()
         result.success(null)
+    }
+
+    /**
+     * Get the list of supported lens types on this device.
+     *
+     * Analyzes all available cameras and categorizes them by their focal lengths.
+     */
+    private fun getSupportedLenses(result: MethodChannel.Result) {
+        val cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+        val supportedLenses = mutableSetOf<Int>()
+
+        try {
+            for (cameraId in cameraManager.cameraIdList) {
+                val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+
+                // Get focal lengths available for this camera
+                val focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+
+                if (focalLengths != null && focalLengths.isNotEmpty()) {
+                    // Use the first focal length as representative
+                    val focalLength = focalLengths[0]
+
+                    // Categorize based on focal length
+                    when {
+                        focalLength < 4.0f -> supportedLenses.add(1)  // Wide
+                        focalLength >= 4.0f && focalLength <= 6.0f -> supportedLenses.add(0)  // Normal
+                        focalLength > 6.0f -> supportedLenses.add(2)  // Zoom
+                    }
+                }
+            }
+
+            // If no lenses were detected, return 'any' (-1)
+            if (supportedLenses.isEmpty()) {
+                result.success(listOf(-1))
+            } else {
+                result.success(supportedLenses.toList())
+            }
+        } catch (e: Exception) {
+            // On error, return 'any' (-1) as a safe default
+            result.success(listOf(-1))
+        }
     }
 
     private fun setScale(call: MethodCall, result: MethodChannel.Result) {
@@ -407,6 +450,60 @@ class MobileScannerHandler(
                 e.localizedMessage
             )
         }
+    }
+
+    /**
+     * Select the appropriate camera based on facing direction and lens type.
+     *
+     * @param facing 0 = front, 1 = back
+     * @param lensType 0 = normal, 1 = wide, 2 = zoom, -1 = any
+     * @return CameraSelector configured for the desired camera
+     */
+    private fun selectCamera(facing: Int, lensType: Int): CameraSelector {
+        val lensFacing = if (facing == 0) CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK
+
+        // If no specific lens type is requested, return default camera for facing direction
+        if (lensType == -1) {
+            return if (facing == 0) CameraSelector.DEFAULT_FRONT_CAMERA else CameraSelector.DEFAULT_BACK_CAMERA
+        }
+
+        // Build a camera selector that filters by both facing and lens characteristics
+        return CameraSelector.Builder()
+            .requireLensFacing(lensFacing)
+            .addCameraFilter { cameraInfos ->
+                val cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
+
+                cameraInfos.filter { cameraInfo ->
+                    try {
+                        // Get the camera ID from CameraInfo
+                        val cameraId = androidx.camera.camera2.interop.Camera2CameraInfo.from(cameraInfo).cameraId
+                        val characteristics = cameraManager.getCameraCharacteristics(cameraId)
+
+                        // Get focal lengths available for this camera
+                        val focalLengths = characteristics.get(CameraCharacteristics.LENS_INFO_AVAILABLE_FOCAL_LENGTHS)
+
+                        if (focalLengths == null || focalLengths.isEmpty()) {
+                            return@filter lensType == -1
+                        }
+
+                        // Use the first focal length as representative
+                        val focalLength = focalLengths[0]
+
+                        // Categorize based on focal length (approximate 35mm equivalent ranges)
+                        // These ranges are heuristic and may need adjustment per device
+                        when (lensType) {
+                            0 -> focalLength >= 4.0f && focalLength <= 6.0f  // Normal (wide angle, ~26-35mm equiv)
+                            1 -> focalLength < 4.0f                            // Wide (ultra-wide, ~13-16mm equiv)
+                            2 -> focalLength > 6.0f                            // Zoom (telephoto, ~50mm+ equiv)
+                            else -> true
+                        }
+                    } catch (e: Exception) {
+                        // If we can't get characteristics, include this camera
+                        true
+                    }
+                }
+            }
+            .build()
     }
 
 }

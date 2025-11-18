@@ -1,0 +1,123 @@
+import 'package:flutter/material.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+
+/// Button widget for switching between camera lens types
+class SwitchLensButton extends StatefulWidget {
+  /// Construct a new [SwitchLensButton] instance.
+  const SwitchLensButton({
+    required this.controller,
+    required this.currentLensType,
+    required this.onLensTypeChanged,
+    super.key,
+  });
+
+  /// Controller to get supported lenses
+  final MobileScannerController controller;
+
+  /// Current lens type
+  final CameraLensType currentLensType;
+
+  /// Callback when lens type changes
+  final ValueChanged<CameraLensType> onLensTypeChanged;
+
+  @override
+  State<SwitchLensButton> createState() => _SwitchLensButtonState();
+}
+
+class _SwitchLensButtonState extends State<SwitchLensButton> {
+  List<CameraLensType> _availableLenses = [
+    CameraLensType.normal,
+    CameraLensType.wide,
+    CameraLensType.zoom,
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSupportedLenses();
+  }
+
+  Future<void> _loadSupportedLenses() async {
+    try {
+      final supportedLenses = await widget.controller.getSupportedLenses();
+      // Filter out 'any' from the list and keep only specific lens types
+      final specificLenses = supportedLenses
+          .where((lens) => lens != CameraLensType.any)
+          .toList();
+
+      if (specificLenses.isNotEmpty && mounted) {
+        setState(() {
+          _availableLenses = specificLenses;
+        });
+      }
+    } catch (e) {
+      // Keep default list if there's an error
+    }
+  }
+
+  CameraLensType _getNextLensType() {
+    final currentIndex = _availableLenses.indexOf(widget.currentLensType);
+
+    // If current lens is not in available lenses, return the first one
+    if (currentIndex == -1) {
+      return _availableLenses.first;
+    }
+
+    // Get next lens, wrapping around to the first if we're at the end
+    final nextIndex = (currentIndex + 1) % _availableLenses.length;
+    return _availableLenses[nextIndex];
+  }
+
+  IconData _getLensIcon() {
+    switch (widget.currentLensType) {
+      case CameraLensType.normal:
+        return Icons.camera;
+      case CameraLensType.wide:
+        return Icons.camera_outdoor;
+      case CameraLensType.zoom:
+        return Icons.zoom_in;
+      case CameraLensType.any:
+        return Icons.camera_alt;
+    }
+  }
+
+  String _getLensLabel() {
+    switch (widget.currentLensType) {
+      case CameraLensType.normal:
+        return 'Normal';
+      case CameraLensType.wide:
+        return 'Wide';
+      case CameraLensType.zoom:
+        return 'Zoom';
+      case CameraLensType.any:
+        return 'Any';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Only show button if there are multiple lens options available
+    if (_availableLenses.length < 2) {
+      return const SizedBox.shrink();
+    }
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          color: Colors.white,
+          iconSize: 32,
+          icon: Icon(_getLensIcon()),
+          onPressed: () => widget.onLensTypeChanged(_getNextLensType()),
+        ),
+        Text(
+          _getLensLabel(),
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 10,
+          ),
+        ),
+      ],
+    );
+  }
+}

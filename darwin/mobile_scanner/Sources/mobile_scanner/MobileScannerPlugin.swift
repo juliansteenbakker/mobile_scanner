@@ -99,6 +99,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             start(call, result)
         case "toggleTorch":
             toggleTorch(result)
+        case "getSupportedLenses":
+            getSupportedLenses(result)
         case "setScale":
             setScale(call, result)
         case "setFocus":
@@ -324,7 +326,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     return .landscapeRight
                 default:
                     break
-                }         
+                }
             }
         }
 
@@ -349,6 +351,47 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #endif
     }
 
+    /**
+     * Select the appropriate camera based on position and lens type.
+     *
+     * - Parameters:
+     *   - position: The camera position (front or back)
+     *   - lensType: The desired lens type (0 = normal, 1 = wide, 2 = zoom, -1 = any)
+     * - Returns: The selected AVCaptureDevice, or nil if not found
+     */
+    private func selectCamera(position: AVCaptureDevice.Position, lensType: Int) -> AVCaptureDevice? {
+#if os(iOS)
+        if #available(iOS 13.0, *) {
+            var deviceTypes: [AVCaptureDevice.DeviceType] = []
+
+            switch lensType {
+            case 0:
+                // Normal lens - prefer wide angle camera (standard on most phones)
+                deviceTypes = [.builtInWideAngleCamera]
+            case 1:
+                // Wide lens - prefer ultra-wide camera
+                deviceTypes = [.builtInUltraWideCamera, .builtInWideAngleCamera]
+            case 2:
+                // Zoom lens - prefer telephoto camera
+                deviceTypes = [.builtInTelephotoCamera, .builtInWideAngleCamera]
+            default:
+                // Any lens - use default discovery order
+                deviceTypes = [.builtInTripleCamera, .builtInDualCamera, .builtInWideAngleCamera]
+            }
+
+            // Try to find a device matching the requested types
+            let discoverySession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: deviceTypes,
+                mediaType: .video,
+                position: position
+            )
+
+            return discoverySession.devices.first
+        }
+#endif
+        return nil
+    }
+
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
         if (device != nil || captureSession != nil) {
@@ -365,6 +408,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
         let torch:Bool = argReader.bool(key: "torch") ?? false
         let facing:Int = argReader.int(key: "facing") ?? 1
+        let lensType:Int = argReader.int(key: "lensType") ?? -1
         let speed:Int = argReader.int(key: "speed") ?? 0
         let timeoutMs:Int = argReader.int(key: "timeout") ?? 0
         let initialZoom: CGFloat? = {
@@ -386,12 +430,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #else
         position = AVCaptureDevice.Position.front
 #endif
-        
-        // Open the camera device
+
+        // Open the camera device based on position and lens type
 #if os(iOS)
-        if #available(iOS 13.0, *) {
-            device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInTripleCamera, .builtInDualCamera, .builtInWideAngleCamera], mediaType: .video, position: position).devices.first
-        }
+        device = selectCamera(position: position, lensType: lensType)
 #else
         if #available(macOS 10.15, *) {
             device = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position).devices.first
@@ -782,6 +824,72 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
 
         result(nil)
+    }
+
+    /**
+     * Get the list of supported lens types on this device.
+     *
+     * Analyzes all available camera devices and returns the supported lens types.
+     */
+    private func getSupportedLenses(_ result: @escaping FlutterResult) {
+#if os(iOS)
+        if #available(iOS 13.0, *) {
+            var supportedLenses = Set<Int>()
+
+            // Check back cameras
+            let backDevices = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
+                mediaType: .video,
+                position: .back
+            ).devices
+
+            for device in backDevices {
+                switch device.deviceType {
+                case .builtInUltraWideCamera:
+                    supportedLenses.insert(1)  // Wide
+                case .builtInWideAngleCamera:
+                    supportedLenses.insert(0)  // Normal
+                case .builtInTelephotoCamera:
+                    supportedLenses.insert(2)  // Zoom
+                default:
+                    break
+                }
+            }
+
+            // Check front cameras
+            let frontDevices = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
+                mediaType: .video,
+                position: .front
+            ).devices
+
+            for device in frontDevices {
+                switch device.deviceType {
+                case .builtInUltraWideCamera:
+                    supportedLenses.insert(1)  // Wide
+                case .builtInWideAngleCamera:
+                    supportedLenses.insert(0)  // Normal
+                case .builtInTelephotoCamera:
+                    supportedLenses.insert(2)  // Zoom
+                default:
+                    break
+                }
+            }
+
+            // If no lenses were detected, return 'any' (-1)
+            if supportedLenses.isEmpty {
+                result([-1])
+            } else {
+                result(Array(supportedLenses))
+            }
+        } else {
+            // For iOS < 13.0, return 'any' (-1)
+            result([-1])
+        }
+#else
+        // For macOS, return 'any' (-1)
+        result([-1])
+#endif
     }
 
     func pause(_ call: FlutterMethodCall, _ result: FlutterResult) {
