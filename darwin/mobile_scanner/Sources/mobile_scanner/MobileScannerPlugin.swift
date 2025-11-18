@@ -386,7 +386,19 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 position: position
             )
 
-            return discoverySession.devices.first
+            if let device = discoverySession.devices.first {
+                return device
+            }
+
+            // Fallback: try to get any wide angle camera for this position
+            // This ensures we maintain the correct camera facing even if the
+            // specific lens type is not available
+            let fallbackSession = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera],
+                mediaType: .video,
+                position: position
+            )
+            return fallbackSession.devices.first
         }
 #endif
         return nil

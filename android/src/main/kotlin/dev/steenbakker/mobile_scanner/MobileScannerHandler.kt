@@ -473,7 +473,7 @@ class MobileScannerHandler(
             .addCameraFilter { cameraInfos ->
                 val cameraManager = activity.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
-                cameraInfos.filter { cameraInfo ->
+                val filteredCameras = cameraInfos.filter { cameraInfo ->
                     try {
                         // Get the camera ID from CameraInfo
                         val cameraId = androidx.camera.camera2.interop.Camera2CameraInfo.from(cameraInfo).cameraId
@@ -502,6 +502,10 @@ class MobileScannerHandler(
                         true
                     }
                 }
+
+                // If filtering resulted in no cameras, return all cameras with correct facing
+                // to prevent camera binding failures
+                if (filteredCameras.isEmpty()) cameraInfos else filteredCameras
             }
             .build()
     }

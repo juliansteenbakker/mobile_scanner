@@ -183,6 +183,27 @@ void main() {
       expect(lenses, contains(CameraLensType.zoom));
     });
 
+    test('returns "any" when all values are invalid', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(
+        platform.methodChannel,
+        (MethodCall methodCall) async {
+          methodCalls.add(methodCall);
+
+          if (methodCall.method == 'getSupportedLenses') {
+            return ['invalid', null, 'another-invalid']; // All invalid
+          }
+          return null;
+        },
+      );
+
+      final lenses = await platform.getSupportedLenses();
+
+      // Should return 'any' when all values are filtered out
+      expect(lenses, hasLength(1));
+      expect(lenses.first, CameraLensType.any);
+    });
+
     test('handles platform returning -1 (any)', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(
