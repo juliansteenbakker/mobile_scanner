@@ -34,6 +34,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.torchEnabled = false,
     this.invertImage = false,
     this.autoZoom = false,
+    this.disableDeviceOrientationListener = false,
     this.initialZoom,
   }) : detectionTimeoutMs =
            detectionSpeed == DetectionSpeed.normal ? detectionTimeoutMs : 0,
@@ -135,6 +136,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<double>? _zoomScaleSubscription;
   StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
+  /// Whether to disable the device orientation listener.
+  ///
+  /// When set to true, the controller will not listen to device orientation
+  /// changes and will not update the [MobileScannerState.deviceOrientation]
+  /// value.
+  ///
+  /// Defaults to false.
+  final bool disableDeviceOrientationListener;
+
   bool _isDisposed = false;
   // This completer keeps track of whether the MobileScanner widget,
   // that is attached to this controller,
@@ -194,7 +204,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     if (MobileScannerPlatform.instance
         case final MethodChannelMobileScanner implementation
-        when defaultTargetPlatform != TargetPlatform.macOS) {
+        when defaultTargetPlatform != TargetPlatform.macOS &&
+            !disableDeviceOrientationListener) {
       _deviceOrientationSubscription = implementation
           .deviceOrientationChangedStream
           .listen((DeviceOrientation orientation) {
