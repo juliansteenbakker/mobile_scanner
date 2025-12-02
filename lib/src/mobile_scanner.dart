@@ -296,7 +296,10 @@ class _MobileScannerState extends State<MobileScanner>
                   tapToFocusScannerWidget
                 else
                   scannerWidget,
-                IgnorePointer(child: overlay),
+                IgnorePointer(
+                  ignoring: widget.tapToFocus,
+                  child: overlay,
+                ),
               ],
             );
           },
