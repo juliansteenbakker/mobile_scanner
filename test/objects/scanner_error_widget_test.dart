@@ -5,7 +5,6 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 
-
 void main() {
   group('$ScannerErrorWidget tests', () {
     testWidgets('displays error icon', (tester) async {

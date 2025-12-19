@@ -261,7 +261,8 @@ void main() {
     });
 
     test(
-      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize width', () {
+      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize width',
+      () {
         expect(
           calculateBoxFitRatio(
             BoxFit.contain,
@@ -274,7 +275,8 @@ void main() {
     );
 
     test(
-      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize height', () {
+      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize height',
+      () {
         expect(
           calculateBoxFitRatio(
             BoxFit.contain,
@@ -309,7 +311,8 @@ void main() {
     });
 
     test(
-      'calculateBoxFitRatio scaleDown scales down when content is larger', () {
+      'calculateBoxFitRatio scaleDown scales down when content is larger',
+      () {
         expect(
           calculateBoxFitRatio(
             BoxFit.scaleDown,

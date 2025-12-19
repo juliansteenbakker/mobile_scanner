@@ -866,9 +866,10 @@ void main() {
 
   group('MobileScannerController.attach', () {
     test('can only be called once', () {
-      final controller = MobileScannerController(autoStart: false)
-        ..attach()
-        ..attach();
+      final controller =
+          MobileScannerController(autoStart: false)
+            ..attach()
+            ..attach();
 
       expect(controller.value, const MobileScannerState.uninitialized());
     });
