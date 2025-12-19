@@ -37,7 +37,7 @@ void main() {
       });
 
       test('creates instance with empty barcodes list', () {
-        const capture = BarcodeCapture(barcodes: []);
+        const capture = BarcodeCapture();
 
         expect(capture.barcodes, isEmpty);
       });

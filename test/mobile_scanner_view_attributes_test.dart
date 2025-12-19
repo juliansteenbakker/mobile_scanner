@@ -91,7 +91,7 @@ void main() {
         Size(1280, 720),
         Size(1920, 1080),
         Size(3840, 2160),
-        Size(0, 0),
+        Size.zero,
       ];
 
       for (final size in testSizes) {

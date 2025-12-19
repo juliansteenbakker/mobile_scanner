@@ -19,18 +19,16 @@ void main() {
       test('does not paint when scanWindow is empty', () {
         final mockCanvas = MockCanvas();
 
-        const painter = ScanWindowPainter(
+        const ScanWindowPainter(
           borderColor: Colors.white,
           borderRadius: BorderRadius.zero,
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.zero,
-        );
-
-        painter.paint(mockCanvas, const Size(400, 800));
+        ).paint(mockCanvas, const Size(400, 800));
 
         verifyNever(() => mockCanvas.drawPath(any(), any()));
         verifyNever(() => mockCanvas.drawRRect(any(), any()));
@@ -39,18 +37,16 @@ void main() {
       test('does not paint when scanWindow is infinite', () {
         final mockCanvas = MockCanvas();
 
-        const painter = ScanWindowPainter(
+        const ScanWindowPainter(
           borderColor: Colors.white,
           borderRadius: BorderRadius.zero,
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(0, 0, double.infinity, double.infinity),
-        );
-
-        painter.paint(mockCanvas, const Size(400, 800));
+        ).paint(mockCanvas, const Size(400, 800));
 
         verifyNever(() => mockCanvas.drawPath(any(), any()));
         verifyNever(() => mockCanvas.drawRRect(any(), any()));
@@ -59,18 +55,16 @@ void main() {
       test('paints overlay and border when scanWindow is valid', () {
         final mockCanvas = MockCanvas();
 
-        const painter = ScanWindowPainter(
+        const ScanWindowPainter(
           borderColor: Colors.white,
           borderRadius: BorderRadius.zero,
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Color(0x80000000),
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
-        );
-
-        painter.paint(mockCanvas, const Size(400, 800));
+        ).paint(mockCanvas, const Size(400, 800));
 
         verify(() => mockCanvas.drawPath(any(), any())).called(1);
         verify(() => mockCanvas.drawRRect(any(), any())).called(1);
@@ -79,18 +73,16 @@ void main() {
       test('paints with border radius when specified', () {
         final mockCanvas = MockCanvas();
 
-        const painter = ScanWindowPainter(
+        const ScanWindowPainter(
           borderColor: Colors.white,
           borderRadius: BorderRadius.all(Radius.circular(16)),
           borderStrokeCap: StrokeCap.round,
           borderStrokeJoin: StrokeJoin.round,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 4.0,
+          borderWidth: 4,
           color: Color(0x80000000),
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
-        );
-
-        painter.paint(mockCanvas, const Size(400, 800));
+        ).paint(mockCanvas, const Size(400, 800));
 
         verify(() => mockCanvas.drawPath(any(), any())).called(1);
         verify(() => mockCanvas.drawRRect(any(), any())).called(1);
@@ -99,7 +91,7 @@ void main() {
       test('paints with asymmetric border radius', () {
         final mockCanvas = MockCanvas();
 
-        const painter = ScanWindowPainter(
+        const ScanWindowPainter(
           borderColor: Colors.blue,
           borderRadius: BorderRadius.only(
             topLeft: Radius.circular(8),
@@ -110,12 +102,10 @@ void main() {
           borderStrokeCap: StrokeCap.square,
           borderStrokeJoin: StrokeJoin.bevel,
           borderStyle: PaintingStyle.fill,
-          borderWidth: 3.0,
+          borderWidth: 3,
           color: Color(0x40FF0000),
           scanWindow: Rect.fromLTWH(100, 200, 200, 400),
-        );
-
-        painter.paint(mockCanvas, const Size(400, 800));
+        ).paint(mockCanvas, const Size(400, 800));
 
         verify(() => mockCanvas.drawPath(any(), any())).called(1);
         verify(() => mockCanvas.drawRRect(any(), any())).called(1);
@@ -130,7 +120,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -141,7 +131,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(60, 100, 300, 300),
         );
@@ -156,7 +146,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -167,7 +157,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.red,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -182,7 +172,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -193,7 +183,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -208,7 +198,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -219,7 +209,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -234,7 +224,7 @@ void main() {
           borderStrokeCap: StrokeCap.butt,
           borderStrokeJoin: StrokeJoin.miter,
           borderStyle: PaintingStyle.stroke,
-          borderWidth: 2.0,
+          borderWidth: 2,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );
@@ -245,7 +235,7 @@ void main() {
           borderStrokeCap: StrokeCap.round,
           borderStrokeJoin: StrokeJoin.round,
           borderStyle: PaintingStyle.fill,
-          borderWidth: 10.0,
+          borderWidth: 10,
           color: Colors.black,
           scanWindow: Rect.fromLTWH(50, 100, 300, 300),
         );

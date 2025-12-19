@@ -61,13 +61,14 @@ void main() {
     final streamController = StreamController<BarcodeCapture>.broadcast();
 
     when(() => mockController.autoStart).thenReturn(autoStart);
-    when(() => mockController.barcodes)
-        .thenAnswer((_) => barcodeStream ?? streamController.stream);
+    when(
+      () => mockController.barcodes,
+    ).thenAnswer((_) => barcodeStream ?? streamController.stream);
     when(() => mockController.value).thenReturn(state ?? createRunningState());
-    when(() => mockController.start()).thenAnswer((_) async {});
-    when(() => mockController.stop()).thenAnswer((_) async {});
-    when(() => mockController.dispose()).thenAnswer((_) async {});
-    when(() => mockController.attach()).thenReturn(null);
+    when(mockController.start).thenAnswer((_) async {});
+    when(mockController.stop).thenAnswer((_) async {});
+    when(mockController.dispose).thenAnswer((_) async {});
+    when(mockController.attach).thenReturn(null);
     when(() => mockController.addListener(any())).thenReturn(null);
     when(() => mockController.removeListener(any())).thenReturn(null);
     when(() => mockController.updateScanWindow(any())).thenAnswer((_) async {});
@@ -231,7 +232,7 @@ void main() {
             body: MobileScanner(
               controller: mockController,
               overlayBuilder: (context, constraints) {
-                return Container(
+                return ColoredBox(
                   color: Colors.red.withAlpha(128),
                   child: const Center(child: Text('Overlay')),
                 );
@@ -303,10 +304,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: MobileScanner(
-              controller: mockController,
-              tapToFocus: false,
-            ),
+            body: MobileScanner(controller: mockController),
           ),
         ),
       );
@@ -325,11 +323,11 @@ void main() {
         ),
       );
 
-      verify(() => mockController.attach()).called(1);
+      verify(mockController.attach).called(1);
     });
 
     testWidgets('calls start when autoStart is true', (tester) async {
-      final mockController = createMockController(autoStart: true);
+      final mockController = createMockController();
 
       await tester.pumpWidget(
         MaterialApp(
@@ -341,7 +339,7 @@ void main() {
 
       await tester.pump();
 
-      verify(() => mockController.start()).called(1);
+      verify(mockController.start).called(1);
     });
 
     testWidgets('does not dispose externally provided controller', (
@@ -359,7 +357,7 @@ void main() {
 
       await tester.pumpWidget(Container());
 
-      verifyNever(() => mockController.dispose());
+      verifyNever(mockController.dispose);
     });
 
     testWidgets('updates scan window when scanWindow is provided', (

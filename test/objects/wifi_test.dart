@@ -47,26 +47,30 @@ void main() {
         expect(wifi.password, 'secret123');
       });
 
-      test('creates instance with null encryption type defaults to unknown',
-          () {
-        final wifi = WiFi.fromNative(<Object?, Object?>{
-          'ssid': 'MyNetwork',
-          'encryptionType': null,
-        });
+      test(
+        'creates instance with null encryption type defaults to unknown',
+        () {
+          final wifi = WiFi.fromNative(<Object?, Object?>{
+            'ssid': 'MyNetwork',
+            'encryptionType': null,
+          });
 
-        expect(wifi.ssid, 'MyNetwork');
-        expect(wifi.encryptionType, EncryptionType.unknown);
-      });
+          expect(wifi.ssid, 'MyNetwork');
+          expect(wifi.encryptionType, EncryptionType.unknown);
+        },
+      );
 
-      test('creates instance with missing encryption type defaults to unknown',
-          () {
-        final wifi = WiFi.fromNative(<Object?, Object?>{
-          'ssid': 'MyNetwork',
-        });
+      test(
+        'creates instance with missing encryption type defaults to unknown',
+        () {
+          final wifi = WiFi.fromNative(<Object?, Object?>{
+            'ssid': 'MyNetwork',
+          });
 
-        expect(wifi.ssid, 'MyNetwork');
-        expect(wifi.encryptionType, EncryptionType.unknown);
-      });
+          expect(wifi.ssid, 'MyNetwork');
+          expect(wifi.encryptionType, EncryptionType.unknown);
+        },
+      );
 
       test('creates instance with all encryption types', () {
         for (final type in EncryptionType.values) {

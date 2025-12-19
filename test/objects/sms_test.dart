@@ -47,16 +47,18 @@ void main() {
         expect(sms.message, 'Hello, this is a test message.');
       });
 
-      test('creates instance with null phone number defaults to empty string',
-          () {
-        final sms = SMS.fromNative(<Object?, Object?>{
-          'phoneNumber': null,
-          'message': 'Hello',
-        });
+      test(
+        'creates instance with null phone number defaults to empty string',
+        () {
+          final sms = SMS.fromNative(<Object?, Object?>{
+            'phoneNumber': null,
+            'message': 'Hello',
+          });
 
-        expect(sms.phoneNumber, '');
-        expect(sms.message, 'Hello');
-      });
+          expect(sms.phoneNumber, '');
+          expect(sms.message, 'Hello');
+        },
+      );
 
       test('creates instance with null message', () {
         final sms = SMS.fromNative(<Object?, Object?>{

@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
-import 'package:mobile_scanner/src/overlay/barcode_overlay.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockMobileScannerController extends Mock
@@ -221,7 +219,6 @@ void main() {
       barcodeStreamController.add(
         const BarcodeCapture(
           barcodes: [Barcode(rawValue: 'test')],
-          size: Size.zero,
         ),
       );
 
@@ -258,7 +255,7 @@ void main() {
         );
 
         barcodeStreamController.add(
-          const BarcodeCapture(barcodes: [], size: Size(1920, 1080)),
+          const BarcodeCapture(size: Size(1920, 1080)),
         );
 
         await tester.pump();

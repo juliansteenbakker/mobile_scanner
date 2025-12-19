@@ -296,8 +296,7 @@ void main() {
           expect(
             barcode.type,
             type,
-            reason:
-                'Type with raw value ${type.rawValue} should map to $type',
+            reason: 'Type with raw value ${type.rawValue} should map to $type',
           );
         }
       });

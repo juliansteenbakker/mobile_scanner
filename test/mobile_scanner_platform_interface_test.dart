@@ -307,7 +307,9 @@ void main() {
 
       test('updateScanWindow throws UnimplementedError', () {
         expect(
-          () => basePlatform.updateScanWindow(const Rect.fromLTWH(0, 0, 100, 100)),
+          () => basePlatform.updateScanWindow(
+            const Rect.fromLTWH(0, 0, 100, 100),
+          ),
           throwsA(
             isA<UnimplementedError>().having(
               (e) => e.message,
@@ -331,13 +333,17 @@ void main() {
         );
       });
 
-      test('setBarcodeLibraryScriptUrl does not throw (empty implementation)',
-          () {
-        expect(
-          () => basePlatform.setBarcodeLibraryScriptUrl('https://example.com/barcode.js'),
-          returnsNormally,
-        );
-      });
+      test(
+        'setBarcodeLibraryScriptUrl does not throw (empty implementation)',
+        () {
+          expect(
+            () => basePlatform.setBarcodeLibraryScriptUrl(
+              'https://example.com/barcode.js',
+            ),
+            returnsNormally,
+          );
+        },
+      );
     });
 
     group('mock platform implementation works correctly', () {

@@ -3,7 +3,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
-import 'package:mobile_scanner/src/overlay/scan_window_overlay.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockMobileScannerController extends Mock
@@ -291,7 +290,7 @@ void main() {
             borderStrokeCap: StrokeCap.round,
             borderStrokeJoin: StrokeJoin.round,
             borderStyle: PaintingStyle.fill,
-            borderWidth: 4.0,
+            borderWidth: 4,
             color: const Color(0x60FF0000),
           ),
         ),

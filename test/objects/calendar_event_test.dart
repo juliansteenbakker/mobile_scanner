@@ -17,8 +17,8 @@ void main() {
       });
 
       test('creates instance with all values provided', () {
-        final start = DateTime(2024, 1, 15, 10, 0);
-        final end = DateTime(2024, 1, 15, 11, 0);
+        final start = DateTime(2024, 1, 15, 10);
+        final end = DateTime(2024, 1, 15, 11);
 
         final event = CalendarEvent(
           description: 'Team meeting',
@@ -65,8 +65,8 @@ void main() {
         });
 
         expect(event.description, 'Team meeting');
-        expect(event.start, DateTime(2024, 1, 15, 10, 0));
-        expect(event.end, DateTime(2024, 1, 15, 11, 0));
+        expect(event.start, DateTime(2024, 1, 15, 10));
+        expect(event.end, DateTime(2024, 1, 15, 11));
         expect(event.location, 'Conference Room A');
         expect(event.organizer, 'john@example.com');
         expect(event.status, 'CONFIRMED');

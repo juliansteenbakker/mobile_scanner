@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,7 +6,6 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/detection_speed.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
-import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
@@ -26,9 +23,9 @@ void main() {
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-        methodCalls.add(call);
-        return _handleMethodCall(call);
-      });
+            methodCalls.add(call);
+            return _handleMethodCall(call);
+          });
     });
 
     tearDown(() {
@@ -55,7 +52,10 @@ void main() {
       });
 
       test('has correct method name constants', () {
-        expect(MethodChannelMobileScanner.kAuthorizationStateMethodName, 'state');
+        expect(
+          MethodChannelMobileScanner.kAuthorizationStateMethodName,
+          'state',
+        );
         expect(
           MethodChannelMobileScanner.kRequestAuthorizationMethodName,
           'request',
@@ -70,7 +70,10 @@ void main() {
         expect(MethodChannelMobileScanner.kStartCameraMethodName, 'start');
         expect(MethodChannelMobileScanner.kStopCameraMethodName, 'stop');
         expect(MethodChannelMobileScanner.kPauseCameraMethodName, 'pause');
-        expect(MethodChannelMobileScanner.kToggleTorchMethodName, 'toggleTorch');
+        expect(
+          MethodChannelMobileScanner.kToggleTorchMethodName,
+          'toggleTorch',
+        );
         expect(
           MethodChannelMobileScanner.kUpdateScanWindowMethodName,
           'updateScanWindow',
@@ -108,13 +111,13 @@ void main() {
       });
 
       test('handles edge values', () async {
-        await scanner.setZoomScale(0.0);
-        expect(methodCalls[0].arguments, 0.0);
+        await scanner.setZoomScale(0);
+        expect(methodCalls[0].arguments, 0);
 
         methodCalls.clear();
 
-        await scanner.setZoomScale(1.0);
-        expect(methodCalls[0].arguments, 1.0);
+        await scanner.setZoomScale(1);
+        expect(methodCalls[0].arguments, 1);
       });
     });
 
@@ -167,11 +170,11 @@ void main() {
       test('returns empty set when null is returned', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'getSupportedLenses') {
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'getSupportedLenses') {
+                return null;
+              }
+              return null;
+            });
 
         final result = await scanner.getSupportedLenses();
 
@@ -181,11 +184,11 @@ void main() {
       test('returns empty set when empty list is returned', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'getSupportedLenses') {
-            return <int>[];
-          }
-          return null;
-        });
+              if (call.method == 'getSupportedLenses') {
+                return <int>[];
+              }
+              return null;
+            });
 
         final result = await scanner.getSupportedLenses();
 
@@ -195,11 +198,11 @@ void main() {
       test('returns correct lens types from raw values', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'getSupportedLenses') {
-            return [0, 1, 2, 3]; // any, normal, wide, zoom
-          }
-          return null;
-        });
+              if (call.method == 'getSupportedLenses') {
+                return [0, 1, 2, 3]; // any, normal, wide, zoom
+              }
+              return null;
+            });
 
         final result = await scanner.getSupportedLenses();
 
@@ -212,11 +215,11 @@ void main() {
       test('filters out non-integer values', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'getSupportedLenses') {
-            return [0, 'invalid', 1, null, 2];
-          }
-          return null;
-        });
+              if (call.method == 'getSupportedLenses') {
+                return [0, 'invalid', 1, null, 2];
+              }
+              return null;
+            });
 
         final result = await scanner.getSupportedLenses();
 
@@ -228,11 +231,11 @@ void main() {
       test('returns null when platform returns null', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                return null;
+              }
+              return null;
+            });
 
         final result = await scanner.analyzeImage('/path/to/image.png');
 
@@ -244,12 +247,12 @@ void main() {
 
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            passedArgs = Map<String, Object?>.from(call.arguments as Map);
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                passedArgs = Map<String, Object?>.from(call.arguments as Map);
+                return null;
+              }
+              return null;
+            });
 
         await scanner.analyzeImage('/path/to/image.png');
 
@@ -262,12 +265,12 @@ void main() {
 
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            passedArgs = Map<String, Object?>.from(call.arguments as Map);
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                passedArgs = Map<String, Object?>.from(call.arguments as Map);
+                return null;
+              }
+              return null;
+            });
 
         await scanner.analyzeImage(
           '/path/to/image.png',
@@ -291,19 +294,19 @@ void main() {
 
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            passedArgs = Map<String, Object?>.from(call.arguments as Map);
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                passedArgs = Map<String, Object?>.from(call.arguments as Map);
+                return null;
+              }
+              return null;
+            });
 
         await scanner.analyzeImage(
           '/path/to/image.png',
           formats: [BarcodeFormat.qrCode, BarcodeFormat.unknown],
         );
 
-        final formats = passedArgs['formats'] as List;
+        final formats = passedArgs['formats']! as List<dynamic>;
         expect(formats.length, 1);
         expect(formats, contains(BarcodeFormat.qrCode.rawValue));
       });
@@ -311,14 +314,14 @@ void main() {
       test('throws MobileScannerBarcodeException on barcode error', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            throw PlatformException(
-              code: 'MOBILE_SCANNER_BARCODE_ERROR',
-              message: 'No barcode found',
-            );
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                throw PlatformException(
+                  code: 'MOBILE_SCANNER_BARCODE_ERROR',
+                  message: 'No barcode found',
+                );
+              }
+              return null;
+            });
 
         expect(
           () => scanner.analyzeImage('/path/to/image.png'),
@@ -329,14 +332,14 @@ void main() {
       test('throws UnsupportedError on unsupported operation', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            throw PlatformException(
-              code: 'MOBILE_SCANNER_UNSUPPORTED_OPERATION',
-              message: 'Not supported',
-            );
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                throw PlatformException(
+                  code: 'MOBILE_SCANNER_UNSUPPORTED_OPERATION',
+                  message: 'Not supported',
+                );
+              }
+              return null;
+            });
 
         expect(
           () => scanner.analyzeImage('/path/to/image.png'),
@@ -347,11 +350,11 @@ void main() {
       test('returns null on other platform exceptions', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'analyzeImage') {
-            throw PlatformException(code: 'UNKNOWN_ERROR');
-          }
-          return null;
-        });
+              if (call.method == 'analyzeImage') {
+                throw PlatformException(code: 'UNKNOWN_ERROR');
+              }
+              return null;
+            });
 
         final result = await scanner.analyzeImage('/path/to/image.png');
 
@@ -376,23 +379,23 @@ void main() {
         // Mock a successful start
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'state') {
-            return 1; // authorized
-          }
-          if (call.method == 'start') {
-            return {
-              'textureId': 1,
-              'cameraDirection': 0,
-              'size': {'width': 1920.0, 'height': 1080.0},
-              'currentTorchState': 0,
-              'numberOfCameras': 2,
-              'handlesCropAndRotation': true,
-              'naturalDeviceOrientation': 'PORTRAIT_UP',
-              'sensorOrientation': 90,
-            };
-          }
-          return null;
-        });
+              if (call.method == 'state') {
+                return 1; // authorized
+              }
+              if (call.method == 'start') {
+                return {
+                  'textureId': 1,
+                  'cameraDirection': 0,
+                  'size': {'width': 1920.0, 'height': 1080.0},
+                  'currentTorchState': 0,
+                  'numberOfCameras': 2,
+                  'handlesCropAndRotation': true,
+                  'naturalDeviceOrientation': 'PORTRAIT_UP',
+                  'sensorOrientation': 90,
+                };
+              }
+              return null;
+            });
 
         const startOptions = StartOptions(
           cameraDirection: CameraFacing.back,
@@ -427,14 +430,14 @@ void main() {
       test('throws when permission is denied', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'state') {
-            return 2; // denied
-          }
-          if (call.method == 'request') {
-            return false; // permission not granted
-          }
-          return null;
-        });
+              if (call.method == 'state') {
+                return 2; // denied
+              }
+              if (call.method == 'request') {
+                return false; // permission not granted
+              }
+              return null;
+            });
 
         const startOptions = StartOptions(
           cameraDirection: CameraFacing.back,
@@ -465,14 +468,14 @@ void main() {
       test('throws when start returns null', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'state') {
-            return 1; // authorized
-          }
-          if (call.method == 'start') {
-            return null;
-          }
-          return null;
-        });
+              if (call.method == 'state') {
+                return 1; // authorized
+              }
+              if (call.method == 'start') {
+                return null;
+              }
+              return null;
+            });
 
         const startOptions = StartOptions(
           cameraDirection: CameraFacing.back,
@@ -503,17 +506,17 @@ void main() {
       test('throws when textureId is null', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'state') {
-            return 1; // authorized
-          }
-          if (call.method == 'start') {
-            return {
-              'cameraDirection': 0,
-              'size': {'width': 1920.0, 'height': 1080.0},
-            };
-          }
-          return null;
-        });
+              if (call.method == 'state') {
+                return 1; // authorized
+              }
+              if (call.method == 'start') {
+                return {
+                  'cameraDirection': 0,
+                  'size': {'width': 1920.0, 'height': 1080.0},
+                };
+              }
+              return null;
+            });
 
         const startOptions = StartOptions(
           cameraDirection: CameraFacing.back,
@@ -544,17 +547,17 @@ void main() {
       test('handles platform exception during start', () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(scanner.methodChannel, (call) async {
-          if (call.method == 'state') {
-            return 1; // authorized
-          }
-          if (call.method == 'start') {
-            throw PlatformException(
-              code: 'MOBILE_SCANNER_NO_CAMERA_ERROR',
-              message: 'No camera available',
-            );
-          }
-          return null;
-        });
+              if (call.method == 'state') {
+                return 1; // authorized
+              }
+              if (call.method == 'start') {
+                throw PlatformException(
+                  code: 'MOBILE_SCANNER_NO_CAMERA_ERROR',
+                  message: 'No camera available',
+                );
+              }
+              return null;
+            });
 
         const startOptions = StartOptions(
           cameraDirection: CameraFacing.back,

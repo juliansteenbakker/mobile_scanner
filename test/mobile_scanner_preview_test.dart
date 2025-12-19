@@ -10,13 +10,14 @@ const _cameraViewKey = Key('camera_view_placeholder');
 
 class MockMobileScannerController extends Mock
     implements MobileScannerController {
-  MobileScannerState _state;
-
   MockMobileScannerController(this._state);
+
+  MobileScannerState _state;
 
   @override
   MobileScannerState get value => _state;
 
+  // ignore: avoid_setters_without_getters, unreachable_from_main, this setter is used to simulate state changes in tests
   set state(MobileScannerState newState) {
     _state = newState;
     notifyListeners();
@@ -55,109 +56,113 @@ void main() {
       expect(sizedBoxFinder, findsOneWidget);
     });
 
-    testWidgets('shows camera view when controller is initialized in portrait',
-        (tester) async {
-      final controller = MockMobileScannerController(
-        const MobileScannerState(
-          availableCameras: 2,
-          cameraDirection: CameraFacing.back,
-          cameraLensType: CameraLensType.any,
-          isInitialized: true,
-          isStarting: false,
-          isRunning: true,
-          size: Size(1920, 1080),
-          torchState: TorchState.off,
-          zoomScale: 1,
-          deviceOrientation: DeviceOrientation.portraitUp,
-        ),
-      );
+    testWidgets(
+      'shows camera view when controller is initialized in portrait',
+      (tester) async {
+        final controller = MockMobileScannerController(
+          const MobileScannerState(
+            availableCameras: 2,
+            cameraDirection: CameraFacing.back,
+            cameraLensType: CameraLensType.any,
+            isInitialized: true,
+            isStarting: false,
+            isRunning: true,
+            size: Size(1920, 1080),
+            torchState: TorchState.off,
+            zoomScale: 1,
+            deviceOrientation: DeviceOrientation.portraitUp,
+          ),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(home: Scaffold(body: CameraPreview(controller))),
-      );
+        await tester.pumpWidget(
+          MaterialApp(home: Scaffold(body: CameraPreview(controller))),
+        );
 
-      // Should find the camera view (Placeholder with key)
-      expect(find.byKey(_cameraViewKey), findsOneWidget);
+        // Should find the camera view (Placeholder with key)
+        expect(find.byKey(_cameraViewKey), findsOneWidget);
 
-      // In portrait, size should not be flipped
-      final sizedBox = tester.widget<SizedBox>(
-        find.ancestor(
-          of: find.byKey(_cameraViewKey),
-          matching: find.byType(SizedBox),
-        ),
-      );
-      expect(sizedBox.width, 1920);
-      expect(sizedBox.height, 1080);
-    });
+        // In portrait, size should not be flipped
+        final sizedBox = tester.widget<SizedBox>(
+          find.ancestor(
+            of: find.byKey(_cameraViewKey),
+            matching: find.byType(SizedBox),
+          ),
+        );
+        expect(sizedBox.width, 1920);
+        expect(sizedBox.height, 1080);
+      },
+    );
 
     testWidgets(
-        'shows camera view with flipped size when in landscape left orientation',
-        (tester) async {
-      final controller = MockMobileScannerController(
-        const MobileScannerState(
-          availableCameras: 2,
-          cameraDirection: CameraFacing.back,
-          cameraLensType: CameraLensType.any,
-          isInitialized: true,
-          isStarting: false,
-          isRunning: true,
-          size: Size(1920, 1080),
-          torchState: TorchState.off,
-          zoomScale: 1,
-          deviceOrientation: DeviceOrientation.landscapeLeft,
-        ),
-      );
+      'shows camera view with flipped size when in landscape left orientation',
+      (tester) async {
+        final controller = MockMobileScannerController(
+          const MobileScannerState(
+            availableCameras: 2,
+            cameraDirection: CameraFacing.back,
+            cameraLensType: CameraLensType.any,
+            isInitialized: true,
+            isStarting: false,
+            isRunning: true,
+            size: Size(1920, 1080),
+            torchState: TorchState.off,
+            zoomScale: 1,
+            deviceOrientation: DeviceOrientation.landscapeLeft,
+          ),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(home: Scaffold(body: CameraPreview(controller))),
-      );
+        await tester.pumpWidget(
+          MaterialApp(home: Scaffold(body: CameraPreview(controller))),
+        );
 
-      // Should find the camera view (Placeholder with key)
-      expect(find.byKey(_cameraViewKey), findsOneWidget);
+        // Should find the camera view (Placeholder with key)
+        expect(find.byKey(_cameraViewKey), findsOneWidget);
 
-      // In landscape, size should be flipped (width and height swapped)
-      final sizedBox = tester.widget<SizedBox>(
-        find.ancestor(
-          of: find.byKey(_cameraViewKey),
-          matching: find.byType(SizedBox),
-        ),
-      );
-      expect(sizedBox.width, 1080);
-      expect(sizedBox.height, 1920);
-    });
+        // In landscape, size should be flipped (width and height swapped)
+        final sizedBox = tester.widget<SizedBox>(
+          find.ancestor(
+            of: find.byKey(_cameraViewKey),
+            matching: find.byType(SizedBox),
+          ),
+        );
+        expect(sizedBox.width, 1080);
+        expect(sizedBox.height, 1920);
+      },
+    );
 
     testWidgets(
-        'shows camera view with flipped size when in landscape right orientation',
-        (tester) async {
-      final controller = MockMobileScannerController(
-        const MobileScannerState(
-          availableCameras: 2,
-          cameraDirection: CameraFacing.back,
-          cameraLensType: CameraLensType.any,
-          isInitialized: true,
-          isStarting: false,
-          isRunning: true,
-          size: Size(1920, 1080),
-          torchState: TorchState.off,
-          zoomScale: 1,
-          deviceOrientation: DeviceOrientation.landscapeRight,
-        ),
-      );
+      'shows camera view with flipped size when in landscape right orientation',
+      (tester) async {
+        final controller = MockMobileScannerController(
+          const MobileScannerState(
+            availableCameras: 2,
+            cameraDirection: CameraFacing.back,
+            cameraLensType: CameraLensType.any,
+            isInitialized: true,
+            isStarting: false,
+            isRunning: true,
+            size: Size(1920, 1080),
+            torchState: TorchState.off,
+            zoomScale: 1,
+            deviceOrientation: DeviceOrientation.landscapeRight,
+          ),
+        );
 
-      await tester.pumpWidget(
-        MaterialApp(home: Scaffold(body: CameraPreview(controller))),
-      );
+        await tester.pumpWidget(
+          MaterialApp(home: Scaffold(body: CameraPreview(controller))),
+        );
 
-      // In landscape, size should be flipped
-      final sizedBox = tester.widget<SizedBox>(
-        find.ancestor(
-          of: find.byKey(_cameraViewKey),
-          matching: find.byType(SizedBox),
-        ),
-      );
-      expect(sizedBox.width, 1080);
-      expect(sizedBox.height, 1920);
-    });
+        // In landscape, size should be flipped
+        final sizedBox = tester.widget<SizedBox>(
+          find.ancestor(
+            of: find.byKey(_cameraViewKey),
+            matching: find.byType(SizedBox),
+          ),
+        );
+        expect(sizedBox.width, 1080);
+        expect(sizedBox.height, 1920);
+      },
+    );
 
     testWidgets('does not flip size for portraitDown orientation', (
       tester,

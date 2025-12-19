@@ -13,7 +13,7 @@ void main() {
           cameraFacingDirection: CameraFacing.back,
           handlesCropAndRotation: true,
           initialDeviceOrientation: DeviceOrientation.portraitUp,
-          sensorOrientationDegrees: 90.0,
+          sensorOrientationDegrees: 90,
         );
 
         expect(delegate.cameraFacingDirection, CameraFacing.back);
@@ -27,7 +27,7 @@ void main() {
           cameraFacingDirection: CameraFacing.front,
           handlesCropAndRotation: false,
           initialDeviceOrientation: DeviceOrientation.landscapeLeft,
-          sensorOrientationDegrees: 270.0,
+          sensorOrientationDegrees: 270,
         );
 
         expect(delegate.cameraFacingDirection, CameraFacing.front);
@@ -45,7 +45,7 @@ void main() {
             cameraFacingDirection: CameraFacing.back,
             handlesCropAndRotation: true,
             initialDeviceOrientation: orientation,
-            sensorOrientationDegrees: 90.0,
+            sensorOrientationDegrees: 90,
           );
 
           expect(
@@ -62,7 +62,7 @@ void main() {
             cameraFacingDirection: facing,
             handlesCropAndRotation: true,
             initialDeviceOrientation: DeviceOrientation.portraitUp,
-            sensorOrientationDegrees: 90.0,
+            sensorOrientationDegrees: 90,
           );
 
           expect(
@@ -171,72 +171,79 @@ void main() {
         expect(delegate.sensorOrientationDegrees, 270.0);
       });
 
-      test('throws MobileScannerException when handlesCropAndRotation is missing',
-          () {
-        final config = <String, Object?>{
-          'naturalDeviceOrientation': 'PORTRAIT_UP',
-          'sensorOrientation': 90,
-        };
+      test(
+        'throws MobileScannerException when handlesCropAndRotation is '
+        'missing',
+        () {
+          final config = <String, Object?>{
+            'naturalDeviceOrientation': 'PORTRAIT_UP',
+            'sensorOrientation': 90,
+          };
 
-        expect(
-          () => AndroidSurfaceProducerDelegate.fromConfiguration(
-            config,
-            CameraFacing.back,
-          ),
-          throwsA(
-            isA<MobileScannerException>().having(
-              (e) => e.errorCode,
-              'errorCode',
-              MobileScannerErrorCode.genericError,
+          expect(
+            () => AndroidSurfaceProducerDelegate.fromConfiguration(
+              config,
+              CameraFacing.back,
             ),
-          ),
-        );
-      });
+            throwsA(
+              isA<MobileScannerException>().having(
+                (e) => e.errorCode,
+                'errorCode',
+                MobileScannerErrorCode.genericError,
+              ),
+            ),
+          );
+        },
+      );
 
       test(
-          'throws MobileScannerException when naturalDeviceOrientation is missing',
-          () {
-        final config = <String, Object?>{
-          'handlesCropAndRotation': true,
-          'sensorOrientation': 90,
-        };
+        'throws MobileScannerException when naturalDeviceOrientation is '
+        'missing',
+        () {
+          final config = <String, Object?>{
+            'handlesCropAndRotation': true,
+            'sensorOrientation': 90,
+          };
 
-        expect(
-          () => AndroidSurfaceProducerDelegate.fromConfiguration(
-            config,
-            CameraFacing.back,
-          ),
-          throwsA(
-            isA<MobileScannerException>().having(
-              (e) => e.errorCode,
-              'errorCode',
-              MobileScannerErrorCode.genericError,
+          expect(
+            () => AndroidSurfaceProducerDelegate.fromConfiguration(
+              config,
+              CameraFacing.back,
             ),
-          ),
-        );
-      });
-
-      test('throws MobileScannerException when sensorOrientation is missing',
-          () {
-        final config = <String, Object?>{
-          'handlesCropAndRotation': true,
-          'naturalDeviceOrientation': 'PORTRAIT_UP',
-        };
-
-        expect(
-          () => AndroidSurfaceProducerDelegate.fromConfiguration(
-            config,
-            CameraFacing.back,
-          ),
-          throwsA(
-            isA<MobileScannerException>().having(
-              (e) => e.errorCode,
-              'errorCode',
-              MobileScannerErrorCode.genericError,
+            throwsA(
+              isA<MobileScannerException>().having(
+                (e) => e.errorCode,
+                'errorCode',
+                MobileScannerErrorCode.genericError,
+              ),
             ),
-          ),
-        );
-      });
+          );
+        },
+      );
+
+      test(
+        'throws MobileScannerException when sensorOrientation is missing',
+        () {
+          final config = <String, Object?>{
+            'handlesCropAndRotation': true,
+            'naturalDeviceOrientation': 'PORTRAIT_UP',
+          };
+
+          expect(
+            () => AndroidSurfaceProducerDelegate.fromConfiguration(
+              config,
+              CameraFacing.back,
+            ),
+            throwsA(
+              isA<MobileScannerException>().having(
+                (e) => e.errorCode,
+                'errorCode',
+                MobileScannerErrorCode.genericError,
+              ),
+            ),
+          );
+        },
+      );
 
       test('throws MobileScannerException with empty config', () {
         final config = <String, Object?>{};
@@ -257,40 +264,43 @@ void main() {
       });
 
       test(
-          'throws MobileScannerException when handlesCropAndRotation has wrong type',
-          () {
-        final config = <String, Object?>{
-          'handlesCropAndRotation': 'true', // String instead of bool
-          'naturalDeviceOrientation': 'PORTRAIT_UP',
-          'sensorOrientation': 90,
-        };
+        'throws MobileScannerException when handlesCropAndRotation has '
+        'wrong type',
+        () {
+          final config = <String, Object?>{
+            'handlesCropAndRotation': 'true', // String instead of bool
+            'naturalDeviceOrientation': 'PORTRAIT_UP',
+            'sensorOrientation': 90,
+          };
 
-        expect(
-          () => AndroidSurfaceProducerDelegate.fromConfiguration(
-            config,
-            CameraFacing.back,
-          ),
-          throwsA(isA<MobileScannerException>()),
-        );
-      });
+          expect(
+            () => AndroidSurfaceProducerDelegate.fromConfiguration(
+              config,
+              CameraFacing.back,
+            ),
+            throwsA(isA<MobileScannerException>()),
+          );
+        },
+      );
 
       test(
-          'throws MobileScannerException when sensorOrientation has wrong type',
-          () {
-        final config = <String, Object?>{
-          'handlesCropAndRotation': true,
-          'naturalDeviceOrientation': 'PORTRAIT_UP',
-          'sensorOrientation': '90', // String instead of int
-        };
+        'throws MobileScannerException when sensorOrientation has wrong type',
+        () {
+          final config = <String, Object?>{
+            'handlesCropAndRotation': true,
+            'naturalDeviceOrientation': 'PORTRAIT_UP',
+            'sensorOrientation': '90', // String instead of int
+          };
 
-        expect(
-          () => AndroidSurfaceProducerDelegate.fromConfiguration(
-            config,
-            CameraFacing.back,
-          ),
-          throwsA(isA<MobileScannerException>()),
-        );
-      });
+          expect(
+            () => AndroidSurfaceProducerDelegate.fromConfiguration(
+              config,
+              CameraFacing.back,
+            ),
+            throwsA(isA<MobileScannerException>()),
+          );
+        },
+      );
 
       test('throws ArgumentError for invalid device orientation string', () {
         final config = <String, Object?>{

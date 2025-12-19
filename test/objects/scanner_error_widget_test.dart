@@ -5,7 +5,6 @@ import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/objects/scanner_error_widget.dart';
 
-// ignore_for_file: avoid_redundant_argument_values
 
 void main() {
   group('$ScannerErrorWidget tests', () {
@@ -77,11 +76,14 @@ void main() {
       }
     });
 
-    testWidgets('shows error details message when available in debug mode',
-        (tester) async {
+    testWidgets('shows error details message when available in debug mode', (
+      tester,
+    ) async {
       const error = MobileScannerException(
         errorCode: MobileScannerErrorCode.genericError,
-        errorDetails: MobileScannerErrorDetails(message: 'Detailed error message'),
+        errorDetails: MobileScannerErrorDetails(
+          message: 'Detailed error message',
+        ),
       );
 
       await tester.pumpWidget(

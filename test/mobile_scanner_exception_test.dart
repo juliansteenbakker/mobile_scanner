@@ -47,37 +47,41 @@ void main() {
       expect(exception.toString(), 'MobileScannerException(permissionDenied)');
     });
 
-    test('toString returns formatted string with error details but no message',
-        () {
-      const errorDetails = MobileScannerErrorDetails(
-        code: 'TEST_ERROR',
-        details: 'Some details',
-      );
-      const exception = MobileScannerException(
-        errorCode: MobileScannerErrorCode.unsupported,
-        errorDetails: errorDetails,
-      );
+    test(
+      'toString returns formatted string with error details but no message',
+      () {
+        const errorDetails = MobileScannerErrorDetails(
+          code: 'TEST_ERROR',
+          details: 'Some details',
+        );
+        const exception = MobileScannerException(
+          errorCode: MobileScannerErrorCode.unsupported,
+          errorDetails: errorDetails,
+        );
 
-      expect(exception.toString(), 'MobileScannerException(unsupported)');
-    });
+        expect(exception.toString(), 'MobileScannerException(unsupported)');
+      },
+    );
 
-    test('toString returns formatted string with error details and message',
-        () {
-      const errorDetails = MobileScannerErrorDetails(
-        code: 'TEST_ERROR',
-        message: 'Camera not available',
-        details: 'Some details',
-      );
-      const exception = MobileScannerException(
-        errorCode: MobileScannerErrorCode.unsupported,
-        errorDetails: errorDetails,
-      );
+    test(
+      'toString returns formatted string with error details and message',
+      () {
+        const errorDetails = MobileScannerErrorDetails(
+          code: 'TEST_ERROR',
+          message: 'Camera not available',
+          details: 'Some details',
+        );
+        const exception = MobileScannerException(
+          errorCode: MobileScannerErrorCode.unsupported,
+          errorDetails: errorDetails,
+        );
 
-      expect(
-        exception.toString(),
-        'MobileScannerException(unsupported, Camera not available)',
-      );
-    });
+        expect(
+          exception.toString(),
+          'MobileScannerException(unsupported, Camera not available)',
+        );
+      },
+    );
 
     test('handles all MobileScannerErrorCode values', () {
       for (final errorCode in MobileScannerErrorCode.values) {
@@ -201,7 +205,10 @@ void main() {
     test('toString returns formatted string with message', () {
       const exception = MobileScannerBarcodeException('Scan failed');
 
-      expect(exception.toString(), 'MobileScannerBarcodeException(Scan failed)');
+      expect(
+        exception.toString(),
+        'MobileScannerBarcodeException(Scan failed)',
+      );
     });
 
     test('toString returns default message when message is null', () {
@@ -210,7 +217,7 @@ void main() {
       expect(
         exception.toString(),
         'MobileScannerBarcodeException(Could not detect a barcode in the '
-            'input image.)',
+        'input image.)',
       );
     });
 
@@ -220,7 +227,7 @@ void main() {
       expect(
         exception.toString(),
         'MobileScannerBarcodeException(Could not detect a barcode in the '
-            'input image.)',
+        'input image.)',
       );
     });
 
@@ -242,7 +249,7 @@ void main() {
     test('handles various message content', () {
       final testMessages = [
         'Simple message',
-        'Message with special chars: !@#\$%^&*()',
+        r'Message with special chars: !@#$%^&*()',
         'Message with unicode: 你好世界 🎉',
         'Very long message ' * 10,
       ];

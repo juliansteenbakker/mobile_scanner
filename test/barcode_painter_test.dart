@@ -260,27 +260,31 @@ void main() {
       );
     });
 
-    test('calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize width', () {
-      expect(
-        calculateBoxFitRatio(
-          BoxFit.contain,
-          const Size(0, 100),
-          const Size(400, 400),
-        ),
-        (widthRatio: 1.0, heightRatio: 1.0),
-      );
-    });
+    test(
+      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize width', () {
+        expect(
+          calculateBoxFitRatio(
+            BoxFit.contain,
+            const Size(0, 100),
+            const Size(400, 400),
+          ),
+          (widthRatio: 1.0, heightRatio: 1.0),
+        );
+      },
+    );
 
-    test('calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize height', () {
-      expect(
-        calculateBoxFitRatio(
-          BoxFit.contain,
-          const Size(200, 0),
-          const Size(400, 400),
-        ),
-        (widthRatio: 1.0, heightRatio: 1.0),
-      );
-    });
+    test(
+      'calculateBoxFitRatio returns 1.0 for zero cameraPreviewSize height', () {
+        expect(
+          calculateBoxFitRatio(
+            BoxFit.contain,
+            const Size(200, 0),
+            const Size(400, 400),
+          ),
+          (widthRatio: 1.0, heightRatio: 1.0),
+        );
+      },
+    );
 
     test('calculateBoxFitRatio returns 1.0 for zero target size width', () {
       expect(
@@ -304,16 +308,18 @@ void main() {
       );
     });
 
-    test('calculateBoxFitRatio scaleDown scales down when content is larger', () {
-      expect(
-        calculateBoxFitRatio(
-          BoxFit.scaleDown,
-          const Size(800, 600),
-          const Size(400, 300),
-        ),
-        (widthRatio: 0.5, heightRatio: 0.5),
-      );
-    });
+    test(
+      'calculateBoxFitRatio scaleDown scales down when content is larger', () {
+        expect(
+          calculateBoxFitRatio(
+            BoxFit.scaleDown,
+            const Size(800, 600),
+            const Size(400, 300),
+          ),
+          (widthRatio: 0.5, heightRatio: 0.5),
+        );
+      },
+    );
 
     testWidgets('paint handles landscapeLeft orientation', (tester) async {
       final mockCanvas = MockCanvas();
@@ -399,7 +405,9 @@ void main() {
       verify(() => mockCanvas.drawRRect(any(), any())).called(1);
     });
 
-    testWidgets('paint does not draw when barcodeSize is empty', (tester) async {
+    testWidgets('paint does not draw when barcodeSize is empty', (
+      tester,
+    ) async {
       final mockCanvas = MockCanvas();
       final textPainter = TextPainter(
         textAlign: TextAlign.center,
@@ -769,7 +777,7 @@ void main() {
         barcodeValue: '123456',
         textPainter: textPainter,
         deviceOrientation: DeviceOrientation.portraitUp,
-        strokeWidth: 8.0,
+        strokeWidth: 8,
       );
 
       expect(painter.strokeWidth, 8.0);

@@ -1,12 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
-import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
-import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
@@ -52,14 +49,18 @@ void main() {
     deviceOrientationStreamController =
         StreamController<DeviceOrientation>.broadcast();
 
-    when(() => mockPlatform.barcodesStream)
-        .thenAnswer((_) => barcodesStreamController.stream);
-    when(() => mockPlatform.torchStateStream)
-        .thenAnswer((_) => torchStateStreamController.stream);
-    when(() => mockPlatform.zoomScaleStateStream)
-        .thenAnswer((_) => zoomScaleStreamController.stream);
-    when(() => mockPlatform.deviceOrientationChangedStream)
-        .thenAnswer((_) => deviceOrientationStreamController.stream);
+    when(
+      () => mockPlatform.barcodesStream,
+    ).thenAnswer((_) => barcodesStreamController.stream);
+    when(
+      () => mockPlatform.torchStateStream,
+    ).thenAnswer((_) => torchStateStreamController.stream);
+    when(
+      () => mockPlatform.zoomScaleStateStream,
+    ).thenAnswer((_) => zoomScaleStreamController.stream);
+    when(
+      () => mockPlatform.deviceOrientationChangedStream,
+    ).thenAnswer((_) => deviceOrientationStreamController.stream);
     when(() => mockPlatform.dispose()).thenAnswer((_) async {});
     when(() => mockPlatform.stop()).thenAnswer((_) async {});
     when(() => mockPlatform.pause()).thenAnswer((_) async {});
@@ -145,7 +146,6 @@ void main() {
     test('preserves detectionTimeoutMs for normal speed', () {
       final controller = MobileScannerController(
         autoStart: false,
-        detectionSpeed: DetectionSpeed.normal,
         detectionTimeoutMs: 500,
       );
 
@@ -175,9 +175,7 @@ void main() {
 
   group('MobileScannerController.barcodes', () {
     test('returns barcodes stream', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -189,7 +187,7 @@ void main() {
 
       await controller.start();
 
-      final barcode = const BarcodeCapture(
+      const barcode = BarcodeCapture(
         barcodes: [Barcode(rawValue: 'test')],
       );
 
@@ -204,9 +202,7 @@ void main() {
     });
 
     test('forwards errors from platform barcodes stream', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -235,7 +231,7 @@ void main() {
       final controller = MobileScannerController(autoStart: false);
 
       expect(
-        () => controller.buildCameraView(),
+        controller.buildCameraView,
         throwsA(
           isA<MobileScannerException>().having(
             (e) => e.errorCode,
@@ -247,9 +243,7 @@ void main() {
     });
 
     test('throws when disposed', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -263,7 +257,7 @@ void main() {
       await controller.dispose();
 
       expect(
-        () => controller.buildCameraView(),
+        controller.buildCameraView,
         throwsA(
           isA<MobileScannerException>().having(
             (e) => e.errorCode,
@@ -292,9 +286,7 @@ void main() {
     });
 
     test('does nothing when not running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -315,9 +307,7 @@ void main() {
     });
 
     test('calls platform resetZoomScale when running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -354,9 +344,7 @@ void main() {
     });
 
     test('does nothing when not running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -377,9 +365,7 @@ void main() {
     });
 
     test('clamps zoom scale to 0.0-1.0 range', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -393,10 +379,10 @@ void main() {
       await controller.start();
 
       await controller.setZoomScale(-0.5);
-      verify(() => mockPlatform.setZoomScale(0.0)).called(1);
+      verify(() => mockPlatform.setZoomScale(0)).called(1);
 
       await controller.setZoomScale(1.5);
-      verify(() => mockPlatform.setZoomScale(1.0)).called(1);
+      verify(() => mockPlatform.setZoomScale(1)).called(1);
 
       await controller.setZoomScale(0.5);
       verify(() => mockPlatform.setZoomScale(0.5)).called(1);
@@ -422,9 +408,7 @@ void main() {
     });
 
     test('does nothing when not running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -445,9 +429,7 @@ void main() {
     });
 
     test('clamps focus point to 0.0-1.0 range', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -461,10 +443,14 @@ void main() {
       await controller.start();
 
       await controller.setFocusPoint(const Offset(-0.5, 1.5));
-      verify(() => mockPlatform.setFocusPoint(const Offset(0.0, 1.0))).called(1);
+      verify(
+        () => mockPlatform.setFocusPoint(const Offset(0, 1)),
+      ).called(1);
 
       await controller.setFocusPoint(const Offset(0.5, 0.5));
-      verify(() => mockPlatform.setFocusPoint(const Offset(0.5, 0.5))).called(1);
+      verify(
+        () => mockPlatform.setFocusPoint(const Offset(0.5, 0.5)),
+      ).called(1);
 
       await controller.dispose();
     });
@@ -489,9 +475,7 @@ void main() {
     });
 
     test('throws when CameraFacing.unknown is passed', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       expect(
         () => controller.start(cameraDirection: CameraFacing.unknown),
@@ -508,9 +492,7 @@ void main() {
     });
 
     test('does nothing when already running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -529,9 +511,7 @@ void main() {
     });
 
     test('handles platform error gracefully', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenThrow(
         const MobileScannerException(
@@ -553,9 +533,7 @@ void main() {
     });
 
     test('uses custom camera direction and lens type', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -580,9 +558,7 @@ void main() {
     });
 
     test('updates state on successful start', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -621,9 +597,7 @@ void main() {
     });
 
     test('does nothing when already stopped', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -643,9 +617,7 @@ void main() {
     });
 
     test('sets torch state to off when stopping', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -666,9 +638,7 @@ void main() {
     });
 
     test('preserves unavailable torch state when stopping', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -690,9 +660,7 @@ void main() {
 
   group('MobileScannerController.pause', () {
     test('calls platform pause when running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -737,9 +705,7 @@ void main() {
     });
 
     test('does nothing when not running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -760,9 +726,7 @@ void main() {
     });
 
     test('does nothing when torch is unavailable', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -781,9 +745,7 @@ void main() {
     });
 
     test('calls platform toggleTorch when available and running', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -829,9 +791,7 @@ void main() {
     });
 
     test('calls platform updateScanWindow when initialized', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -853,9 +813,7 @@ void main() {
     });
 
     test('can pass null to reset scan window', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -908,20 +866,17 @@ void main() {
 
   group('MobileScannerController.attach', () {
     test('can only be called once', () {
-      final controller = MobileScannerController(autoStart: false);
+      final controller = MobileScannerController(autoStart: false)
+        ..attach()
+        ..attach();
 
-      controller.attach();
-      controller.attach();
-
-      expect(true, isTrue);
+      expect(controller.value, const MobileScannerState.uninitialized());
     });
   });
 
   group('MobileScannerController stream listeners', () {
     test('updates torch state from stream', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -943,9 +898,7 @@ void main() {
     });
 
     test('updates zoom scale from stream', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -967,9 +920,7 @@ void main() {
     });
 
     test('ignores stream updates after dispose', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
@@ -989,9 +940,7 @@ void main() {
     });
 
     test('ignores null barcode captures', () async {
-      final controller = MobileScannerController(autoStart: false);
-
-      controller.attach();
+      final controller = MobileScannerController(autoStart: false)..attach();
 
       when(() => mockPlatform.start(any())).thenAnswer(
         (_) async => const MobileScannerViewAttributes(
