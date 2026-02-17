@@ -2,14 +2,11 @@ package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
 import android.content.Context
-import android.database.ContentObserver
-import android.hardware.SensorManager
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.provider.Settings
 import android.view.Display
-import android.view.OrientationEventListener
 import android.view.Surface
 import android.view.WindowManager
 import dev.steenbakker.mobile_scanner.utils.serialize
@@ -17,13 +14,15 @@ import io.flutter.embedding.engine.systemchannels.PlatformChannel
 import io.flutter.plugin.common.EventChannel
 
 /**
- * This class will listen to device orientation changes.
+ * This class listens to display orientation changes.
  *
- * When a new orientation is received, the registered listener will be invoked.
+ * The orientation is determined from the display rotation rather than raw sensor data.
+ * This ensures that the reported orientation respects both the system rotation lock
+ * and Flutter `SystemChrome.setPreferredOrientations`.
  */
 class DeviceOrientationListener(
     private val activity: Activity,
-) : OrientationEventListener(activity, SensorManager.SENSOR_DELAY_NORMAL), EventChannel.StreamHandler {
+) : EventChannel.StreamHandler {
 
     // The event sink that handles device orientation events.
     private var deviceOrientationEventSink: EventChannel.EventSink? = null
@@ -31,13 +30,12 @@ class DeviceOrientationListener(
     // The last received orientation. This is used to prevent duplicate events.
     private var lastOrientation: PlatformChannel.DeviceOrientation? = null
 
-    // Cached auto-rotate setting to avoid querying ContentResolver on every orientation change.
-    private var autoRotateEnabled: Boolean = false
-
-    // Observer for auto-rotate setting changes.
-    private val autoRotateObserver = object : ContentObserver(Handler(Looper.getMainLooper())) {
-        override fun onChange(selfChange: Boolean) {
-            autoRotateEnabled = queryAutoRotateSetting()
+    // Listener for display configuration changes.
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(displayId: Int) {}
+        override fun onDisplayRemoved(displayId: Int) {}
+        override fun onDisplayChanged(displayId: Int) {
+            sendOrientationIfChanged()
         }
     }
 
@@ -50,43 +48,19 @@ class DeviceOrientationListener(
     }
 
     /**
-     * Start listening to device orientation changes.
+     * Start listening to display orientation changes.
      */
     fun start() {
-        autoRotateEnabled = queryAutoRotateSetting()
-        activity.contentResolver.registerContentObserver(
-            Settings.System.getUriFor(Settings.System.ACCELEROMETER_ROTATION),
-            false,
-            autoRotateObserver
-        )
-
-        if (canDetectOrientation()) {
-            enable()
-        }
+        val displayManager = activity.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.registerDisplayListener(displayListener, Handler(Looper.getMainLooper()))
     }
 
     /**
-     * Stop listening to device orientation changes.
+     * Stop listening to display orientation changes.
      */
     fun stop() {
-        disable()
-        activity.contentResolver.unregisterContentObserver(autoRotateObserver)
-    }
-
-    /**
-     * Query the system's auto-rotate setting.
-     * Returns false on failure to safely fall back to display rotation.
-     */
-    private fun queryAutoRotateSetting(): Boolean {
-        return try {
-            Settings.System.getInt(
-                activity.contentResolver,
-                Settings.System.ACCELEROMETER_ROTATION,
-                0
-            ) == 1
-        } catch (e: Exception) {
-            false
-        }
+        val displayManager = activity.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
+        displayManager.unregisterDisplayListener(displayListener)
     }
 
     @Suppress("deprecation")
@@ -111,23 +85,11 @@ class DeviceOrientationListener(
         }
     }
 
-    override fun onOrientationChanged(orientation: Int) {
-        if (orientation == ORIENTATION_UNKNOWN) {
-            return
-        }
-
-        val newOrientation: PlatformChannel.DeviceOrientation
-
-        if (autoRotateEnabled) {
-            newOrientation = when (orientation) {
-                in 45..134 -> PlatformChannel.DeviceOrientation.LANDSCAPE_RIGHT
-                in 135..224 -> PlatformChannel.DeviceOrientation.PORTRAIT_DOWN
-                in 225..314 -> PlatformChannel.DeviceOrientation.LANDSCAPE_LEFT
-                else -> PlatformChannel.DeviceOrientation.PORTRAIT_UP
-            }
-        } else {
-            newOrientation = getUIOrientation()
-        }
+    /**
+     * Check the current display orientation and send an event if it changed.
+     */
+    private fun sendOrientationIfChanged() {
+        val newOrientation = getUIOrientation()
 
         if (newOrientation != lastOrientation) {
             lastOrientation = newOrientation
@@ -138,6 +100,6 @@ class DeviceOrientationListener(
     }
 
     fun getOrientation(): PlatformChannel.DeviceOrientation {
-        return lastOrientation ?: PlatformChannel.DeviceOrientation.PORTRAIT_UP
+        return lastOrientation ?: getUIOrientation()
     }
 }
