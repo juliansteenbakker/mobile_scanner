@@ -12,7 +12,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('onDetect is notified of scanned barcodes', (
-    WidgetTester tester,
+    tester,
   ) async {
     final fakePlatform = FakeMobileScannerPlatform();
 

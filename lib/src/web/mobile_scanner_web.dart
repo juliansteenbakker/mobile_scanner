@@ -245,7 +245,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       final devices = jsDevices.toDart;
 
       final hasVideoInput = devices.any(
-        (MediaDeviceInfo device) => device.kind == 'videoinput',
+        (device) => device.kind == 'videoinput',
       );
 
       if (!hasVideoInput) {
@@ -359,7 +359,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     try {
       _barcodesSubscription = _barcodeReader?.detectBarcodes().listen(
-        (BarcodeCapture barcode) {
+        (barcode) {
           if (_barcodesController.isClosed) {
             return;
           }

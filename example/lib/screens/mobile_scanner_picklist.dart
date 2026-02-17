@@ -28,19 +28,19 @@ class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
     autoStart: false,
   );
 
-  final orientation = DeviceOrientation.portraitUp;
+  final DeviceOrientation orientation = DeviceOrientation.portraitUp;
 
   // On this subscription the barcodes are received.
   StreamSubscription<Object?>? _subscription;
 
   // This boolean indicates if the detection of barcodes is enabled or
   // temporarily suspended.
-  final _scannerEnabled = ValueNotifier(true);
+  final ValueNotifier<bool> _scannerEnabled = ValueNotifier(true);
 
   @override
   void initState() {
     // Lock to portrait (may not work on iPad with multitasking).
-    SystemChrome.setPreferredOrientations([orientation]);
+    unawaited(SystemChrome.setPreferredOrientations([orientation]));
     // Get a stream subscription and listen to received barcodes.
     _subscription = _mobileScannerController.barcodes.listen(_handleBarcodes);
     super.initState();
@@ -55,7 +55,7 @@ class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
     _subscription = null;
     super.dispose();
     // Dispose the controller.
-    _mobileScannerController.dispose();
+    unawaited(_mobileScannerController.dispose());
   }
 
   Barcode? barcode;
@@ -82,7 +82,7 @@ class _MobileScannerPicklistState extends State<MobileScannerPicklist> {
         if (!didPop) {
           return;
         }
-        SystemChrome.setPreferredOrientations(<DeviceOrientation>[]);
+        unawaited(SystemChrome.setPreferredOrientations(<DeviceOrientation>[]));
       },
       child: Scaffold(
         appBar: AppBar(title: const Text('Mobile Scanner with Crosshair')),

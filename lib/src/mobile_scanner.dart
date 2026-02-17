@@ -308,7 +308,7 @@ class _MobileScannerState extends State<MobileScanner>
   Widget build(BuildContext context) {
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
-      builder: (BuildContext context, MobileScannerState value, _) {
+      builder: (context, value, _) {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
 

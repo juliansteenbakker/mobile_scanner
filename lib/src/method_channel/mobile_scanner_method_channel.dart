@@ -118,7 +118,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _deviceOrientationStream ??= deviceOrientationEventChannel
         .receiveBroadcastStream()
         .cast<String>()
-        .map((String orientation) => orientation.parseDeviceOrientation());
+        .map((orientation) => orientation.parseDeviceOrientation());
 
     return _deviceOrientationStream!;
   }

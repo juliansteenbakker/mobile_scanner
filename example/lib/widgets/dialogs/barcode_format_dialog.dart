@@ -41,7 +41,7 @@ class _BarcodeFormatDialogState extends State<BarcodeFormatDialog> {
                 return CheckboxListTile(
                   title: Text(format.name.toUpperCase()),
                   value: tempSelectedFormats.contains(format),
-                  onChanged: (bool? value) {
+                  onChanged: (value) {
                     setState(() {
                       if (value ?? false) {
                         tempSelectedFormats.add(format);

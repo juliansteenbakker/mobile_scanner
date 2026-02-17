@@ -5,7 +5,7 @@ import 'package:mobile_scanner/src/overlay/barcode_painter.dart';
 
 void main() {
   testWidgets('BarcodePainter draws barcode outline and text correctly', (
-    WidgetTester tester,
+    tester,
   ) async {
     final painterKey = UniqueKey();
     final textPainter = TextPainter(

@@ -23,7 +23,7 @@ void main() {
     test('returns set of supported lenses', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -47,7 +47,7 @@ void main() {
     test('returns normal lens only', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -65,7 +65,7 @@ void main() {
     test('returns wide lens only', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -83,7 +83,7 @@ void main() {
     test('returns zoom lens only', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -101,7 +101,7 @@ void main() {
     test('returns empty set when platform returns null', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -118,7 +118,7 @@ void main() {
     test('returns empty set when platform returns empty list', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -135,7 +135,7 @@ void main() {
     test('filters out non-integer values', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -161,7 +161,7 @@ void main() {
     test('returns empty set when all values are non-integers', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -178,7 +178,7 @@ void main() {
     test('handles platform returning -1 (maps to any)', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -196,7 +196,7 @@ void main() {
     test('handles unknown positive integer values (maps to any)', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -214,7 +214,7 @@ void main() {
     test('handles unknown negative integer values (maps to any)', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -234,7 +234,7 @@ void main() {
       () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(platform.methodChannel, (
-              MethodCall methodCall,
+              methodCall,
             ) async {
               if (methodCall.method ==
                   MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -261,7 +261,7 @@ void main() {
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             methodCalls.add(methodCall);
 
@@ -284,7 +284,7 @@ void main() {
     test('returns normal and zoom lenses (common dual camera setup)', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
-            MethodCall methodCall,
+            methodCall,
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -309,7 +309,7 @@ void main() {
       () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(platform.methodChannel, (
-              MethodCall methodCall,
+              methodCall,
             ) async {
               if (methodCall.method ==
                   MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
@@ -336,7 +336,7 @@ void main() {
       () async {
         TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
             .setMockMethodCallHandler(platform.methodChannel, (
-              MethodCall methodCall,
+              methodCall,
             ) async {
               if (methodCall.method ==
                   MethodChannelMobileScanner.kGetSupportedLensesMethodName) {

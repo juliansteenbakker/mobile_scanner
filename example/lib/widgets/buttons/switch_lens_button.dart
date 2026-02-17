@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -34,7 +36,7 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
   @override
   void initState() {
     super.initState();
-    _loadSupportedLenses();
+    unawaited(_loadSupportedLenses());
   }
 
   Future<void> _loadSupportedLenses() async {
