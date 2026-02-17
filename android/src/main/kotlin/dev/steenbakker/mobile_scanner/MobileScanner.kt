@@ -368,6 +368,8 @@ class MobileScanner(
         this.returnImage = returnImage
         this.invertImage = invertImage
 
+        isPaused = false
+        
         if (camera?.cameraInfo != null && preview != null && surfaceProducer != null && !isPaused) {
 
 // TODO: resume here for seamless transition
