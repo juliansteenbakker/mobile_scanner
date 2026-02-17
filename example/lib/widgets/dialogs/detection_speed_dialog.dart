@@ -25,7 +25,7 @@ class DetectionSpeedDialog extends StatelessWidget {
         children: [
           RadioGroup<DetectionSpeed>(
             groupValue: selectedSpeed,
-            onChanged: (DetectionSpeed? value) {
+            onChanged: (value) {
               if (value != null) {
                 Navigator.pop(context, value);
               }

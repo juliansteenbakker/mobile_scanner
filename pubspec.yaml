@@ -28,7 +28,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  very_good_analysis: ">=8.0.0 <11.0.0"
+  very_good_analysis: ">=8.0.0 <10.2.0"
 
 flutter:
   plugin:

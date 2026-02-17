@@ -41,7 +41,7 @@ class _DetectionTimeoutDialogState extends State<DetectionTimeoutDialog> {
               max: 5000,
               divisions: 50,
               label: '$tempTimeout ms',
-              onChanged: (double value) {
+              onChanged: (value) {
                 setState(() {
                   tempTimeout = value.toInt();
                 });

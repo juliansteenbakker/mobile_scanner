@@ -19,7 +19,7 @@ class CameraPreview extends StatelessWidget {
 
     return ValueListenableBuilder<MobileScannerState>(
       valueListenable: controller,
-      builder: (BuildContext context, MobileScannerState value, Widget? child) {
+      builder: (context, value, child) {
         return SizedBox.fromSize(
           size:
               value.deviceOrientation.isLandscape

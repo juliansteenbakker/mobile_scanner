@@ -170,7 +170,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   void _setupListeners() {
     _barcodesSubscription = MobileScannerPlatform.instance.barcodesStream
         .listen(
-          (BarcodeCapture? barcode) {
+          (barcode) {
             if (_barcodesController.isClosed || barcode == null) {
               return;
             }
@@ -189,7 +189,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
 
     _torchStateSubscription = MobileScannerPlatform.instance.torchStateStream
-        .listen((TorchState torchState) {
+        .listen((torchState) {
           if (_isDisposed) {
             return;
           }
@@ -198,7 +198,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         });
 
     _zoomScaleSubscription = MobileScannerPlatform.instance.zoomScaleStateStream
-        .listen((double zoomScale) {
+        .listen((zoomScale) {
           if (_isDisposed) {
             return;
           }
@@ -211,7 +211,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         when defaultTargetPlatform != TargetPlatform.macOS) {
       _deviceOrientationSubscription = implementation
           .deviceOrientationChangedStream
-          .listen((DeviceOrientation orientation) {
+          .listen((orientation) {
             if (_isDisposed) {
               return;
             }

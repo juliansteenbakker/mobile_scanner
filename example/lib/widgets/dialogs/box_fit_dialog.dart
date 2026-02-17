@@ -36,7 +36,7 @@ class _BoxFitDialogState extends State<BoxFitDialog> {
         children: [
           RadioGroup<BoxFit>(
             groupValue: tempBoxFit,
-            onChanged: (BoxFit? value) {
+            onChanged: (value) {
               if (value != null) {
                 setState(() {
                   tempBoxFit = value;
