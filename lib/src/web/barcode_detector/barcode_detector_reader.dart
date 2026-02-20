@@ -139,8 +139,7 @@ final class BarcodeDetectorReader extends BarcodeReader {
   }
 
   NativeBarcodeDetector _buildDetector(List<BarcodeFormat> formats) {
-    final detectAll =
-        formats.isEmpty || formats.contains(BarcodeFormat.all);
+    final detectAll = formats.isEmpty || formats.contains(BarcodeFormat.all);
 
     if (detectAll) {
       return NativeBarcodeDetector();
@@ -298,9 +297,10 @@ final class BarcodeDetectorReader extends BarcodeReader {
     // Mirroring x reverses the clockwise winding order from
     // [TL, TR, BR, BL] to [TR_m, TL_m, BL_m, BR_m].
     // Swap TL↔TR and BL↔BR to restore [TL_m, TR_m, BR_m, BL_m].
-    final reordered = mirrored.length == 4
-        ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
-        : mirrored;
+    final reordered =
+        mirrored.length == 4
+            ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
+            : mirrored;
 
     return Barcode(
       corners: reordered,

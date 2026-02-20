@@ -112,8 +112,7 @@ extension BarcodeFormatToBarcodeDetectorString on BarcodeFormat {
     BarcodeFormat.itf ||
     BarcodeFormat.itf14 ||
     BarcodeFormat.itf2of5 ||
-    BarcodeFormat.itf2of5WithChecksum =>
-      'itf',
+    BarcodeFormat.itf2of5WithChecksum => 'itf',
     BarcodeFormat.pdf417 => 'pdf417',
     BarcodeFormat.qrCode => 'qr_code',
     BarcodeFormat.upcA => 'upc_a',

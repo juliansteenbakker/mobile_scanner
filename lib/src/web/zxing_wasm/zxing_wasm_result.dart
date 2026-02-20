@@ -195,8 +195,7 @@ extension BarcodeFormatToZXingWasmString on BarcodeFormat {
     BarcodeFormat.itf ||
     BarcodeFormat.itf14 ||
     BarcodeFormat.itf2of5 ||
-    BarcodeFormat.itf2of5WithChecksum =>
-      'ITF',
+    BarcodeFormat.itf2of5WithChecksum => 'ITF',
     BarcodeFormat.pdf417 => 'PDF417',
     BarcodeFormat.qrCode => 'QRCode',
     BarcodeFormat.upcA => 'UPC-A',

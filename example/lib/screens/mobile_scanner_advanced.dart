@@ -438,7 +438,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     errorBuilder: (context, error) {
                       debugPrint(
                         '${error.errorDetails?.message}\n'
-                            '${error.errorDetails?.details}',
+                        '${error.errorDetails?.details}',
                       );
                       return ScannerErrorWidget(error: error);
                     },
