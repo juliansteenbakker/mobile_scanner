@@ -17,22 +17,38 @@ external ZXingWasmModule get zxingWasmModule;
 /// The `ZXingWASM` global object exposed by the IIFE reader build.
 @JS()
 extension type ZXingWasmModule(JSObject _) implements JSObject {
-  /// Detect barcodes in [imageData].
+  /// Detect barcodes in [imageData] captured from a canvas.
   ///
   /// Returns a [JSPromise] that resolves to a list of [ZXingWasmReadResult]s.
-  external JSPromise<JSArray<ZXingWasmReadResult>> readBarcodes(
+  external JSPromise<JSArray<ZXingWasmReadResult>> readBarcodesFromImageData(
     web.ImageData imageData,
     ZXingWasmReaderOptions options,
   );
 }
 
-/// Options passed to [ZXingWasmModule.readBarcodes].
+/// Options passed to [ZXingWasmModule.readBarcodesFromImageData].
 @JS()
 extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
-  /// Creates reader options.
+  /// Creates reader options that detect all supported barcode formats.
   external factory ZXingWasmReaderOptions({
-    /// Barcode format filter. Pass `null` or omit to detect all formats.
-    JSArray<JSString>? formats,
+    /// Spend more time to improve detection accuracy. Defaults to `true`.
+    bool tryHarder,
+
+    /// Also try 90°/180°/270° rotations. Defaults to `true`.
+    bool tryRotate,
+
+    /// Also try inverted/reversed reflectance. Defaults to `false`.
+    bool tryInvert,
+  });
+
+  /// Creates reader options restricted to the given [formats].
+  ///
+  /// Pass a non-empty list of format strings (e.g. `['QRCode', 'EAN-13']`).
+  /// Passing an empty list or omitting formats detects all supported formats.
+  @JS('ZXingWasmReaderOptions')
+  external factory ZXingWasmReaderOptions.withFormats({
+    /// Barcode format filter.
+    JSArray<JSString> formats,
 
     /// Spend more time to improve detection accuracy. Defaults to `true`.
     bool tryHarder,
@@ -45,7 +61,8 @@ extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
   });
 }
 
-/// A single barcode result returned by [ZXingWasmModule.readBarcodes].
+/// A single barcode result returned by
+/// [ZXingWasmModule.readBarcodesFromImageData].
 @JS()
 extension type ZXingWasmReadResult(JSObject _) implements JSObject {
   /// Decoded text content.

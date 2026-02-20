@@ -93,12 +93,21 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     if (kIsWeb) {
       MobileScannerPlatform.instance.setWebBarcodeReader(selectedWebReader);
     }
-    unawaited(controller!.start());
+    unawaited(_start());
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     super.dispose();
+    unawaited(_stop());
+  }
+
+  Future<void> _start() async {
+    await controller!.start();
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _stop() async {
     await controller?.dispose();
     controller = null;
   }
@@ -225,6 +234,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
 
     // Start scanning again
     await controller?.start();
+    if (mounted) setState(() {});
   }
 
   Future<void> _onLensTypeChanged(CameraLensType newLensType) async {
@@ -426,6 +436,10 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                     tapToFocus: true,
                     controller: controller,
                     errorBuilder: (context, error) {
+                      debugPrint(
+                        '${error.errorDetails?.message}\n'
+                            '${error.errorDetails?.details}',
+                      );
                       return ScannerErrorWidget(error: error);
                     },
                     fit: boxFit,

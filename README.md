@@ -94,6 +94,47 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 As of version 5.0.0 adding the barcode scanning library script to the `index.html` is no longer required,
 as the script is automatically loaded on first use.
 
+#### Detection backends
+
+The web implementation supports three barcode detection backends. The active backend is selected
+via `MobileScannerPlatform.instance.setWebBarcodeReader(reader)` before starting the scanner.
+
+##### Auto (default)
+
+Uses the native `BarcodeDetector` API when the browser supports it, and falls back to
+`zxing-wasm` otherwise. This is the recommended setting for most apps.
+
+##### Native BarcodeDetector
+
+Uses the [W3C Shape Detection API](https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector),
+which is built into the browser. No external library is loaded. This is the fastest option because
+detection runs natively without any JavaScript or WebAssembly overhead.
+
+Available in Chrome 83+, Edge 83+, and Safari 17+. Not supported in Firefox.
+
+##### zxing-wasm
+
+Uses [zxing-wasm](https://github.com/Sec-ant/zxing-wasm), a WebAssembly port of the ZXing C++
+library. The WASM binary (~2 MB) is loaded from the jsDelivr CDN on first use. Offers good
+performance and works in all modern browsers, including Firefox.
+
+##### ZXing-js (legacy)
+
+Uses the [ZXing JavaScript library](https://github.com/zxing-js/library), a pure-JavaScript port
+of ZXing. Loaded from the unpkg CDN. This backend is slower than the WASM alternative and is
+provided for backward compatibility and comparison purposes only.
+
+#### Backend comparison
+
+| Feature                  | Native BarcodeDetector     | zxing-wasm                 | ZXing-js (legacy)          |
+|--------------------------|----------------------------|----------------------------|----------------------------|
+| **Performance**          | Fastest (native)           | Fast (WASM)                | Slow (pure JS)             |
+| **Firefox**              | :x:                        | :heavy_check_mark:         | :heavy_check_mark:         |
+| **Chrome / Edge**        | :heavy_check_mark:         | :heavy_check_mark:         | :heavy_check_mark:         |
+| **Safari**               | 17+                        | :heavy_check_mark:         | :heavy_check_mark:         |
+| **External dependency**  | None                       | ~2 MB WASM (CDN)           | ~600 KB JS (CDN)           |
+| **Supported formats**    | Browser-dependent          | Most 1D and 2D formats     | Most 1D and 2D formats     |
+
 #### Providing a mirror for the barcode scanning library
 
 If a different mirror is needed to load the barcode scanning library,
@@ -283,4 +324,12 @@ This means arbitrary binary payloads that happen to contain bytes in the `0x80`â
 
 #### Android and Web
 
-`rawBytes` is fully supported for all formats and encoding modes via MLKit (Android) and the ZXing-based library (Web).
+On Android, `rawBytes` is fully supported for all formats and encoding modes via MLKit.
+
+On Web, support depends on the active detection backend:
+
+| Backend                | `rawBytes` support                                      |
+|------------------------|---------------------------------------------------------|
+| Native BarcodeDetector | :x: Not available (browser API returns decoded text only) |
+| zxing-wasm             | :heavy_check_mark: Fully supported                      |
+| ZXing-js (legacy)      | :heavy_check_mark: Fully supported                      |

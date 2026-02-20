@@ -65,6 +65,9 @@ final class ZXingBarcodeReader extends BarcodeReader {
   web.MediaStream? get videoStream => _reader?.stream;
 
   @override
+  String get scriptId => 'mobile-scanner-zxing-js';
+
+  @override
   String get scriptUrl => 'https://unpkg.com/@zxing/library@0.21.3';
 
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
@@ -177,7 +180,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
     final facingMode = tracks.first.getSettings().facingModeNullable?.toDart;
 
     // Mirror when facingMode is 'user' (front camera on mobile), or when
-    // facingMode is null (desktop — cameras always face the user).
+    // facingMode is null (desktop cameras always face the user).
     return facingMode == 'user' || facingMode == null;
   }
 

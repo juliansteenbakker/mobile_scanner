@@ -174,7 +174,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Apply focus, exposure and white-balance constraints to [track] if the
   /// browser supports them (part of the Image Capture API).
   ///
-  /// Silently ignores any errors — these constraints are best-effort.
+  /// Silently ignores any errors. These constraints are best-effort.
   Future<void> _applyFocusConstraints(MediaStreamTrack track) async {
     try {
       final caps = track.getCapabilities();
@@ -228,7 +228,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     try {
       window.localStorage.setItem(_kPreferredDeviceIdKey, deviceId);
     } on Object catch (_) {
-      // Ignore — e.g. Safari private browsing mode disables storage.
+      // Ignore, e.g. Safari private browsing mode disables storage.
     }
   }
 

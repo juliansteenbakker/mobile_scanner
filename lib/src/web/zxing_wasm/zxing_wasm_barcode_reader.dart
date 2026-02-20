@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:js_interop';
 import 'dart:math' as math;
-import 'dart:ui';
 
+import 'package:flutter/material.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
@@ -13,17 +13,29 @@ import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_result.dart';
 import 'package:web/web.dart' as web;
 
+/// Canvas 2D context creation attributes.
+///
+/// Setting `willReadFrequently` to `true` tells the browser to optimise the
+/// backing store for repeated `getImageData` calls, avoiding GPU readback.
+@JS()
+extension type _CanvasContextAttributes._(JSObject _) implements JSObject {
+  external factory _CanvasContextAttributes({bool willReadFrequently});
+}
+
 /// A barcode reader that uses zxing-wasm (zxing-cpp compiled to WebAssembly).
 ///
 /// Frames are extracted by drawing the video element onto an off-screen canvas
-/// on each tick, then passed to [ZXingWasmModule.readBarcodes].
+/// on each tick, then passed to `ZXingWasmModule.readBarcodesFromImageData`.
 ///
 /// The IIFE build is loaded from jsDelivr. Once loaded it exposes
 /// `window.ZXingWASM`; the WASM binary is lazy-fetched on the first call to
-/// `readBarcodes`.
+/// `readBarcodesFromImageData`.
 final class ZXingWasmBarcodeReader extends BarcodeReader {
   /// Construct a new [ZXingWasmBarcodeReader] instance.
   ZXingWasmBarcodeReader();
+
+  @override
+  String get scriptId => 'mobile-scanner-zxing-wasm';
 
   @override
   String get scriptUrl =>
@@ -91,8 +103,15 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     await videoElement.play().toDart;
 
     // Off-screen canvas used to extract ImageData from each video frame.
+    // willReadFrequently: true tells the browser to optimise for repeated
+    // getImageData calls, avoiding the GPU-readback warning.
     _canvas = web.HTMLCanvasElement();
-    _ctx = _canvas!.getContext('2d') as web.CanvasRenderingContext2D?;
+    _ctx =
+        _canvas!.getContext(
+              '2d',
+              _CanvasContextAttributes(willReadFrequently: true),
+            )
+            as web.CanvasRenderingContext2D?;
 
     final settings = _mediaTrackConstraintsDelegate.getSettings(videoStream);
     if (settings != null) {
@@ -192,7 +211,7 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
 
     final jsResults =
         await zxingWasmModule
-            .readBarcodes(imageData, _buildReaderOptions())
+            .readBarcodesFromImageData(imageData, _buildReaderOptions())
             .toDart;
 
     final results = jsResults.toDart;
@@ -206,7 +225,8 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
       var barcode = result.toBarcode;
 
       // Scan-window check uses raw camera coordinates (percentage space),
-      // before mirroring — matching the percentage rect from the Flutter layer.
+      // before mirroring, matching the percentage rect from the Flutter
+      // layer.
       if (!_isInsideScanWindow(barcode)) continue;
 
       // Mirror corners for display after the scan-window check.
@@ -223,21 +243,27 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
   }
 
   ZXingWasmReaderOptions _buildReaderOptions() {
-    final detectAll =
-        _formats.isEmpty || _formats.contains(BarcodeFormat.all);
-
-    JSArray<JSString>? formatFilter;
+    final detectAll = _formats.isEmpty || _formats.contains(BarcodeFormat.all);
 
     if (!detectAll) {
-      final formats = <JSString>[
+      final formatStrs = <JSString>[
         for (final f in _formats)
           if (f.toZXingWasmString case final s?) s.toJS,
       ];
-      if (formats.isNotEmpty) formatFilter = formats.toJS;
+
+      if (formatStrs.isNotEmpty) {
+        return ZXingWasmReaderOptions.withFormats(
+          formats: formatStrs.toJS,
+          tryHarder: true,
+          tryRotate: true,
+          tryInvert: false,
+        );
+      }
     }
 
+    // Omit the formats key entirely so zxing-wasm detects all formats.
+    // Passing formats: null causes a crash inside the WASM module.
     return ZXingWasmReaderOptions(
-      formats: formatFilter,
       tryHarder: true,
       tryRotate: true,
       tryInvert: false,
@@ -248,7 +274,7 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
   /// in camera texture space) lies within the scan window.
   ///
   /// The scan window from the Flutter layer is already a normalized percentage
-  /// [Rect] (values in [0, 1]) relative to the camera texture — produced by
+  /// [Rect] (values in [0, 1]) relative to the camera texture, produced by
   /// `ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
   bool _isInsideScanWindow(Barcode barcode) {
     final window = _scanWindow;
@@ -300,9 +326,10 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     // Mirroring x reverses the clockwise winding order from
     // [TL, TR, BR, BL] to [TR_m, TL_m, BL_m, BR_m].
     // Swap TL↔TR and BL↔BR to restore [TL_m, TR_m, BR_m, BL_m].
-    final reordered = mirrored.length == 4
-        ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
-        : mirrored;
+    final reordered =
+        mirrored.length == 4
+            ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
+            : mirrored;
 
     return Barcode(
       corners: reordered,

@@ -18,7 +18,7 @@ import 'package:web/web.dart' as web;
 /// (part of the W3C Shape Detection API).
 ///
 /// Supported browsers: Chrome / Edge 83+, Safari 17+.
-/// Firefox does not support this API — use `ZXingWasmBarcodeReader` as a
+/// Firefox does not support this API, use `ZXingWasmBarcodeReader` as a
 /// fallback.
 final class BarcodeDetectorReader extends BarcodeReader {
   /// Construct a new [BarcodeDetectorReader] instance.
