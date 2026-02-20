@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:js_interop';
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -27,6 +28,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @visibleForTesting
   static const String kNoCodeDetectedErrorMessage =
       'No MultiFormat Readers were able to detect the code.';
+
+  /// The scan window as a normalized [Rect] (values in [0, 1]) relative to the
+  /// camera texture. Barcodes whose bounding box does not overlap this rect are
+  /// filtered out.
+  Rect? _scanWindow;
 
   /// The listener for media track settings changes.
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
@@ -105,6 +111,58 @@ final class ZXingBarcodeReader extends BarcodeReader {
     }
   }
 
+  @override
+  void updateScanWindow(Rect? window) {
+    _scanWindow = window;
+  }
+
+  /// Returns true if the bounding box of [barcode] (in raw camera pixel
+  /// coordinates) is fully contained within the current scan window.
+  ///
+  /// The scan window received from the Flutter layer is a normalized [Rect]
+  /// (values in the range [0, 1]) relative to the camera texture, produced by
+  /// [ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage].
+  /// To match that space, the barcode corners are normalized by dividing by the
+  /// video dimensions before comparing.
+  ///
+  /// This check must be performed on the **raw** (pre-mirror) barcode corners
+  /// so that the coordinate spaces align.
+  ///
+  /// Always returns true when no scan window is set or dimensions are unknown.
+  bool _isInsideScanWindow(Barcode barcode) {
+    final window = _scanWindow;
+
+    if (window == null) {
+      return true;
+    }
+
+    final corners = barcode.corners;
+
+    if (corners.length != 4) {
+      return true;
+    }
+
+    final vw = videoSize.width;
+    final vh = videoSize.height;
+
+    if (vw <= 0 || vh <= 0) {
+      return true;
+    }
+
+    // Normalize corner coordinates to [0, 1] in camera texture space.
+    final minX = corners.map((c) => c.dx).reduce(math.min) / vw;
+    final maxX = corners.map((c) => c.dx).reduce(math.max) / vw;
+    final minY = corners.map((c) => c.dy).reduce(math.min) / vh;
+    final maxY = corners.map((c) => c.dy).reduce(math.max) / vh;
+    final barcodeRect = Rect.fromLTRB(minX, minY, maxX, maxY);
+
+    // Accept only when the full barcode bounding box is inside the scan window.
+    return barcodeRect.left >= window.left &&
+        barcodeRect.top >= window.top &&
+        barcodeRect.right <= window.right &&
+        barcodeRect.bottom <= window.bottom;
+  }
+
   /// Returns true if the video preview is currently mirrored horizontally,
   /// meaning barcode corner coordinates must be flipped to match.
   ///
@@ -181,6 +239,14 @@ final class ZXingBarcodeReader extends BarcodeReader {
             if (result != null) {
               var barcode = result.toBarcode;
 
+              // Check the scan window using raw camera coordinates (before
+              // mirroring), because the scan window percentages are also in
+              // raw camera space.
+              if (!_isInsideScanWindow(barcode)) {
+                return;
+              }
+
+              // Mirror corners for display after the scan window check.
               if (_shouldMirrorX()) {
                 barcode = _mirrorBarcodeX(barcode, videoSize.width);
               }
@@ -247,6 +313,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
+    _scanWindow = null;
     _reader?.stopContinuousDecode.callAsFunction(_reader);
     _reader?.reset.callAsFunction(_reader);
     _reader = null;
