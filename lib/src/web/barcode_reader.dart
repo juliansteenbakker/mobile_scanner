@@ -162,4 +162,12 @@ abstract class BarcodeReader {
   Future<void> stop() {
     throw UnimplementedError('stop() has not been implemented.');
   }
+
+  /// Update the scan window to [window].
+  ///
+  /// Barcodes detected outside the [window] rect (in widget coordinates)
+  /// are ignored. Pass null to disable scan window filtering.
+  void updateScanWindow(Rect? window) {
+    // No-op by default.
+  }
 }
