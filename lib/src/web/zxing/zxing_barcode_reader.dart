@@ -121,7 +121,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   ///
   /// The scan window received from the Flutter layer is a normalized [Rect]
   /// (values in the range [0, 1]) relative to the camera texture, produced by
-  /// [ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage].
+  /// `ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
   /// To match that space, the barcode corners are normalized by dividing by the
   /// video dimensions before comparing.
   ///
