@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/enums/web_barcode_reader.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
@@ -74,6 +75,16 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   ///
   /// This is only supported on the web.
   void setBarcodeLibraryScriptUrl(String scriptUrl) {}
+
+  /// Set the preferred barcode detection backend for the web platform.
+  ///
+  /// This is only supported on the web. On other platforms this is a no-op.
+  /// Must be called before [start].
+  void setWebBarcodeReader(WebBarcodeReader reader) {}
+
+  /// The barcode reader that is currently active on web,
+  /// or `null` when no scanner is running or the platform is not web.
+  WebBarcodeReader? get activeWebReader => null;
 
   /// Set the zoom scale of the camera.
   ///

@@ -4,39 +4,37 @@ import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/barcode_type.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
+import 'package:mobile_scanner/src/web/barcode_detector/barcode_detector_js.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
-import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_result.dart';
 import 'package:web/web.dart' as web;
 
-/// A barcode reader that uses zxing-wasm (zxing-cpp compiled to WebAssembly).
+/// A barcode reader that uses the native browser BarcodeDetector API
+/// (part of the W3C Shape Detection API).
 ///
-/// Frames are extracted by drawing the video element onto an off-screen canvas
-/// on each tick, then passed to [ZXingWasmModule.readBarcodes].
-///
-/// The IIFE build is loaded from jsDelivr. Once loaded it exposes
-/// `window.ZXingWASM`; the WASM binary is lazy-fetched on the first call to
-/// `readBarcodes`.
-final class ZXingWasmBarcodeReader extends BarcodeReader {
-  /// Construct a new [ZXingWasmBarcodeReader] instance.
-  ZXingWasmBarcodeReader();
+/// Supported browsers: Chrome / Edge 83+, Safari 17+.
+/// Firefox does not support this API — use `ZXingWasmBarcodeReader` as a
+/// fallback.
+final class BarcodeDetectorReader extends BarcodeReader {
+  /// Construct a new [BarcodeDetectorReader] instance.
+  BarcodeDetectorReader();
 
-  @override
-  String get scriptUrl =>
-      'https://cdn.jsdelivr.net/npm/zxing-wasm@2/dist/iife/reader/index.js';
+  /// Returns `true` when the BarcodeDetector API is available and reports at
+  /// least one supported format.
+  static Future<bool> isSupported() => isBarcodeDetectorSupported();
 
   web.HTMLVideoElement? _videoElement;
   web.MediaStream? _videoStream;
-  web.HTMLCanvasElement? _canvas;
-  web.CanvasRenderingContext2D? _ctx;
+
+  NativeBarcodeDetector? _detector;
 
   Rect? _scanWindow;
   int _timeBetweenScansMs = 1000;
-  List<BarcodeFormat> _formats = const [];
 
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
 
@@ -45,8 +43,7 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
 
   Timer? _decodeTimer;
 
-  // Guard against overlapping decode calls when a frame takes longer to
-  // process than the configured interval.
+  // Guard against overlapping detect() calls.
   bool _isDecoding = false;
 
   @override
@@ -72,6 +69,10 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     _onMediaTrackSettingsChanged ??= listener;
   }
 
+  /// BarcodeDetector is a native browser API, no external script to load.
+  @override
+  Future<void> maybeLoadLibrary({String? alternateScriptUrl}) async {}
+
   @override
   Future<void> start(
     StartOptions options, {
@@ -81,18 +82,17 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     _videoElement = videoElement;
     _videoStream = videoStream;
     _timeBetweenScansMs = options.detectionTimeoutMs;
-    _formats = [
+
+    final formats = [
       for (final f in options.formats)
         if (f != BarcodeFormat.unknown) f,
     ];
 
+    _detector = _buildDetector(formats);
+
     // Attach the stream to the video element and start playback.
     videoElement.srcObject = videoStream;
     await videoElement.play().toDart;
-
-    // Off-screen canvas used to extract ImageData from each video frame.
-    _canvas = web.HTMLCanvasElement();
-    _ctx = _canvas!.getContext('2d') as web.CanvasRenderingContext2D?;
 
     final settings = _mediaTrackConstraintsDelegate.getSettings(videoStream);
     if (settings != null) {
@@ -135,15 +135,36 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     _scanWindow = null;
     _videoElement = null;
     _videoStream = null;
-    _canvas = null;
-    _ctx = null;
+    _detector = null;
+  }
+
+  NativeBarcodeDetector _buildDetector(List<BarcodeFormat> formats) {
+    final detectAll =
+        formats.isEmpty || formats.contains(BarcodeFormat.all);
+
+    if (detectAll) {
+      return NativeBarcodeDetector();
+    }
+
+    final strs = [
+      for (final f in formats)
+        if (f.toBarcodeDetectorString case final s?) s,
+    ];
+
+    if (strs.isEmpty) {
+      return NativeBarcodeDetector();
+    }
+
+    return NativeBarcodeDetector.withOptions(
+      BarcodeDetectorInit(
+        formats: strs.map((s) => s.toJS).toList().toJS,
+      ),
+    );
   }
 
   void _startDecodeLoop(StreamController<BarcodeCapture> controller) {
     _decodeTimer?.cancel();
 
-    // For unrestricted / zero-timeout mode, clamp to ~60 fps so we don't spin
-    // the timer as fast as the event loop allows.
     final interval = Duration(
       milliseconds: _timeBetweenScansMs > 0 ? _timeBetweenScansMs : 16,
     );
@@ -166,12 +187,13 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     _decodeTimer = null;
   }
 
-  Future<void> _decodeFrame(StreamController<BarcodeCapture> controller) async {
+  Future<void> _decodeFrame(
+    StreamController<BarcodeCapture> controller,
+  ) async {
     final video = _videoElement;
-    final canvas = _canvas;
-    final ctx = _ctx;
+    final detector = _detector;
 
-    if (video == null || canvas == null || ctx == null) return;
+    if (video == null || detector == null) return;
     if (controller.isClosed) return;
     if (video.paused) return;
 
@@ -179,34 +201,17 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     final vh = video.videoHeight;
     if (vw == 0 || vh == 0) return;
 
-    // Keep the canvas in sync with the video resolution.
-    if (canvas.width != vw || canvas.height != vh) {
-      canvas
-        ..width = vw
-        ..height = vh;
-    }
-
-    // Capture the current video frame.
-    ctx.drawImage(video, 0, 0);
-    final imageData = ctx.getImageData(0, 0, vw, vh);
-
-    final jsResults =
-        await zxingWasmModule
-            .readBarcodes(imageData, _buildReaderOptions())
-            .toDart;
-
+    final jsResults = await detector.detect(video).toDart;
     final results = jsResults.toDart;
     if (results.isEmpty || controller.isClosed) return;
 
     final barcodes = <Barcode>[];
 
     for (final result in results) {
-      if (!result.isValid) continue;
+      var barcode = _resultToBarcode(result);
 
-      var barcode = result.toBarcode;
-
-      // Scan-window check uses raw camera coordinates (percentage space),
-      // before mirroring — matching the percentage rect from the Flutter layer.
+      // Scan-window check in raw camera coordinates (percentage space),
+      // before mirroring, matching the percentage rect from the Flutter layer.
       if (!_isInsideScanWindow(barcode)) continue;
 
       // Mirror corners for display after the scan-window check.
@@ -222,34 +227,32 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
     controller.add(BarcodeCapture(barcodes: barcodes, size: videoSize));
   }
 
-  ZXingWasmReaderOptions _buildReaderOptions() {
-    final detectAll =
-        _formats.isEmpty || _formats.contains(BarcodeFormat.all);
+  Barcode _resultToBarcode(DetectedBarcode result) {
+    final pts = result.cornerPoints.toDart;
+    final corners = [for (final p in pts) Offset(p.x, p.y)];
 
-    JSArray<JSString>? formatFilter;
+    return Barcode(
+      corners: corners,
+      format: result.format.toBarcodeFormat,
+      displayValue: result.rawValue,
+      rawValue: result.rawValue,
+      size: _computeSize(corners),
+      type: BarcodeType.text,
+    );
+  }
 
-    if (!detectAll) {
-      final formats = <JSString>[
-        for (final f in _formats)
-          if (f.toZXingWasmString case final s?) s.toJS,
-      ];
-      if (formats.isNotEmpty) formatFilter = formats.toJS;
-    }
-
-    return ZXingWasmReaderOptions(
-      formats: formatFilter,
-      tryHarder: true,
-      tryRotate: true,
-      tryInvert: false,
+  Size _computeSize(List<Offset> corners) {
+    if (corners.length != 4) return Size.zero;
+    final xs = corners.map((c) => c.dx);
+    final ys = corners.map((c) => c.dy);
+    return Size(
+      xs.reduce((a, b) => a > b ? a : b) - xs.reduce((a, b) => a < b ? a : b),
+      ys.reduce((a, b) => a > b ? a : b) - ys.reduce((a, b) => a < b ? a : b),
     );
   }
 
   /// Returns true if the full bounding box of [barcode] (normalized to [0, 1]
   /// in camera texture space) lies within the scan window.
-  ///
-  /// The scan window from the Flutter layer is already a normalized percentage
-  /// [Rect] (values in [0, 1]) relative to the camera texture — produced by
-  /// `ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
   bool _isInsideScanWindow(Barcode barcode) {
     final window = _scanWindow;
     if (window == null) return true;
@@ -276,15 +279,10 @@ final class ZXingWasmBarcodeReader extends BarcodeReader {
   /// Returns true when the video preview is displayed mirrored (CSS
   /// `scaleX(-1)`), meaning the barcode corners must be flipped to match the
   /// visual position.
-  ///
-  /// Must stay in sync with the logic in `_maybeFlipVideoPreview` in
-  /// `MobileScannerWeb`.
   bool _shouldMirrorX() {
     final tracks = _videoStream?.getVideoTracks().toDart;
     if (tracks == null || tracks.isEmpty) return false;
     final facingMode = tracks.first.getSettings().facingModeNullable?.toDart;
-    // Mirror for front camera on mobile, and always on desktop (facingMode is
-    // null on desktop since cameras have no hardware facing mode).
     return facingMode == 'user' || facingMode == null;
   }
 

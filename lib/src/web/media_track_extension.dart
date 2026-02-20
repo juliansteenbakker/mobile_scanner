@@ -5,6 +5,7 @@ import 'package:web/web.dart';
 /// to handle non-secure contexts (HTTP) where [Navigator.mediaDevices]
 /// is undefined.
 extension NullableNavigatorMediaDevices on Navigator {
+  /// The `mediaDevices` of the source device.
   @JS('mediaDevices')
   external MediaDevices? get mediaDevicesNullable;
 }

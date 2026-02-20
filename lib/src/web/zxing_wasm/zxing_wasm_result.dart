@@ -29,6 +29,7 @@ extension type ZXingWasmModule(JSObject _) implements JSObject {
 /// Options passed to [ZXingWasmModule.readBarcodes].
 @JS()
 extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
+  /// Creates reader options.
   external factory ZXingWasmReaderOptions({
     /// Barcode format filter. Pass `null` or omit to detect all formats.
     JSArray<JSString>? formats,
@@ -57,28 +58,41 @@ extension type ZXingWasmReadResult(JSObject _) implements JSObject {
   external JSUint8Array? get bytes;
 
   /// Corner positions in image pixel coordinates.
-  external _ZXingWasmPosition get position;
+  external ZXingWasmPosition get position;
 
   /// Whether the result passed all integrity checks (checksum, etc.).
   external bool get isValid;
 }
 
+/// Corner positions of a detected barcode in image pixel coordinates.
 @JS()
-extension type _ZXingWasmPosition(JSObject _) implements JSObject {
-  external _ZXingWasmPoint? get topLeft;
-  external _ZXingWasmPoint? get topRight;
-  external _ZXingWasmPoint? get bottomRight;
-  external _ZXingWasmPoint? get bottomLeft;
+extension type ZXingWasmPosition(JSObject _) implements JSObject {
+  /// Top-left corner, or `null` if not available.
+  external ZXingWasmPoint? get topLeft;
+
+  /// Top-right corner, or `null` if not available.
+  external ZXingWasmPoint? get topRight;
+
+  /// Bottom-right corner, or `null` if not available.
+  external ZXingWasmPoint? get bottomRight;
+
+  /// Bottom-left corner, or `null` if not available.
+  external ZXingWasmPoint? get bottomLeft;
 }
 
+/// A 2-D point in image pixel coordinates, used for barcode corner positions.
 @JS()
-extension type _ZXingWasmPoint(JSObject _) implements JSObject {
+extension type ZXingWasmPoint(JSObject _) implements JSObject {
+  /// Horizontal coordinate in image pixel space.
   external double get x;
+
+  /// Vertical coordinate in image pixel space.
   external double get y;
 }
 
 /// Converts a [ZXingWasmReadResult] to a [Barcode].
 extension ZXingWasmReadResultToBarcode on ZXingWasmReadResult {
+  /// Converts this result to a [Barcode].
   Barcode get toBarcode {
     final pos = position;
     final corners = <Offset>[];
@@ -127,6 +141,8 @@ extension ZXingWasmReadResultToBarcode on ZXingWasmReadResult {
 
 /// Maps a zxing-wasm format string to [BarcodeFormat].
 extension ZXingWasmFormatStringToBarcodeFormat on String {
+  /// Converts a zxing-wasm format string (e.g. `'QRCode'`) to a
+  /// [BarcodeFormat] enum value.
   BarcodeFormat get toBarcodeFormat => switch (this) {
     'Aztec' => BarcodeFormat.aztec,
     'Codabar' => BarcodeFormat.codabar,
@@ -148,6 +164,8 @@ extension ZXingWasmFormatStringToBarcodeFormat on String {
 /// Maps a [BarcodeFormat] to a zxing-wasm format string, or `null` if the
 /// format is not supported by zxing-wasm.
 extension BarcodeFormatToZXingWasmString on BarcodeFormat {
+  /// Converts a [BarcodeFormat] to a zxing-wasm format string
+  /// (e.g. `'QRCode'`), or `null` if the format is not supported.
   String? get toZXingWasmString => switch (this) {
     BarcodeFormat.aztec => 'Aztec',
     BarcodeFormat.codabar => 'Codabar',
