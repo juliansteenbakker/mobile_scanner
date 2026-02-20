@@ -165,8 +165,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     // camera direction instead.
     final facingMode = tracks.first.getSettings().facingModeNullable?.toDart;
 
-    if (facingMode == 'user' ||
-        (facingMode == null)) {
+    if (facingMode == 'user' || (facingMode == null)) {
       videoElement.style.transform = 'scaleX(-1)';
     }
   }
@@ -182,8 +181,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       final constraints = MediaTrackConstraints();
 
-      final focusModes =
-          caps.focusMode.toDart.map((e) => e.toDart).toList();
+      final focusModes = caps.focusMode.toDart.map((e) => e.toDart).toList();
       if (focusModes.contains('continuous')) {
         constraints.focusMode = 'continuous'.toJS;
         hasConstraints = true;
@@ -253,7 +251,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Throws a [MobileScannerException] if the permission was denied,
   /// or if using a video stream, with the given set of constraints, is
   /// unsupported.
-  Future<MediaStream> _prepareVideoStream(CameraFacing cameraDirection) async {
+  Future<MediaStream> _prepareVideoStream(
+    CameraFacing cameraDirection, {
+    Size? cameraResolution,
+  }) async {
     final mediaDevices = window.navigator.mediaDevicesNullable;
 
     if (mediaDevices == null) {
@@ -268,9 +269,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     final capabilities = mediaDevices.getSupportedConstraints();
 
-    // Request high resolution for better barcode detection.
-    final width = ConstrainULongRange(ideal: 1920);
-    final height = ConstrainULongRange(ideal: 1080);
+    final width = ConstrainULongRange(
+      ideal: cameraResolution?.width.toInt() ?? 1920,
+    );
+    final height = ConstrainULongRange(
+      ideal: cameraResolution?.height.toInt() ?? 1080,
+    );
 
     var useStoredDevice = false;
     final MediaStreamConstraints constraints;
@@ -282,17 +286,18 @@ class MobileScannerWeb extends MobileScannerPlatform {
       useStoredDevice =
           storedDeviceId != null && await _isValidDeviceId(storedDeviceId);
 
-      constraints = useStoredDevice
-          ? MediaStreamConstraints(
-              video: MediaTrackConstraintSet(
-                deviceId: storedDeviceId.toJS,
-                width: width,
-                height: height,
-              ),
-            )
-          : MediaStreamConstraints(
-              video: MediaTrackConstraintSet(width: width, height: height),
-            );
+      constraints =
+          useStoredDevice
+              ? MediaStreamConstraints(
+                video: MediaTrackConstraintSet(
+                  deviceId: storedDeviceId.toJS,
+                  width: width,
+                  height: height,
+                ),
+              )
+              : MediaStreamConstraints(
+                video: MediaTrackConstraintSet(width: width, height: height),
+              );
     } else {
       // facingMode is supported (mobile). Always use it so that switching
       // between front and back cameras works correctly.
@@ -309,8 +314,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     try {
       // Retrieving the media devices requests the camera permission.
-      final videoStream =
-          await mediaDevices.getUserMedia(constraints).toDart;
+      final videoStream = await mediaDevices.getUserMedia(constraints).toDart;
 
       // Apply focus, exposure and white-balance constraints if supported.
       final videoTrack = videoStream.getVideoTracks().toDart.firstOrNull;
@@ -485,7 +489,10 @@ class MobileScannerWeb extends MobileScannerPlatform {
     );
 
     // Request camera permissions and prepare the video stream.
-    final videoStream = await _prepareVideoStream(startOptions.cameraDirection);
+    final videoStream = await _prepareVideoStream(
+      startOptions.cameraDirection,
+      cameraResolution: startOptions.cameraResolution,
+    );
 
     try {
       // Clear the existing barcodes.

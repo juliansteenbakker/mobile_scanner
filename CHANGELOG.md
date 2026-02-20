@@ -4,10 +4,9 @@
 
 * [Web] The preferred camera device ID is now persisted in localStorage and reused on the next start.
 * [Web] Focus, exposure, and white-balance constraints are now applied automatically when supported by the browser (Image Capture API).
-* [Web] The camera now requests 1920×1080 as the ideal resolution for improved barcode detection.
+* [Web] The camera now uses [StartOptions().cameraResolution], and falls back to 1920×1080 as the ideal resolution for improved barcode detection.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
 * [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
-* Fixed the scan window overlay rendering on Flutter web (the transparent cutout was not rendering correctly).
 
 ## 7.2.0
 

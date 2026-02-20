@@ -124,7 +124,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   ///
   /// The scan window received from the Flutter layer is a normalized [Rect]
   /// (values in the range [0, 1]) relative to the camera texture, produced by
-  /// `canWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
+  /// `ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
   /// To match that space, the barcode corners are normalized by dividing by the
   /// video dimensions before comparing.
   ///
@@ -194,16 +194,16 @@ final class ZXingBarcodeReader extends BarcodeReader {
     }
 
     // Mirror each x-coordinate.
-    final mirrored = corners
-        .map((c) => Offset(videoWidth - c.dx, c.dy))
-        .toList();
+    final mirrored =
+        corners.map((c) => Offset(videoWidth - c.dx, c.dy)).toList();
 
     // Mirroring x reverses the clockwise winding order from
     // [TL, TR, BR, BL] to [TR_m, TL_m, BL_m, BR_m].
     // Swap TL↔TR and BL↔BR to restore [TL_m, TR_m, BR_m, BL_m].
-    final reordered = mirrored.length == 4
-        ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
-        : mirrored;
+    final reordered =
+        mirrored.length == 4
+            ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
+            : mirrored;
 
     return Barcode(
       corners: reordered,
