@@ -18,6 +18,7 @@ import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
+import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_barcode_reader.dart';
 import 'package:web/web.dart';
 
 /// A web implementation of the MobileScannerPlatform of the MobileScanner
@@ -440,7 +441,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
       await stop();
     }
 
-    _barcodeReader = ZXingBarcodeReader();
+    // Switch between readers for testing:
+    // _barcodeReader = ZXingBarcodeReader();   // legacy JS (ZXing-js)
+    _barcodeReader = ZXingWasmBarcodeReader(); // zxing-wasm (zxing-cpp WASM)
 
     await _barcodeReader?.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
