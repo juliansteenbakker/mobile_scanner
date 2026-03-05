@@ -3,8 +3,8 @@
 
 #include <flutter/encodable_value.h>
 
-#include <ZXing/BarcodeFormat.h>
-#include <ZXing/ReadBarcode.h>
+#include <BarcodeFormat.h>
+#include <Barcode.h>
 
 namespace mobile_scanner {
 

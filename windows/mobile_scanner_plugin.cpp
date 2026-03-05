@@ -7,7 +7,8 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
-#include <ZXing/ReadBarcode.h>
+#include <ReadBarcode.h>
+#include <ReaderOptions.h>
 
 #include "barcode_utils.h"
 #include "image_loader.h"
@@ -105,14 +106,14 @@ void MobileScannerPlugin::HandleAnalyzeImage(
   }
 
   // Run zxing-cpp.
-  ZXing::DecodeHints hints;
-  hints.setFormats(formats);
+  ZXing::ReaderOptions opts;
+  opts.setFormats(formats);
 
-  // RGBX = 4 bytes per pixel, alpha channel ignored by zxing-cpp.
+  // RGBA = 4 bytes per pixel (R, G, B, A order) — matches WIC RGBA output.
   auto results = ZXing::ReadBarcodes(
       ZXing::ImageView(img.pixels.data(), img.width, img.height,
-                       ZXing::ImageFormat::RGBX),
-      hints);
+                       ZXing::ImageFormat::RGBA),
+      opts);
 
   if (results.empty()) {
     // Return null — Dart interprets this as no barcodes found.
