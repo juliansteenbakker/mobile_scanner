@@ -52,7 +52,7 @@ inline int RawValueFromZXingFormat(ZXing::BarcodeFormat fmt) {
 
 /// Serializes a ZXing::Result into the map format that Barcode.fromNative
 /// expects on the Dart side.
-inline flutter::EncodableMap SerializeResult(const ZXing::Result& r,
+inline flutter::EncodableMap SerializeResult(const ZXing::Barcode& r,
                                              int img_w, int img_h) {
   // Corner points from the position quad.
   auto pos = r.position();

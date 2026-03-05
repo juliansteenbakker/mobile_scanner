@@ -73,25 +73,24 @@ void MobileScannerPlugin::HandleAnalyzeImage(
       std::get<std::string>(path_it->second);
 
   // Extract optional formats list.
-  ZXing::BarcodeFormats formats = ZXing::BarcodeFormat::Any;
+  ZXing::ReaderOptions opts;  // default: all formats
   auto fmt_it = args->find(flutter::EncodableValue("formats"));
   if (fmt_it != args->end() &&
       std::holds_alternative<flutter::EncodableList>(fmt_it->second)) {
     const auto &fmt_list =
         std::get<flutter::EncodableList>(fmt_it->second);
     if (!fmt_list.empty()) {
-      formats = ZXing::BarcodeFormat::None;
+      std::vector<ZXing::BarcodeFormat> fmt_vec;
       for (const auto &v : fmt_list) {
         if (std::holds_alternative<int32_t>(v)) {
           auto fmt = ZXingFormatFromRawValue(std::get<int32_t>(v));
           if (fmt != ZXing::BarcodeFormat::None) {
-            formats |= fmt;
+            fmt_vec.push_back(fmt);
           }
         }
       }
-      // Fallback if all raw values were unrecognised.
-      if (formats == ZXing::BarcodeFormat::None) {
-        formats = ZXing::BarcodeFormat::Any;
+      if (!fmt_vec.empty()) {
+        opts.setFormats(ZXing::BarcodeFormats(std::move(fmt_vec)));
       }
     }
   }
@@ -104,10 +103,6 @@ void MobileScannerPlugin::HandleAnalyzeImage(
     result->Error("FILE_ERROR", e.what());
     return;
   }
-
-  // Run zxing-cpp.
-  ZXing::ReaderOptions opts;
-  opts.setFormats(formats);
 
   // RGBA = 4 bytes per pixel (R, G, B, A order) — matches WIC RGBA output.
   auto results = ZXing::ReadBarcodes(
