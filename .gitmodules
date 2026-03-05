@@ -1,0 +1,3 @@
+[submodule "windows/third_party/zxing-cpp"]
+	path = windows/third_party/zxing-cpp
+	url = https://github.com/zxing-cpp/zxing-cpp.git

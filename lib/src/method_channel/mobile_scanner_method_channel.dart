@@ -154,7 +154,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
 
     if (defaultTargetPlatform == TargetPlatform.android ||
         defaultTargetPlatform == TargetPlatform.iOS ||
-        defaultTargetPlatform == TargetPlatform.macOS) {
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.windows) {
       final imageData = event['image'] as Map<Object?, Object?>?;
       final image = imageData?['bytes'] as Uint8List?;
       final width = imageData?['width'] as double?;
