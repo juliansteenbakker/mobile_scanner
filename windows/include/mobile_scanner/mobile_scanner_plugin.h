@@ -14,14 +14,16 @@
 
 namespace mobile_scanner {
 
-class FLUTTER_PLUGIN_EXPORT MobileScannerPlugin : public flutter::Plugin {
+// FLUTTER_PLUGIN_EXPORT is applied only to RegisterWithRegistrar (not the whole
+// class) to avoid C4275 ("non dll-interface base class flutter::Plugin").
+class MobileScannerPlugin : public flutter::Plugin {
  public:
-  static void RegisterWithRegistrar(flutter::PluginRegistrarWindows* registrar);
+  FLUTTER_PLUGIN_EXPORT static void RegisterWithRegistrar(
+      flutter::PluginRegistrarWindows* registrar);
 
   MobileScannerPlugin();
   virtual ~MobileScannerPlugin();
 
-  // Disallow copy and assign.
   MobileScannerPlugin(const MobileScannerPlugin&) = delete;
   MobileScannerPlugin& operator=(const MobileScannerPlugin&) = delete;
 

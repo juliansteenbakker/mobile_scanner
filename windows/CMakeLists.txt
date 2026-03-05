@@ -95,7 +95,7 @@ add_executable(${TEST_RUNNER}
 apply_standard_settings(${TEST_RUNNER})
 target_include_directories(${TEST_RUNNER} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
 target_link_libraries(${TEST_RUNNER} PRIVATE flutter_wrapper_plugin ZXing::ZXing WindowsCodecs)
-target_compile_definitions(${TEST_RUNNER} PRIVATE NOMINMAX)
+target_compile_definitions(${TEST_RUNNER} PRIVATE NOMINMAX FLUTTER_PLUGIN_IMPL)
 target_link_libraries(${TEST_RUNNER} PRIVATE gtest_main gmock)
 # flutter_wrapper_plugin has link dependencies on the Flutter DLL.
 add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
