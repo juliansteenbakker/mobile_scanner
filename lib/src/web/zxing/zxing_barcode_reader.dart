@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:js_interop';
-import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
@@ -115,106 +114,6 @@ final class ZXingBarcodeReader extends BarcodeReader {
     _scanWindow = window;
   }
 
-  /// Returns true if the bounding box of [barcode] (in raw camera pixel
-  /// coordinates) is fully contained within the current scan window.
-  ///
-  /// The scan window received from the Flutter layer is a normalized [Rect]
-  /// (values in the range [0, 1]) relative to the camera texture, produced by
-  /// `ScanWindowUtils.calculateScanWindowRelativeToTextureInPercentage`.
-  /// To match that space, the barcode corners are normalized by dividing by the
-  /// video dimensions before comparing.
-  ///
-  /// This check must be performed on the **raw** (pre-mirror) barcode corners
-  /// so that the coordinate spaces align.
-  ///
-  /// Always returns true when no scan window is set or dimensions are unknown.
-  bool _isInsideScanWindow(Barcode barcode) {
-    final window = _scanWindow;
-
-    if (window == null) {
-      return true;
-    }
-
-    final corners = barcode.corners;
-
-    if (corners.length != 4) {
-      return true;
-    }
-
-    final vw = videoSize.width;
-    final vh = videoSize.height;
-
-    if (vw <= 0 || vh <= 0) {
-      return true;
-    }
-
-    // Normalize corner coordinates to [0, 1] in camera texture space.
-    final minX = corners.map((c) => c.dx).reduce(math.min) / vw;
-    final maxX = corners.map((c) => c.dx).reduce(math.max) / vw;
-    final minY = corners.map((c) => c.dy).reduce(math.min) / vh;
-    final maxY = corners.map((c) => c.dy).reduce(math.max) / vh;
-    final barcodeRect = Rect.fromLTRB(minX, minY, maxX, maxY);
-
-    // Accept only when the full barcode bounding box is inside the scan window.
-    return barcodeRect.left >= window.left &&
-        barcodeRect.top >= window.top &&
-        barcodeRect.right <= window.right &&
-        barcodeRect.bottom <= window.bottom;
-  }
-
-  /// Returns true if the video preview is currently mirrored horizontally,
-  /// meaning barcode corner coordinates must be flipped to match.
-  ///
-  /// Must stay in sync with the logic in `_maybeFlipVideoPreview`.
-  bool _shouldMirrorX() {
-    final tracks = videoStream?.getVideoTracks().toDart;
-
-    if (tracks == null || tracks.isEmpty) {
-      return false;
-    }
-
-    final facingMode = tracks.first.getSettings().facingModeNullable?.toDart;
-
-    // Mirror when facingMode is 'user' (front camera on mobile), or when
-    // facingMode is null (desktop — cameras always face the user).
-    return facingMode == 'user' || facingMode == null;
-  }
-
-  /// Returns a copy of [barcode] with all corner x-coordinates mirrored
-  /// relative to [videoWidth].
-  Barcode _mirrorBarcodeX(Barcode barcode, double videoWidth) {
-    final corners = barcode.corners;
-
-    if (corners.isEmpty) {
-      return barcode;
-    }
-
-    // Mirror each x-coordinate.
-    final mirrored =
-        corners.map((c) => Offset(videoWidth - c.dx, c.dy)).toList();
-
-    // Mirroring x reverses the clockwise winding order from
-    // [TL, TR, BR, BL] to [TR_m, TL_m, BL_m, BR_m].
-    // Swap TL↔TR and BL↔BR to restore [TL_m, TR_m, BR_m, BL_m].
-    final reordered =
-        mirrored.length == 4
-            ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
-            : mirrored;
-
-    return Barcode(
-      corners: reordered,
-      format: barcode.format,
-      displayValue: barcode.displayValue,
-      // Populate deprecated rawBytes for backward compatibility.
-      // ignore: deprecated_member_use_from_same_package
-      rawBytes: barcode.rawBytes,
-      rawDecodedBytes: barcode.rawDecodedBytes,
-      rawValue: barcode.rawValue,
-      size: barcode.size,
-      type: barcode.type,
-    );
-  }
-
   @override
   Stream<BarcodeCapture> detectBarcodes() {
     final controller = StreamController<BarcodeCapture>();
@@ -241,7 +140,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
               // Check the scan window using raw camera coordinates (before
               // mirroring), because the scan window percentages are also in
               // raw camera space.
-              if (!_isInsideScanWindow(barcode)) {
+              if (!isInsideScanWindow(barcode, _scanWindow, videoSize)) {
                 return;
               }
 
