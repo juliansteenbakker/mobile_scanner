@@ -67,8 +67,9 @@ void main() {
       expect(tester.renderObject(find.byKey(key)), paintsNothing);
     });
 
-    testWidgets('paints overlay and border with BorderRadius.zero',
-        (tester) async {
+    testWidgets('paints overlay and border with BorderRadius.zero', (
+      tester,
+    ) async {
       final key = UniqueKey();
 
       await tester.pumpWidget(
@@ -95,8 +96,9 @@ void main() {
       );
     });
 
-    testWidgets('paints overlay and border with non-zero BorderRadius',
-        (tester) async {
+    testWidgets('paints overlay and border with non-zero BorderRadius', (
+      tester,
+    ) async {
       final key = UniqueKey();
       final radius = BorderRadius.circular(12);
 
