@@ -6,13 +6,12 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
-import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
-import 'package:mobile_scanner/src/web/media_track_extension.dart';
+import 'package:mobile_scanner/src/web/web_camera_utility.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_exception.dart';
@@ -247,8 +246,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
               }
 
               // Mirror corners for display after the scan window check.
-              if (_shouldMirrorX()) {
-                barcode = _mirrorBarcodeX(barcode, videoSize.width);
+              if (shouldMirrorStream(videoStream)) {
+                barcode = mirrorBarcodeX(barcode, videoSize.width);
               }
 
               controller.add(
