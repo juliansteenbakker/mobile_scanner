@@ -161,12 +161,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
-            DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-                guard let self = self else {
-                    return
-                }
-                
-                guard let buffer = self.latestBuffer else {
+               let bufferToProcess = latestBuffer
+               DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+                   guard let self = self else {
+                       return
+                   }
+                   
+                   guard let buffer = bufferToProcess else {
                     self.imagesCurrentlyBeingProcessed = false
                     return
                 }
