@@ -10,6 +10,7 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
+import 'package:mobile_scanner/src/web/web_camera_utility.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_exception.dart';
@@ -124,8 +125,14 @@ final class ZXingBarcodeReader extends BarcodeReader {
             }
 
             if (result != null) {
+              var barcode = result.toBarcode;
+
+              if (shouldMirrorStream(videoStream)) {
+                barcode = mirrorBarcodeX(barcode, videoSize.width);
+              }
+
               controller.add(
-                BarcodeCapture(barcodes: [result.toBarcode], size: videoSize),
+                BarcodeCapture(barcodes: [barcode], size: videoSize),
               );
             }
           }.toJS,

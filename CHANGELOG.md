@@ -1,3 +1,12 @@
+## NEXT
+
+**Improvements**
+
+* [Web] The preferred camera device ID is now persisted in localStorage and reused on the next start.
+* [Web] Focus, exposure, and white-balance constraints are now applied automatically when supported by the browser (Image Capture API).
+* [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
+* [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
+
 ## 7.2.0
 
 **Highlights**
