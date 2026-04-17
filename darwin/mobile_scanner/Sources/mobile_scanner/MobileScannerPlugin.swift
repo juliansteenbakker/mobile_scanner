@@ -894,8 +894,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             details: nil
         ))
         return
-#endif
-
+#else
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
 
@@ -971,6 +970,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     message: error.localizedDescription, details: nil))
             }
         }
+#endif
     }
 
     // Observer for torch state
