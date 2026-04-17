@@ -37,6 +37,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     /// This is static to avoid accessing `self` in the `VNDetectBarcodesRequest` callback.
     private static var returnImage: Bool = false
 
+    /// The dispatch queue that will process ``captureOutput(_:didOutput:from:)`` calls.
+    ///
+    /// This queue is user initiated because it is tied to an ``AVCaptureSession``.
+    private let sampleBufferQueue = DispatchQueue(label: "com.juliansteenbakker.mobile_scanner.captureOutputQueue", qos: .userInitiated)
+
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
     var timeoutSeconds: Double = 0
@@ -443,7 +448,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let format = getPreferredVideoFormat(videoOutput: videoOutput)
         videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        videoOutput.setSampleBufferDelegate(self, queue: self.sampleBufferQueue)
         captureSession!.addOutput(videoOutput)
         let deviceVideoOrientation = self.getVideoOrientation()
 
