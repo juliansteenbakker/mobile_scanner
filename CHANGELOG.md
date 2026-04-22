@@ -10,6 +10,7 @@
 **Bug Fixes**
 
 * [Apple] Fixed a race condition in `captureOutput` where `latestBuffer` was read on a background thread after being deallocated on the main thread, causing a crash in `VTCreateCGImageFromCVPixelBuffer`.
+* [Apple] Fixed an issue where `captureOutput` was being processed on the main thread, causing overheating issues on device.
 
 ## 7.2.0
 
