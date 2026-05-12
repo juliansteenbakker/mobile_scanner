@@ -365,7 +365,6 @@ class MobileScanner(
         this.returnImage = returnImage
         this.invertImage = invertImage
 
-        isPaused = false
         
         if (camera?.cameraInfo != null && preview != null && surfaceProducer != null && !isPaused) {
 
@@ -392,6 +391,8 @@ class MobileScanner(
 
             return
         }
+
+        isPaused = false
 
         lastScanned = null
         scanner = barcodeScannerFactory(barcodeScannerOptions)
