@@ -45,9 +45,7 @@ class MobileScannerAdvanced extends StatefulWidget {
 class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   MobileScannerController? controller;
 
-  // A scan window does work on web, but not the overlay to preview the scan
-  // window. This is why we disable it here for web examples.
-  bool useScanWindow = !kIsWeb;
+  bool useScanWindow = true;
 
   bool autoZoom = false;
   bool invertImage = false;
