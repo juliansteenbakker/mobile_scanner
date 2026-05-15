@@ -1,3 +1,9 @@
+## Unreleased
+
+**Improvements**
+
+* Added `allowedLengths` parameter to `MobileScannerController` for filtering scanned barcodes by `rawValue` length. When non-empty, barcodes whose length is not in the set are dropped, and captures with no surviving barcodes are suppressed. This is useful for formats without a checksum or end-of-barcode indicator (e.g. ITF / Interleaved 2 of 5), where the decoder can return a truncated prefix of the actual code.
+
 ## 7.2.1
 
 **Improvements**

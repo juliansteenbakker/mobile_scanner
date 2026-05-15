@@ -33,6 +33,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     int detectionTimeoutMs = 250,
     this.facing = CameraFacing.back,
     this.formats = const <BarcodeFormat>[],
+    this.allowedLengths = const <int>{},
     this.returnImage = false,
     this.torchEnabled = false,
     this.invertImage = false,
@@ -102,6 +103,25 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If this is empty, all supported formats are detected.
   final List<BarcodeFormat> formats;
+
+  /// The set of allowed `rawValue` lengths for scanned barcodes.
+  ///
+  /// When this set is non-empty, any barcode whose `rawValue.length` is not
+  /// contained in it is dropped before being delivered to listeners.
+  /// If every barcode in a capture is dropped, the capture event itself is
+  /// suppressed and no [BarcodeCapture] is emitted for that frame.
+  ///
+  /// This is primarily useful for formats that have no checksum or
+  /// end-of-barcode indicator, such as ITF (Interleaved 2 of 5), where the
+  /// decoder may return a truncated prefix of the actual code. For example,
+  /// a scanner configured for ITF-14 can set `allowedLengths: {14}` to drop
+  /// any partial reads.
+  ///
+  /// Barcodes whose `rawValue` is null are dropped when this set is
+  /// non-empty, because their length cannot be validated.
+  ///
+  /// If this set is empty (the default), no length filtering is applied.
+  final Set<int> allowedLengths;
 
   /// Whether the [BarcodeCapture.image] bytes should be provided.
   ///
@@ -175,7 +195,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               return;
             }
 
-            _barcodesController.add(barcode);
+            final filtered = _applyAllowedLengths(barcode);
+            if (filtered == null) {
+              return;
+            }
+
+            _barcodesController.add(filtered);
           },
           onError: (Object error) {
             if (_barcodesController.isClosed) {
@@ -294,8 +319,52 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   Future<BarcodeCapture?> analyzeImage(
     String path, {
     List<BarcodeFormat> formats = const <BarcodeFormat>[],
-  }) {
-    return MobileScannerPlatform.instance.analyzeImage(path, formats: formats);
+  }) async {
+    final result = await MobileScannerPlatform.instance.analyzeImage(
+      path,
+      formats: formats,
+    );
+
+    if (result == null) {
+      return null;
+    }
+
+    return _applyAllowedLengths(result);
+  }
+
+  /// Apply [allowedLengths] to [capture].
+  ///
+  /// Returns [capture] unchanged when [allowedLengths] is empty.
+  /// Returns a new [BarcodeCapture] with the filtered barcodes when at least
+  /// one barcode passes the filter.
+  /// Returns null when every barcode in [capture] is dropped, so the caller
+  /// can suppress the capture event entirely.
+  BarcodeCapture? _applyAllowedLengths(BarcodeCapture capture) {
+    if (allowedLengths.isEmpty) {
+      return capture;
+    }
+
+    final filtered = capture.barcodes
+        .where((barcode) {
+          final rawValue = barcode.rawValue;
+          return rawValue != null && allowedLengths.contains(rawValue.length);
+        })
+        .toList(growable: false);
+
+    if (filtered.isEmpty) {
+      return null;
+    }
+
+    if (filtered.length == capture.barcodes.length) {
+      return capture;
+    }
+
+    return BarcodeCapture(
+      barcodes: filtered,
+      image: capture.image,
+      raw: capture.raw,
+      size: capture.size,
+    );
   }
 
   /// Build a camera preview widget.

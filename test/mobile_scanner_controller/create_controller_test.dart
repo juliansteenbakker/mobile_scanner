@@ -21,4 +21,19 @@ void main() {
       expect(controller.lensType, lensType);
     }
   });
+
+  test('controller defaults allowedLengths to an empty set', () {
+    final controller = MobileScannerController(autoStart: false);
+
+    expect(controller.allowedLengths, isEmpty);
+  });
+
+  test('controller exposes the allowedLengths it was created with', () {
+    final controller = MobileScannerController(
+      autoStart: false,
+      allowedLengths: const {14},
+    );
+
+    expect(controller.allowedLengths, const {14});
+  });
 }

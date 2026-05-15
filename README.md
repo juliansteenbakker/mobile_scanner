@@ -133,12 +133,27 @@ final MobileScannerController controller = MobileScannerController(
   detectionSpeed: detectionSpeed,
   detectionTimeoutMs: detectionTimeout,
   formats: selectedFormats,
+  allowedLengths: {14}, // optional, see "Filtering by length" below
   returnImage: returnImage,
   torchEnabled: true,
   invertImage: invertImage,
   autoZoom: autoZoom,
 );
 ```
+
+#### Filtering by length
+
+Formats like ITF (Interleaved 2 of 5) have no checksum and no end-of-barcode indicator, so the decoder may return a truncated prefix of the actual code as if it were a complete scan. The `allowedLengths` parameter lets you restrict scanner output to barcodes whose `rawValue.length` is in the given set; non-matching barcodes are dropped, and a capture is suppressed entirely when every barcode in it is dropped.
+
+```dart
+// Only accept full ITF-14 codes.
+final controller = MobileScannerController(
+  formats: const [BarcodeFormat.itf14],
+  allowedLengths: const {14},
+);
+```
+
+If `allowedLengths` is empty (the default), no length filtering is applied.
 
 ```dart
 MobileScanner(
