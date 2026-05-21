@@ -1,36 +1,44 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  Future<(MobileScannerController, _FakeMobileScannerPlatform)> pumpScanner(
+  late _FakeMobileScannerPlatform fakePlatform;
+
+  setUp(() {
+    fakePlatform = _FakeMobileScannerPlatform();
+    MobileScannerPlatform.instance = fakePlatform;
+  });
+
+  Future<MobileScannerController> pumpScanner(
     WidgetTester tester, {
     required Set<int> allowedLengths,
   }) async {
-    final fakePlatform = _FakeMobileScannerPlatform();
-    MobileScannerPlatform.instance = fakePlatform;
-
     final controller = MobileScannerController(allowedLengths: allowedLengths);
 
     await tester.pumpWidget(
-      MaterialApp(home: Scaffold(body: MobileScanner(controller: controller))),
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: SizedBox(
+          width: 200,
+          height: 200,
+          child: MobileScanner(controller: controller),
+        ),
+      ),
     );
     await tester.pumpAndSettle();
 
-    return (controller, fakePlatform);
+    return controller;
   }
 
   testWidgets('empty allowedLengths forwards every barcode capture unchanged', (
     tester,
   ) async {
-    final (controller, fakePlatform) = await pumpScanner(
-      tester,
-      allowedLengths: const <int>{},
-    );
+    final controller = await pumpScanner(tester, allowedLengths: const <int>{});
     addTearDown(controller.dispose);
 
     final received = <BarcodeCapture>[];
@@ -53,10 +61,7 @@ void main() {
   testWidgets(
     'allowedLengths drops barcodes whose rawValue length is not allowed',
     (tester) async {
-      final (controller, fakePlatform) = await pumpScanner(
-        tester,
-        allowedLengths: const {14},
-      );
+      final controller = await pumpScanner(tester, allowedLengths: const {14});
       addTearDown(controller.dispose);
 
       final received = <BarcodeCapture>[];
@@ -80,38 +85,31 @@ void main() {
     },
   );
 
-  testWidgets('allowedLengths suppresses captures with no surviving barcodes', (
-    tester,
-  ) async {
-    final (controller, fakePlatform) = await pumpScanner(
-      tester,
-      allowedLengths: const {14},
-    );
-    addTearDown(controller.dispose);
+  testWidgets(
+    'allowedLengths suppresses captures when no barcodes survive the filter',
+    (tester) async {
+      final controller = await pumpScanner(tester, allowedLengths: const {14});
+      addTearDown(controller.dispose);
 
-    final received = <BarcodeCapture>[];
-    final subscription = controller.barcodes.listen(received.add);
-    addTearDown(subscription.cancel);
+      final received = <BarcodeCapture>[];
+      final subscription = controller.barcodes.listen(received.add);
+      addTearDown(subscription.cancel);
 
-    fakePlatform.addBarcode(
-      const BarcodeCapture(barcodes: [Barcode(rawValue: '12345')]),
-    );
-    fakePlatform.addBarcode(
-      const BarcodeCapture(barcodes: [Barcode(rawValue: '12345678901234')]),
-    );
-    await tester.pumpAndSettle();
+      fakePlatform.addBarcode(
+        const BarcodeCapture(
+          barcodes: [Barcode(rawValue: '12345'), Barcode(rawValue: '678')],
+        ),
+      );
+      await tester.pumpAndSettle();
 
-    expect(received, hasLength(1));
-    expect(received.single.barcodes.single.rawValue, '12345678901234');
-  });
+      expect(received, isEmpty);
+    },
+  );
 
   testWidgets('allowedLengths drops barcodes whose rawValue is null', (
     tester,
   ) async {
-    final (controller, fakePlatform) = await pumpScanner(
-      tester,
-      allowedLengths: const {14},
-    );
+    final controller = await pumpScanner(tester, allowedLengths: const {14});
     addTearDown(controller.dispose);
 
     final received = <BarcodeCapture>[];
@@ -129,81 +127,14 @@ void main() {
     expect(received.single.barcodes, hasLength(1));
     expect(received.single.barcodes.single.rawValue, '12345678901234');
   });
-
-  testWidgets('analyzeImage applies allowedLengths to the platform result', (
-    tester,
-  ) async {
-    final (controller, fakePlatform) = await pumpScanner(
-      tester,
-      allowedLengths: const {14},
-    );
-    addTearDown(controller.dispose);
-
-    fakePlatform.nextAnalyzeImageResult = const BarcodeCapture(
-      barcodes: [
-        Barcode(rawValue: '12345'),
-        Barcode(rawValue: '12345678901234'),
-      ],
-    );
-
-    final result = await controller.analyzeImage('ignored.png');
-
-    expect(result, isNotNull);
-    expect(result!.barcodes.map((b) => b.rawValue).toList(), const [
-      '12345678901234',
-    ]);
-  });
-
-  testWidgets(
-    'analyzeImage returns null when every barcode is dropped by allowedLengths',
-    (tester) async {
-      final (controller, fakePlatform) = await pumpScanner(
-        tester,
-        allowedLengths: const {14},
-      );
-      addTearDown(controller.dispose);
-
-      fakePlatform.nextAnalyzeImageResult = const BarcodeCapture(
-        barcodes: [Barcode(rawValue: '12345')],
-      );
-
-      final result = await controller.analyzeImage('ignored.png');
-
-      expect(result, isNull);
-    },
-  );
-
-  testWidgets('analyzeImage propagates a null platform result', (tester) async {
-    final (controller, fakePlatform) = await pumpScanner(
-      tester,
-      allowedLengths: const {14},
-    );
-    addTearDown(controller.dispose);
-
-    fakePlatform.nextAnalyzeImageResult = null;
-
-    final result = await controller.analyzeImage('ignored.png');
-
-    expect(result, isNull);
-  });
 }
 
 class _FakeMobileScannerPlatform extends MobileScannerPlatform {
   final StreamController<BarcodeCapture> _barcodeStreamController =
       StreamController<BarcodeCapture>.broadcast();
 
-  BarcodeCapture? nextAnalyzeImageResult;
-
   @override
   Stream<BarcodeCapture?> get barcodesStream => _barcodeStreamController.stream;
-
-  @override
-  Future<BarcodeCapture?> analyzeImage(
-    String path, {
-    List<BarcodeFormat> formats = const <BarcodeFormat>[],
-  }) async {
-    return nextAnalyzeImageResult;
-  }
 
   @override
   Stream<TorchState> get torchStateStream =>

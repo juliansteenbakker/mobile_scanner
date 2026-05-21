@@ -39,4 +39,52 @@ class BarcodeCapture {
   /// For example if the camera resolution is 1920x1080 pixels,
   /// this will be a [Size] with a width of 1920 and a height of 1080.
   final Size size;
+
+  /// Returns a copy of this [BarcodeCapture] with the given fields replaced.
+  BarcodeCapture copyWith({
+    List<Barcode>? barcodes,
+    Uint8List? image,
+    Object? raw,
+    Size? size,
+  }) {
+    return BarcodeCapture(
+      barcodes: barcodes ?? this.barcodes,
+      image: image ?? this.image,
+      raw: raw ?? this.raw,
+      size: size ?? this.size,
+    );
+  }
+
+  /// Returns a copy of this capture with only the [barcodes] whose
+  /// `rawValue.length` is contained in [allowedLengths].
+  ///
+  /// Returns this capture unchanged when [allowedLengths] is empty: no
+  /// filtering is applied.
+  /// Returns `null` when [allowedLengths] is non-empty and every barcode is
+  /// dropped, so the caller can suppress the capture event entirely.
+  ///
+  /// Barcodes whose [Barcode.rawValue] is null are dropped when
+  /// [allowedLengths] is non-empty, because their length cannot be validated.
+  BarcodeCapture? filterByAllowedLengths(Set<int> allowedLengths) {
+    if (allowedLengths.isEmpty) {
+      return this;
+    }
+
+    final filtered = <Barcode>[
+      for (final barcode in barcodes)
+        if (barcode.rawValue case final rawValue?
+            when allowedLengths.contains(rawValue.length))
+          barcode,
+    ];
+
+    if (filtered.isEmpty) {
+      return null;
+    }
+
+    if (filtered.length == barcodes.length) {
+      return this;
+    }
+
+    return copyWith(barcodes: filtered);
+  }
 }

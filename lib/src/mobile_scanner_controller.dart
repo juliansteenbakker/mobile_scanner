@@ -195,7 +195,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
               return;
             }
 
-            final filtered = _applyAllowedLengths(barcode);
+            final filtered = barcode.filterByAllowedLengths(allowedLengths);
             if (filtered == null) {
               return;
             }
@@ -329,42 +329,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return null;
     }
 
-    return _applyAllowedLengths(result);
-  }
-
-  /// Apply [allowedLengths] to [capture].
-  ///
-  /// Returns [capture] unchanged when [allowedLengths] is empty.
-  /// Returns a new [BarcodeCapture] with the filtered barcodes when at least
-  /// one barcode passes the filter.
-  /// Returns null when every barcode in [capture] is dropped, so the caller
-  /// can suppress the capture event entirely.
-  BarcodeCapture? _applyAllowedLengths(BarcodeCapture capture) {
-    if (allowedLengths.isEmpty) {
-      return capture;
-    }
-
-    final filtered = capture.barcodes
-        .where((barcode) {
-          final rawValue = barcode.rawValue;
-          return rawValue != null && allowedLengths.contains(rawValue.length);
-        })
-        .toList(growable: false);
-
-    if (filtered.isEmpty) {
-      return null;
-    }
-
-    if (filtered.length == capture.barcodes.length) {
-      return capture;
-    }
-
-    return BarcodeCapture(
-      barcodes: filtered,
-      image: capture.image,
-      raw: capture.raw,
-      size: capture.size,
-    );
+    return result.filterByAllowedLengths(allowedLengths);
   }
 
   /// Build a camera preview widget.
