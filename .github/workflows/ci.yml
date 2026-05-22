@@ -21,6 +21,9 @@ jobs:
     name: Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      matrix:
+        flutter-version: ["3.29.x", ""]
 
     steps:
       - name: Checkout Code
@@ -29,6 +32,7 @@ jobs:
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ matrix.flutter-version }}
           channel: stable
           cache: true
 
@@ -87,6 +91,9 @@ jobs:
     needs: [analysis, formatting]
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      matrix:
+        flutter-version: ["3.29.x", ""]
 
     steps:
       - name: Checkout Repository
@@ -95,6 +102,7 @@ jobs:
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: ${{ matrix.flutter-version }}
           channel: stable
           cache: true
 
@@ -117,7 +125,7 @@ jobs:
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-report
+          name: coverage-report-${{ matrix.flutter-version || 'latest' }}
           path: coverage/lcov.info
 
       - name: Upload Coverage to Codecov
@@ -126,5 +134,5 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
           flags: unittests
-          name: codecov-flutter
+          name: codecov-flutter-${{ matrix.flutter-version || 'latest' }}
           fail_ci_if_error: true
