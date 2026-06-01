@@ -153,7 +153,7 @@ class MobileScannerHandler(
             "pause" -> pause(call, result)
             "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
-            "getSupportedLenses" -> getSupportedLenses(result)
+            "getSupportedLenses" -> getSupportedLenses(call, result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
@@ -298,11 +298,14 @@ class MobileScannerHandler(
     }
 
     /**
-     * Get the list of supported lens types on this device.
+     * Get the list of supported lens types on this device for a given facing direction.
+     *
+     * Accepts an optional "facing" argument (0 = front, 1 = back). Defaults to back.
      */
-    private fun getSupportedLenses(result: MethodChannel.Result) {
+    private fun getSupportedLenses(call: MethodCall, result: MethodChannel.Result) {
+        val facing: Int? = call.argument<Int>("facing")
         try {
-            val supportedLenses = MobileScannerCameraLensSelector.getSupportedLenses(cameraManager)
+            val supportedLenses = MobileScannerCameraLensSelector.getSupportedLenses(cameraManager, facing)
             result.success(supportedLenses.toList())
         } catch (e: Exception) {
             result.error(

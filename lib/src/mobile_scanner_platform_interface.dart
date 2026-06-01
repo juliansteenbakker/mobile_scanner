@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
@@ -128,7 +129,9 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// containing only [CameraLensType.any] if cameras are available.
   ///
   /// This method can be called before starting the scanner.
-  Future<Set<CameraLensType>> getSupportedLenses() {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) {
     throw UnimplementedError('getSupportedLenses() has not been implemented.');
   }
 
