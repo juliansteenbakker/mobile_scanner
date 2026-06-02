@@ -592,8 +592,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   Future<void> _toggleLensType() async {
     // Fetch supported lenses fresh each time to handle dynamic camera changes
     // (e.g., external cameras being attached/detached).
-    // Pass the current facing direction so only lenses for that camera side are returned.
-    final supportedLenses = await getSupportedLenses(facing: value.cameraDirection);
+    // Pass the current facing direction so only lenses for that camera side
+    // are returned, avoiding cross-side pollution.
+    final supportedLenses = await getSupportedLenses(
+      facing: value.cameraDirection,
+    );
 
     // Filter out 'any' and keep only specific lens types.
     final specificLenses =

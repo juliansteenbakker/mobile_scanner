@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
@@ -359,5 +360,136 @@ void main() {
         expect(lenses, contains(CameraLensType.any));
       },
     );
+  });
+
+  group('getSupportedLenses with facing filter', () {
+    late MethodChannelMobileScanner platform;
+
+    setUp(() {
+      platform = MethodChannelMobileScanner();
+      MobileScannerPlatform.instance = platform;
+    });
+
+    tearDown(() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, null);
+    });
+
+    test('passes facing back (rawValue 1) to platform channel', () async {
+      MethodCall? capturedCall;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              capturedCall = methodCall;
+              return [CameraLensType.normal.rawValue];
+            }
+            return null;
+          });
+
+      await platform.getSupportedLenses(facing: CameraFacing.back);
+
+      expect(capturedCall, isNotNull);
+      expect(capturedCall!.arguments, equals({'facing': 1}));
+    });
+
+    test('passes facing front (rawValue 0) to platform channel', () async {
+      MethodCall? capturedCall;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              capturedCall = methodCall;
+              return [CameraLensType.normal.rawValue];
+            }
+            return null;
+          });
+
+      await platform.getSupportedLenses(facing: CameraFacing.front);
+
+      expect(capturedCall, isNotNull);
+      expect(capturedCall!.arguments, equals({'facing': 0}));
+    });
+
+    test('passes null args when no facing provided', () async {
+      MethodCall? capturedCall;
+
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              capturedCall = methodCall;
+              return [CameraLensType.normal.rawValue];
+            }
+            return null;
+          });
+
+      await platform.getSupportedLenses();
+
+      expect(capturedCall, isNotNull);
+      expect(capturedCall!.arguments, isNull);
+    });
+
+    test('returns only back-camera lenses when back facing passed', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              final args = methodCall.arguments as Map?;
+              if (args?['facing'] == 1) {
+                return [
+                  CameraLensType.normal.rawValue,
+                  CameraLensType.zoom.rawValue,
+                ];
+              }
+              return [CameraLensType.normal.rawValue];
+            }
+            return null;
+          });
+
+      final backLenses = await platform.getSupportedLenses(
+        facing: CameraFacing.back,
+      );
+
+      expect(backLenses, hasLength(2));
+      expect(backLenses, contains(CameraLensType.normal));
+      expect(backLenses, contains(CameraLensType.zoom));
+      expect(backLenses, isNot(contains(CameraLensType.wide)));
+    });
+
+    test('deduplicates results', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              return [
+                CameraLensType.normal.rawValue,
+                CameraLensType.normal.rawValue,
+                CameraLensType.zoom.rawValue,
+              ];
+            }
+            return null;
+          });
+
+      final lenses = await platform.getSupportedLenses(
+        facing: CameraFacing.back,
+      );
+
+      expect(lenses, hasLength(2));
+      expect(lenses, contains(CameraLensType.normal));
+      expect(lenses, contains(CameraLensType.zoom));
+    });
   });
 }

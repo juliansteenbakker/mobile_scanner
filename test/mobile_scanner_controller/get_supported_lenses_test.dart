@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
@@ -42,6 +43,19 @@ void main() {
 
       expect(supportedLense, {CameraLensType.wide, CameraLensType.normal});
     });
+
+    test('passes facing parameter to platform', () async {
+      final fake = FakeMobileScannerPlatformWithFacingCapture(const {
+        CameraLensType.normal,
+      });
+      MobileScannerPlatform.instance = fake;
+
+      final controller = MobileScannerController(autoStart: false);
+
+      await controller.getSupportedLenses(facing: CameraFacing.front);
+
+      expect(fake.capturedFacing, CameraFacing.front);
+    });
   });
 }
 
@@ -52,7 +66,29 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   final Set<CameraLensType> _supportedLenses;
 
   @override
-  Future<Set<CameraLensType>> getSupportedLenses() {
+  Future<Set<CameraLensType>> getSupportedLenses({CameraFacing? facing}) {
+    return Future.value(_supportedLenses);
+  }
+
+  @override
+  Future<void> dispose() {
+    // No-op.
+    return Future.value();
+  }
+}
+
+class FakeMobileScannerPlatformWithFacingCapture
+    extends MobileScannerPlatform {
+  FakeMobileScannerPlatformWithFacingCapture(
+    Set<CameraLensType> supportedLenses,
+  ) : _supportedLenses = supportedLenses;
+
+  final Set<CameraLensType> _supportedLenses;
+  CameraFacing? capturedFacing;
+
+  @override
+  Future<Set<CameraLensType>> getSupportedLenses({CameraFacing? facing}) {
+    capturedFacing = facing;
     return Future.value(_supportedLenses);
   }
 
