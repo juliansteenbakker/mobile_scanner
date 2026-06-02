@@ -35,6 +35,24 @@ See the example app for detailed implementation information.
 | scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
 | autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
+| getBestQrScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: | :x: |
+
+### Automatic best-lens selection for QR scanning
+
+Use `getBestQrScanningLens()` to automatically select the lens best suited for close-range QR scanning:
+
+```dart
+final bestLens = await controller.getBestQrScanningLens(facing: CameraFacing.back);
+
+await controller.switchCamera(
+  SelectCamera(facingDirection: CameraFacing.back, lensType: bestLens),
+);
+```
+
+This returns:
+- **iOS 15+**: The camera with the shortest `AVCaptureDevice.minimumFocusDistance` — typically the ultra-wide lens on newer iPhones (macro autofocus at ~2cm) or the standard 1× camera on older models
+- **iOS < 15 / macOS / Web**: `CameraLensType.normal` (the standard 1× camera)
+- **Android**: Always `CameraLensType.normal`. `LENS_INFO_MINIMUM_FOCUS_DISTANCE` is not reliably populated for logical cameras on multi-camera Android devices (the data lives on non-selectable physical sub-cameras), so the normal camera is returned unconditionally — it has the most capable autofocus system for close-range QR scanning on virtually all Android devices
 
 ## Installation
 
