@@ -740,6 +740,25 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     return MobileScannerPlatform.instance.getSupportedLenses();
   }
 
+  /// Determine the best lens type for QR code scanning.
+  ///
+  /// Returns the [CameraLensType] whose camera can focus closest to the phone,
+  /// making it best suited for scanning QR codes held at close range.
+  Future<CameraLensType> getBestQrScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    if (_isDisposed) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerDisposed.message,
+        ),
+      );
+    }
+
+    return MobileScannerPlatform.instance.getBestQrScanningLens(facing: facing);
+  }
+
   /// Dispose the controller.
   ///
   /// Once the controller is disposed, it cannot be used anymore.

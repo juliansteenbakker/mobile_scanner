@@ -106,6 +106,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             toggleTorch(result)
         case "getSupportedLenses":
             getSupportedLenses(result)
+        case "getBestQrScanningLens":
+            getBestQrScanningLens(call, result)
         case "setScale":
             setScale(call, result)
         case "setFocus":
@@ -557,6 +559,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         
         // Ultimate fallback: use the original default format
         return kCVPixelFormatType_32BGRA
+    }
+
+    private func getBestQrScanningLens(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let args = call.arguments as? [String: Any]
+        let facing = args?["facing"] as? Int ?? 1
+        let position: AVCaptureDevice.Position = facing == 0 ? .front : .back
+        result(MobileScannerCameraSelector.getBestQrScanningLens(position: position))
     }
 
     private func getSupportedLenses(_ result: @escaping FlutterResult) {

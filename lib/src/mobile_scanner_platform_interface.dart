@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
@@ -116,6 +117,24 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Toggle the torch on the active camera on or off.
   Future<void> toggleTorch() {
     throw UnimplementedError('toggleTorch() has not been implemented.');
+  }
+
+  /// Determine the best lens type for QR code scanning.
+  ///
+  /// Returns the [CameraLensType] whose camera can focus closest to the phone,
+  /// making it best suited for scanning QR codes held at close range.
+  ///
+  /// Uses minimum focus distance data from the platform:
+  /// - Android: always returns [CameraLensType.normal] (see platform notes)
+  /// - iOS 15+: AVCaptureDevice.minimumFocusDistance (millimeters)
+  ///
+  /// Falls back to [CameraLensType.normal] when platform data is unavailable.
+  Future<CameraLensType> getBestQrScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) {
+    throw UnimplementedError(
+      'getBestQrScanningLens() has not been implemented.',
+    );
   }
 
   /// Get the set of supported camera lens types for the current device.

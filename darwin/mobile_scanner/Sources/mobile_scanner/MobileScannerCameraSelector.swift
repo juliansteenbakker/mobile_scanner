@@ -106,6 +106,56 @@ class MobileScannerCameraSelector {
         return AVCaptureDevice.default(for: .video)
     }
 
+    /// Determine the best lens type for QR code scanning based on minimum focus distance.
+    ///
+    /// Selects the camera that can focus closest to the phone. On iOS 15+,
+    /// `minimumFocusDistance` (millimeters, lower = shorter focus distance) is used.
+    /// Fixed-focus cameras (minimumFocusDistance == -1) are skipped.
+    ///
+    /// **Naming note:** `LensType.wideAngle` (raw value 0) maps to the standard 1× camera
+    /// (`builtInWideAngleCamera` in AVFoundation), which corresponds to `CameraLensType.normal`
+    /// in the Dart API. `LensType.ultraWide` (raw value 1) is the 0.5× camera, which maps to
+    /// `CameraLensType.wide` in Dart. These names reflect AVFoundation's conventions, not the
+    /// Dart layer's conventions — the raw values are what matter for the method channel.
+    ///
+    /// Falls back to `LensType.wideAngle` (raw value 0 = Dart `normal`) on iOS < 15 or macOS,
+    /// which is the standard main camera and a safe default for QR scanning.
+    ///
+    /// - Parameter position: The camera position to check (default: .back)
+    /// - Returns: The LensType raw value best suited for close-up QR scanning
+    static func getBestQrScanningLens(position: AVCaptureDevice.Position = .back) -> Int {
+#if os(iOS)
+        if #available(iOS 15.0, *) {
+            if #available(iOS 13.0, *) {
+                let devices = AVCaptureDevice.DiscoverySession(
+                    deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
+                    mediaType: .video,
+                    position: position
+                ).devices
+
+                // LensType.wideAngle = raw 0 = Dart normal (safe default)
+                var bestLensType = LensType.wideAngle.rawValue
+                var bestMfd = Int.max
+                var foundAny = false
+
+                for device in devices {
+                    guard let lens = lensType(from: device.deviceType) else { continue }
+                    let mfd = device.minimumFocusDistance
+                    if mfd < 0 { continue }  // -1 = fixed focus at infinity, skip
+                    if !foundAny || mfd < bestMfd {
+                        bestMfd = mfd
+                        bestLensType = lens.rawValue
+                        foundAny = true
+                    }
+                }
+                return bestLensType
+            }
+        }
+#endif
+        // Fallback: raw value 0 = LensType.wideAngle = Dart CameraLensType.normal (the 1× camera)
+        return LensType.wideAngle.rawValue
+    }
+
     /// Get the list of supported lens types on this device.
     ///
     /// - Returns: A sorted array of supported LensType raw values

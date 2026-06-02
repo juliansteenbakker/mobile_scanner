@@ -353,6 +353,15 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<CameraLensType> getBestQrScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    // The web MediaDevices API has no concept of lens type or minimum focus
+    // distance, so the facing parameter is intentionally unused.
+    return CameraLensType.normal;
+  }
+
+  @override
   Future<void> resetZoomScale() {
     throw UnsupportedError(
       'Setting the zoom scale is not supported for video tracks on the web.\n'

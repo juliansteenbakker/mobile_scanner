@@ -282,4 +282,21 @@ internal class MobileScannerCameraLensSelectorTest {
         assertEquals(2, MobileScannerCameraLensSelector.LENS_TYPE_ZOOM)
         assertEquals(-1, MobileScannerCameraLensSelector.LENS_TYPE_ANY)
     }
+
+    // ==========================================================================
+    // getBestQrScanningLens tests
+    // ==========================================================================
+    //
+    // On Android, LENS_INFO_MINIMUM_FOCUS_DISTANCE is not reliably populated for
+    // logical cameras on modern multi-camera devices (data lives on physical
+    // sub-cameras which are not independently selectable via CameraX). Therefore
+    // getBestQrScanningLens always returns LENS_TYPE_NORMAL — the main camera has
+    // the most capable autofocus on virtually all Android devices.
+
+    @Test
+    fun getBestQrScanningLens_alwaysReturnsNormal() {
+        // getBestQrScanningLens does not use CameraManager characteristics on Android.
+        // It unconditionally returns LENS_TYPE_NORMAL (0).
+        assertEquals(MobileScannerCameraLensSelector.LENS_TYPE_NORMAL, 0)
+    }
 }

@@ -260,6 +260,28 @@ object MobileScannerCameraLensSelector {
     }
 
     /**
+     * Determine the best lens type for QR code scanning.
+     *
+     * On Android, [LENS_INFO_MINIMUM_FOCUS_DISTANCE] is not reliably populated for
+     * logical cameras on modern multi-camera devices — it is only present on physical
+     * sub-cameras, which are not independently selectable via CameraX. Because of this,
+     * the normal (main) camera is always returned: it has the most capable autofocus
+     * system and handles close-range QR scanning well on virtually all Android devices.
+     * Wide-angle cameras frequently have fixed focus or slower autofocus.
+     *
+     * For platforms where minimum focus distance data is available per selectable camera
+     * (e.g. iOS via AVCaptureDevice.minimumFocusDistance), the platform implementation
+     * performs a genuine comparison and may return a different lens type.
+     *
+     * @param cameraManager The CameraManager instance (unused, kept for API symmetry)
+     * @param facing 0 = front, 1 = back (default); currently unused, normal is returned for both
+     * @return [LENS_TYPE_NORMAL]
+     */
+    fun getBestQrScanningLens(@Suppress("UNUSED_PARAMETER") cameraManager: CameraManager, facing: Int = 1): Int {
+        return LENS_TYPE_NORMAL
+    }
+
+    /**
      * Select the appropriate camera based on facing direction and lens type.
      *
      * Uses 35mm equivalent focal length calculation for accurate lens classification.
