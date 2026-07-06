@@ -467,6 +467,35 @@ void main() {
       expect(backLenses, isNot(contains(CameraLensType.wide)));
     });
 
+    test('returns only front-camera lenses when front facing passed', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(platform.methodChannel, (
+            methodCall,
+          ) async {
+            if (methodCall.method ==
+                MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
+              final args = methodCall.arguments as Map?;
+              if (args?['facing'] == 0) {
+                return [CameraLensType.normal.rawValue];
+              }
+              return [
+                CameraLensType.normal.rawValue,
+                CameraLensType.zoom.rawValue,
+              ];
+            }
+            return null;
+          });
+
+      final frontLenses = await platform.getSupportedLenses(
+        facing: CameraFacing.front,
+      );
+
+      expect(frontLenses, hasLength(1));
+      expect(frontLenses, contains(CameraLensType.normal));
+      expect(frontLenses, isNot(contains(CameraLensType.zoom)));
+      expect(frontLenses, isNot(contains(CameraLensType.wide)));
+    });
+
     test('deduplicates results', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(platform.methodChannel, (
