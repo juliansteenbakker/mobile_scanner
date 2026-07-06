@@ -269,15 +269,10 @@ object MobileScannerCameraLensSelector {
      * system and handles close-range QR scanning well on virtually all Android devices.
      * Wide-angle cameras frequently have fixed focus or slower autofocus.
      *
-     * For platforms where minimum focus distance data is available per selectable camera
-     * (e.g. iOS via AVCaptureDevice.minimumFocusDistance), the platform implementation
-     * performs a genuine comparison and may return a different lens type.
-     *
-     * @param cameraManager The CameraManager instance (unused, kept for API symmetry)
      * @param facing 0 = front, 1 = back (default); currently unused, normal is returned for both
      * @return [LENS_TYPE_NORMAL]
      */
-    fun getBestQrScanningLens(@Suppress("UNUSED_PARAMETER") cameraManager: CameraManager, facing: Int = 1): Int {
+    fun getBestQrScanningLens(@Suppress("UNUSED_PARAMETER") facing: Int = 1): Int {
         return LENS_TYPE_NORMAL
     }
 

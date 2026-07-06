@@ -126,30 +126,28 @@ class MobileScannerCameraSelector {
     static func getBestQrScanningLens(position: AVCaptureDevice.Position = .back) -> Int {
 #if os(iOS)
         if #available(iOS 15.0, *) {
-            if #available(iOS 13.0, *) {
-                let devices = AVCaptureDevice.DiscoverySession(
-                    deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
-                    mediaType: .video,
-                    position: position
-                ).devices
+            let devices = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
+                mediaType: .video,
+                position: position
+            ).devices
 
-                // LensType.wideAngle = raw 0 = Dart normal (safe default)
-                var bestLensType = LensType.wideAngle.rawValue
-                var bestMfd = Int.max
-                var foundAny = false
+            // LensType.wideAngle = raw 0 = Dart normal (safe default)
+            var bestLensType = LensType.wideAngle.rawValue
+            var bestMfd = Int.max
+            var foundAny = false
 
-                for device in devices {
-                    guard let lens = lensType(from: device.deviceType) else { continue }
-                    let mfd = device.minimumFocusDistance
-                    if mfd < 0 { continue }  // -1 = fixed focus at infinity, skip
-                    if !foundAny || mfd < bestMfd {
-                        bestMfd = mfd
-                        bestLensType = lens.rawValue
-                        foundAny = true
-                    }
+            for device in devices {
+                guard let lens = lensType(from: device.deviceType) else { continue }
+                let mfd = device.minimumFocusDistance
+                if mfd < 0 { continue }  // -1 = fixed focus at infinity, skip
+                if !foundAny || mfd < bestMfd {
+                    bestMfd = mfd
+                    bestLensType = lens.rawValue
+                    foundAny = true
                 }
-                return bestLensType
             }
+            return bestLensType
         }
 #endif
         // Fallback: raw value 0 = LensType.wideAngle = Dart CameraLensType.normal (the 1× camera)

@@ -299,12 +299,14 @@ class MobileScannerHandler(
     }
 
     /**
-     * Get the list of supported lens types on this device.
+     * Get the lens type best suited for QR code scanning.
+     *
+     * The `facing` argument (0 = front, 1 = back) defaults to back (1) when not provided.
      */
     private fun getBestQrScanningLens(call: MethodCall, result: MethodChannel.Result) {
         val facing: Int = call.argument<Int>("facing") ?: 1
         try {
-            val lensType = MobileScannerCameraLensSelector.getBestQrScanningLens(cameraManager, facing)
+            val lensType = MobileScannerCameraLensSelector.getBestQrScanningLens(facing)
             result.success(lensType)
         } catch (e: Exception) {
             result.error(

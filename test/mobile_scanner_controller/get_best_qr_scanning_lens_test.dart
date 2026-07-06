@@ -31,28 +31,20 @@ void main() {
       );
     });
 
-    test('returns best lens from platform', () async {
+    test('returns the lens reported by the platform', () async {
       MobileScannerPlatform.instance = FakeMobileScannerPlatform(
         CameraLensType.wide,
       );
 
       final controller = MobileScannerController(autoStart: false);
 
-      final result = await controller.getBestQrScanningLens();
-
-      expect(result, CameraLensType.wide);
-    });
-
-    test('returns normal lens as default from platform', () async {
-      MobileScannerPlatform.instance = FakeMobileScannerPlatform(
-        CameraLensType.normal,
+      final result = await controller.getBestQrScanningLens(
+        // The back facing is the default; passed explicitly for readability.
+        // ignore: avoid_redundant_argument_values
+        facing: CameraFacing.back,
       );
 
-      final controller = MobileScannerController(autoStart: false);
-
-      final result = await controller.getBestQrScanningLens();
-
-      expect(result, CameraLensType.normal);
+      expect(result, CameraLensType.wide);
     });
 
     test('passes facing parameter to platform', () async {

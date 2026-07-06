@@ -294,9 +294,26 @@ internal class MobileScannerCameraLensSelectorTest {
     // the most capable autofocus on virtually all Android devices.
 
     @Test
-    fun getBestQrScanningLens_alwaysReturnsNormal() {
-        // getBestQrScanningLens does not use CameraManager characteristics on Android.
-        // It unconditionally returns LENS_TYPE_NORMAL (0).
-        assertEquals(MobileScannerCameraLensSelector.LENS_TYPE_NORMAL, 0)
+    fun getBestQrScanningLens_returnsNormalForBackFacing() {
+        assertEquals(
+            MobileScannerCameraLensSelector.LENS_TYPE_NORMAL,
+            MobileScannerCameraLensSelector.getBestQrScanningLens(facing = 1),
+        )
+    }
+
+    @Test
+    fun getBestQrScanningLens_returnsNormalForFrontFacing() {
+        assertEquals(
+            MobileScannerCameraLensSelector.LENS_TYPE_NORMAL,
+            MobileScannerCameraLensSelector.getBestQrScanningLens(facing = 0),
+        )
+    }
+
+    @Test
+    fun getBestQrScanningLens_defaultsToBackFacing() {
+        assertEquals(
+            MobileScannerCameraLensSelector.getBestQrScanningLens(facing = 1),
+            MobileScannerCameraLensSelector.getBestQrScanningLens(),
+        )
     }
 }

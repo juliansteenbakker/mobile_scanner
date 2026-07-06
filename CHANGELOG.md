@@ -1,3 +1,9 @@
+## 7.3.0
+
+**Highlights**
+
+* Added `getBestQrScanningLens()` to select the camera lens best suited for close-range QR scanning. On iOS 15+ it returns the lens with the shortest `AVCaptureDevice.minimumFocusDistance` (typically the ultra-wide lens with macro autofocus on newer iPhones, or the standard 1× camera on older models). Android returns `normal` (minimum focus distance is not reliably exposed for selectable logical cameras). Web and macOS fall back to `normal`.
+
 ## 7.2.1
 
 **Improvements**
