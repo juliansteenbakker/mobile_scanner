@@ -27,6 +27,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   static const String kNoCodeDetectedErrorMessage =
       'No MultiFormat Readers were able to detect the code.';
 
+  /// The scan window as a normalized [Rect] (values in [0, 1]) relative to the
+  /// camera texture. Barcodes whose bounding box does not overlap this rect are
+  /// filtered out.
+  Rect? _scanWindow;
+
   /// The listener for media track settings changes.
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
 
@@ -105,6 +110,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
+  void updateScanWindow(Rect? window) {
+    _scanWindow = window;
+  }
+
+  @override
   Stream<BarcodeCapture> detectBarcodes() {
     final controller = StreamController<BarcodeCapture>();
 
@@ -127,6 +137,14 @@ final class ZXingBarcodeReader extends BarcodeReader {
             if (result != null) {
               var barcode = result.toBarcode;
 
+              // Check the scan window using raw camera coordinates (before
+              // mirroring), because the scan window percentages are also in
+              // raw camera space.
+              if (!isInsideScanWindow(barcode, _scanWindow, videoSize)) {
+                return;
+              }
+
+              // Mirror corners for display after the scan window check.
               if (shouldMirrorStream(videoStream)) {
                 barcode = mirrorBarcodeX(barcode, videoSize.width);
               }
@@ -193,6 +211,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
+    _scanWindow = null;
     _reader?.stopContinuousDecode.callAsFunction(_reader);
     _reader?.reset.callAsFunction(_reader);
     _reader = null;
