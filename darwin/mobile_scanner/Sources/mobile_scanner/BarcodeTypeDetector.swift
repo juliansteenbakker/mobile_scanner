@@ -10,76 +10,72 @@ extension String {
     ///
     /// If any error occurs during detection, returns 0 (BarcodeType.unknown).
     func detectBarcodeType() -> Int {
-        do {
-            let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            // Return unknown if empty
-            if trimmed.isEmpty {
-                return 0 // BarcodeType.unknown
-            }
-            
-            let uppercased = trimmed.uppercased()
-            
-            // Check for ContactInfo (VCARD) - most specific structured format
-            if uppercased.hasPrefix("BEGIN:VCARD") {
-                return 1 // BarcodeType.contactInfo
-            }
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
         
-            // Check for CalendarEvent (VCALENDAR) - iCalendar format
-            if uppercased.hasPrefix("BEGIN:VCALENDAR") {
-                return 11 // BarcodeType.calendarEvent
-            }
-            
-            // Check for WiFi
-            if uppercased.hasPrefix("WIFI:") {
-                return 9 // BarcodeType.wifi
-            }
-            
-            // Check for Email
-            if uppercased.hasPrefix("MAILTO:") {
-                return 2 // BarcodeType.email
-            }
-            
-            // Check for Phone
-            if uppercased.hasPrefix("TEL:") {
-                return 4 // BarcodeType.phone
-            }
-            
-            // Check for SMS
-            if uppercased.hasPrefix("SMS:") {
-                return 6 // BarcodeType.sms
-            }
-            
-            // Check for Geo
-            if uppercased.hasPrefix("GEO:") {
-                return 10 // BarcodeType.geo
-            }
-            
-            // Check for URL bookmark (MEBKM format)
-            if uppercased.hasPrefix("MEBKM:") {
-                return 8 // BarcodeType.url
-            }
-            
-            // Check for HTTP/HTTPS URLs
-            if uppercased.hasPrefix("HTTP://") || uppercased.hasPrefix("HTTPS://") {
-                return 8 // BarcodeType.url
-            }
-            
-            // Check for ISBN
-            if isISBN() {
-                return 3 // BarcodeType.isbn
-            }
-            
-            // Check for Product codes (EAN/UPC)
-            if isProductCode() {
-                return 5 // BarcodeType.product
-            }
-            
-            // Default to text for unrecognized patterns
-            return 7 // BarcodeType.text
-        } catch {
+        // Return unknown if empty
+        if trimmed.isEmpty {
             return 0 // BarcodeType.unknown
         }
+        
+        let uppercased = trimmed.uppercased()
+        
+        // Check for ContactInfo (VCARD) - most specific structured format
+        if uppercased.hasPrefix("BEGIN:VCARD") {
+            return 1 // BarcodeType.contactInfo
+        }
+    
+        // Check for CalendarEvent (VCALENDAR) - iCalendar format
+        if uppercased.hasPrefix("BEGIN:VCALENDAR") {
+            return 11 // BarcodeType.calendarEvent
+        }
+        
+        // Check for WiFi
+        if uppercased.hasPrefix("WIFI:") {
+            return 9 // BarcodeType.wifi
+        }
+        
+        // Check for Email
+        if uppercased.hasPrefix("MAILTO:") {
+            return 2 // BarcodeType.email
+        }
+        
+        // Check for Phone
+        if uppercased.hasPrefix("TEL:") {
+            return 4 // BarcodeType.phone
+        }
+        
+        // Check for SMS
+        if uppercased.hasPrefix("SMS:") {
+            return 6 // BarcodeType.sms
+        }
+        
+        // Check for Geo
+        if uppercased.hasPrefix("GEO:") {
+            return 10 // BarcodeType.geo
+        }
+        
+        // Check for URL bookmark (MEBKM format)
+        if uppercased.hasPrefix("MEBKM:") {
+            return 8 // BarcodeType.url
+        }
+        
+        // Check for HTTP/HTTPS URLs
+        if uppercased.hasPrefix("HTTP://") || uppercased.hasPrefix("HTTPS://") {
+            return 8 // BarcodeType.url
+        }
+        
+        // Check for ISBN
+        if isISBN() {
+            return 3 // BarcodeType.isbn
+        }
+        
+        // Check for Product codes (EAN/UPC)
+        if isProductCode() {
+            return 5 // BarcodeType.product
+        }
+        
+        // Default to text for unrecognized patterns
+        return 7 // BarcodeType.text
     }
     
     /// Checks if the string matches ISBN-10 or ISBN-13 format.

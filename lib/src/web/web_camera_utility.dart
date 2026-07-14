@@ -1,9 +1,10 @@
 import 'dart:js_interop';
-import 'dart:ui';
 
-import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:web/web.dart' as web;
+
+export 'package:mobile_scanner/src/web/web_barcode_utils.dart'
+    show isInsideScanWindow, mirrorBarcodeX;
 
 /// Returns true if the video stream should be mirrored horizontally.
 ///
@@ -30,38 +31,4 @@ void maybeFlipVideoPreview(
   if (shouldMirrorStream(videoStream)) {
     videoElement.style.transform = 'scaleX(-1)';
   }
-}
-
-/// Returns a copy of [barcode] with all corner x-coordinates mirrored
-/// relative to [videoWidth].
-Barcode mirrorBarcodeX(Barcode barcode, double videoWidth) {
-  final corners = barcode.corners;
-
-  if (corners.isEmpty) {
-    return barcode;
-  }
-
-  // Mirror each x-coordinate.
-  final mirrored = corners.map((c) => Offset(videoWidth - c.dx, c.dy)).toList();
-
-  // Mirroring x reverses the clockwise winding order from
-  // [TL, TR, BR, BL] to [TR_m, TL_m, BL_m, BR_m].
-  // Swap TL↔TR and BL↔BR to restore [TL_m, TR_m, BR_m, BL_m].
-  final reordered =
-      mirrored.length == 4
-          ? [mirrored[1], mirrored[0], mirrored[3], mirrored[2]]
-          : mirrored;
-
-  return Barcode(
-    corners: reordered,
-    format: barcode.format,
-    displayValue: barcode.displayValue,
-    // Populate deprecated rawBytes for backward compatibility.
-    // ignore: deprecated_member_use_from_same_package
-    rawBytes: barcode.rawBytes,
-    rawDecodedBytes: barcode.rawDecodedBytes,
-    rawValue: barcode.rawValue,
-    size: barcode.size,
-    type: barcode.type,
-  );
 }
