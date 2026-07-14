@@ -63,6 +63,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// The texture ID for the camera view.
   int _textureId = 1;
 
+  /// The current scan window in widget coordinates, or null if not set.
+  Rect? _scanWindow;
+
   /// The video element for the camera view.
   late HTMLVideoElement _videoElement;
 
@@ -189,7 +192,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       return devices.any(
         (d) => d.kind == 'videoinput' && d.deviceId == deviceId,
       );
-    } on DOMException catch (_) {
+    } on Object catch (_) {
       return false;
     }
   }
@@ -279,7 +282,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return videoStream;
-    } on DOMException catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       // If the stored device ID failed, clear it so we don't retry it.
       if (useStoredDevice) {
         _preferredDeviceStorage.remove();
@@ -344,7 +347,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return <CameraLensType>{CameraLensType.any};
-    } on DOMException {
+    } on Object catch (_) {
       return <CameraLensType>{};
     }
   }
@@ -446,6 +449,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
         videoElement: _videoElement,
         videoStream: videoStream,
       );
+
+      // Re-apply the scan window if one was set before start() was called.
+      if (_scanWindow != null) {
+        _barcodeReader?.updateScanWindow(_scanWindow);
+      }
     } catch (error, stackTrace) {
       throw MobileScannerException(
         errorCode: MobileScannerErrorCode.genericError,
@@ -528,8 +536,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<void> updateScanWindow(Rect? window) {
-    // A scan window is not supported on the web,
-    // because the scanner does not expose size information for the barcodes.
+    _scanWindow = window;
+    _barcodeReader?.updateScanWindow(window);
+
     return Future<void>.value();
   }
 

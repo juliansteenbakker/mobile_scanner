@@ -6,10 +6,12 @@
 * [Web] Focus, exposure, and white-balance constraints are now applied automatically when supported by the browser (Image Capture API).
 * [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
+* [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
 
 **Bug Fixes**
 
 * [Apple] Fixed a race condition in `captureOutput` where `latestBuffer` was read on a background thread after being deallocated on the main thread, causing a crash in `VTCreateCGImageFromCVPixelBuffer`.
+* [Apple] Fixed an issue where `captureOutput` was being processed on the main thread, causing overheating issues on device.
 
 ## 7.2.0
 
