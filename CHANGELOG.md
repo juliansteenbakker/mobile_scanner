@@ -7,7 +7,7 @@
 * [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
 * [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
-* [Android] Added support for Android Gradle Plugin (AGP) 9 by migrating to Kotlin's built-in Gradle DSL, while remaining compatible with older AGP versions.
+* [Android] Laid groundwork for Android Gradle Plugin (AGP) 9 compatibility by conditionally applying the `kotlin-android` plugin only on AGP versions below 9, while remaining compatible with older AGP versions.
 
 **Bug Fixes**
 
