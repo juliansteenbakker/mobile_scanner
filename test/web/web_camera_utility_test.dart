@@ -34,7 +34,7 @@ void main() {
     group('degenerate inputs always return true', () {
       test('null scan window', () {
         final barcode = barcodeWithCorners(const [
-          Offset(0, 0),
+          Offset.zero,
           Offset(100, 0),
           Offset(100, 100),
           Offset(0, 100),
@@ -157,7 +157,7 @@ void main() {
     group('barcode fully outside window', () {
       test('barcode in top-left corner (above and left of window)', () {
         final barcode = barcodeWithCorners(const [
-          Offset(0, 0),
+          Offset.zero,
           Offset(100, 0),
           Offset(100, 100),
           Offset(0, 100),
@@ -244,7 +244,7 @@ void main() {
     test('full-frame scan window accepts any barcode', () {
       const fullWindow = Rect.fromLTRB(0, 0, 1, 1);
       final barcode = barcodeWithCorners(const [
-        Offset(0, 0),
+        Offset.zero,
         Offset(640, 0),
         Offset(640, 480),
         Offset(0, 480),
@@ -302,7 +302,7 @@ void main() {
 
     test('corner at x=0 moves to x=videoWidth', () {
       final barcode = barcodeWithCorners([
-        const Offset(0, 0),
+        Offset.zero,
         const Offset(width, 0),
         const Offset(width, 100),
         const Offset(0, 100),
@@ -319,7 +319,7 @@ void main() {
     test('preserves all barcode fields other than corners', () {
       const original = Barcode(
         corners: [
-          Offset(0, 0),
+          Offset.zero,
           Offset(100, 0),
           Offset(100, 100),
           Offset(0, 100),
@@ -367,18 +367,18 @@ void main() {
         format: BarcodeFormat.qrCode,
       );
 
-      final double_mirrored = mirrorBarcodeX(
+      final doubleMirrored = mirrorBarcodeX(
         mirrorBarcodeX(original, width),
         width,
       );
 
       for (var i = 0; i < 4; i++) {
         expect(
-          double_mirrored.corners[i].dx,
+          doubleMirrored.corners[i].dx,
           closeTo(original.corners[i].dx, 0.001),
         );
         expect(
-          double_mirrored.corners[i].dy,
+          doubleMirrored.corners[i].dy,
           closeTo(original.corners[i].dy, 0.001),
         );
       }
