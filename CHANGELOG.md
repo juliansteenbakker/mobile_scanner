@@ -7,11 +7,14 @@
 * [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
 * [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
+* [Android] Added support for Android Gradle Plugin (AGP) 9 by migrating to Kotlin's built-in Gradle DSL, while remaining compatible with older AGP versions.
 
 **Bug Fixes**
 
 * [Apple] Fixed a race condition in `captureOutput` where `latestBuffer` was read on a background thread after being deallocated on the main thread, causing a crash in `VTCreateCGImageFromCVPixelBuffer`.
 * [Apple] Fixed an issue where `captureOutput` was being processed on the main thread, causing overheating issues on device.
+* [Android] Fixed `start()` not resuming the camera after `pause()`, caused by the `isPaused` flag being reset before the paused-state check.
+* [Android] Fixed ProGuard/R8 full mode (default since AGP 8.0) stripping or obfuscating MLKit classes by widening the keep rule to `com.google.mlkit.**`.
 
 ## 7.2.0
 
