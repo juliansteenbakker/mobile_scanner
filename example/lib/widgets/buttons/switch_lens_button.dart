@@ -41,11 +41,12 @@ class _SwitchLensButtonState extends State<SwitchLensButton> {
 
   Future<void> _loadSupportedLenses() async {
     try {
-      final Set<CameraLensType> supportedLenses =
-          await widget.controller.getSupportedLenses();
+      final Set<CameraLensType> supportedLenses = await widget.controller
+          .getSupportedLenses();
       // Filter out 'any' from the list and keep only specific lens types
-      final List<CameraLensType> specificLenses =
-          supportedLenses.where((lens) => lens != CameraLensType.any).toList();
+      final List<CameraLensType> specificLenses = supportedLenses
+          .where((lens) => lens != CameraLensType.any)
+          .toList();
 
       if (specificLenses.isNotEmpty && mounted) {
         setState(() {

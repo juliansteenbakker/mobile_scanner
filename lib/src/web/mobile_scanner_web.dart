@@ -192,7 +192,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       return devices.any(
         (d) => d.kind == 'videoinput' && d.deviceId == deviceId,
       );
-    } on DOMException catch (_) {
+    } on Object catch (_) {
       return false;
     }
   }
@@ -282,7 +282,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return videoStream;
-    } on DOMException catch (error, stackTrace) {
+    } on Object catch (error, stackTrace) {
       // If the stored device ID failed, clear it so we don't retry it.
       if (useStoredDevice) {
         _preferredDeviceStorage.remove();
@@ -347,7 +347,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
       }
 
       return <CameraLensType>{CameraLensType.any};
-    } on DOMException {
+    } on Object catch (_) {
       return <CameraLensType>{};
     }
   }
