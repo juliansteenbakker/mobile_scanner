@@ -11,7 +11,7 @@ class PreferredDeviceStorage {
   String? read() {
     try {
       return window.localStorage.getItem(_kKey);
-    } on DOMException catch (_) {
+    } on Object catch (_) {
       return null;
     }
   }
@@ -20,7 +20,7 @@ class PreferredDeviceStorage {
   void write(String deviceId) {
     try {
       window.localStorage.setItem(_kKey, deviceId);
-    } on DOMException catch (_) {
+    } on Object catch (_) {
       // Ignore, e.g. Safari private browsing mode disables storage.
     }
   }
@@ -29,7 +29,7 @@ class PreferredDeviceStorage {
   void remove() {
     try {
       window.localStorage.removeItem(_kKey);
-    } on DOMException catch (_) {
+    } on Object catch (_) {
       // Ignore, e.g. Safari private browsing mode disables storage.
     }
   }
