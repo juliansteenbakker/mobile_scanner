@@ -24,7 +24,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flutter-version: ["3.32.x", ""]
+        include:
+          # Minimum supported Flutter version for the plugin. The example app
+          # requires a newer Flutter than the plugin does, so it is skipped here.
+          - flutter-version: "3.29.x"
+            pub-get-args: "--no-example"
+            analyze-paths: "lib test"
+          # Latest stable, which analyzes the plugin and the example app.
+          - flutter-version: ""
+            pub-get-args: ""
+            analyze-paths: "."
 
     steps:
       - name: Checkout Code
@@ -51,10 +60,10 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: flutter pub get ${{ matrix.pub-get-args }}
 
       - name: Lint Code
-        run: flutter analyze
+        run: flutter analyze ${{ matrix.analyze-paths }}
 
   formatting:
     name: Formatting
@@ -95,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flutter-version: ["3.32.x", ""]
+        flutter-version: ["3.29.x", ""]
 
     steps:
       - name: Checkout Repository
@@ -119,7 +128,7 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Install Dependencies
-        run: flutter pub get
+        run: flutter pub get --no-example
 
       - name: Run Unit Tests with Coverage
         run: flutter test --coverage
