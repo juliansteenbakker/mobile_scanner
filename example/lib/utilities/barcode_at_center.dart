@@ -93,14 +93,15 @@ Size _fixPortraitLandscape(Size imageSize, DeviceOrientation orientation) {
 
 List<Offset> _fixCorners(List<Offset> corners) {
   // Clone the original list to avoid side-effects
-  final sorted = List<Offset>.from(corners)..sort((a, b) {
-    // Prioritize y-axis (dy), and within that, the x-axis (dx)
-    int compare = a.dy.compareTo(b.dy);
-    if (compare == 0) {
-      compare = a.dx.compareTo(b.dx);
-    }
-    return compare;
-  });
+  final sorted = List<Offset>.from(corners)
+    ..sort((a, b) {
+      // Prioritize y-axis (dy), and within that, the x-axis (dx)
+      int compare = a.dy.compareTo(b.dy);
+      if (compare == 0) {
+        compare = a.dx.compareTo(b.dx);
+      }
+      return compare;
+    });
 
   final Offset topLeft = sorted.first; // smallest x, smallest y
   final Offset topRight = sorted[1]; // larger x, smaller y
