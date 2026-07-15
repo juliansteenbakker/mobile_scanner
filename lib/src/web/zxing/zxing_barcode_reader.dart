@@ -242,6 +242,8 @@ extension on BarcodeFormat {
       BarcodeFormat.maxiCode => 9,
       BarcodeFormat.pdf417 => 10,
       BarcodeFormat.qrCode => 11,
+      BarcodeFormat.dataBar => 12,
+      BarcodeFormat.dataBarExpanded => 13,
       BarcodeFormat.upcA => 14,
       BarcodeFormat.upcE => 15,
       BarcodeFormat.microQrCode => 17,

@@ -45,10 +45,8 @@ extension type Result(JSObject _) implements JSObject {
       9 => BarcodeFormat.maxiCode,
       10 => BarcodeFormat.pdf417,
       11 => BarcodeFormat.qrCode,
-      // RSS 14
-      12 => BarcodeFormat.unknown,
-      // RSS EXPANDED
-      13 => BarcodeFormat.unknown,
+      12 => BarcodeFormat.dataBar,
+      13 => BarcodeFormat.dataBarExpanded,
       14 => BarcodeFormat.upcA,
       15 => BarcodeFormat.upcE,
       // UPC/EAN extension
