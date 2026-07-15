@@ -59,7 +59,16 @@ enum BarcodeFormat {
   maxiCode(8192),
 
   /// Barcode format constant for Micro QR Code.
-  microQrCode(16384);
+  microQrCode(16384),
+
+  /// Barcode format constant for GS1 DataBar (RSS-14).
+  dataBar(32768),
+
+  /// Barcode format constant for GS1 DataBar Expanded (RSS Expanded).
+  dataBarExpanded(65536),
+
+  /// Barcode format constant for GS1 DataBar Limited.
+  dataBarLimited(131072);
 
   const BarcodeFormat(this.rawValue);
 
@@ -103,6 +112,12 @@ enum BarcodeFormat {
         return BarcodeFormat.maxiCode;
       case 16384:
         return BarcodeFormat.microQrCode;
+      case 32768:
+        return BarcodeFormat.dataBar;
+      case 65536:
+        return BarcodeFormat.dataBarExpanded;
+      case 131072:
+        return BarcodeFormat.dataBarLimited;
       default:
         throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }
