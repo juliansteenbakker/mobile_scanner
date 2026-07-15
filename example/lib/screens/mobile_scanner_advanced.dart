@@ -15,6 +15,7 @@ import 'package:mobile_scanner_example/widgets/dialogs/box_fit_dialog.dart';
 import 'package:mobile_scanner_example/widgets/dialogs/detection_speed_dialog.dart';
 import 'package:mobile_scanner_example/widgets/dialogs/detection_timeout_dialog.dart';
 import 'package:mobile_scanner_example/widgets/dialogs/resolution_dialog.dart';
+import 'package:mobile_scanner_example/widgets/dialogs/web_barcode_reader_dialog.dart';
 import 'package:mobile_scanner_example/widgets/scanned_barcode_label.dart';
 import 'package:mobile_scanner_example/widgets/scanner_error_widget.dart';
 import 'package:mobile_scanner_example/widgets/zoom_scale_slider_widget.dart';
@@ -31,6 +32,7 @@ enum _PopupMenuItems {
   formats,
   scanWindow,
   showSupportedLenses,
+  webBarcodeReader,
 }
 
 /// Implementation of Mobile Scanner example with advanced configuration
@@ -46,6 +48,9 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   MobileScannerController? controller;
 
   bool useScanWindow = true;
+
+  /// The currently selected web barcode reader backend (web-only).
+  WebBarcodeReader selectedWebReader = WebBarcodeReader.auto;
 
   bool autoZoom = false;
   bool invertImage = false;
@@ -85,12 +90,24 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   void initState() {
     super.initState();
     controller = initController();
-    unawaited(controller!.start());
+    if (kIsWeb) {
+      MobileScannerPlatform.instance.setWebBarcodeReader(selectedWebReader);
+    }
+    unawaited(_start());
   }
 
   @override
-  Future<void> dispose() async {
+  void dispose() {
     super.dispose();
+    unawaited(_stop());
+  }
+
+  Future<void> _start() async {
+    await controller!.start();
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _stop() async {
     await controller?.dispose();
     controller = null;
   }
@@ -149,6 +166,20 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     }
   }
 
+  Future<void> _showWebBarcodeReaderDialog() async {
+    final WebBarcodeReader? result = await showDialog<WebBarcodeReader>(
+      context: context,
+      builder: (context) =>
+          WebBarcodeReaderDialog(selectedReader: selectedWebReader),
+    );
+
+    if (result != null) {
+      setState(() {
+        selectedWebReader = result;
+      });
+    }
+  }
+
   Future<void> _showBarcodeFormatDialog() async {
     final List<BarcodeFormat>? result = await showDialog<List<BarcodeFormat>>(
       context: context,
@@ -189,12 +220,18 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     // Create a new controller with updated configuration
     controller = initController();
 
+    // Apply the web reader preference before starting.
+    if (kIsWeb) {
+      MobileScannerPlatform.instance.setWebBarcodeReader(selectedWebReader);
+    }
+
     // Show the scanner again
     setState(() => hideMobileScannerWidget = false);
     await Future<void>.delayed(const Duration(milliseconds: 300));
 
     // Start scanning again
     await controller?.start();
+    if (mounted) setState(() {});
   }
 
   Future<void> _onLensTypeChanged(CameraLensType newLensType) async {
@@ -304,6 +341,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 case _PopupMenuItems.showSupportedLenses:
                   await _showSupportedLenses();
                   return; // Don't reinitialize for this action
+                case _PopupMenuItems.webBarcodeReader:
+                  await _showWebBarcodeReaderDialog();
               }
 
               // Rebuild and restart the controller with updated settings
@@ -364,6 +403,16 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 checked: useScanWindow,
                 child: Text(_PopupMenuItems.scanWindow.name),
               ),
+              if (kIsWeb) ...[
+                const PopupMenuDivider(),
+                PopupMenuItem(
+                  value: _PopupMenuItems.webBarcodeReader,
+                  child: Text(
+                    'Web reader: '
+                    '${selectedWebReader.shortLabel}',
+                  ),
+                ),
+              ],
             ],
           ),
         ],
@@ -469,6 +518,10 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                             barcodes: controller!.barcodes,
                           ),
                         ),
+                        if (kIsWeb)
+                          _WebReaderBadge(
+                            preferredReader: selectedWebReader,
+                          ),
                         if (!kIsWeb) ZoomScaleSlider(controller: controller!),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -492,6 +545,41 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                 ),
               ],
             ),
+    );
+  }
+}
+
+/// Small badge that shows the currently active web barcode reader.
+///
+/// Reads `MobileScannerPlatform.instance.activeWebReader` on every build.
+/// The displayed name updates after the scanner is (re)started.
+class _WebReaderBadge extends StatelessWidget {
+  const _WebReaderBadge({required this.preferredReader});
+
+  final WebBarcodeReader preferredReader;
+
+  @override
+  Widget build(BuildContext context) {
+    final WebBarcodeReader? active =
+        MobileScannerPlatform.instance.activeWebReader;
+
+    final label = active != null
+        ? 'Reader: ${active.label}'
+        : 'Reader: ${preferredReader.label} (not started)';
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.info_outline, color: Colors.white70, size: 14),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
+          ),
+        ],
+      ),
     );
   }
 }

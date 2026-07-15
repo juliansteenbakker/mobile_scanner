@@ -9,17 +9,20 @@ import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/enums/web_barcode_reader.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
+import 'package:mobile_scanner/src/web/barcode_detector/barcode_detector_reader.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:mobile_scanner/src/web/preferred_device_storage.dart';
 import 'package:mobile_scanner/src/web/web_camera_utility.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_barcode_reader.dart';
+import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_barcode_reader.dart';
 import 'package:web/web.dart';
 
 /// A web implementation of the MobileScannerPlatform of the MobileScanner
@@ -33,6 +36,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   /// The alternate script url for the barcode library.
   String? _alternateScriptUrl;
+
+  /// The preferred web barcode reader backend.
+  WebBarcodeReader _preferredWebReader = WebBarcodeReader.auto;
+
+  /// The barcode reader that is currently active.
+  WebBarcodeReader? _activeWebReader;
 
   /// The internal barcode reader.
   BarcodeReader? _barcodeReader;
@@ -145,7 +154,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// Apply focus, exposure, and white-balance constraints to [track] if the
   /// browser supports them (part of the Image Capture API).
   ///
-  /// Silently ignores any errors — these constraints are best-effort.
+  /// Silently ignores any errors. These constraints are best-effort.
   Future<void> _applyVideoConstraints(MediaStreamTrack track) async {
     try {
       final caps = track.getCapabilities();
@@ -366,6 +375,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  void setWebBarcodeReader(WebBarcodeReader reader) {
+    _preferredWebReader = reader;
+  }
+
+  @override
+  WebBarcodeReader? get activeWebReader => _activeWebReader;
+
+  @override
   Future<void> setZoomScale(double zoomScale) {
     throw UnsupportedError(
       'Setting the zoom scale is not supported for video tracks on the web.\n'
@@ -410,7 +427,28 @@ class MobileScannerWeb extends MobileScannerPlatform {
       await stop();
     }
 
-    _barcodeReader = ZXingBarcodeReader();
+    // Select the barcode reader based on the preferred backend.
+    switch (_preferredWebReader) {
+      case WebBarcodeReader.barcodeDetector:
+        _barcodeReader = BarcodeDetectorReader();
+        _activeWebReader = _preferredWebReader;
+      case WebBarcodeReader.zxingWasm:
+        _barcodeReader = ZXingWasmBarcodeReader();
+        _activeWebReader = _preferredWebReader;
+      case WebBarcodeReader.zxingJs:
+        _barcodeReader = ZXingBarcodeReader();
+        _activeWebReader = _preferredWebReader;
+      case WebBarcodeReader.auto:
+        // Use the native BarcodeDetector API when available (Chrome/Edge/Safari
+        // 17+), fall back to zxing-wasm for Firefox and older browsers.
+        if (await BarcodeDetectorReader.isSupported()) {
+          _barcodeReader = BarcodeDetectorReader();
+          _activeWebReader = WebBarcodeReader.barcodeDetector;
+        } else {
+          _barcodeReader = ZXingWasmBarcodeReader();
+          _activeWebReader = WebBarcodeReader.zxingWasm;
+        }
+    }
 
     await _barcodeReader?.maybeLoadLibrary(
       alternateScriptUrl: _alternateScriptUrl,
@@ -519,6 +557,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     await _barcodeReader?.stop();
     _barcodeReader = null;
+    _activeWebReader = null;
   }
 
   @override
