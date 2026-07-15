@@ -169,9 +169,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   Future<void> _showWebBarcodeReaderDialog() async {
     final WebBarcodeReader? result = await showDialog<WebBarcodeReader>(
       context: context,
-      builder:
-          (context) =>
-              WebBarcodeReaderDialog(selectedReader: selectedWebReader),
+      builder: (context) =>
+          WebBarcodeReaderDialog(selectedReader: selectedWebReader),
     );
 
     if (result != null) {
@@ -410,7 +409,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   value: _PopupMenuItems.webBarcodeReader,
                   child: Text(
                     'Web reader: '
-                        '${selectedWebReader.shortLabel}',
+                    '${selectedWebReader.shortLabel}',
                   ),
                 ),
               ],
@@ -564,10 +563,9 @@ class _WebReaderBadge extends StatelessWidget {
     final WebBarcodeReader? active =
         MobileScannerPlatform.instance.activeWebReader;
 
-    final label =
-        active != null
-            ? 'Reader: ${active.label}'
-            : 'Reader: ${preferredReader.label} (not started)';
+    final label = active != null
+        ? 'Reader: ${active.label}'
+        : 'Reader: ${preferredReader.label} (not started)';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
