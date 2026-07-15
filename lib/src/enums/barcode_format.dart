@@ -53,7 +53,13 @@ enum BarcodeFormat {
   pdf417(2048),
 
   /// Barcode format constant for AZTEC.
-  aztec(4096);
+  aztec(4096),
+
+  /// Barcode format constant for MaxiCode.
+  maxiCode(8192),
+
+  /// Barcode format constant for Micro QR Code.
+  microQrCode(16384);
 
   const BarcodeFormat(this.rawValue);
 
@@ -93,6 +99,10 @@ enum BarcodeFormat {
         return BarcodeFormat.pdf417;
       case 4096:
         return BarcodeFormat.aztec;
+      case 8192:
+        return BarcodeFormat.maxiCode;
+      case 16384:
+        return BarcodeFormat.microQrCode;
       default:
         throw ArgumentError.value(value, 'value', 'Invalid raw value.');
     }

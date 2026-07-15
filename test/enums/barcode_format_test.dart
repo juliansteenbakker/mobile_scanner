@@ -22,6 +22,8 @@ void main() {
         1024: BarcodeFormat.upcE,
         2048: BarcodeFormat.pdf417,
         4096: BarcodeFormat.aztec,
+        8192: BarcodeFormat.maxiCode,
+        16384: BarcodeFormat.microQrCode,
       };
 
       for (final entry in values.entries) {
@@ -45,7 +47,7 @@ void main() {
 
     test('invalid raw value throws argument error', () {
       const negative = -2;
-      const outOfRange = 4097;
+      const outOfRange = 16385;
 
       expect(() => BarcodeFormat.fromRawValue(negative), throwsArgumentError);
       expect(() => BarcodeFormat.fromRawValue(outOfRange), throwsArgumentError);
@@ -71,6 +73,8 @@ void main() {
         BarcodeFormat.upcE: 1024,
         BarcodeFormat.pdf417: 2048,
         BarcodeFormat.aztec: 4096,
+        BarcodeFormat.maxiCode: 8192,
+        BarcodeFormat.microQrCode: 16384,
       };
 
       for (final entry in values.entries) {

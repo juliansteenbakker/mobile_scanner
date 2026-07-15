@@ -239,10 +239,12 @@ extension on BarcodeFormat {
       // ITF 2 of 5 is not supported by ZXing.
       BarcodeFormat.itf2of5 || BarcodeFormat.itf2of5WithChecksum => 8,
       BarcodeFormat.itf || BarcodeFormat.itf14 => 8,
+      BarcodeFormat.maxiCode => 9,
       BarcodeFormat.pdf417 => 10,
       BarcodeFormat.qrCode => 11,
       BarcodeFormat.upcA => 14,
       BarcodeFormat.upcE => 15,
+      BarcodeFormat.microQrCode => 17,
       BarcodeFormat.unknown || BarcodeFormat.all || _ => -1,
     };
 

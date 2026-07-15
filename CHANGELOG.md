@@ -8,6 +8,11 @@
   * `WebBarcodeReader.zxingWasm`, uses zxing-wasm (ZXing C++ compiled to WebAssembly), which works in all modern browsers including Firefox.
   * `WebBarcodeReader.zxingJs`, the legacy ZXing JavaScript backend, retained for backward compatibility.
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
+* Added `BarcodeFormat.maxiCode` and `BarcodeFormat.microQrCode`, supported by the `WebBarcodeReader.zxingJs` backend.
+
+**Improvements**
+
+* [Web] Bumped `@zxing/library` (the `WebBarcodeReader.zxingJs` backend) from 0.21.3 to 0.23.0.
 
 **Bug Fixes**
 
