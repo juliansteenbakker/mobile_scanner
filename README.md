@@ -35,7 +35,7 @@ See the example app for detailed implementation information.
 | scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
 | autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
-| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: |
+| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
 
 ### Querying supported lens types with facing filter
 
@@ -56,6 +56,8 @@ if (backLenses.contains(CameraLensType.zoom)) {
 ```
 
 Without a facing filter, results may include lenses from both the front and back cameras, which can cause incorrect lens-type detection when switching cameras.
+
+The `facing` filter is supported on Android and iOS. On macOS and the web, the filter is ignored and all lenses are returned.
 
 ## Installation
 

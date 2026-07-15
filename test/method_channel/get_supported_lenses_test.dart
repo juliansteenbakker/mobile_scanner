@@ -445,8 +445,7 @@ void main() {
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
-              final args = methodCall.arguments as Map?;
-              if (args?['facing'] == 1) {
+              if (methodCall.arguments case {'facing': 1}) {
                 return [
                   CameraLensType.normal.rawValue,
                   CameraLensType.zoom.rawValue,
@@ -474,8 +473,7 @@ void main() {
           ) async {
             if (methodCall.method ==
                 MethodChannelMobileScanner.kGetSupportedLensesMethodName) {
-              final args = methodCall.arguments as Map?;
-              if (args?['facing'] == 0) {
+              if (methodCall.arguments case {'facing': 0}) {
                 return [CameraLensType.normal.rawValue];
               }
               return [

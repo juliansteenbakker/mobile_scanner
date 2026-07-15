@@ -208,9 +208,9 @@ object MobileScannerCameraLensSelector {
     /**
      * Get the list of supported lens types on a device.
      *
-     * Analyzes cameras and categorizes them by their 35mm equivalent focal lengths.
-     * On Android 9 (API 28) and above, this also checks physical cameras within logical
-     * multi-camera devices to detect all available lenses.
+     * Analyzes the available logical cameras and categorizes them by their 35mm equivalent
+     * focal lengths. Physical sub-cameras of logical multi-camera devices are not inspected,
+     * because CameraX can only select cameras at the logical level.
      *
      * @param cameraManager The CameraManager instance
      * @param facing Optional facing filter: 0 = front, 1 = back. When null, all cameras are included.

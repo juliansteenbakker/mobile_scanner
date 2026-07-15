@@ -108,14 +108,17 @@ class MobileScannerCameraSelector {
 
     /// Get the list of supported lens types on this device.
     ///
+    /// - Parameter facing: Optional camera position filter. When nil, all cameras are included.
     /// - Returns: A sorted array of supported LensType raw values
-    static func getSupportedLenses() -> [Int] {
+    static func getSupportedLenses(facing: AVCaptureDevice.Position? = nil) -> [Int] {
 #if os(iOS)
         if #available(iOS 13.0, *) {
             var supportedLenses = Set<Int>()
 
-            // Check both back and front cameras
-            for position: AVCaptureDevice.Position in [.back, .front] {
+            // Check the requested camera position, or both back and front when no filter is given.
+            let positions: [AVCaptureDevice.Position] = facing.map { [$0] } ?? [.back, .front]
+
+            for position in positions {
                 let devices = AVCaptureDevice.DiscoverySession(
                     deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
                     mediaType: .video,
@@ -131,11 +134,13 @@ class MobileScannerCameraSelector {
 
             return supportedLenses.sorted()
         } else {
-            // iOS < 13.0: assume at least wide-angle camera is available
+            // iOS < 13.0: assume at least wide-angle camera is available.
+            // The facing filter is ignored, as lenses cannot be enumerated per position.
             return [LensType.wideAngle.rawValue]
         }
 #else
-        // macOS: assume at least wide-angle camera is available
+        // macOS: assume at least wide-angle camera is available.
+        // The facing filter is ignored, as only a front camera is used on macOS.
         return [LensType.wideAngle.rawValue]
 #endif
     }

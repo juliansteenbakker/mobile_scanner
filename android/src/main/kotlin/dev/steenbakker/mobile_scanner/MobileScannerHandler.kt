@@ -300,7 +300,8 @@ class MobileScannerHandler(
     /**
      * Get the list of supported lens types on this device for a given facing direction.
      *
-     * Accepts an optional "facing" argument (0 = front, 1 = back). Defaults to back.
+     * Accepts an optional "facing" argument (0 = front, 1 = back).
+     * When omitted, lenses for all cameras are returned.
      */
     private fun getSupportedLenses(call: MethodCall, result: MethodChannel.Result) {
         val facing: Int? = call.argument<Int>("facing")

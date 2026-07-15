@@ -7,12 +7,14 @@
 * [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
 * [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
+* Added an optional `facing` filter to `getSupportedLenses`, to restrict the result to front or back cameras. The filter is supported on Android and iOS, and is ignored on macOS and the web.
 
 **Bug Fixes**
 
 * [Apple] Fixed a race condition in `captureOutput` where `latestBuffer` was read on a background thread after being deallocated on the main thread, causing a crash in `VTCreateCGImageFromCVPixelBuffer`.
 * [Apple] Fixed an issue where `captureOutput` was being processed on the main thread, causing overheating issues on device.
-* [Apple] Fixed `getSupportedLenses` enumerating constituent physical cameras of virtual devices, which returned duplicate/unavailable lenses. It now only enumerates logical cameras. Also added an optional `facing` filter to `getSupportedLenses`.
+* [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
+* [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
 
 ## 7.2.0
 

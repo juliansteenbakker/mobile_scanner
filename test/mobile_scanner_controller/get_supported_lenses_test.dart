@@ -77,8 +77,7 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   }
 }
 
-class FakeMobileScannerPlatformWithFacingCapture
-    extends MobileScannerPlatform {
+class FakeMobileScannerPlatformWithFacingCapture extends MobileScannerPlatform {
   FakeMobileScannerPlatformWithFacingCapture(
     Set<CameraLensType> supportedLenses,
   ) : _supportedLenses = supportedLenses;
