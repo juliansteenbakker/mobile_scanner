@@ -8,7 +8,7 @@
 library;
 
 /// The pinned version of the legacy `@zxing/library` JavaScript library.
-const String zxingJsVersion = '0.21.3';
+const String zxingJsVersion = '0.23.0';
 
 /// The pinned version of the `zxing-wasm` library.
 ///
