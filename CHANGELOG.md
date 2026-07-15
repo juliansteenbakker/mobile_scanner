@@ -15,6 +15,8 @@
 
 **Bug Fixes**
 
+* Fixed disposing a `MobileScannerController` also disposing the platform resources of a different controller. Disposing a controller that does not hold the active camera session no longer tears down the camera of the controller that does. ([#1631](https://github.com/juliansteenbakker/mobile_scanner/issues/1631))
+* Fixed a subscription leak where a controller that was disposed without being stopped kept its internal event stream subscriptions alive.
 * [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
 * [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
 
