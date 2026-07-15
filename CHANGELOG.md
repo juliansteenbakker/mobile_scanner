@@ -1,13 +1,15 @@
-## 7.2.1
+## 7.3.0
 
 **New features**
 
-* [Web] Added support for three barcode detection backends, selectable via `MobileScannerPlatform.instance.setWebBarcodeReader(WebBarcodeReader reader)`:
+* [Web] Added support for multiple barcode detection backends, selectable via `MobileScannerPlatform.instance.setWebBarcodeReader(WebBarcodeReader reader)`:
   * `WebBarcodeReader.auto` (default), uses the native `BarcodeDetector` API when available, and falls back to `zxing-wasm` otherwise.
   * `WebBarcodeReader.barcodeDetector`, uses the W3C Shape Detection API (Chrome 83+, Edge 83+, Safari 17+). No external library is loaded.
   * `WebBarcodeReader.zxingWasm`, uses zxing-wasm (ZXing C++ compiled to WebAssembly), which works in all modern browsers including Firefox.
   * `WebBarcodeReader.zxingJs`, the legacy ZXing JavaScript backend, retained for backward compatibility.
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
+
+## 7.2.1
 
 **Improvements**
 
