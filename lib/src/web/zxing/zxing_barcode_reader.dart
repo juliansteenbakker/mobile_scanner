@@ -11,6 +11,7 @@ import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
 import 'package:mobile_scanner/src/web/web_camera_utility.dart';
+import 'package:mobile_scanner/src/web/web_library_versions.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_exception.dart';
@@ -63,7 +64,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
   web.MediaStream? get videoStream => _reader?.stream;
 
   @override
-  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.21.3';
+  String get scriptId => 'mobile-scanner-zxing-js';
+
+  @override
+  String get scriptUrl => 'https://unpkg.com/@zxing/library@$zxingJsVersion';
 
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {

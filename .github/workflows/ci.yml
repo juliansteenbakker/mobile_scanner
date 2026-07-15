@@ -37,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -50,7 +50,7 @@ jobs:
         run: flutter doctor -v
 
       - name: Cache Pub Dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -72,7 +72,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -81,7 +81,7 @@ jobs:
           cache: true
 
       - name: Cache Pub Dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -108,7 +108,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -118,7 +118,7 @@ jobs:
           cache: true
 
       - name: Cache Pub Dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache
@@ -140,7 +140,7 @@ jobs:
           path: coverage/lcov.info
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v6
+        uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
@@ -156,7 +156,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up JDK 17
         uses: actions/setup-java@v5
@@ -171,7 +171,7 @@ jobs:
           cache: true
 
       - name: Cache Gradle
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
@@ -209,7 +209,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -233,7 +233,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -257,7 +257,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Set Up Flutter
         uses: subosito/flutter-action@v2
@@ -266,7 +266,7 @@ jobs:
           cache: true
 
       - name: Cache Pub Dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: |
             ~/.pub-cache

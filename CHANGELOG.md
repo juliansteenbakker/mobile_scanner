@@ -1,3 +1,23 @@
+## 7.3.0
+
+**New features**
+
+* [Web] Added support for multiple barcode detection backends, selectable via `MobileScannerPlatform.instance.setWebBarcodeReader(WebBarcodeReader reader)`:
+  * `WebBarcodeReader.auto` (default), uses the native `BarcodeDetector` API when available, and falls back to `zxing-wasm` otherwise.
+  * `WebBarcodeReader.barcodeDetector`, uses the W3C Shape Detection API (Chrome 83+, Edge 83+, Safari 17+). No external library is loaded.
+  * `WebBarcodeReader.zxingWasm`, uses zxing-wasm (ZXing C++ compiled to WebAssembly), which works in all modern browsers including Firefox.
+  * `WebBarcodeReader.zxingJs`, the legacy ZXing JavaScript backend, retained for backward compatibility.
+* [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
+
+**Improvements**
+
+* Added an optional `facing` filter to `getSupportedLenses`, to restrict the result to front or back cameras. The filter is supported on Android and iOS, and is ignored on macOS and the web.
+
+**Bug Fixes**
+
+* [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
+* [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
+
 ## 7.2.1
 
 **Improvements**
@@ -7,14 +27,14 @@
 * [Web] The camera now uses `StartOptions.cameraResolution` as the ideal resolution, falling back to 1920×1080.
 * [Web] The barcode overlay is now mirrored when the video preview is mirrored (e.g. front camera).
 * [Web] The scan window is now supported. Barcodes detected outside the scan window are ignored.
-* Added an optional `facing` filter to `getSupportedLenses`, to restrict the result to front or back cameras. The filter is supported on Android and iOS, and is ignored on macOS and the web.
+* [Android] Laid groundwork for Android Gradle Plugin (AGP) 9 compatibility by conditionally applying the `kotlin-android` plugin only on AGP versions below 9, while remaining compatible with older AGP versions.
 
 **Bug Fixes**
 
 * [Apple] Fixed a race condition in `captureOutput` where `latestBuffer` was read on a background thread after being deallocated on the main thread, causing a crash in `VTCreateCGImageFromCVPixelBuffer`.
 * [Apple] Fixed an issue where `captureOutput` was being processed on the main thread, causing overheating issues on device.
-* [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
-* [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
+* [Android] Fixed `start()` not resuming the camera after `pause()`, caused by the `isPaused` flag being reset before the paused-state check.
+* [Android] Fixed ProGuard/R8 full mode (default since AGP 8.0) stripping or obfuscating MLKit classes by widening the keep rule to `com.google.mlkit.**`.
 
 ## 7.2.0
 

@@ -1,15 +1,18 @@
+import com.android.Version
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 group = 'dev.steenbakker.mobile_scanner'
 version = '1.0-SNAPSHOT'
 
 buildscript {
-    ext.kotlin_version = "2.3.20"
+    ext.kotlin_version = "2.4.10"
     repositories {
         google()
         mavenCentral()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'com.android.tools.build:gradle:8.13.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
@@ -22,7 +25,11 @@ allprojects {
 }
 
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android'
+
+def agpMajor = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
+if (agpMajor < 9) {
+    apply plugin: 'kotlin-android'
+}
 
 android {
     if (project.android.hasProperty("namespace")) {
@@ -34,10 +41,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_17.toString()
     }
 
     sourceSets {
@@ -60,20 +63,20 @@ android {
             implementation 'com.google.mlkit:barcode-scanning:17.3.0'
         }
 
-        implementation 'androidx.camera:camera-lifecycle:1.6.0'
-        implementation 'androidx.camera:camera-camera2:1.6.0'
-        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.10.2'
+        implementation 'androidx.camera:camera-lifecycle:1.6.1'
+        implementation 'androidx.camera:camera-camera2:1.6.1'
+        implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0'
 
         testImplementation 'org.jetbrains.kotlin:kotlin-test'
-        testImplementation 'org.mockito:mockito-core:5.22.0'
+        testImplementation 'org.mockito:mockito-core:5.23.0'
 
         // Robolectric provides real implementations of the Android framework
         // classes (Rect, Point, ArrayMap) that the stub android.jar throws on.
         // It is JUnit 4 based, so the vintage engine runs it on the JUnit
         // Platform alongside the JUnit 5 tests.
-        testImplementation 'org.robolectric:robolectric:4.15.1'
+        testImplementation 'org.robolectric:robolectric:4.16.1'
         testImplementation 'junit:junit:4.13.2'
-        testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:5.11.4'
+        testRuntimeOnly 'org.junit.vintage:junit-vintage-engine:6.1.2'
     }
 
     testOptions {
@@ -88,5 +91,11 @@ android {
                 showStandardStreams = true
             }
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }

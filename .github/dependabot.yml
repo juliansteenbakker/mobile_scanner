@@ -36,3 +36,16 @@
        include: "scope"
      reviewers:
        - "juliansteenbakker"
+   # Tracks the CDN-loaded web barcode libraries via the package.json at the
+   # repository root. The pinned versions in
+   # lib/src/web/web_library_versions.dart must be updated to match; the test
+   # in test/web/web_library_versions_test.dart enforces this.
+   - package-ecosystem: "npm"
+     directory: "/"
+     schedule:
+       interval: "weekly"
+     commit-message:
+       prefix: "chore"
+       include: "scope"
+     reviewers:
+       - "juliansteenbakker"

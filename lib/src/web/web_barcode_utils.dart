@@ -44,6 +44,23 @@ bool isInsideScanWindow(Barcode barcode, Rect? scanWindow, Size videoSize) {
       barcodeRect.bottom <= scanWindow.bottom;
 }
 
+/// Returns the size of the axis-aligned bounding box of [corners].
+///
+/// Returns [Size.zero] when [corners] does not contain exactly four points.
+Size computeBoundingBoxSize(List<Offset> corners) {
+  if (corners.length != 4) {
+    return Size.zero;
+  }
+
+  final xs = corners.map((c) => c.dx);
+  final ys = corners.map((c) => c.dy);
+
+  return Size(
+    xs.reduce(math.max) - xs.reduce(math.min),
+    ys.reduce(math.max) - ys.reduce(math.min),
+  );
+}
+
 /// Returns a copy of [barcode] with all corner x-coordinates mirrored
 /// relative to [videoWidth].
 Barcode mirrorBarcodeX(Barcode barcode, double videoWidth) {

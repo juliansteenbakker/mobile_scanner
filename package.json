@@ -1,0 +1,9 @@
+{
+  "name": "mobile-scanner-web-dependencies",
+  "private": true,
+  "description": "Tracks the pinned versions of the barcode libraries that the web implementation loads from a CDN. This file exists so that Dependabot can detect and propose updates. It is kept in sync with lib/src/web/web_library_versions.dart by test/web/web_library_versions_test.dart.",
+  "dependencies": {
+    "@zxing/library": "0.21.3",
+    "zxing-wasm": "3.1.1"
+  }
+}
