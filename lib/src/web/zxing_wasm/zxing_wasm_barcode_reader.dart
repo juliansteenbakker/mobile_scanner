@@ -4,6 +4,7 @@ import 'package:mobile_scanner/src/enums/barcode_format.dart';
 import 'package:mobile_scanner/src/objects/barcode.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/polling_barcode_reader.dart';
+import 'package:mobile_scanner/src/web/web_library_versions.dart';
 import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_formats.dart';
 import 'package:mobile_scanner/src/web/zxing_wasm/zxing_wasm_result.dart';
 import 'package:web/web.dart' as web;
@@ -20,11 +21,11 @@ extension type _CanvasContextAttributes._(JSObject _) implements JSObject {
 /// A barcode reader that uses zxing-wasm (zxing-cpp compiled to WebAssembly).
 ///
 /// Frames are extracted by drawing the video element onto an off-screen canvas
-/// on each tick, then passed to `ZXingWasmModule.readBarcodesFromImageData`.
+/// on each tick, then passed to `ZXingWasmModule.readBarcodes`.
 ///
 /// The IIFE build is loaded from jsDelivr. Once loaded it exposes
 /// `window.ZXingWASM`; the WASM binary is lazy-fetched on the first call to
-/// `readBarcodesFromImageData`.
+/// `readBarcodes`.
 final class ZXingWasmBarcodeReader extends PollingBarcodeReader {
   /// Construct a new [ZXingWasmBarcodeReader] instance.
   ZXingWasmBarcodeReader();
@@ -37,7 +38,8 @@ final class ZXingWasmBarcodeReader extends PollingBarcodeReader {
   // corresponding update here.
   @override
   String get scriptUrl =>
-      'https://cdn.jsdelivr.net/npm/zxing-wasm@2.2.4/dist/iife/reader/index.js';
+      'https://cdn.jsdelivr.net/npm/zxing-wasm@$zxingWasmVersion'
+      '/dist/iife/reader/index.js';
 
   web.HTMLCanvasElement? _canvas;
   web.CanvasRenderingContext2D? _ctx;
@@ -88,7 +90,7 @@ final class ZXingWasmBarcodeReader extends PollingBarcodeReader {
 
     final jsResults =
         await zxingWasmModule
-            .readBarcodesFromImageData(imageData, _buildReaderOptions())
+            .readBarcodes(imageData, _buildReaderOptions())
             .toDart;
 
     return [

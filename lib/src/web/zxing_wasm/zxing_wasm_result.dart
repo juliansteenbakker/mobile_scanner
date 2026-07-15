@@ -21,13 +21,13 @@ extension type ZXingWasmModule(JSObject _) implements JSObject {
   /// Detect barcodes in [imageData] captured from a canvas.
   ///
   /// Returns a [JSPromise] that resolves to a list of [ZXingWasmReadResult]s.
-  external JSPromise<JSArray<ZXingWasmReadResult>> readBarcodesFromImageData(
+  external JSPromise<JSArray<ZXingWasmReadResult>> readBarcodes(
     web.ImageData imageData,
     ZXingWasmReaderOptions options,
   );
 }
 
-/// Options passed to [ZXingWasmModule.readBarcodesFromImageData].
+/// Options passed to [ZXingWasmModule.readBarcodes].
 @JS()
 extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
   /// Creates reader options that detect all supported barcode formats.
@@ -44,7 +44,7 @@ extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
 
   /// Creates reader options restricted to the given [formats].
   ///
-  /// Pass a non-empty list of format strings (e.g. `['QRCode', 'EAN-13']`).
+  /// Pass a non-empty list of format strings (e.g. `['QRCode', 'EAN13']`).
   /// Passing an empty list or omitting formats detects all supported formats.
   @JS('ZXingWasmReaderOptions')
   external factory ZXingWasmReaderOptions.withFormats({
@@ -62,14 +62,15 @@ extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
   });
 }
 
-/// A single barcode result returned by
-/// [ZXingWasmModule.readBarcodesFromImageData].
+/// A single barcode result returned by [ZXingWasmModule.readBarcodes].
 @JS()
 extension type ZXingWasmReadResult(JSObject _) implements JSObject {
   /// Decoded text content.
   external String? get text;
 
-  /// Barcode format name, e.g. `'QRCode'`, `'EAN-13'`, `'Code128'`.
+  /// Canonical barcode format name, e.g. `'QRCode'`, `'EAN13'`, `'Code128'`.
+  ///
+  /// May be a sub-variant name, e.g. `'ITF14'`, `'ISBN'` or `'AztecCode'`.
   external String get format;
 
   /// Raw barcode bytes as returned by the decoder.
