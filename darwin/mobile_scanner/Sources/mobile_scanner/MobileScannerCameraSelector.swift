@@ -97,10 +97,14 @@ class MobileScannerCameraSelector {
             return nil
         }
 
-        // Legacy fallback for older OS versions: filter by position
+#if os(iOS)
+        // Legacy fallback for iOS < 13.0: filter by position.
+        // On macOS, DiscoverySession handles 10.15+; older macOS falls
+        // through to AVCaptureDevice.default(for:) below.
         if let device = AVCaptureDevice.devices(for: .video).filter({ $0.position == position }).first {
             return device
         }
+#endif
 
         // Ultimate fallback: any available video device
         return AVCaptureDevice.default(for: .video)
