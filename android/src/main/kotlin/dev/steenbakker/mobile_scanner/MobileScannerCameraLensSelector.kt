@@ -250,6 +250,28 @@ object MobileScannerCameraLensSelector {
     }
 
     /**
+     * Determine the lens type best suited for close-range QR scanning.
+     *
+     * Camera2 exposes [CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE] per camera,
+     * but on modern multi-camera devices that value is only meaningful on physical
+     * sub-cameras, which (like the rest of [getSupportedLenses]) are not independently
+     * selectable through CameraX. Since we cannot act on a physical-camera-only signal,
+     * this always returns [LENS_TYPE_NORMAL] when the device has a camera: the main
+     * camera has the most capable autofocus system on virtually all Android devices.
+     *
+     * @param cameraManager The CameraManager instance
+     * @return [LENS_TYPE_NORMAL], or null if the device has no camera
+     */
+    fun getBestQrScanningLens(cameraManager: CameraManager): Int? {
+        return try {
+            if (cameraManager.cameraIdList.isEmpty()) null else LENS_TYPE_NORMAL
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to enumerate cameras", e)
+            null
+        }
+    }
+
+    /**
      * Select the appropriate camera based on facing direction and lens type.
      *
      * Uses 35mm equivalent focal length calculation for accurate lens classification.

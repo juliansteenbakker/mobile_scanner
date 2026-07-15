@@ -364,6 +364,38 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
+  Future<CameraLensType?> getBestQrScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    final mediaDevices = window.navigator.mediaDevicesNullable;
+
+    if (mediaDevices == null) {
+      return null;
+    }
+
+    try {
+      final jsDevices = await mediaDevices.enumerateDevices().toDart;
+      final devices = jsDevices.toDart;
+
+      final hasVideoInput = devices.any(
+        (device) => device.kind == 'videoinput',
+      );
+
+      if (!hasVideoInput) {
+        return null;
+      }
+
+      // The web MediaDevices API has no concept of lens type, and its
+      // `focusDistance` capability (where available at all) is limited to
+      // Chrome on Android, so there is no reliable cross-browser way to pick
+      // a closer-focusing camera here.
+      return CameraLensType.normal;
+    } on Object catch (_) {
+      return null;
+    }
+  }
+
+  @override
   Future<void> resetZoomScale() {
     throw UnsupportedError(
       'Setting the zoom scale is not supported for video tracks on the web.\n'

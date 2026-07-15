@@ -8,6 +8,7 @@
   * `WebBarcodeReader.zxingWasm`, uses zxing-wasm (ZXing C++ compiled to WebAssembly), which works in all modern browsers including Firefox.
   * `WebBarcodeReader.zxingJs`, the legacy ZXing JavaScript backend, retained for backward compatibility.
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
+* Added `getBestQrScanningLens()` to determine the camera lens best suited for close-range QR scanning. On iOS 15+ it returns the lens with the shortest `AVCaptureDevice.minimumFocusDistance` (typically the ultra-wide lens with macro autofocus on newer iPhones, or the standard 1x camera on older models). Android, macOS, and the web return `normal` when a camera is available. Returns `null` if the device has no camera for the requested facing direction.
 
 **Improvements**
 
