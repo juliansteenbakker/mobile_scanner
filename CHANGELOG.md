@@ -19,6 +19,7 @@
 
 * Fixed disposing a `MobileScannerController` also disposing the platform resources of a different controller. Disposing a controller that does not hold the active camera session no longer tears down the camera of the controller that does. ([#1631](https://github.com/juliansteenbakker/mobile_scanner/issues/1631))
 * Fixed a subscription leak where a controller that was disposed without being stopped kept its internal event stream subscriptions alive.
+* Fixed an issue when running the plugin using AGP 9.
 
 ## 7.2.1
 
