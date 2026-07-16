@@ -101,6 +101,15 @@ class DeviceOrientationListener(
         if (orientationEventListener.canDetectOrientation()) {
             orientationEventListener.enable()
         }
+        // Emit the orientation on every camera start, so that listeners that
+        // survive a stop/start cycle (e.g. when switching cameras) are
+        // re-synced even if the device was rotated while the camera was
+        // stopped, in which case no rotation change event was observed.
+        lastOrientation?.let { orientation ->
+            handler.post {
+                deviceOrientationEventSink?.success(orientation.serialize())
+            }
+        }
     }
 
     /**
