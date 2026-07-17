@@ -28,12 +28,17 @@ jobs:
           # Minimum supported Flutter version for the plugin. The example app
           # requires a newer Flutter than the plugin does, so it is skipped here.
           - flutter-version: "3.29.x"
-            pub-get-args: "--no-example"
+            pub-command: "get --no-example"
             analyze-paths: "lib test"
           # Latest stable, which analyzes the plugin and the example app.
           - flutter-version: ""
-            pub-get-args: ""
+            pub-command: "get"
             analyze-paths: "."
+          # Lowest allowed versions of all dependencies, mirroring the
+          # downgrade analysis that pub.dev runs when scoring the package.
+          - flutter-version: ""
+            pub-command: "downgrade --no-example"
+            analyze-paths: "lib test"
 
     steps:
       - name: Checkout Code
@@ -60,7 +65,7 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Install Dependencies
-        run: flutter pub get ${{ matrix.pub-get-args }}
+        run: flutter pub ${{ matrix.pub-command }}
 
       - name: Lint Code
         run: flutter analyze ${{ matrix.analyze-paths }}
