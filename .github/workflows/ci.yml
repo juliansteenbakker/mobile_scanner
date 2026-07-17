@@ -109,7 +109,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flutter-version: ["3.29.x", ""]
+        include:
+          # Minimum supported Flutter version for the plugin.
+          - name: "flutter-3.29"
+            flutter-version: "3.29.x"
+            pub-command: "get --no-example"
+          # Latest stable Flutter with the newest compatible dependencies.
+          - name: "latest"
+            flutter-version: ""
+            pub-command: "get --no-example"
+          # Lowest allowed versions of all dependencies, mirroring the
+          # downgrade analysis that pub.dev runs when scoring the package.
+          - name: "downgrade"
+            flutter-version: ""
+            pub-command: "downgrade --no-example"
 
     steps:
       - name: Checkout Repository
@@ -133,7 +146,7 @@ jobs:
             ${{ runner.os }}-pub-
 
       - name: Install Dependencies
-        run: flutter pub get --no-example
+        run: flutter pub ${{ matrix.pub-command }}
 
       - name: Run Unit Tests with Coverage
         run: flutter test --coverage
@@ -141,7 +154,7 @@ jobs:
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v7
         with:
-          name: coverage-report-${{ matrix.flutter-version || 'latest' }}
+          name: coverage-report-${{ matrix.name }}
           path: coverage/lcov.info
 
       - name: Upload Coverage to Codecov
@@ -150,7 +163,7 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: coverage/lcov.info
           flags: unittests
-          name: codecov-flutter-${{ matrix.flutter-version || 'latest' }}
+          name: codecov-flutter-${{ matrix.name }}
           fail_ci_if_error: true
 
   build_android:
