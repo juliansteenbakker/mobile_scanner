@@ -91,10 +91,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kGetSupportedLensesMethodName = 'getSupportedLenses';
 
-  /// The name of the method that gets the best lens for QR scanning.
+  /// The name of the method that gets the best lens for close-range scanning.
   @visibleForTesting
-  static const String kGetBestQrScanningLensMethodName =
-      'getBestQrScanningLens';
+  static const String kGetBestCloseRangeScanningLensMethodName =
+      'getBestCloseRangeScanningLens';
 
   /// The method channel used to interact with the native platform.
   @visibleForTesting
@@ -522,11 +522,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<CameraLensType?> getBestQrScanningLens({
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
     CameraFacing facing = CameraFacing.back,
   }) async {
     final rawValue = await methodChannel.invokeMethod<int>(
-      kGetBestQrScanningLensMethodName,
+      kGetBestCloseRangeScanningLensMethodName,
       {'facing': facing.rawValue},
     );
 

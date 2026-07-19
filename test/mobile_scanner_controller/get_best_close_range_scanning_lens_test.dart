@@ -10,7 +10,7 @@ import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('getBestQrScanningLens', () {
+  group('getBestCloseRangeScanningLens', () {
     tearDown(() {
       MobileScannerPlatform.instance = MethodChannelMobileScanner();
     });
@@ -25,7 +25,7 @@ void main() {
       await controller.dispose();
 
       expect(
-        controller.getBestQrScanningLens,
+        controller.getBestCloseRangeScanningLens,
         throwsA(
           isA<MobileScannerException>().having(
             (e) => e.errorCode,
@@ -43,7 +43,7 @@ void main() {
 
       final controller = MobileScannerController(autoStart: false);
 
-      final result = await controller.getBestQrScanningLens(
+      final result = await controller.getBestCloseRangeScanningLens(
         // The back facing is the default; passed explicitly for readability.
         // ignore: avoid_redundant_argument_values
         facing: CameraFacing.back,
@@ -60,7 +60,9 @@ void main() {
 
       final controller = MobileScannerController(autoStart: false);
 
-      await controller.getBestQrScanningLens(facing: CameraFacing.front);
+      await controller.getBestCloseRangeScanningLens(
+        facing: CameraFacing.front,
+      );
 
       expect(fake.capturedFacing, CameraFacing.front);
     });
@@ -70,7 +72,7 @@ void main() {
 
       final controller = MobileScannerController(autoStart: false);
 
-      final result = await controller.getBestQrScanningLens();
+      final result = await controller.getBestCloseRangeScanningLens();
 
       expect(result, isNull);
     });
@@ -83,7 +85,7 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   final CameraLensType? _lensType;
 
   @override
-  Future<CameraLensType?> getBestQrScanningLens({
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
     CameraFacing facing = CameraFacing.back,
   }) {
     return Future.value(_lensType);
@@ -103,7 +105,7 @@ class FakeMobileScannerPlatformWithFacingCapture extends MobileScannerPlatform {
   CameraFacing? capturedFacing;
 
   @override
-  Future<CameraLensType?> getBestQrScanningLens({
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
     CameraFacing facing = CameraFacing.back,
   }) {
     capturedFacing = facing;

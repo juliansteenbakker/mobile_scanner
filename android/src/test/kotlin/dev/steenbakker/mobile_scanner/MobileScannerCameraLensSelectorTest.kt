@@ -287,31 +287,31 @@ internal class MobileScannerCameraLensSelectorTest {
     }
 
     // ==========================================================================
-    // getBestQrScanningLens tests
+    // getBestCloseRangeScanningLens tests
     // ==========================================================================
     //
     // LENS_INFO_MINIMUM_FOCUS_DISTANCE is only meaningful on physical sub-cameras,
     // which (like the rest of getSupportedLenses) are not independently selectable
-    // through CameraX. getBestQrScanningLens therefore always returns
+    // through CameraX. getBestCloseRangeScanningLens therefore always returns
     // LENS_TYPE_NORMAL: the main camera has the most capable autofocus on
     // virtually all Android devices.
 
     @Test
-    fun getBestQrScanningLens_returnsNormal_whenDeviceHasACamera() {
+    fun getBestCloseRangeScanningLens_returnsNormal_whenDeviceHasACamera() {
         val cameraManager = Mockito.mock(CameraManager::class.java)
         Mockito.`when`(cameraManager.cameraIdList).thenReturn(arrayOf("0"))
 
         assertEquals(
             MobileScannerCameraLensSelector.LENS_TYPE_NORMAL,
-            MobileScannerCameraLensSelector.getBestQrScanningLens(cameraManager),
+            MobileScannerCameraLensSelector.getBestCloseRangeScanningLens(cameraManager),
         )
     }
 
     @Test
-    fun getBestQrScanningLens_returnsNull_whenDeviceHasNoCamera() {
+    fun getBestCloseRangeScanningLens_returnsNull_whenDeviceHasNoCamera() {
         val cameraManager = Mockito.mock(CameraManager::class.java)
         Mockito.`when`(cameraManager.cameraIdList).thenReturn(arrayOf())
 
-        assertNull(MobileScannerCameraLensSelector.getBestQrScanningLens(cameraManager))
+        assertNull(MobileScannerCameraLensSelector.getBestCloseRangeScanningLens(cameraManager))
     }
 }

@@ -154,7 +154,7 @@ class MobileScannerHandler(
             "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
             "getSupportedLenses" -> getSupportedLenses(call, result)
-            "getBestQrScanningLens" -> getBestQrScanningLens(result)
+            "getBestCloseRangeScanningLens" -> getBestCloseRangeScanningLens(result)
             "analyzeImage" -> analyzeImage(call, result)
             "setScale" -> setScale(call, result)
             "resetScale" -> resetScale(result)
@@ -319,15 +319,15 @@ class MobileScannerHandler(
     }
 
     /**
-     * Get the lens type best suited for close-range QR scanning.
+     * Get the lens type best suited for close-range scanning.
      *
      * Returns the normal (main) camera lens, or null if the device has no camera;
-     * see [MobileScannerCameraLensSelector.getBestQrScanningLens] for why it does
+     * see [MobileScannerCameraLensSelector.getBestCloseRangeScanningLens] for why it does
      * not depend on facing.
      */
-    private fun getBestQrScanningLens(result: MethodChannel.Result) {
+    private fun getBestCloseRangeScanningLens(result: MethodChannel.Result) {
         try {
-            val lensType = MobileScannerCameraLensSelector.getBestQrScanningLens(cameraManager)
+            val lensType = MobileScannerCameraLensSelector.getBestCloseRangeScanningLens(cameraManager)
             result.success(lensType)
         } catch (e: Exception) {
             result.error(
