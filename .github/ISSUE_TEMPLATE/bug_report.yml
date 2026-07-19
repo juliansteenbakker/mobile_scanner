@@ -1,0 +1,57 @@
+name: Bug report
+description: Report a problem with mobile_scanner
+labels: [bug]
+body:
+  - type: checkboxes
+    attributes:
+      label: Is there an existing issue for this?
+      description: Please search existing issues (open and closed) before filing a new one.
+      options:
+        - label: I have searched the existing issues
+          required: true
+
+  - type: input
+    attributes:
+      label: mobile_scanner version
+      placeholder: e.g. 7.3.0
+    validations:
+      required: true
+
+  - type: dropdown
+    attributes:
+      label: Platform
+      multiple: true
+      options:
+        - Android
+        - iOS
+        - macOS
+        - Web
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Flutter doctor output
+      description: Output of `flutter doctor -v`.
+      render: text
+
+  - type: textarea
+    attributes:
+      label: What happened?
+      description: A clear description of the bug, and what you expected to happen instead.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Minimal steps to reproduce the behavior. A minimal reproducible sample project or code snippet is very helpful.
+    validations:
+      required: true
+
+  - type: textarea
+    attributes:
+      label: Logs
+      description: Relevant logs, stack traces, or crash reports, if any.
+      render: text
