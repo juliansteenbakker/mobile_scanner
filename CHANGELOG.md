@@ -1,18 +1,19 @@
 # Changelog
 
-## [7.4.0](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.3.1...v7.4.0) (2026-07-19)
+## 7.4.0
 
+**New features**
 
-### Features
+* Added `getBestCloseRangeScanningLens()` to determine which camera lens is best suited for scanning barcodes at close range (e.g. the ultra-wide/macro lens on newer iPhones). Returns `null` if no camera is available for the requested facing direction.
 
-* followup on getBestQrScanningLens() to select optimal lens for QR scanning ([4cef959](https://github.com/juliansteenbakker/mobile_scanner/commit/4cef9591e0a702f672bfaef508ed3d461a3c09a5))
+**Improvements**
 
+* Added an optional `facing` filter to `getSupportedLenses`, to restrict results to front or back cameras.
 
-### Bug Fixes
+**Bug Fixes**
 
-* getSupportedLenses only enumerates logical cameras; add optional facing filter ([db80d09](https://github.com/juliansteenbakker/mobile_scanner/commit/db80d09a7dca4e68103990ea31633e3546a166ad))
-* use squash merge for promotion PR, correct tag_name output key ([9483ad2](https://github.com/juliansteenbakker/mobile_scanner/commit/9483ad25dc9a0d2f9bc08e3fc90110714a54b7e3))
-* use valid conventional-commit type for promotion PR title ([d6235c0](https://github.com/juliansteenbakker/mobile_scanner/commit/d6235c007ac8aab48e5093af7433813a5826a884))
+* [Android] Fixed `getSupportedLenses` reporting physical sub-cameras that CameraX can't actually select, which caused a crash when switching to one.
+* [Android] Starting the scanner with an unavailable `lensType` now reports an error instead of silently falling back to the default camera.
 
 ## 7.3.1
 
