@@ -2,7 +2,6 @@ package dev.steenbakker.mobile_scanner
 
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
-import android.os.Build
 import android.util.Log
 import android.util.SizeF
 import androidx.camera.camera2.interop.Camera2CameraInfo
@@ -209,47 +208,38 @@ object MobileScannerCameraLensSelector {
     /**
      * Get the list of supported lens types on a device.
      *
-     * Analyzes all available cameras and categorizes them by their 35mm equivalent focal lengths.
-     * On Android 9 (API 28) and above, this also checks physical cameras within logical
-     * multi-camera devices to detect all available lenses (ultra-wide, wide, telephoto, periscope).
+     * Analyzes the available logical cameras and categorizes them by their 35mm equivalent
+     * focal lengths. Physical sub-cameras of logical multi-camera devices are not inspected,
+     * because CameraX can only select cameras at the logical level.
      *
      * @param cameraManager The CameraManager instance
-     * @return A set of supported lens types
+     * @param facing Optional facing filter: 0 = front, 1 = back. When null, all cameras are included.
+     * @return A set of supported lens types, optionally filtered to the given facing direction
      */
-    fun getSupportedLenses(cameraManager: CameraManager): Set<Int> {
+    fun getSupportedLenses(cameraManager: CameraManager, facing: Int? = null): Set<Int> {
         val supportedLenses = mutableSetOf<Int>()
+        val lensFacing = when (facing) {
+            0 -> CameraCharacteristics.LENS_FACING_FRONT
+            1 -> CameraCharacteristics.LENS_FACING_BACK
+            else -> null
+        }
 
         try {
             for (cameraId in cameraManager.cameraIdList) {
                 val characteristics = cameraManager.getCameraCharacteristics(cameraId)
 
-                // On Android 9+, check for physical cameras within logical multi-camera devices.
-                // Modern phones (Pixel, Samsung, etc.) group multiple lenses under one logical ID.
-                val physicalIds = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                    characteristics.physicalCameraIds
-                } else {
-                    emptySet()
+                // Skip cameras that don't match the requested facing direction, if one was given.
+                if (lensFacing != null) {
+                    val cameraFacing = characteristics.get(CameraCharacteristics.LENS_FACING)
+                    if (cameraFacing != lensFacing) continue
                 }
 
-                if (physicalIds.isNotEmpty()) {
-                    // Multi-camera device: analyze each physical camera
-                    for (physicalId in physicalIds) {
-                        try {
-                            val physicalChars = cameraManager.getCameraCharacteristics(physicalId)
-                            val lensType = getLensTypeFromCharacteristics(physicalChars)
-                            if (lensType != null) {
-                                supportedLenses.add(lensType)
-                            }
-                        } catch (e: Exception) {
-                            Log.w(TAG, "Failed to get physical camera $physicalId characteristics", e)
-                        }
-                    }
-                } else {
-                    // Single camera or legacy device: analyze the logical camera
-                    val lensType = getLensTypeFromCharacteristics(characteristics)
-                    if (lensType != null) {
-                        supportedLenses.add(lensType)
-                    }
+                // Only check the logical camera's own characteristics.
+                // CameraX selects cameras at the logical level, so physical sub-cameras
+                // are not independently selectable and must not be reported here.
+                val lensType = getLensTypeFromCharacteristics(characteristics)
+                if (lensType != null) {
+                    supportedLenses.add(lensType)
                 }
             }
         } catch (e: Exception) {
@@ -257,6 +247,28 @@ object MobileScannerCameraLensSelector {
         }
 
         return supportedLenses
+    }
+
+    /**
+     * Determine the lens type best suited for close-range scanning.
+     *
+     * Camera2 exposes [CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE] per camera,
+     * but on modern multi-camera devices that value is only meaningful on physical
+     * sub-cameras, which (like the rest of [getSupportedLenses]) are not independently
+     * selectable through CameraX. Since we cannot act on a physical-camera-only signal,
+     * this always returns [LENS_TYPE_NORMAL] when the device has a camera: the main
+     * camera has the most capable autofocus system on virtually all Android devices.
+     *
+     * @param cameraManager The CameraManager instance
+     * @return [LENS_TYPE_NORMAL], or null if the device has no camera
+     */
+    fun getBestCloseRangeScanningLens(cameraManager: CameraManager): Int? {
+        return try {
+            if (cameraManager.cameraIdList.isEmpty()) null else LENS_TYPE_NORMAL
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to enumerate cameras", e)
+            null
+        }
     }
 
     /**
@@ -310,15 +322,13 @@ object MobileScannerCameraLensSelector {
                     }
                 }
 
-                // If filtering resulted in no cameras, return all cameras with correct facing
-                // to prevent camera binding failures
+                // If no cameras matched the requested lens type, return an empty list.
+                // CameraX will throw an error that propagates to the Dart error callback,
+                // allowing callers to detect that this lens type is unavailable.
                 if (filteredCameras.isEmpty()) {
-                    Log.w(TAG,
-                        "Requested lens type ${getLensTypeName(lensType)} not available, falling back to default camera")
-                    cameraInfos
-                } else {
-                    filteredCameras
+                    Log.w(TAG, "Requested lens type ${getLensTypeName(lensType)} not available")
                 }
+                filteredCameras
             }
             .build()
     }

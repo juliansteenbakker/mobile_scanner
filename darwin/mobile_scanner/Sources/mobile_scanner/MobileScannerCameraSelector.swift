@@ -112,14 +112,17 @@ class MobileScannerCameraSelector {
 
     /// Get the list of supported lens types on this device.
     ///
+    /// - Parameter facing: Optional camera position filter. When nil, all cameras are included.
     /// - Returns: A sorted array of supported LensType raw values
-    static func getSupportedLenses() -> [Int] {
+    static func getSupportedLenses(facing: AVCaptureDevice.Position? = nil) -> [Int] {
 #if os(iOS)
         if #available(iOS 13.0, *) {
             var supportedLenses = Set<Int>()
 
-            // Check both back and front cameras
-            for position: AVCaptureDevice.Position in [.back, .front] {
+            // Check the requested camera position, or both back and front when no filter is given.
+            let positions: [AVCaptureDevice.Position] = facing.map { [$0] } ?? [.back, .front]
+
+            for position in positions {
                 let devices = AVCaptureDevice.DiscoverySession(
                     deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
                     mediaType: .video,
@@ -135,12 +138,67 @@ class MobileScannerCameraSelector {
 
             return supportedLenses.sorted()
         } else {
-            // iOS < 13.0: assume at least wide-angle camera is available
+            // iOS < 13.0: assume at least wide-angle camera is available.
+            // The facing filter is ignored, as lenses cannot be enumerated per position.
             return [LensType.wideAngle.rawValue]
         }
 #else
-        // macOS: assume at least wide-angle camera is available
+        // macOS: assume at least wide-angle camera is available.
+        // The facing filter is ignored, as only a front camera is used on macOS.
         return [LensType.wideAngle.rawValue]
+#endif
+    }
+
+    /// Determine the lens type best suited for close-range scanning.
+    ///
+    /// Picks the camera that can focus closest to the phone, using
+    /// `AVCaptureDevice.minimumFocusDistance` (millimeters; lower means it focuses
+    /// closer). Fixed-focus cameras report `-1` and are skipped. On newer iPhones
+    /// this tends to select the ultra-wide lens, which has macro autofocus down to
+    /// ~2cm; on older models it selects the standard 1x camera.
+    ///
+    /// Falls back to the wide-angle (1x) camera on iOS < 15 and on macOS, where
+    /// `minimumFocusDistance` is unavailable.
+    ///
+    /// - Parameter position: The camera position to check (default: .back)
+    /// - Returns: The LensType raw value best suited for close-range scanning,
+    ///   or nil if there is no camera at that position
+    static func getBestCloseRangeScanningLens(position: AVCaptureDevice.Position = .back) -> Int? {
+#if os(iOS)
+        if #available(iOS 15.0, *) {
+            let devices = AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera, .builtInUltraWideCamera, .builtInTelephotoCamera],
+                mediaType: .video,
+                position: position
+            ).devices
+
+            if devices.isEmpty {
+                return nil
+            }
+
+            var bestLensType = LensType.wideAngle.rawValue
+            var bestFocusDistance: Int?
+
+            for device in devices {
+                guard let lens = lensType(from: device.deviceType) else { continue }
+                let focusDistance = device.minimumFocusDistance
+                if focusDistance < 0 { continue }
+                if bestFocusDistance == nil || focusDistance < bestFocusDistance! {
+                    bestFocusDistance = focusDistance
+                    bestLensType = lens.rawValue
+                }
+            }
+
+            return bestLensType
+        } else {
+            let hasDevice = AVCaptureDevice.devices(for: .video).contains { $0.position == position }
+            return hasDevice ? LensType.wideAngle.rawValue : nil
+        }
+#else
+        // macOS: ignore the facing filter (only a front camera is used on macOS),
+        // consistent with getSupportedLenses.
+        let hasDevice = !AVCaptureDevice.devices(for: .video).isEmpty
+        return hasDevice ? LensType.wideAngle.rawValue : nil
 #endif
     }
 }

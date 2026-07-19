@@ -622,7 +622,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   Future<void> _toggleLensType() async {
     // Fetch supported lenses fresh each time to handle dynamic camera changes
     // (e.g., external cameras being attached/detached).
-    final supportedLenses = await getSupportedLenses();
+    // Pass the current facing direction so only lenses for that camera side
+    // are returned, avoiding cross-side pollution.
+    final supportedLenses = await getSupportedLenses(
+      facing: value.cameraDirection,
+    );
 
     // Filter out 'any' and keep only specific lens types.
     final specificLenses =
@@ -757,7 +761,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///   print('Available lenses: $supportedLenses');
   /// }
   /// ```
-  Future<Set<CameraLensType>> getSupportedLenses() async {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) async {
     if (_isDisposed) {
       throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
@@ -767,7 +773,50 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return MobileScannerPlatform.instance.getSupportedLenses();
+    return MobileScannerPlatform.instance.getSupportedLenses(facing: facing);
+  }
+
+  /// Determine the lens type best suited for close-range scanning.
+  ///
+  /// Returns the [CameraLensType] whose camera can focus closest to the
+  /// phone, making it best suited for scanning barcodes held at close range.
+  ///
+  /// Returns `null` if the device has no camera for the given [facing]
+  /// direction.
+  ///
+  /// This does not switch the camera. Combine it with [getSupportedLenses]
+  /// and [switchCamera] to only switch to the returned lens if it is
+  /// actually available on the device:
+  ///
+  /// ```dart
+  /// final bestLens = await controller.getBestCloseRangeScanningLens();
+  /// final supported = await controller.getSupportedLenses(
+  ///   facing: CameraFacing.back,
+  /// );
+  ///
+  /// if (bestLens != null && supported.contains(bestLens)) {
+  ///   await controller.switchCamera(
+  ///     SelectCamera(facingDirection: CameraFacing.back, lensType: bestLens),
+  ///   );
+  /// }
+  /// ```
+  ///
+  /// Throws a [MobileScannerException] if the controller has been disposed.
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    if (_isDisposed) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerDisposed.message,
+        ),
+      );
+    }
+
+    return MobileScannerPlatform.instance.getBestCloseRangeScanningLens(
+      facing: facing,
+    );
   }
 
   /// Dispose the controller.

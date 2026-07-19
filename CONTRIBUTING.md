@@ -6,6 +6,7 @@ Thanks for considering contributing to mobile_scanner!
 
 * PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/) (e.g. `feat: ...`, `fix: ...`, `chore: ...`) — this is enforced by CI and is what drives the automated changelog and release process below.
 * Open feature/fix PRs against `develop`.
+* Individual commits don't have to follow Conventional Commits, but it helps: if every commit in your PR is properly typed, we can merge with a real merge commit and keep your full history. If not, we'll squash the PR into a single commit (using the PR title) instead. Either way the changelog/version stay correct — this only affects how much of your history is preserved.
 
 ## Release process
 

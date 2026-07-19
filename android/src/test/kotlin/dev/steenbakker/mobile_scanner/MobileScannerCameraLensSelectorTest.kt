@@ -1,9 +1,12 @@
 package dev.steenbakker.mobile_scanner
 
+import android.hardware.camera2.CameraManager
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
+import org.mockito.Mockito
 
 /**
  * Unit tests for the lens classification functions in [MobileScannerCameraLensSelector].
@@ -281,5 +284,34 @@ internal class MobileScannerCameraLensSelectorTest {
         assertEquals(1, MobileScannerCameraLensSelector.LENS_TYPE_WIDE)
         assertEquals(2, MobileScannerCameraLensSelector.LENS_TYPE_ZOOM)
         assertEquals(-1, MobileScannerCameraLensSelector.LENS_TYPE_ANY)
+    }
+
+    // ==========================================================================
+    // getBestCloseRangeScanningLens tests
+    // ==========================================================================
+    //
+    // LENS_INFO_MINIMUM_FOCUS_DISTANCE is only meaningful on physical sub-cameras,
+    // which (like the rest of getSupportedLenses) are not independently selectable
+    // through CameraX. getBestCloseRangeScanningLens therefore always returns
+    // LENS_TYPE_NORMAL: the main camera has the most capable autofocus on
+    // virtually all Android devices.
+
+    @Test
+    fun getBestCloseRangeScanningLens_returnsNormal_whenDeviceHasACamera() {
+        val cameraManager = Mockito.mock(CameraManager::class.java)
+        Mockito.`when`(cameraManager.cameraIdList).thenReturn(arrayOf("0"))
+
+        assertEquals(
+            MobileScannerCameraLensSelector.LENS_TYPE_NORMAL,
+            MobileScannerCameraLensSelector.getBestCloseRangeScanningLens(cameraManager),
+        )
+    }
+
+    @Test
+    fun getBestCloseRangeScanningLens_returnsNull_whenDeviceHasNoCamera() {
+        val cameraManager = Mockito.mock(CameraManager::class.java)
+        Mockito.`when`(cameraManager.cameraIdList).thenReturn(arrayOf())
+
+        assertNull(MobileScannerCameraLensSelector.getBestCloseRangeScanningLens(cameraManager))
     }
 }

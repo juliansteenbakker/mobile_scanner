@@ -42,7 +42,11 @@ jobs:
           gh pr create \
             --base master \
             --head develop \
-            --title "release: promote ${TAG} to master" \
+            --title "chore: promote ${TAG} to master" \
             --body "Automated promotion of ${TAG} from develop to master." \
             || echo "PR may already exist, continuing"
-          gh pr merge develop --squash
+          # A real merge commit (not squash) is required here so that the
+          # tagged release commit on develop stays a genuine ancestor of
+          # master - release-please-master.yml relies on that ancestry to
+          # find the last release when scanning master's history.
+          gh pr merge develop --merge
