@@ -36,24 +36,23 @@ class _BarcodeFormatDialogState extends State<BarcodeFormatDialog> {
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children:
-              BarcodeFormat.values.map((format) {
-                return CheckboxListTile(
-                  title: Text(format.name.toUpperCase()),
-                  value: tempSelectedFormats.contains(format),
-                  onChanged: (value) {
-                    setState(() {
-                      if (value ?? false) {
-                        tempSelectedFormats.add(format);
-                      } else {
-                        tempSelectedFormats.remove(format);
-                      }
-                    });
-                  },
-                  controlAffinity: ListTileControlAffinity.leading,
-                  contentPadding: EdgeInsets.zero,
-                );
-              }).toList(),
+          children: BarcodeFormat.values.map((format) {
+            return CheckboxListTile(
+              title: Text(format.name.toUpperCase()),
+              value: tempSelectedFormats.contains(format),
+              onChanged: (value) {
+                setState(() {
+                  if (value ?? false) {
+                    tempSelectedFormats.add(format);
+                  } else {
+                    tempSelectedFormats.remove(format);
+                  }
+                });
+              },
+              controlAffinity: ListTileControlAffinity.leading,
+              contentPadding: EdgeInsets.zero,
+            );
+          }).toList(),
         ),
       ),
       actions: [

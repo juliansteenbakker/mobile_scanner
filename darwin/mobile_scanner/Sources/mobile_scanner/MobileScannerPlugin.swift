@@ -37,6 +37,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     /// This is static to avoid accessing `self` in the `VNDetectBarcodesRequest` callback.
     private static var returnImage: Bool = false
 
+    /// The dispatch queue that will process ``captureOutput(_:didOutput:from:)`` calls.
+    ///
+    /// This queue is user initiated because it is tied to an ``AVCaptureSession``.
+    private let sampleBufferQueue = DispatchQueue(label: "com.juliansteenbakker.mobile_scanner.captureOutputQueue", qos: .userInitiated)
+
     var detectionSpeed: DetectionSpeed = DetectionSpeed.noDuplicates
 
     var timeoutSeconds: Double = 0
@@ -161,12 +166,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
             nextScanTime = currentTime + timeoutSeconds
             imagesCurrentlyBeingProcessed = true
+            let bufferToProcess = latestBuffer
             DispatchQueue.global(qos: .userInitiated).async { [weak self] in
                 guard let self = self else {
                     return
                 }
-                
-                guard let buffer = self.latestBuffer else {
+
+                guard let buffer = bufferToProcess else {
                     self.imagesCurrentlyBeingProcessed = false
                     return
                 }
@@ -442,7 +448,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let format = getPreferredVideoFormat(videoOutput: videoOutput)
         videoOutput.videoSettings = [kCVPixelBufferPixelFormatTypeKey as String: format]
         videoOutput.alwaysDiscardsLateVideoFrames = true
-        videoOutput.setSampleBufferDelegate(self, queue: DispatchQueue.main)
+        videoOutput.setSampleBufferDelegate(self, queue: self.sampleBufferQueue)
         captureSession!.addOutput(videoOutput)
         let deviceVideoOrientation = self.getVideoOrientation()
 
@@ -888,8 +894,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             details: nil
         ))
         return
-#endif
-
+#else
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
         let symbologies:[VNBarcodeSymbology] = argReader.toSymbology()
 
@@ -965,6 +970,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                     message: error.localizedDescription, details: nil))
             }
         }
+#endif
     }
 
     // Observer for torch state
@@ -1200,8 +1206,17 @@ extension VNBarcodeObservation {
 extension VNBarcodeSymbology {
     static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
         if #available(iOS 15.0, macOS 12.0, *) {
-            if(mapValue == 8){
+            switch(mapValue){
+            case 8:
                 return VNBarcodeSymbology.codabar
+            case 32768:
+                return VNBarcodeSymbology.gs1DataBar
+            case 65536:
+                return VNBarcodeSymbology.gs1DataBarExpanded
+            case 131072:
+                return VNBarcodeSymbology.gs1DataBarLimited
+            default:
+                break
             }
         }
         switch(mapValue){
@@ -1238,8 +1253,17 @@ extension VNBarcodeSymbology {
 
     var toInt: Int? {
         if #available(iOS 15.0, macOS 12.0, *) {
-            if(self == VNBarcodeSymbology.codabar){
+            switch(self){
+            case VNBarcodeSymbology.codabar:
                 return 8
+            case VNBarcodeSymbology.gs1DataBar:
+                return 32768
+            case VNBarcodeSymbology.gs1DataBarExpanded:
+                return 65536
+            case VNBarcodeSymbology.gs1DataBarLimited:
+                return 131072
+            default:
+                break
             }
         }
         switch(self){

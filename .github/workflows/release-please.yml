@@ -1,13 +1,48 @@
- name: Run release-please
- on:
-   push:
-     branches:
-       - master
- jobs:
-   release-please:
-     runs-on: ubuntu-latest
-     steps:
-       - uses: GoogleCloudPlatform/release-please-action@v4.4.0
-         with:
-           token: ${{ secrets.GITHUB_TOKEN }}
-           release-type: simple
+name: release-please
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    if: github.repository == 'juliansteenbakker/mobile_scanner'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name || steps.release.outputs['.--tag_name'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          target-branch: develop
+
+  # Once a release lands on develop, fast-track it onto master so that
+  # hotfixes can be branched from a branch that always matches the latest
+  # release. Master requires PRs but no approvals/checks, so this merges
+  # immediately without waiting.
+  promote-to-master:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open and merge promotion PR into master
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          gh pr create \
+            --base master \
+            --head develop \
+            --title "release: promote ${TAG} to master" \
+            --body "Automated promotion of ${TAG} from develop to master." \
+            || echo "PR may already exist, continuing"
+          gh pr merge develop --squash

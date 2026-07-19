@@ -10,6 +10,8 @@ import 'package:mobile_scanner/src/objects/start_options.dart';
 import 'package:mobile_scanner/src/web/barcode_reader.dart';
 import 'package:mobile_scanner/src/web/javascript_map.dart';
 import 'package:mobile_scanner/src/web/media_track_constraints_delegate.dart';
+import 'package:mobile_scanner/src/web/web_camera_utility.dart';
+import 'package:mobile_scanner/src/web/web_library_versions.dart';
 import 'package:mobile_scanner/src/web/zxing/result.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_browser_multi_format_reader.dart';
 import 'package:mobile_scanner/src/web/zxing/zxing_exception.dart';
@@ -25,6 +27,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @visibleForTesting
   static const String kNoCodeDetectedErrorMessage =
       'No MultiFormat Readers were able to detect the code.';
+
+  /// The scan window as a normalized [Rect] (values in [0, 1]) relative to the
+  /// camera texture. Barcodes whose bounding box does not overlap this rect are
+  /// filtered out.
+  Rect? _scanWindow;
 
   /// The listener for media track settings changes.
   void Function(web.MediaTrackSettings)? _onMediaTrackSettingsChanged;
@@ -57,7 +64,10 @@ final class ZXingBarcodeReader extends BarcodeReader {
   web.MediaStream? get videoStream => _reader?.stream;
 
   @override
-  String get scriptUrl => 'https://unpkg.com/@zxing/library@0.21.3';
+  String get scriptId => 'mobile-scanner-zxing-js';
+
+  @override
+  String get scriptUrl => 'https://unpkg.com/@zxing/library@$zxingJsVersion';
 
   JSMap? _createReaderHints(List<BarcodeFormat> formats) {
     if (formats.isEmpty || formats.contains(BarcodeFormat.all)) {
@@ -104,6 +114,11 @@ final class ZXingBarcodeReader extends BarcodeReader {
   }
 
   @override
+  void updateScanWindow(Rect? window) {
+    _scanWindow = window;
+  }
+
+  @override
   Stream<BarcodeCapture> detectBarcodes() {
     final controller = StreamController<BarcodeCapture>();
 
@@ -124,8 +139,22 @@ final class ZXingBarcodeReader extends BarcodeReader {
             }
 
             if (result != null) {
+              var barcode = result.toBarcode;
+
+              // Check the scan window using raw camera coordinates (before
+              // mirroring), because the scan window percentages are also in
+              // raw camera space.
+              if (!isInsideScanWindow(barcode, _scanWindow, videoSize)) {
+                return;
+              }
+
+              // Mirror corners for display after the scan window check.
+              if (shouldMirrorStream(videoStream)) {
+                barcode = mirrorBarcodeX(barcode, videoSize.width);
+              }
+
               controller.add(
-                BarcodeCapture(barcodes: [result.toBarcode], size: videoSize),
+                BarcodeCapture(barcodes: [barcode], size: videoSize),
               );
             }
           }.toJS,
@@ -186,6 +215,7 @@ final class ZXingBarcodeReader extends BarcodeReader {
   @override
   Future<void> stop() async {
     _onMediaTrackSettingsChanged = null;
+    _scanWindow = null;
     _reader?.stopContinuousDecode.callAsFunction(_reader);
     _reader?.reset.callAsFunction(_reader);
     _reader = null;
@@ -209,10 +239,14 @@ extension on BarcodeFormat {
       // ITF 2 of 5 is not supported by ZXing.
       BarcodeFormat.itf2of5 || BarcodeFormat.itf2of5WithChecksum => 8,
       BarcodeFormat.itf || BarcodeFormat.itf14 => 8,
+      BarcodeFormat.maxiCode => 9,
       BarcodeFormat.pdf417 => 10,
       BarcodeFormat.qrCode => 11,
+      BarcodeFormat.dataBar => 12,
+      BarcodeFormat.dataBarExpanded => 13,
       BarcodeFormat.upcA => 14,
       BarcodeFormat.upcE => 15,
+      BarcodeFormat.microQrCode => 17,
       BarcodeFormat.unknown || BarcodeFormat.all || _ => -1,
     };
 

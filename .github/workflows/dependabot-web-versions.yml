@@ -1,0 +1,51 @@
+name: dependabot-web-versions
+
+# The package.json at the repository root only exists so that Dependabot can
+# detect updates to the CDN-loaded web barcode libraries. The versions that
+# are actually used at runtime are the Dart constants in
+# lib/src/web/web_library_versions.dart, which must be updated manually.
+# This workflow leaves a comment on Dependabot PRs to make that explicit.
+on:
+  pull_request:
+    types: [opened]
+    paths:
+      - package.json
+
+permissions:
+  pull-requests: write
+
+jobs:
+  comment:
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Comment with manual update instructions
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const body = [
+              '## Manual action required',
+              '',
+              'This PR only updates `package.json`, which exists solely so that',
+              'Dependabot can track the CDN-loaded web barcode libraries.',
+              'The version that is actually used at runtime is pinned in',
+              '`lib/src/web/web_library_versions.dart` and must be updated',
+              'manually to match the new version in this PR.',
+              '',
+              'Until both files match, the CI check fails on',
+              '`test/web/web_library_versions_test.dart`.',
+              '',
+              '**When this bumps `zxing-wasm` across a major version:** verify',
+              'the barcode format names in `lib/src/web/zxing_wasm/zxing_wasm_formats.dart`',
+              'against the upstream release notes. The 2.x to 3.x transition renamed',
+              'output format names (e.g. `EAN-13` became `EAN13`) and introduced',
+              'sub-variant names (e.g. `ITF14`, `ISBN`).',
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });

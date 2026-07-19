@@ -94,6 +94,88 @@ Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 As of version 5.0.0 adding the barcode scanning library script to the `index.html` is no longer required,
 as the script is automatically loaded on first use.
 
+#### Detection backends
+
+The web implementation supports three barcode detection backends. The active backend is selected
+via `MobileScannerPlatform.instance.setWebBarcodeReader(reader)` before starting the scanner.
+
+##### Auto (default)
+
+Uses the native `BarcodeDetector` API when the browser supports it, and falls back to
+`zxing-wasm` otherwise. This is the recommended setting for most apps.
+
+##### Native BarcodeDetector
+
+Uses the [W3C Shape Detection API](https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector),
+which is built into the browser. No external library is loaded. This is the fastest option because
+detection runs natively without any JavaScript or WebAssembly overhead.
+
+Available in Chrome 83+, Edge 83+, and Safari 17+. Not supported in Firefox.
+
+##### zxing-wasm
+
+Uses [zxing-wasm](https://github.com/Sec-ant/zxing-wasm), a WebAssembly port of the ZXing C++
+library. The WASM binary (~2 MB) is loaded from the jsDelivr CDN on first use. Offers good
+performance and works in all modern browsers, including Firefox.
+
+##### ZXing-js (legacy)
+
+Uses the [ZXing JavaScript library](https://github.com/zxing-js/library), a pure-JavaScript port
+of ZXing. Loaded from the unpkg CDN. This backend is slower than the WASM alternative and is
+provided for backward compatibility and comparison purposes only.
+
+#### Backend comparison
+
+| Feature                  | Native BarcodeDetector     | zxing-wasm                 | ZXing-js (legacy)          |
+|--------------------------|----------------------------|----------------------------|----------------------------|
+| **Performance**          | Fastest (native)           | Fast (WASM)                | Slow (pure JS)             |
+| **Firefox**              | :x:                        | :heavy_check_mark:         | :heavy_check_mark:         |
+| **Chrome / Edge**        | :heavy_check_mark:         | :heavy_check_mark:         | :heavy_check_mark:         |
+| **Safari**               | 17+                        | :heavy_check_mark:         | :heavy_check_mark:         |
+| **External dependency**  | None                       | ~2 MB WASM (CDN)           | ~600 KB JS (CDN)           |
+| **Supported formats**    | Browser-dependent          | Most 1D and 2D formats     | Most 1D and 2D formats     |
+
+#### Barcode format support per backend
+
+| `BarcodeFormat`      | Native BarcodeDetector ¹ | zxing-wasm         | ZXing-js (legacy)  |
+|----------------------|--------------------------|--------------------|--------------------|
+| `aztec`              | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: ³ |
+| `codabar`            | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `code39`             | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `code93`             | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `code128`            | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `dataMatrix`         | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `ean8`               | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `ean13`              | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `itf` ²              | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `pdf417`             | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: ³ |
+| `qrCode`             | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `upcA`               | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `upcE`               | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `maxiCode`           | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `microQrCode`        | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBar` ⁴          | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBarExpanded` ⁴  | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBarLimited` ⁴   | :x:                      | :heavy_check_mark: | :x:                |
+
+¹ The BarcodeDetector API defines all formats listed, but the formats that are actually
+detected vary per browser and operating system. Use
+[`BarcodeDetector.getSupportedFormats()`](https://developer.mozilla.org/en-US/docs/Web/API/BarcodeDetector/getSupportedFormats_static)
+to query the current browser. In `WebBarcodeReader.auto` mode, mobile_scanner falls back to
+zxing-wasm when the browser reports no supported formats at all.
+
+² The `itf2of5` and `itf2of5WithChecksum` variants are decoded as plain ITF on all web
+backends; no length or checksum validation is applied. The `itf14` variant is supported as a
+distinct format by zxing-wasm, and decoded as plain ITF by the other backends.
+
+³ The upstream [zxing-js library](https://github.com/zxing-js/library#supported-formats) marks
+Aztec as "needs testing" and PDF417 as "not production ready".
+
+⁴ GS1 DataBar (RSS-14) is also supported on iOS 15+ and macOS 12+ via Apple Vision.
+
+zxing-wasm supports additional formats (such as rMQR Code), but only the formats listed above
+are exposed through `BarcodeFormat`.
+
 #### Providing a mirror for the barcode scanning library
 
 If a different mirror is needed to load the barcode scanning library,
@@ -283,4 +365,12 @@ This means arbitrary binary payloads that happen to contain bytes in the `0x80`�
 
 #### Android and Web
 
-`rawBytes` is fully supported for all formats and encoding modes via MLKit (Android) and the ZXing-based library (Web).
+On Android, `rawBytes` is fully supported for all formats and encoding modes via MLKit.
+
+On Web, support depends on the active detection backend:
+
+| Backend                | `rawBytes` support                                      |
+|------------------------|---------------------------------------------------------|
+| Native BarcodeDetector | :x: Not available (browser API returns decoded text only) |
+| zxing-wasm             | :heavy_check_mark: Fully supported                      |
+| ZXing-js (legacy)      | :heavy_check_mark: Fully supported                      |
