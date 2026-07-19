@@ -1,3 +1,11 @@
+# Changelog
+
+## 7.3.1
+
+**Bug Fixes**
+
+* Bumped the minimum required version of the `web` package to `1.0.0`.
+
 ## 7.3.0
 
 **New features**
@@ -20,26 +28,6 @@
 * Fixed disposing a `MobileScannerController` also disposing the platform resources of a different controller. Disposing a controller that does not hold the active camera session no longer tears down the camera of the controller that does. ([#1631](https://github.com/juliansteenbakker/mobile_scanner/issues/1631))
 * Fixed a subscription leak where a controller that was disposed without being stopped kept its internal event stream subscriptions alive.
 * Fixed an issue when running the plugin using AGP 9.
-
-## [7.3.1](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.3.0...v7.3.1) (2026-07-19)
-
-
-### Features
-
-* checks for lower dependency constraints ([1eade10](https://github.com/juliansteenbakker/mobile_scanner/commit/1eade10d31f7c0e93b00beaa091acb375750eab9))
-* checks for lower dependency constraints ([332d630](https://github.com/juliansteenbakker/mobile_scanner/commit/332d63065c5802dbc68694447542c7321c57dc37))
-* tests for lower dependency constraints ([d28f1a1](https://github.com/juliansteenbakker/mobile_scanner/commit/d28f1a11cb71eb3e01a74e39da23b3ab20dadbe6))
-
-
-### Bug Fixes
-
-* bump web dependency minimum ([5c3adf2](https://github.com/juliansteenbakker/mobile_scanner/commit/5c3adf24bbbd013bf2a40d262a44c106dcacc587))
-* dependency notation ([c9c800c](https://github.com/juliansteenbakker/mobile_scanner/commit/c9c800c15a1a8bc945dc8150bc7c135d807594d7))
-
-
-### Miscellaneous Chores
-
-* correct release version ([17d16e8](https://github.com/juliansteenbakker/mobile_scanner/commit/17d16e81707ed0f3813a0cbecfcd5e4400184c7f))
 
 ## 7.2.1
 
