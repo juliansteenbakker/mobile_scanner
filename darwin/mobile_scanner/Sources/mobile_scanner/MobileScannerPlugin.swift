@@ -1223,8 +1223,17 @@ extension VNBarcodeObservation {
 extension VNBarcodeSymbology {
     static func fromInt(_ mapValue:Int) -> VNBarcodeSymbology? {
         if #available(iOS 15.0, macOS 12.0, *) {
-            if(mapValue == 8){
+            switch(mapValue){
+            case 8:
                 return VNBarcodeSymbology.codabar
+            case 32768:
+                return VNBarcodeSymbology.gs1DataBar
+            case 65536:
+                return VNBarcodeSymbology.gs1DataBarExpanded
+            case 131072:
+                return VNBarcodeSymbology.gs1DataBarLimited
+            default:
+                break
             }
         }
         switch(mapValue){
@@ -1261,8 +1270,17 @@ extension VNBarcodeSymbology {
 
     var toInt: Int? {
         if #available(iOS 15.0, macOS 12.0, *) {
-            if(self == VNBarcodeSymbology.codabar){
+            switch(self){
+            case VNBarcodeSymbology.codabar:
                 return 8
+            case VNBarcodeSymbology.gs1DataBar:
+                return 32768
+            case VNBarcodeSymbology.gs1DataBarExpanded:
+                return 65536
+            case VNBarcodeSymbology.gs1DataBarLimited:
+                return 131072
+            default:
+                break
             }
         }
         switch(self){
