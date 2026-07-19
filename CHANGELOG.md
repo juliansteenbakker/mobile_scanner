@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.3.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.3.1...v7.3.2) (2026-07-19)
+
+
+### Bug Fixes
+
+* use squash merge for promotion PR, correct tag_name output key ([9483ad2](https://github.com/juliansteenbakker/mobile_scanner/commit/9483ad25dc9a0d2f9bc08e3fc90110714a54b7e3))
+* use valid conventional-commit type for promotion PR title ([d6235c0](https://github.com/juliansteenbakker/mobile_scanner/commit/d6235c007ac8aab48e5093af7433813a5826a884))
+
 ## 7.3.1
 
 **Bug Fixes**
