@@ -336,7 +336,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
-  Future<Set<CameraLensType>> getSupportedLenses() async {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) async {
     final mediaDevices = window.navigator.mediaDevicesNullable;
 
     if (mediaDevices == null) {

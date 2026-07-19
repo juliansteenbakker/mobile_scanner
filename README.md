@@ -35,6 +35,29 @@ See the example app for detailed implementation information.
 | scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
 | autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
+| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
+
+### Querying supported lens types with facing filter
+
+Use `getSupportedLenses()` to query which lens types the device has. Pass an optional `facing` parameter to restrict results to cameras on one side:
+
+```dart
+// All cameras (back + front)
+final Set<CameraLensType> allLenses = await controller.getSupportedLenses();
+
+// Back cameras only
+final Set<CameraLensType> backLenses = await controller.getSupportedLenses(
+  facing: CameraFacing.back,
+);
+
+if (backLenses.contains(CameraLensType.zoom)) {
+  // Device has a telephoto back camera
+}
+```
+
+Without a facing filter, results may include lenses from both the front and back cameras, which can cause incorrect lens-type detection when switching cameras.
+
+The `facing` filter is supported on Android and iOS. On macOS and the web, the filter is ignored and all lenses are returned.
 
 ## Installation
 

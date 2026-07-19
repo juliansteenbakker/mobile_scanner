@@ -622,7 +622,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   Future<void> _toggleLensType() async {
     // Fetch supported lenses fresh each time to handle dynamic camera changes
     // (e.g., external cameras being attached/detached).
-    final supportedLenses = await getSupportedLenses();
+    // Pass the current facing direction so only lenses for that camera side
+    // are returned, avoiding cross-side pollution.
+    final supportedLenses = await getSupportedLenses(
+      facing: value.cameraDirection,
+    );
 
     // Filter out 'any' and keep only specific lens types.
     final specificLenses =
@@ -757,7 +761,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///   print('Available lenses: $supportedLenses');
   /// }
   /// ```
-  Future<Set<CameraLensType>> getSupportedLenses() async {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) async {
     if (_isDisposed) {
       throw MobileScannerException(
         errorCode: MobileScannerErrorCode.controllerDisposed,
@@ -767,7 +773,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return MobileScannerPlatform.instance.getSupportedLenses();
+    return MobileScannerPlatform.instance.getSupportedLenses(facing: facing);
   }
 
   /// Dispose the controller.
