@@ -1,3 +1,11 @@
+# Changelog
+
+## 7.3.1
+
+**Bug Fixes**
+
+* Bumped the minimum required version of the `web` package to `1.0.0`.
+
 ## 7.3.0
 
 **New features**
