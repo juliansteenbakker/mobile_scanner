@@ -175,6 +175,11 @@ provided for backward compatibility and comparison purposes only.
 | `qrCode`             | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
 | `upcA`               | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
 | `upcE`               | :heavy_check_mark:       | :heavy_check_mark: | :heavy_check_mark: |
+| `maxiCode`           | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `microQrCode`        | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBar` ⁴          | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBarExpanded` ⁴  | :x:                      | :heavy_check_mark: | :heavy_check_mark: |
+| `dataBarLimited` ⁴   | :x:                      | :heavy_check_mark: | :x:                |
 
 ¹ The BarcodeDetector API defines all formats listed, but the formats that are actually
 detected vary per browser and operating system. Use
@@ -189,8 +194,10 @@ distinct format by zxing-wasm, and decoded as plain ITF by the other backends.
 ³ The upstream [zxing-js library](https://github.com/zxing-js/library#supported-formats) marks
 Aztec as "needs testing" and PDF417 as "not production ready".
 
-zxing-wasm supports additional formats (such as DataBar, Micro QR Code and rMQR Code), but
-only the formats listed above are exposed through `BarcodeFormat`.
+⁴ GS1 DataBar (RSS-14) is also supported on iOS 15+ and macOS 12+ via Apple Vision.
+
+zxing-wasm supports additional formats (such as rMQR Code), but only the formats listed above
+are exposed through `BarcodeFormat`.
 
 #### Providing a mirror for the barcode scanning library
 

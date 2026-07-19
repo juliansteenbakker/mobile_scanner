@@ -20,13 +20,23 @@ extension ZXingWasmFormatStringToBarcodeFormat on String {
     'PZN' => BarcodeFormat.code39,
     'Code93' => BarcodeFormat.code93,
     'Code128' => BarcodeFormat.code128,
+    'DataBar' ||
+    'DataBarOmni' ||
+    'DataBarStk' ||
+    'DataBarStkOmni' => BarcodeFormat.dataBar,
+    'DataBarExp' ||
+    'DataBarExpanded' ||
+    'DataBarExpStk' => BarcodeFormat.dataBarExpanded,
+    'DataBarLtd' || 'DataBarLimited' => BarcodeFormat.dataBarLimited,
     'DataMatrix' => BarcodeFormat.dataMatrix,
     'EAN8' || 'EAN-8' => BarcodeFormat.ean8,
     'EAN13' || 'ISBN' || 'EAN-13' => BarcodeFormat.ean13,
     'ITF' => BarcodeFormat.itf,
     'ITF14' => BarcodeFormat.itf14,
+    'MaxiCode' => BarcodeFormat.maxiCode,
     'PDF417' || 'CompactPDF417' || 'MicroPDF417' => BarcodeFormat.pdf417,
     'QRCode' || 'QRCodeModel1' || 'QRCodeModel2' => BarcodeFormat.qrCode,
+    'MicroQRCode' => BarcodeFormat.microQrCode,
     'UPCA' || 'UPC-A' => BarcodeFormat.upcA,
     'UPCE' || 'UPC-E' => BarcodeFormat.upcE,
     _ => BarcodeFormat.unknown,
@@ -44,6 +54,9 @@ extension BarcodeFormatToZXingWasmString on BarcodeFormat {
     BarcodeFormat.code39 => 'Code39',
     BarcodeFormat.code93 => 'Code93',
     BarcodeFormat.code128 => 'Code128',
+    BarcodeFormat.dataBar => 'DataBar',
+    BarcodeFormat.dataBarExpanded => 'DataBarExp',
+    BarcodeFormat.dataBarLimited => 'DataBarLtd',
     BarcodeFormat.dataMatrix => 'DataMatrix',
     BarcodeFormat.ean8 => 'EAN8',
     BarcodeFormat.ean13 => 'EAN13',
@@ -51,8 +64,10 @@ extension BarcodeFormatToZXingWasmString on BarcodeFormat {
     BarcodeFormat.itf2of5 ||
     BarcodeFormat.itf2of5WithChecksum => 'ITF',
     BarcodeFormat.itf14 => 'ITF14',
+    BarcodeFormat.maxiCode => 'MaxiCode',
     BarcodeFormat.pdf417 => 'PDF417',
     BarcodeFormat.qrCode => 'QRCode',
+    BarcodeFormat.microQrCode => 'MicroQRCode',
     BarcodeFormat.upcA => 'UPCA',
     BarcodeFormat.upcE => 'UPCE',
     BarcodeFormat.all || BarcodeFormat.unknown || _ => null,

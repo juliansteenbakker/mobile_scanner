@@ -1,3 +1,11 @@
+# Changelog
+
+## 7.3.1
+
+**Bug Fixes**
+
+* Bumped the minimum required version of the `web` package to `1.0.0`.
+
 ## 7.3.0
 
 **New features**
@@ -8,6 +16,12 @@
   * `WebBarcodeReader.zxingWasm`, uses zxing-wasm (ZXing C++ compiled to WebAssembly), which works in all modern browsers including Firefox.
   * `WebBarcodeReader.zxingJs`, the legacy ZXing JavaScript backend, retained for backward compatibility.
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
+* Added `BarcodeFormat.maxiCode` and `BarcodeFormat.microQrCode`, supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends.
+* Added `BarcodeFormat.dataBar`, `BarcodeFormat.dataBarExpanded` and `BarcodeFormat.dataBarLimited` (GS1 DataBar / RSS-14), supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends (DataBar and DataBar Expanded only for `zxingJs`), and by Apple Vision on iOS 15+ / macOS 12+.
+
+**Improvements**
+
+* [Web] Bumped `@zxing/library` (the `WebBarcodeReader.zxingJs` backend) from 0.21.3 to 0.23.0.
 
 **Improvements**
 
@@ -17,6 +31,7 @@
 
 * Fixed disposing a `MobileScannerController` also disposing the platform resources of a different controller. Disposing a controller that does not hold the active camera session no longer tears down the camera of the controller that does. ([#1631](https://github.com/juliansteenbakker/mobile_scanner/issues/1631))
 * Fixed a subscription leak where a controller that was disposed without being stopped kept its internal event stream subscriptions alive.
+* Fixed an issue when running the plugin using AGP 9.
 * [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
 * [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
 
