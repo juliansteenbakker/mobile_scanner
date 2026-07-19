@@ -18,23 +18,16 @@
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
 * Added `BarcodeFormat.maxiCode` and `BarcodeFormat.microQrCode`, supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends.
 * Added `BarcodeFormat.dataBar`, `BarcodeFormat.dataBarExpanded` and `BarcodeFormat.dataBarLimited` (GS1 DataBar / RSS-14), supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends (DataBar and DataBar Expanded only for `zxingJs`), and by Apple Vision on iOS 15+ / macOS 12+.
-* Added `getBestQrScanningLens()` to determine the camera lens best suited for close-range QR scanning. On iOS 15+ it returns the lens with the shortest `AVCaptureDevice.minimumFocusDistance` (typically the ultra-wide lens with macro autofocus on newer iPhones, or the standard 1x camera on older models). Android, macOS, and the web return `normal` when a camera is available. Returns `null` if the device has no camera for the requested facing direction.
 
 **Improvements**
 
 * [Web] Bumped `@zxing/library` (the `WebBarcodeReader.zxingJs` backend) from 0.21.3 to 0.23.0.
-
-**Improvements**
-
-* Added an optional `facing` filter to `getSupportedLenses`, to restrict the result to front or back cameras. The filter is supported on Android and iOS, and is ignored on macOS and the web.
 
 **Bug Fixes**
 
 * Fixed disposing a `MobileScannerController` also disposing the platform resources of a different controller. Disposing a controller that does not hold the active camera session no longer tears down the camera of the controller that does. ([#1631](https://github.com/juliansteenbakker/mobile_scanner/issues/1631))
 * Fixed a subscription leak where a controller that was disposed without being stopped kept its internal event stream subscriptions alive.
 * Fixed an issue when running the plugin using AGP 9.
-* [Android] Fixed `getSupportedLenses` reporting lens types of physical sub-cameras within logical multi-camera devices. CameraX cannot select these cameras, which caused a crash when switching to such a lens. Only logical cameras are enumerated now.
-* [Android] Starting the scanner with a `lensType` that is not available no longer silently falls back to the default camera. Instead, an error is reported, so that unavailable lens types can be detected.
 
 ## 7.2.1
 
