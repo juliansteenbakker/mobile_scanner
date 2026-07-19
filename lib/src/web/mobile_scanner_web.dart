@@ -364,7 +364,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   }
 
   @override
-  Future<CameraLensType?> getBestQrScanningLens({
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
     CameraFacing facing = CameraFacing.back,
   }) async {
     final mediaDevices = window.navigator.mediaDevicesNullable;

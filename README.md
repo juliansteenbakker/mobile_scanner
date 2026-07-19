@@ -36,7 +36,7 @@ See the example app for detailed implementation information.
 | autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
 | getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
-| getBestQrScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) |
+| getBestCloseRangeScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) |
 
 ### Querying supported lens types with facing filter
 
@@ -60,12 +60,12 @@ Without a facing filter, results may include lenses from both the front and back
 
 The `facing` filter is supported on Android and iOS. On macOS and the web, the filter is ignored and all lenses are returned.
 
-### Automatic best-lens selection for QR scanning
+### Automatic best-lens selection for close-range scanning
 
-Use `getBestQrScanningLens()` to determine which lens can focus closest to the phone, and is therefore best suited for scanning QR codes held at close range. It returns `null` if the device has no camera for the given facing direction. Combine it with `getSupportedLenses` before switching, since the returned lens type is not guaranteed to be available:
+Use `getBestCloseRangeScanningLens()` to determine which lens can focus closest to the phone, and is therefore best suited for scanning barcodes held at close range. It returns `null` if the device has no camera for the given facing direction. Combine it with `getSupportedLenses` before switching, since the returned lens type is not guaranteed to be available:
 
 ```dart
-final bestLens = await controller.getBestQrScanningLens(facing: CameraFacing.back);
+final bestLens = await controller.getBestCloseRangeScanningLens(facing: CameraFacing.back);
 final supported = await controller.getSupportedLenses(facing: CameraFacing.back);
 
 if (bestLens != null && supported.contains(bestLens)) {

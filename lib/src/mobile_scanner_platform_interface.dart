@@ -146,7 +146,7 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('getSupportedLenses() has not been implemented.');
   }
 
-  /// Determine the lens type best suited for close-range QR scanning.
+  /// Determine the lens type best suited for close-range scanning.
   ///
   /// Returns the [CameraLensType] whose camera can focus closest to the
   /// phone. On iOS 15+, this is based on the minimum focus distance reported
@@ -155,11 +155,11 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   ///
   /// Returns `null` if the device has no camera for the given [facing]
   /// direction.
-  Future<CameraLensType?> getBestQrScanningLens({
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
     CameraFacing facing = CameraFacing.back,
   }) {
     throw UnimplementedError(
-      'getBestQrScanningLens() has not been implemented.',
+      'getBestCloseRangeScanningLens() has not been implemented.',
     );
   }
 

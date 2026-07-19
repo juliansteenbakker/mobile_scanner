@@ -250,7 +250,7 @@ object MobileScannerCameraLensSelector {
     }
 
     /**
-     * Determine the lens type best suited for close-range QR scanning.
+     * Determine the lens type best suited for close-range scanning.
      *
      * Camera2 exposes [CameraCharacteristics.LENS_INFO_MINIMUM_FOCUS_DISTANCE] per camera,
      * but on modern multi-camera devices that value is only meaningful on physical
@@ -262,7 +262,7 @@ object MobileScannerCameraLensSelector {
      * @param cameraManager The CameraManager instance
      * @return [LENS_TYPE_NORMAL], or null if the device has no camera
      */
-    fun getBestQrScanningLens(cameraManager: CameraManager): Int? {
+    fun getBestCloseRangeScanningLens(cameraManager: CameraManager): Int? {
         return try {
             if (cameraManager.cameraIdList.isEmpty()) null else LENS_TYPE_NORMAL
         } catch (e: Exception) {

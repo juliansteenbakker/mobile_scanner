@@ -149,7 +149,7 @@ class MobileScannerCameraSelector {
 #endif
     }
 
-    /// Determine the lens type best suited for close-range QR scanning.
+    /// Determine the lens type best suited for close-range scanning.
     ///
     /// Picks the camera that can focus closest to the phone, using
     /// `AVCaptureDevice.minimumFocusDistance` (millimeters; lower means it focuses
@@ -161,9 +161,9 @@ class MobileScannerCameraSelector {
     /// `minimumFocusDistance` is unavailable.
     ///
     /// - Parameter position: The camera position to check (default: .back)
-    /// - Returns: The LensType raw value best suited for close-range QR scanning,
+    /// - Returns: The LensType raw value best suited for close-range scanning,
     ///   or nil if there is no camera at that position
-    static func getBestQrScanningLens(position: AVCaptureDevice.Position = .back) -> Int? {
+    static func getBestCloseRangeScanningLens(position: AVCaptureDevice.Position = .back) -> Int? {
 #if os(iOS)
         if #available(iOS 15.0, *) {
             let devices = AVCaptureDevice.DiscoverySession(

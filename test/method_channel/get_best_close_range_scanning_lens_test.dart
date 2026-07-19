@@ -8,7 +8,7 @@ import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  group('getBestQrScanningLens', () {
+  group('getBestCloseRangeScanningLens', () {
     late MethodChannelMobileScanner platform;
 
     setUp(() {
@@ -27,13 +27,14 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               return 0;
             }
             return null;
           });
 
-      final result = await platform.getBestQrScanningLens();
+      final result = await platform.getBestCloseRangeScanningLens();
 
       expect(result, CameraLensType.normal);
     });
@@ -44,13 +45,14 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               return 1;
             }
             return null;
           });
 
-      final result = await platform.getBestQrScanningLens();
+      final result = await platform.getBestCloseRangeScanningLens();
 
       expect(result, CameraLensType.wide);
     });
@@ -61,13 +63,14 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               return 2;
             }
             return null;
           });
 
-      final result = await platform.getBestQrScanningLens();
+      final result = await platform.getBestCloseRangeScanningLens();
 
       expect(result, CameraLensType.zoom);
     });
@@ -78,13 +81,14 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               return null;
             }
             return null;
           });
 
-      final result = await platform.getBestQrScanningLens();
+      final result = await platform.getBestCloseRangeScanningLens();
 
       expect(result, isNull);
     });
@@ -97,14 +101,15 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               capturedCall = methodCall;
               return 0;
             }
             return null;
           });
 
-      await platform.getBestQrScanningLens();
+      await platform.getBestCloseRangeScanningLens();
 
       expect(capturedCall, isNotNull);
       expect(capturedCall!.arguments, equals({'facing': 1}));
@@ -118,14 +123,15 @@ void main() {
             methodCall,
           ) async {
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               capturedCall = methodCall;
               return 0;
             }
             return null;
           });
 
-      await platform.getBestQrScanningLens(facing: CameraFacing.front);
+      await platform.getBestCloseRangeScanningLens(facing: CameraFacing.front);
 
       expect(capturedCall, isNotNull);
       expect(capturedCall!.arguments, equals({'facing': 0}));
@@ -140,18 +146,19 @@ void main() {
           ) async {
             methodCalls.add(methodCall);
             if (methodCall.method ==
-                MethodChannelMobileScanner.kGetBestQrScanningLensMethodName) {
+                MethodChannelMobileScanner
+                    .kGetBestCloseRangeScanningLensMethodName) {
               return 0;
             }
             return null;
           });
 
-      await platform.getBestQrScanningLens();
+      await platform.getBestCloseRangeScanningLens();
 
       expect(methodCalls, hasLength(1));
       expect(
         methodCalls.first.method,
-        MethodChannelMobileScanner.kGetBestQrScanningLensMethodName,
+        MethodChannelMobileScanner.kGetBestCloseRangeScanningLensMethodName,
       );
     });
   });
