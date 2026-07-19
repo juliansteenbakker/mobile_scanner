@@ -776,6 +776,49 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     return MobileScannerPlatform.instance.getSupportedLenses(facing: facing);
   }
 
+  /// Determine the lens type best suited for close-range QR scanning.
+  ///
+  /// Returns the [CameraLensType] whose camera can focus closest to the
+  /// phone, making it best suited for scanning QR codes held at close range.
+  ///
+  /// Returns `null` if the device has no camera for the given [facing]
+  /// direction.
+  ///
+  /// This does not switch the camera. Combine it with [getSupportedLenses]
+  /// and [switchCamera] to only switch to the returned lens if it is
+  /// actually available on the device:
+  ///
+  /// ```dart
+  /// final bestLens = await controller.getBestQrScanningLens();
+  /// final supported = await controller.getSupportedLenses(
+  ///   facing: CameraFacing.back,
+  /// );
+  ///
+  /// if (bestLens != null && supported.contains(bestLens)) {
+  ///   await controller.switchCamera(
+  ///     SelectCamera(facingDirection: CameraFacing.back, lensType: bestLens),
+  ///   );
+  /// }
+  /// ```
+  ///
+  /// Throws a [MobileScannerException] if the controller has been disposed.
+  Future<CameraLensType?> getBestQrScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    if (_isDisposed) {
+      throw MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerDisposed,
+        errorDetails: MobileScannerErrorDetails(
+          message: MobileScannerErrorCode.controllerDisposed.message,
+        ),
+      );
+    }
+
+    return MobileScannerPlatform.instance.getBestQrScanningLens(
+      facing: facing,
+    );
+  }
+
   /// Dispose the controller.
   ///
   /// Once the controller is disposed, it cannot be used anymore.

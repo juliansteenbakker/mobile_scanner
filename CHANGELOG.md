@@ -18,6 +18,7 @@
 * [Web] Added `MobileScannerPlatform.instance.activeWebReader` to query which backend is currently active.
 * Added `BarcodeFormat.maxiCode` and `BarcodeFormat.microQrCode`, supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends.
 * Added `BarcodeFormat.dataBar`, `BarcodeFormat.dataBarExpanded` and `BarcodeFormat.dataBarLimited` (GS1 DataBar / RSS-14), supported by the `WebBarcodeReader.zxingJs` and `WebBarcodeReader.zxingWasm` backends (DataBar and DataBar Expanded only for `zxingJs`), and by Apple Vision on iOS 15+ / macOS 12+.
+* Added `getBestQrScanningLens()` to determine the camera lens best suited for close-range QR scanning. On iOS 15+ it returns the lens with the shortest `AVCaptureDevice.minimumFocusDistance` (typically the ultra-wide lens with macro autofocus on newer iPhones, or the standard 1x camera on older models). Android, macOS, and the web return `normal` when a camera is available. Returns `null` if the device has no camera for the requested facing direction.
 
 **Improvements**
 

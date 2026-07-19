@@ -106,6 +106,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             toggleTorch(result)
         case "getSupportedLenses":
             getSupportedLenses(call, result)
+        case "getBestQrScanningLens":
+            getBestQrScanningLens(call, result)
         case "setScale":
             setScale(call, result)
         case "setFocus":
@@ -567,6 +569,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         default: nil
         }
         result(MobileScannerCameraSelector.getSupportedLenses(facing: facing))
+    }
+
+    private func getBestQrScanningLens(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let position: AVCaptureDevice.Position = switch argReader.int(key: "facing") {
+        case 0?: .front
+        default: .back
+        }
+        result(MobileScannerCameraSelector.getBestQrScanningLens(position: position))
     }
 
     /// Turn the torch on.
