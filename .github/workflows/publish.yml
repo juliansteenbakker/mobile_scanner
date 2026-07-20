@@ -17,4 +17,9 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: stable
+      # subosito/flutter-action never fetches the pub.dev OIDC token itself
+      # (unlike dart-lang/setup-dart), so without this step `flutter pub
+      # publish` silently falls back to interactive OAuth even with
+      # id-token: write granted and trusted publishing configured on pub.dev.
+      - uses: dart-lang/setup-dart@v1
       - run: flutter pub publish --force
