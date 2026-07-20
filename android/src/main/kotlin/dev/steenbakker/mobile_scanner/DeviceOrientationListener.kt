@@ -171,7 +171,7 @@ class DeviceOrientationListener(
 
         if (newOrientation != lastOrientation) {
             lastOrientation = newOrientation
-            Handler(Looper.getMainLooper()).post {
+            handler.post {
                 deviceOrientationEventSink?.success(newOrientation.serialize())
             }
         }
