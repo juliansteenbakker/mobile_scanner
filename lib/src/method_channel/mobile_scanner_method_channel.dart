@@ -91,6 +91,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kGetSupportedLensesMethodName = 'getSupportedLenses';
 
+  /// The name of the method that gets the best lens for close-range scanning.
+  @visibleForTesting
+  static const String kGetBestCloseRangeScanningLensMethodName =
+      'getBestCloseRangeScanningLens';
+
   /// The method channel used to interact with the native platform.
   @visibleForTesting
   final methodChannel = const MethodChannel(
@@ -511,9 +516,12 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   }
 
   @override
-  Future<Set<CameraLensType>> getSupportedLenses() async {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) async {
     final lensTypes = await methodChannel.invokeListMethod<Object?>(
       kGetSupportedLensesMethodName,
+      facing != null ? {'facing': facing.rawValue} : null,
     );
 
     if (lensTypes == null || lensTypes.isEmpty) {
@@ -521,6 +529,22 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     }
 
     return lensTypes.whereType<int>().map(CameraLensType.fromRawValue).toSet();
+  }
+
+  @override
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) async {
+    final rawValue = await methodChannel.invokeMethod<int>(
+      kGetBestCloseRangeScanningLensMethodName,
+      {'facing': facing.rawValue},
+    );
+
+    if (rawValue == null) {
+      return null;
+    }
+
+    return CameraLensType.fromRawValue(rawValue);
   }
 
   @override

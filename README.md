@@ -35,6 +35,52 @@ See the example app for detailed implementation information.
 | scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
 | autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
+| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
+| getBestCloseRangeScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) |
+
+### Querying supported lens types with facing filter
+
+Use `getSupportedLenses()` to query which lens types the device has. Pass an optional `facing` parameter to restrict results to cameras on one side:
+
+```dart
+// All cameras (back + front)
+final Set<CameraLensType> allLenses = await controller.getSupportedLenses();
+
+// Back cameras only
+final Set<CameraLensType> backLenses = await controller.getSupportedLenses(
+  facing: CameraFacing.back,
+);
+
+if (backLenses.contains(CameraLensType.zoom)) {
+  // Device has a telephoto back camera
+}
+```
+
+Without a facing filter, results may include lenses from both the front and back cameras, which can cause incorrect lens-type detection when switching cameras.
+
+The `facing` filter is supported on Android and iOS. On macOS and the web, the filter is ignored and all lenses are returned.
+
+### Automatic best-lens selection for close-range scanning
+
+Use `getBestCloseRangeScanningLens()` to determine which lens can focus closest to the phone, and is therefore best suited for scanning barcodes held at close range. It returns `null` if the device has no camera for the given facing direction. Combine it with `getSupportedLenses` before switching, since the returned lens type is not guaranteed to be available:
+
+```dart
+final bestLens = await controller.getBestCloseRangeScanningLens(facing: CameraFacing.back);
+final supported = await controller.getSupportedLenses(facing: CameraFacing.back);
+
+if (bestLens != null && supported.contains(bestLens)) {
+  await controller.switchCamera(
+    SelectCamera(facingDirection: CameraFacing.back, lensType: bestLens),
+  );
+}
+```
+
+This returns:
+- **iOS 15+**: The camera with the shortest `AVCaptureDevice.minimumFocusDistance` — typically the ultra-wide lens on newer iPhones (macro autofocus at ~2cm), or the standard 1x camera on older models
+- **iOS < 15 / macOS**: `CameraLensType.normal`, since `minimumFocusDistance` is not available
+- **Android**: `CameraLensType.normal` when the device has a camera. `LENS_INFO_MINIMUM_FOCUS_DISTANCE` is only meaningful on physical sub-cameras, which — like the rest of `getSupportedLenses` — are not independently selectable through CameraX, so the main camera (which has the most capable autofocus on virtually all Android devices) is returned unconditionally
+- **Web**: `CameraLensType.normal` when the device has a camera. The MediaDevices API has no concept of lens type, and its `focusDistance` capability, where available at all, is limited to Chrome on Android
+- **All platforms**: `null` if there is no camera for the requested facing direction
 
 ## Installation
 

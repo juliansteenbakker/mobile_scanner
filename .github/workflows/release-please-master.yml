@@ -1,0 +1,48 @@
+name: release-please (master hotfixes)
+
+on:
+  push:
+    branches: [master]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    if: github.repository == 'juliansteenbakker/mobile_scanner'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name || steps.release.outputs['.--tag_name'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          target-branch: master
+
+  # After a hotfix release lands on master, open a PR to bring the fix and
+  # the version/changelog bump back into develop. This is left for manual
+  # merging, since CHANGELOG.md and pubspec.yaml can genuinely conflict with
+  # unreleased changes already on develop.
+  sync-to-develop:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open PR to bring hotfix back into develop
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          gh pr create \
+            --base develop \
+            --head master \
+            --title "chore: merge ${TAG} hotfix back into develop" \
+            --body "Automated merge-back of the ${TAG} hotfix from master into develop. Please resolve any CHANGELOG.md/pubspec.yaml conflicts before merging." \
+            || echo "PR may already exist, continuing"

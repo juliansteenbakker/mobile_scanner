@@ -105,7 +105,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         case "toggleTorch":
             toggleTorch(result)
         case "getSupportedLenses":
-            getSupportedLenses(result)
+            getSupportedLenses(call, result)
+        case "getBestCloseRangeScanningLens":
+            getBestCloseRangeScanningLens(call, result)
         case "setScale":
             setScale(call, result)
         case "setFocus":
@@ -559,8 +561,23 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         return kCVPixelFormatType_32BGRA
     }
 
-    private func getSupportedLenses(_ result: @escaping FlutterResult) {
-        result(MobileScannerCameraSelector.getSupportedLenses())
+    private func getSupportedLenses(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let facing: AVCaptureDevice.Position? = switch argReader.int(key: "facing") {
+        case 0?: .front
+        case 1?: .back
+        default: nil
+        }
+        result(MobileScannerCameraSelector.getSupportedLenses(facing: facing))
+    }
+
+    private func getBestCloseRangeScanningLens(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        let argReader = MapArgumentReader(call.arguments as? [String: Any])
+        let position: AVCaptureDevice.Position = switch argReader.int(key: "facing") {
+        case 0?: .front
+        default: .back
+        }
+        result(MobileScannerCameraSelector.getBestCloseRangeScanningLens(position: position))
     }
 
     /// Turn the torch on.

@@ -1,3 +1,26 @@
+# Changelog
+
+## 7.4.0
+
+**New features**
+
+* Added `getBestCloseRangeScanningLens()` to determine which camera lens is best suited for scanning barcodes at close range (e.g. the ultra-wide/macro lens on newer iPhones). Returns `null` if no camera is available for the requested facing direction.
+
+**Improvements**
+
+* Added an optional `facing` filter to `getSupportedLenses`, to restrict results to front or back cameras.
+
+**Bug Fixes**
+
+* [Android] Fixed `getSupportedLenses` reporting physical sub-cameras that CameraX can't actually select, which caused a crash when switching to one.
+* [Android] Starting the scanner with an unavailable `lensType` now reports an error instead of silently falling back to the default camera.
+
+## 7.3.1
+
+**Bug Fixes**
+
+* Bumped the minimum required version of the `web` package to `1.0.0`.
+
 ## 7.3.0
 
 **New features**

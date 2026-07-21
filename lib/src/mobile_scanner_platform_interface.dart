@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/enums/barcode_format.dart';
+import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/camera_lens_type.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
 import 'package:mobile_scanner/src/enums/web_barcode_reader.dart';
@@ -139,8 +140,27 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// containing only [CameraLensType.any] if cameras are available.
   ///
   /// This method can be called before starting the scanner.
-  Future<Set<CameraLensType>> getSupportedLenses() {
+  Future<Set<CameraLensType>> getSupportedLenses({
+    CameraFacing? facing,
+  }) {
     throw UnimplementedError('getSupportedLenses() has not been implemented.');
+  }
+
+  /// Determine the lens type best suited for close-range scanning.
+  ///
+  /// Returns the [CameraLensType] whose camera can focus closest to the
+  /// phone. On iOS 15+, this is based on the minimum focus distance reported
+  /// by each camera; on platforms or OS versions where that data is not
+  /// available or not actionable, this returns [CameraLensType.normal].
+  ///
+  /// Returns `null` if the device has no camera for the given [facing]
+  /// direction.
+  Future<CameraLensType?> getBestCloseRangeScanningLens({
+    CameraFacing facing = CameraFacing.back,
+  }) {
+    throw UnimplementedError(
+      'getBestCloseRangeScanningLens() has not been implemented.',
+    );
   }
 
   /// Update the scan window to the given [window] rectangle.

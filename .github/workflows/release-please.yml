@@ -1,0 +1,53 @@
+name: release-please
+
+on:
+  push:
+    branches: [develop]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    if: github.repository == 'juliansteenbakker/mobile_scanner'
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.releases_created }}
+      tag_name: ${{ steps.release.outputs.tag_name || steps.release.outputs['.--tag_name'] }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          target-branch: develop
+
+  # Once a release lands on develop, fast-track it onto master so that
+  # hotfixes can be branched from a branch that always matches the latest
+  # release. Master requires PRs but no approvals/checks, so this merges
+  # immediately without waiting.
+  promote-to-master:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Open and merge promotion PR into master
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: |
+          gh pr create \
+            --base master \
+            --head develop \
+            --title "chore: promote ${TAG} to master" \
+            --body "Automated promotion of ${TAG} from develop to master." \
+            || echo "PR may already exist, continuing"
+          # A real merge commit (not squash) is required here so that the
+          # tagged release commit on develop stays a genuine ancestor of
+          # master - release-please-master.yml relies on that ancestry to
+          # find the last release when scanning master's history.
+          gh pr merge develop --merge
