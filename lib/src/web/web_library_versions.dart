@@ -16,4 +16,4 @@ const String zxingJsVersion = '0.23.0';
 /// `zxing_wasm_formats.dart` against the upstream release notes: the 2.x to
 /// 3.x transition renamed the output format names (e.g. `EAN-13` became
 /// `EAN13`) and introduced sub-variant names (e.g. `ITF14`, `ISBN`).
-const String zxingWasmVersion = '3.1.1';
+const String zxingWasmVersion = '3.1.2';
