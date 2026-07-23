@@ -119,6 +119,25 @@ final class _RotatedPreviewState extends State<RotatedPreview> {
   }
 
   @override
+  void didUpdateWidget(RotatedPreview oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The device orientation stream is recreated when the camera is restarted,
+    // e.g. when switching between the front and back camera. Resubscribe and
+    // adopt the new initial orientation, otherwise this widget keeps listening
+    // to the old, defunct stream and no longer follows device rotation.
+    if (!identical(
+      widget.deviceOrientationStream,
+      oldWidget.deviceOrientationStream,
+    )) {
+      unawaited(_deviceOrientationSubscription?.cancel());
+      _deviceOrientationSubscription = widget.deviceOrientationStream.listen(
+        onDeviceOrientationEvent,
+      );
+      deviceOrientation = widget.initialDeviceOrientation;
+    }
+  }
+
+  @override
   void dispose() {
     unawaited(_deviceOrientationSubscription?.cancel());
     _deviceOrientationSubscription = null;
