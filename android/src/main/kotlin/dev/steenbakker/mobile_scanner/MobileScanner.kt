@@ -401,7 +401,19 @@ class MobileScanner(
         val mainExecutor = ContextCompat.getMainExecutor(activity)
 
         cameraProviderFuture.addListener({
-            cameraProvider = cameraProviderFuture.get()
+            try {
+                cameraProvider = cameraProviderFuture.get()
+            } catch (e: Exception) {
+                // CameraX can fail to initialize on some devices (e.g.
+                // "Available cameras: 0", camera held by another process, or a
+                // transient HAL error). get() rethrows that as an uncaught
+                // ExecutionException here, which crashes the host app. Route it
+                // through the normal error callback instead so the Dart side can
+                // surface it via errorBuilder rather than terminating.
+                mobileScannerErrorCallback(NoCamera())
+
+                return@addListener
+            }
             val numberOfCameras = cameraProvider?.availableCameraInfos?.size
 
             if (cameraProvider == null) {
