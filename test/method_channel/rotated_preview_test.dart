@@ -8,10 +8,21 @@ import 'package:mobile_scanner/src/method_channel/rotated_preview.dart';
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  // With sensorOrientationDegrees == 0 and facingSign == 1, the rotation
-  // correction resolves to these quarter turns, which is what we assert on:
-  //   portraitUp      -> 0
-  //   landscapeRight  -> 2
+  // RotatedPreview does not rotate by the device orientation itself: it
+  // applies the correction that remains after CameraPreview has already
+  // rotated the preview by the device orientation. So the expected quarter
+  // turns below are that leftover correction, not the orientation.
+  //
+  // For sensorOrientationDegrees == 0 and facingSign == 1, per
+  // _computeRotationDegrees: ((sensor - device + 360) % 360) - device
+  //   portraitUp:     ((0 -  0 + 360) % 360) -  0 =   0 ->  0 turns
+  //   landscapeRight: ((0 - 90 + 360) % 360) - 90 = 180 ->  2 turns
+  //
+  // These two are used throughout because they are unambiguous: with a zero
+  // sensor orientation, portraitUp and portraitDown both resolve to 0 turns.
+  const portraitUpTurns = 0;
+  const landscapeRightTurns = 2;
+
   const childKey = Key('rotated-child');
 
   Widget buildPreview({
@@ -49,7 +60,7 @@ void main() {
       ),
     );
 
-    expect(quarterTurns(tester), 0);
+    expect(quarterTurns(tester), portraitUpTurns);
   });
 
   testWidgets('rotates when the orientation stream emits', (tester) async {
@@ -66,7 +77,7 @@ void main() {
     controller.add(DeviceOrientation.landscapeRight);
     await tester.pumpAndSettle();
 
-    expect(quarterTurns(tester), 2);
+    expect(quarterTurns(tester), landscapeRightTurns);
   });
 
   testWidgets(
@@ -87,7 +98,7 @@ void main() {
           initialOrientation: DeviceOrientation.portraitUp,
         ),
       );
-      expect(quarterTurns(tester), 0);
+      expect(quarterTurns(tester), portraitUpTurns);
 
       // Rebuild with the new stream. didUpdateWidget should resubscribe and
       // adopt the new initial orientation.
@@ -97,18 +108,18 @@ void main() {
           initialOrientation: DeviceOrientation.landscapeRight,
         ),
       );
-      expect(quarterTurns(tester), 2);
+      expect(quarterTurns(tester), landscapeRightTurns);
 
       // Events on the new stream are now followed.
       newController.add(DeviceOrientation.portraitUp);
       await tester.pumpAndSettle();
-      expect(quarterTurns(tester), 0);
+      expect(quarterTurns(tester), portraitUpTurns);
 
       // Events on the old stream are ignored: the old subscription was
       // cancelled, so this must not change the rotation.
       oldController.add(DeviceOrientation.landscapeRight);
       await tester.pumpAndSettle();
-      expect(quarterTurns(tester), 0);
+      expect(quarterTurns(tester), portraitUpTurns);
     },
   );
 
@@ -136,6 +147,6 @@ void main() {
     controller.add(DeviceOrientation.landscapeRight);
     await tester.pumpAndSettle();
 
-    expect(quarterTurns(tester), 2);
+    expect(quarterTurns(tester), landscapeRightTurns);
   });
 }

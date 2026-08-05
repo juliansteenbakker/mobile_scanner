@@ -128,8 +128,8 @@ class DeviceOrientationListener(
      * that are only reflected on the display after the triggering callback.
      */
     private fun scheduleDelayedRotationChecks() {
-        handler.postDelayed(rotationCheck, 150)
-        handler.postDelayed(rotationCheck, 500)
+        handler.postDelayed(rotationCheck, ROTATION_RECHECK_DELAY_MS)
+        handler.postDelayed(rotationCheck, ROTATION_RECHECK_FALLBACK_DELAY_MS)
     }
 
     /**
@@ -179,5 +179,18 @@ class DeviceOrientationListener(
 
     fun getOrientation(): PlatformChannel.DeviceOrientation {
         return lastOrientation ?: getUIOrientation()
+    }
+
+    private companion object {
+        // Android does not provide a signal for when the display rotation has
+        // settled after a rotation, so the re-checks below are time based.
+        // These values are empirical rather than derived from a platform
+        // guarantee: the first covers the common case where the new rotation
+        // lands shortly after the triggering callback, the second is a
+        // fallback for slower devices. Both go through [checkRotation], which
+        // only emits when the orientation actually changed, so a re-check that
+        // observes no change is a no-op.
+        const val ROTATION_RECHECK_DELAY_MS = 150L
+        const val ROTATION_RECHECK_FALLBACK_DELAY_MS = 500L
     }
 }
