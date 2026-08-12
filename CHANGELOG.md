@@ -1,5 +1,11 @@
 # Changelog
 
+## 7.4.2
+
+**Bug Fixes**
+
+* [iOS/macOS] Fixed a use-after-free crash (`EXC_BAD_ACCESS`) when the app is terminated while the scanner is running. The texture registry was notified directly from the capture output queue, which could call into the Flutter engine while it was being destroyed on the main thread. The notification is now dispatched to the main queue, so it is serialized against engine teardown. The plugin also implements `detachFromEngineForRegistrar:` to release the camera and texture deterministically.
+
 ## 7.4.1
 
 **Bug Fixes**
