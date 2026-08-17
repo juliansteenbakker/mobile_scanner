@@ -43,6 +43,14 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kZoomScaleStateEventName = 'zoomScaleState';
 
+  /// The name of the ambient-luminance event.
+  ///
+  /// Emitted while luminance sampling is enabled (see
+  /// [kSetLuminanceEnabledMethodName]), throttled to roughly once every
+  /// 500ms, independent of barcode detection.
+  @visibleForTesting
+  static const String kLuminanceEventName = 'luminance';
+
   /// The name of the method that gets the camera authorization state.
   @visibleForTesting
   static const String kAuthorizationStateMethodName = 'state';
@@ -82,6 +90,11 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// The name of the method that toggles the torch.
   @visibleForTesting
   static const String kToggleTorchMethodName = 'toggleTorch';
+
+  /// The name of the method that enables or disables ambient-luminance
+  /// sampling.
+  @visibleForTesting
+  static const String kSetLuminanceEnabledMethodName = 'setLuminanceEnabled';
 
   /// The name of the method that updates the scan window.
   @visibleForTesting
@@ -264,6 +277,22 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     return eventsStream
         .where((event) => event['name'] == kZoomScaleStateEventName)
         .map((event) => event['data'] as double? ?? 0.0);
+  }
+
+  /// The stream of ambient-luminance samples (0-255, where 0 is black and 255
+  /// is white), throttled to roughly once every 500ms.
+  ///
+  /// Unlike [barcodesStream], these samples are emitted on every analyzed
+  /// frame regardless of whether a barcode decodes, so a fully dark scene
+  /// (where nothing decodes) can still be measured — see [setLuminanceEnabled].
+  ///
+  /// Defaults a malformed event to `255.0` (bright), so a bad payload can
+  /// never be mistaken for a dark reading.
+  @override
+  Stream<double> get luminanceStream {
+    return eventsStream
+        .where((event) => event['name'] == kLuminanceEventName)
+        .map((event) => (event['data'] as num?)?.toDouble() ?? 255.0);
   }
 
   @override
@@ -486,6 +515,20 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @override
   Future<void> toggleTorch() async {
     await methodChannel.invokeMethod<void>(kToggleTorchMethodName);
+  }
+
+  /// Enables or disables the native ambient-luminance sampler that feeds
+  /// [luminanceStream].
+  ///
+  /// Off by default: a consumer that never calls this pays no native sampling
+  /// cost, so it is safe to leave disabled for the common case where the app
+  /// does not need a brightness signal.
+  @override
+  Future<void> setLuminanceEnabled({required bool enabled}) async {
+    await methodChannel.invokeMethod<void>(
+      kSetLuminanceEnabledMethodName,
+      enabled,
+    );
   }
 
   @override
