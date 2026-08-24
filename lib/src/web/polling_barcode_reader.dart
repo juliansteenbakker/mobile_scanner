@@ -153,6 +153,20 @@ abstract base class PollingBarcodeReader extends BarcodeReader {
     _isDecoding = false;
     _onMediaTrackSettingsChanged = null;
     _scanWindow = null;
+
+    // Detach the stream from the preview and stop every track, otherwise the
+    // browser keeps the camera acquired (and its indicator lit) until the
+    // document is torn down. Dropping the references alone is not enough.
+    _videoElement?.srcObject = null;
+
+    final tracks = _videoStream?.getTracks().toDart;
+
+    if (tracks != null) {
+      for (final track in tracks) {
+        track.stop();
+      }
+    }
+
     _videoElement = null;
     _videoStream = null;
     disposeDecoder();
