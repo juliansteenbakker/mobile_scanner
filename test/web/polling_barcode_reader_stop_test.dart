@@ -23,9 +23,10 @@ extension type _CaptureStreamCanvas(JSObject _) implements JSObject {
 }
 
 web.MediaStream createLiveVideoStream() {
-  final canvas = web.HTMLCanvasElement()
-    ..width = 32
-    ..height = 32;
+  final canvas =
+      web.HTMLCanvasElement()
+        ..width = 32
+        ..height = 32;
   // Draw once so the capture track produces a frame and goes live.
   canvas.context2D.fillRect(0, 0, 32, 32);
 
