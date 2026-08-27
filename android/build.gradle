@@ -34,7 +34,7 @@ def agpMajor = Version.ANDROID_GRADLE_PLUGIN_VERSION.tokenize('.')[0] as int
 def builtInKotlin = agpMajor >= 9 &&
     (findProperty('android.builtInKotlin') ?: 'true').toString().toBoolean()
 if (!builtInKotlin) {
-    apply plugin: 'kotlin-android'
+    pluginManager.apply('kotlin-android')
 }
 
 android {
