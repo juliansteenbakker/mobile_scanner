@@ -5,6 +5,7 @@
 **Bug Fixes**
 
 * [Android] Fixed a host-app crash when CameraX fails to initialize while starting the scanner (e.g. "Available cameras: 0", the camera being held by another process, or a transient HAL error). The failure is now routed through the normal error callback so it can be surfaced via `errorBuilder` instead of terminating the app.
+* [Android] Bypassed false-positive Kotlin Gradle Plugin (KGP) warning by migrating to the `PluginManager` API.
 
 ## 7.4.0
 
