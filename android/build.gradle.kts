@@ -54,10 +54,19 @@ android {
 
 // Configured through `extensions` rather than a `kotlin { }` block, because the
 // Kotlin plugin is applied imperatively above and so has no type-safe accessor.
-extensions.configure(KotlinAndroidProjectExtension::class.java) {
-    compilerOptions {
-        jvmTarget = JvmTarget.JVM_17
+// The extension may not exist yet: with AGP 9 and android.builtInKotlin=false the
+// Flutter Gradle Plugin applies KGP to this subproject after the script is evaluated.
+fun configureKotlin() {
+    extensions.configure(KotlinAndroidProjectExtension::class.java) {
+        compilerOptions {
+            jvmTarget = JvmTarget.JVM_17
+        }
     }
+}
+if (extensions.findByName("kotlin") != null) {
+    configureKotlin()
+} else {
+    plugins.withId("org.jetbrains.kotlin.android") { configureKotlin() }
 }
 
 dependencies {
