@@ -463,7 +463,18 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
     _pausing = false;
     _surfaceProducerDelegate = null;
     _eventsStream = null;
-    _deviceOrientationStream = null;
+    // The device orientation stream is deliberately kept alive, here and in
+    // dispose(). Unlike the events stream, it can have listeners outside this
+    // class (e.g. RotatedPreview), whose lifecycle is tied to the widget tree.
+    // If the stream were recreated while an old listener is still subscribed,
+    // cancelling that old subscription later would tear down the platform
+    // channel of the new stream instance: EventChannel.receiveBroadcastStream
+    // unconditionally clears the channel message handler and sends a 'cancel'
+    // message in onCancel, even when a newer stream instance on the same
+    // channel has taken over. Keeping a single stream instance makes the
+    // listen/cancel reference counting correct regardless of subscription
+    // timing, and costs nothing while unlistened: the message handler is only
+    // registered between the first listen and the last cancel.
 
     await methodChannel.invokeMethod<void>(kStopCameraMethodName, {
       'force': force,
