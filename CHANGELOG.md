@@ -6,6 +6,8 @@
 
 * [Android] Fixed the camera preview reporting a stale device orientation on start, when the device was rotated while the camera was stopped.
 * [Android] Fixed device rotations sometimes not being detected while the camera is running, e.g. when the display rotation callback fires before the display reflects the new rotation, or on a seamless 180 degree rotation between the two landscape orientations.
+* [Android] Fixed a host-app crash when CameraX fails to initialize while starting the scanner (e.g. "Available cameras: 0", the camera being held by another process, or a transient HAL error). The failure is now routed through the normal error callback so it can be surfaced via `errorBuilder` instead of terminating the app.
+* [Android] Fixed the false-positive `Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): mobile_scanner` warning on AGP 9. The plugin's Gradle files are now Kotlin DSL, and the Kotlin Gradle Plugin is only applied when built-in Kotlin is disabled, which keeps the build working on older AGP versions. (thanks @AndresMontaniv !)
 * Fixed the camera preview no longer following device rotation after `switchCamera()`. Restarting the camera recreated the device orientation stream, and cancelling a listener of the previous stream instance afterwards inadvertently tore down the platform channel of the new one.
 
 ## 7.4.0
