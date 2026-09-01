@@ -726,6 +726,31 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     await MobileScannerPlatform.instance.toggleTorch();
   }
 
+  /// The stream of ambient-luminance samples (0-255, where 0 is black and 255
+  /// is white), throttled to roughly once every 500ms.
+  ///
+  /// Unlike [barcodes], these samples are emitted on every analyzed frame
+  /// regardless of whether a barcode decodes, so a fully dark scene (where
+  /// nothing decodes) can still be measured. This is useful for, e.g.,
+  /// auto-enabling the torch only when the scene is genuinely dark, rather
+  /// than guessing from a decode timeout (see #693).
+  ///
+  /// Only populated while sampling is enabled via [setLuminanceEnabled]; empty
+  /// on platforms that do not support it (currently the web).
+  Stream<double> get luminanceStream =>
+      MobileScannerPlatform.instance.luminanceStream;
+
+  /// Enables or disables the native ambient-luminance sampler that feeds
+  /// [luminanceStream].
+  ///
+  /// Off by default: computing and emitting a sample on every frame is wasted
+  /// work for consumers who never listen to [luminanceStream], so leave this
+  /// disabled unless the app needs a brightness signal. Safe to call
+  /// regardless of camera state.
+  Future<void> setLuminanceEnabled({required bool enabled}) async {
+    await MobileScannerPlatform.instance.setLuminanceEnabled(enabled: enabled);
+  }
+
   /// Update the scan window with the given [window] rectangle.
   ///
   /// If [window] is null, the scan window will be reset to the full camera

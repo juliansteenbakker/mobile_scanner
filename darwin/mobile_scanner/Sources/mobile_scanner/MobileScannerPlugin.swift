@@ -52,6 +52,15 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     var standardZoomFactor: CGFloat = 1
 
+    /// Whether ambient-luminance sampling is active. Off by default: computing
+    /// and emitting a sample on every frame is wasted work for consumers who
+    /// never listen to `MobileScannerController.luminanceStream`, so it only
+    /// runs once a consumer opts in via `setLuminanceEnabled`.
+    var luminanceEnabled: Bool = false
+
+    /// Wall-clock (seconds) of the last emitted luminance sample, for the ~500ms throttle.
+    var nextLuminanceTime: Double = 0
+
 #if os(iOS)
     var interfaceOrientationObserver: NSObjectProtocol?
 #endif
@@ -104,6 +113,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             start(call, result)
         case "toggleTorch":
             toggleTorch(result)
+        case "setLuminanceEnabled":
+            setLuminanceEnabled(call, result)
         case "getSupportedLenses":
             getSupportedLenses(call, result)
         case "getBestCloseRangeScanningLens":
@@ -150,7 +161,54 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     var nextScanTime = 0.0
     var imagesCurrentlyBeingProcessed = false
-    
+
+    /// Cheap average luminance (0-255) of a frame, sampled on a 16x16 grid.
+    /// Handles both planar (YUV — plane 0 is luma) and packed BGRA pixel
+    /// buffers, since `videoSettings` can negotiate either depending on the
+    /// device/format. Indexed via `bytesPerRow`, so per-row padding (when the
+    /// stride exceeds the pixel width) is never averaged in.
+    private static func averageLuminance(_ buffer: CVPixelBuffer) -> Double {
+        CVPixelBufferLockBaseAddress(buffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
+        let samples = 16
+        var sum = 0.0
+        var count = 0
+        if CVPixelBufferIsPlanar(buffer) {
+            guard let base = CVPixelBufferGetBaseAddressOfPlane(buffer, 0) else { return 255.0 }
+            let w = CVPixelBufferGetWidthOfPlane(buffer, 0)
+            let h = CVPixelBufferGetHeightOfPlane(buffer, 0)
+            let bpr = CVPixelBufferGetBytesPerRowOfPlane(buffer, 0)
+            let ptr = base.assumingMemoryBound(to: UInt8.self)
+            let sx = max(1, w / samples), sy = max(1, h / samples)
+            var y = 0
+            while y < h {
+                var x = 0
+                while x < w { sum += Double(ptr[y * bpr + x]); count += 1; x += sx }
+                y += sy
+            }
+        } else {
+            guard let base = CVPixelBufferGetBaseAddress(buffer) else { return 255.0 }
+            let w = CVPixelBufferGetWidth(buffer)
+            let h = CVPixelBufferGetHeight(buffer)
+            let bpr = CVPixelBufferGetBytesPerRow(buffer)
+            let ptr = base.assumingMemoryBound(to: UInt8.self)
+            let sx = max(1, w / samples), sy = max(1, h / samples)
+            var y = 0
+            while y < h {
+                var x = 0
+                while x < w {
+                    let p = y * bpr + x * 4
+                    let b = Double(ptr[p]), g = Double(ptr[p + 1]), r = Double(ptr[p + 2])
+                    sum += 0.299 * r + 0.587 * g + 0.114 * b
+                    count += 1
+                    x += sx
+                }
+                y += sy
+            }
+        }
+        return count > 0 ? sum / Double(count) : 255.0
+    }
+
     // Gets called when a new image is added to the buffer
     public func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         // Ignore invalid texture id.
@@ -162,7 +220,24 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
         latestBuffer = imageBuffer
         registry.textureFrameAvailable(textureId)
-        
+
+        // Emit a throttled ambient-luminance sample on every frame — independent
+        // of barcode detection — so a consumer can auto-enable the torch when the
+        // scene is genuinely dark, even when nothing decodes (see #693). Sampled
+        // cheaply on this background queue; the sink call is hopped to the main
+        // thread. Gated by `luminanceEnabled` so it costs nothing unless a
+        // consumer opts in via `setLuminanceEnabled`.
+        if luminanceEnabled {
+            let luminanceNow = Date().timeIntervalSince1970
+            if luminanceNow >= nextLuminanceTime {
+                nextLuminanceTime = luminanceNow + 0.5
+                let luma = MobileScannerPlugin.averageLuminance(imageBuffer)
+                DispatchQueue.main.async { [weak self] in
+                    self?.sink?(["name": "luminance", "data": luma])
+                }
+            }
+        }
+
         let currentTime = Date().timeIntervalSince1970
         let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
@@ -780,6 +855,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     func getScaleFromZoomFactor(actualScale: CGFloat) -> CGFloat {
         return (actualScale - 1) / 4
+    }
+
+    /// Turns the native ambient-luminance sampler on or off. Off by default, so
+    /// a consumer that never calls this pays no sampling cost.
+    private func setLuminanceEnabled(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
+        luminanceEnabled = (call.arguments as? Bool) ?? false
+        result(nil)
     }
 
     private func toggleTorch(_ result: @escaping FlutterResult) {

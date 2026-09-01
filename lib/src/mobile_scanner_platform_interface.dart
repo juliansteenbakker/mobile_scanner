@@ -47,6 +47,17 @@ abstract class MobileScannerPlatform extends PlatformInterface {
     throw UnimplementedError('zoomScaleStateStream has not been implemented.');
   }
 
+  /// Get the stream of ambient-luminance samples (0-255), throttled to
+  /// roughly once every 500ms.
+  ///
+  /// Unlike [barcodesStream], these are emitted on every analyzed frame
+  /// regardless of whether a barcode decodes, so a consumer can measure a
+  /// fully dark scene where nothing decodes. Only populated while sampling is
+  /// enabled via [setLuminanceEnabled].
+  Stream<double> get luminanceStream {
+    throw UnimplementedError('luminanceStream has not been implemented.');
+  }
+
   /// Analyze a local image file for barcodes.
   ///
   /// The [path] is the path to the file on disk.
@@ -128,6 +139,16 @@ abstract class MobileScannerPlatform extends PlatformInterface {
   /// Toggle the torch on the active camera on or off.
   Future<void> toggleTorch() {
     throw UnimplementedError('toggleTorch() has not been implemented.');
+  }
+
+  /// Enable or disable the native ambient-luminance sampler that feeds
+  /// [luminanceStream].
+  ///
+  /// Off by default: a consumer that never calls this pays no native sampling
+  /// cost, so it is safe to leave disabled unless the app needs a brightness
+  /// signal (for example, to auto-enable the torch in a dark scene).
+  Future<void> setLuminanceEnabled({required bool enabled}) {
+    throw UnimplementedError('setLuminanceEnabled() has not been implemented.');
   }
 
   /// Get the set of supported camera lens types for the current device.

@@ -101,6 +101,14 @@ class MobileScannerWeb extends MobileScannerPlatform {
   Stream<double> get zoomScaleStateStream =>
       _settingsController.stream.map((_) => 1.0);
 
+  /// Per-frame ambient luminance requires raw camera frame access that the
+  /// web implementation, built on the browser `BarcodeDetector` API, does not
+  /// have. Returns a stream that never emits (rather than throwing), so
+  /// cross-platform code that unconditionally listens does not need a
+  /// web-specific branch.
+  @override
+  Stream<double> get luminanceStream => const Stream<double>.empty();
+
   /// Create the [HTMLVideoElement] along with its parent container
   /// [HTMLDivElement].
   HTMLVideoElement _createVideoElement(int textureId) {
@@ -601,6 +609,12 @@ class MobileScannerWeb extends MobileScannerPlatform {
       'See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks',
     );
   }
+
+  /// No-op on the web: there is no native luminance sampler to enable, and
+  /// [luminanceStream] never emits regardless. A no-op (rather than throwing)
+  /// means callers do not need a web-specific branch just to toggle this.
+  @override
+  Future<void> setLuminanceEnabled({required bool enabled}) async {}
 
   @override
   Future<void> updateScanWindow(Rect? window) {

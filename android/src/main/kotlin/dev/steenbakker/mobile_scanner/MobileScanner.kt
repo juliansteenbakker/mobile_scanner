@@ -58,6 +58,7 @@ class MobileScanner(
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
     private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
+    private val luminanceCallback: LuminanceCallback = {},
 ) {
 
     init {
@@ -75,6 +76,15 @@ class MobileScanner(
     private var scannerTimeout = false
     private var imageAnalysis: ImageAnalysis? = null
     private var analysisExecutor = Executors.newSingleThreadExecutor()
+
+    /// Wall-clock (ms) of the last emitted luminance sample, for the ~500ms throttle.
+    private var lastLuminanceTimestamp: Long = 0L
+
+    /// Whether ambient-luminance sampling is active. Off by default: computing and
+    /// emitting a sample on every analyzed frame is wasted work for consumers who
+    /// never look at [MobileScannerController.luminanceStream], so it only runs
+    /// once a consumer opts in via [setLuminanceEnabled].
+    var luminanceEnabled: Boolean = false
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -113,6 +123,53 @@ class MobileScanner(
     @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy ->
         val mediaImage = imageProxy.image ?: return@Analyzer
+
+        // Emit a throttled ambient-luminance sample from the Y plane on every
+        // frame, independent of whether a barcode decodes — this is what lets a
+        // consumer auto-enable a torch when the scene is genuinely dark, even
+        // when nothing decodes (see #693). The Y plane *is* luminance, so this is
+        // just a cheap subsample; runs on the analyzer executor, off the main
+        // thread, and never touches the buffer MLKit scans below.
+        //
+        // Indexed through rowStride/pixelStride rather than the plane's raw
+        // buffer offset: when rowStride > width the Y plane carries per-row
+        // padding bytes (commonly 0) that a linear scan would average in,
+        // biasing the sample darker than the actual scene.
+        if (luminanceEnabled) {
+            val luminanceNow = System.currentTimeMillis()
+            if (luminanceNow - lastLuminanceTimestamp >= 500L) {
+                lastLuminanceTimestamp = luminanceNow
+                try {
+                    val plane = mediaImage.planes[0]
+                    val yBuffer = plane.buffer
+                    val rowStride = plane.rowStride
+                    val pixelStride = plane.pixelStride
+                    val width = mediaImage.width
+                    val height = mediaImage.height
+                    if (width > 0 && height > 0) {
+                        val cols = 16
+                        val rows = 16
+                        var sum = 0L
+                        var count = 0
+                        for (r in 0 until rows) {
+                            val y = r * height / rows
+                            val rowStart = y * rowStride
+                            for (c in 0 until cols) {
+                                val x = c * width / cols
+                                val idx = rowStart + x * pixelStride
+                                if (idx < yBuffer.limit()) {
+                                    sum += (yBuffer.get(idx).toInt() and 0xFF)
+                                    count++
+                                }
+                            }
+                        }
+                        if (count > 0) luminanceCallback(sum.toDouble() / count)
+                    }
+                } catch (_: Exception) {
+                    // Best-effort only; a sampling failure must never affect scanning.
+                }
+            }
+        }
 
         if (detectionSpeed == DetectionSpeed.NORMAL && scannerTimeout) {
             imageProxy.close()
