@@ -224,25 +224,22 @@ class MobileScanner(
                         return@addOnSuccessListener
                     }
 
-                    // Use Coroutine to process the image and generate the Bitmap to prevent main UI
+                    // Use a Coroutine to process the image and prevent dropping frames on the main thread.
                     CoroutineScope(Dispatchers.IO).launch {
                         var baseBitmap: Bitmap? = null
-                        var rotatedBitmap: Bitmap? = null
+                        var outputBitmap: Bitmap? = null
                         try {
                             // Get bitmap for image return. reuse inverted bitmap if available, otherwise create from imageProxy
-                            val sourceBitmap = invertedBitmap ?: imageProxy.toBitmap()
-                            baseBitmap = sourceBitmap
+                            baseBitmap = invertedBitmap ?: imageProxy.toBitmap()
 
                             // Rotate the bitmap based on the camera's rotation degrees
-                            var outputBitmap = rotateBitmap(sourceBitmap, camera?.cameraInfo?.sensorRotationDegrees ?: 90)
-                            rotatedBitmap = outputBitmap
+                            outputBitmap = rotateBitmap(baseBitmap, camera?.cameraInfo?.sensorRotationDegrees ?: 90)
 
                             // Revert inverted image colors for the returned image (MLKit already scanned the inverted version)
                             if (invertImage) {
                                 val revertedBitmap = invertBitmapColors(outputBitmap)
                                 outputBitmap.recycle()
                                 outputBitmap = revertedBitmap
-                                rotatedBitmap = revertedBitmap
                             }
 
                             // Convert the final bitmap to JPEG byte array
@@ -250,21 +247,17 @@ class MobileScanner(
                             outputBitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
                             val byteArray = stream.toByteArray()
 
-                            val bmWidth = outputBitmap.width
-                            val bmHeight = outputBitmap.height
-
                             // Call the callback with the result
                             mobileScannerCallback(
                                 barcodeMap,
                                 byteArray,
-                                bmWidth,
-                                bmHeight
+                                outputBitmap.width,
+                                outputBitmap.height
                             )
-
                         } catch (error: Exception) {
                             mobileScannerErrorCallback(error.localizedMessage ?: error.toString())
                         } finally {
-                            rotatedBitmap?.let { bitmap ->
+                            outputBitmap?.let { bitmap ->
                                 if (!bitmap.isRecycled) bitmap.recycle()
                             }
                             baseBitmap?.let { bitmap ->
