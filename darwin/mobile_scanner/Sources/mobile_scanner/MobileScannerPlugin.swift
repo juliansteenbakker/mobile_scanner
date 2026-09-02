@@ -89,6 +89,13 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #endif
     }
     
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        // Release the camera deterministically when the engine detaches this plugin, so the
+        // capture session stops delivering frames instead of outliving the engine.
+        releaseCamera()
+        releaseTexture()
+    }
+
     init(_ registry: FlutterTextureRegistry) {
         self.registry = registry
         super.init()
@@ -161,8 +168,30 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         latestBuffer = imageBuffer
-        registry.textureFrameAvailable(textureId)
-        
+
+        // Notify the texture registry on the main thread.
+        //
+        // This method runs on `sampleBufferQueue`, while the Flutter engine is torn down
+        // synchronously on the main thread (`-[FlutterViewController appOrSceneWillTerminate]` ->
+        // `-[FlutterEngine destroyContext]`). Calling `textureFrameAvailable` directly from this
+        // queue can therefore land in the middle of the engine's `dealloc`, which crashes with
+        // EXC_BAD_ACCESS. `FlutterTextureRegistryRelay` holds its parent weakly, but a weak
+        // reference is only cleared after `dealloc` completes, so it does not guard against a call
+        // that arrives during teardown.
+        //
+        // Hopping to the main queue serializes this call against the teardown itself, instead of
+        // relying on notification or plugin-detach ordering. A block that is enqueued after the
+        // engine is gone finds the relay's parent already nil and becomes a no-op.
+        let frameTextureId: Int64 = textureId
+        DispatchQueue.main.async { [weak self] in
+            // Drop the frame if the texture was released while this block was queued.
+            guard let self, self.textureId != nil else {
+                return
+            }
+
+            self.registry.textureFrameAvailable(frameTextureId)
+        }
+
         let currentTime = Date().timeIntervalSince1970
         let eligibleForScan = currentTime > nextScanTime && !imagesCurrentlyBeingProcessed
         if ((detectionSpeed == DetectionSpeed.normal || detectionSpeed == DetectionSpeed.noDuplicates) && eligibleForScan || detectionSpeed == DetectionSpeed.unrestricted) {
