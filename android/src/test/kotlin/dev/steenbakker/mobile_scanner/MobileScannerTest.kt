@@ -2,16 +2,23 @@ package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
 import android.graphics.Point
+import android.media.Image
 import androidx.camera.core.ImageInfo
 import androidx.camera.core.ImageProxy
+import com.google.android.gms.tasks.OnCanceledListener
+import com.google.android.gms.tasks.OnFailureListener
+import com.google.android.gms.tasks.OnSuccessListener
+import com.google.android.gms.tasks.Task
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.common.Barcode
+import com.google.mlkit.vision.common.InputImage
 import io.flutter.view.TextureRegistry
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
@@ -31,15 +38,21 @@ import org.robolectric.annotation.Config
 @Config(sdk = [35])
 internal class MobileScannerTest {
 
-    private fun createMobileScanner(): MobileScanner {
+    private fun createMobileScanner(
+        barcodeScanner: BarcodeScanner = Mockito.mock(BarcodeScanner::class.java),
+        inputImageFactory: (Image, Int) -> InputImage = { _, _ ->
+            Mockito.mock(InputImage::class.java)
+        },
+    ): MobileScanner {
         return MobileScanner(
             Mockito.mock(Activity::class.java),
             Mockito.mock(TextureRegistry::class.java),
             { _: List<Map<String, Any?>>, _: ByteArray?, _: Int?, _: Int? -> },
             { _: String -> },
             Mockito.mock(DeviceOrientationListener::class.java),
-            { _: BarcodeScannerOptions? -> Mockito.mock(BarcodeScanner::class.java) },
-        )
+            { _: BarcodeScannerOptions? -> barcodeScanner },
+            inputImageFactory,
+        ).also { it.scanner = barcodeScanner }
     }
 
     private fun createBarcode(vararg cornerPoints: Point): Barcode {
@@ -137,5 +150,117 @@ internal class MobileScannerTest {
                 createImage(400, 400),
             )
         )
+    }
+
+    @Test
+    fun captureOutput_closesImageProxyWhenMediaImageIsNull() {
+        val mobileScanner = createMobileScanner()
+        val imageProxy = Mockito.mock(ImageProxy::class.java)
+
+        Mockito.`when`(imageProxy.image).thenReturn(null)
+
+        mobileScanner.captureOutput.analyze(imageProxy)
+
+        Mockito.verify(imageProxy).close()
+    }
+
+    @Test
+    fun captureOutput_closesImageProxyWhenBarcodeProcessingFails() {
+        val barcodeScanner = Mockito.mock(BarcodeScanner::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val processingTask = Mockito.mock(Task::class.java) as Task<List<Barcode>>
+        val inputImage = Mockito.mock(InputImage::class.java)
+        val mobileScanner = createMobileScanner(barcodeScanner) { _, _ -> inputImage }
+        val imageProxy = Mockito.mock(ImageProxy::class.java)
+        val imageInfo = Mockito.mock(ImageInfo::class.java)
+
+        Mockito.`when`(imageProxy.image).thenReturn(Mockito.mock(Image::class.java))
+        Mockito.`when`(imageProxy.imageInfo).thenReturn(imageInfo)
+        Mockito.`when`(imageInfo.rotationDegrees).thenReturn(0)
+        Mockito.`when`(barcodeScanner.process(inputImage)).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnSuccessListener(Mockito.any())).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnFailureListener(Mockito.any())).thenReturn(processingTask)
+
+        mobileScanner.captureOutput.analyze(imageProxy)
+
+        val failureListener = ArgumentCaptor.forClass(OnFailureListener::class.java)
+        Mockito.verify(processingTask).addOnFailureListener(failureListener.capture())
+        failureListener.value.onFailure(IllegalStateException("ML Kit failure"))
+
+        Mockito.verify(imageProxy, Mockito.times(1)).close()
+    }
+
+    @Test
+    fun captureOutput_closesImageProxyWhenNoBarcodeIsDetected() {
+        val barcodeScanner = Mockito.mock(BarcodeScanner::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val processingTask = Mockito.mock(Task::class.java) as Task<List<Barcode>>
+        val inputImage = Mockito.mock(InputImage::class.java)
+        val mobileScanner = createMobileScanner(barcodeScanner) { _, _ -> inputImage }
+        val imageProxy = Mockito.mock(ImageProxy::class.java)
+        val imageInfo = Mockito.mock(ImageInfo::class.java)
+
+        Mockito.`when`(imageProxy.image).thenReturn(Mockito.mock(Image::class.java))
+        Mockito.`when`(imageProxy.imageInfo).thenReturn(imageInfo)
+        Mockito.`when`(imageInfo.rotationDegrees).thenReturn(0)
+        Mockito.`when`(barcodeScanner.process(inputImage)).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnSuccessListener(Mockito.any())).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnFailureListener(Mockito.any())).thenReturn(processingTask)
+
+        mobileScanner.captureOutput.analyze(imageProxy)
+
+        @Suppress("UNCHECKED_CAST")
+        val successListener = ArgumentCaptor.forClass(OnSuccessListener::class.java)
+            as ArgumentCaptor<OnSuccessListener<List<Barcode>>>
+        Mockito.verify(processingTask).addOnSuccessListener(successListener.capture())
+        successListener.value.onSuccess(emptyList())
+
+        Mockito.verify(imageProxy, Mockito.times(1)).close()
+    }
+
+    @Test
+    fun captureOutput_closesImageProxyWhenBarcodeProcessingIsCanceled() {
+        val barcodeScanner = Mockito.mock(BarcodeScanner::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val processingTask = Mockito.mock(Task::class.java) as Task<List<Barcode>>
+        val inputImage = Mockito.mock(InputImage::class.java)
+        val mobileScanner = createMobileScanner(barcodeScanner) { _, _ -> inputImage }
+        val imageProxy = Mockito.mock(ImageProxy::class.java)
+        val imageInfo = Mockito.mock(ImageInfo::class.java)
+
+        Mockito.`when`(imageProxy.image).thenReturn(Mockito.mock(Image::class.java))
+        Mockito.`when`(imageProxy.imageInfo).thenReturn(imageInfo)
+        Mockito.`when`(imageInfo.rotationDegrees).thenReturn(0)
+        Mockito.`when`(barcodeScanner.process(inputImage)).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnSuccessListener(Mockito.any())).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnFailureListener(Mockito.any())).thenReturn(processingTask)
+        Mockito.`when`(processingTask.addOnCanceledListener(Mockito.any())).thenReturn(processingTask)
+
+        mobileScanner.captureOutput.analyze(imageProxy)
+
+        val canceledListener = ArgumentCaptor.forClass(OnCanceledListener::class.java)
+        Mockito.verify(processingTask).addOnCanceledListener(canceledListener.capture())
+        canceledListener.value.onCanceled()
+
+        Mockito.verify(imageProxy, Mockito.times(1)).close()
+    }
+
+    @Test
+    fun captureOutput_closesImageProxyWhenProcessingThrowsSynchronously() {
+        val barcodeScanner = Mockito.mock(BarcodeScanner::class.java)
+        val inputImage = Mockito.mock(InputImage::class.java)
+        val mobileScanner = createMobileScanner(barcodeScanner) { _, _ -> inputImage }
+        val imageProxy = Mockito.mock(ImageProxy::class.java)
+        val imageInfo = Mockito.mock(ImageInfo::class.java)
+
+        Mockito.`when`(imageProxy.image).thenReturn(Mockito.mock(Image::class.java))
+        Mockito.`when`(imageProxy.imageInfo).thenReturn(imageInfo)
+        Mockito.`when`(imageInfo.rotationDegrees).thenReturn(0)
+        Mockito.`when`(barcodeScanner.process(inputImage))
+            .thenThrow(IllegalStateException("Synchronous ML Kit failure"))
+
+        mobileScanner.captureOutput.analyze(imageProxy)
+
+        Mockito.verify(imageProxy, Mockito.times(1)).close()
     }
 }
