@@ -46,7 +46,6 @@ extension type ZXingWasmReaderOptions._(JSObject _) implements JSObject {
   ///
   /// Pass a non-empty list of format strings (e.g. `['QRCode', 'EAN13']`).
   /// Passing an empty list or omitting formats detects all supported formats.
-  @JS('ZXingWasmReaderOptions')
   external factory ZXingWasmReaderOptions.withFormats({
     /// Barcode format filter.
     JSArray<JSString> formats,

@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/screens/mobile_scanner_advanced.dart';
@@ -87,11 +85,9 @@ class _ExampleHome extends StatelessWidget {
   ) {
     return GestureDetector(
       onTap: () {
-        unawaited(
-          Navigator.of(
-            context,
-          ).push(MaterialPageRoute<void>(builder: (context) => page)),
-        );
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute<void>(builder: (context) => page));
       },
       child: Card(
         elevation: 5,
