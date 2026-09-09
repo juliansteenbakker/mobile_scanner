@@ -130,6 +130,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             NotificationCenter.default.removeObserver(willTerminateObserver)
         }
     }
+
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        // Release the camera and texture when the engine detaches this plugin, so the capture
+        // session cannot outlive the engine. Termination is covered by the observer above, but an
+        // engine can also be destroyed while the app keeps running, for example in add-to-app.
+        releaseCamera()
+        releaseTexture()
+    }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
