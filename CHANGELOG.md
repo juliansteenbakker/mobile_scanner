@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.4.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.1...v7.4.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* **android:** defer orientation sensor listener until camera start ([#1803](https://github.com/juliansteenbakker/mobile_scanner/issues/1803)) ([f9c81ea](https://github.com/juliansteenbakker/mobile_scanner/commit/f9c81ea0b573d9146889fc70b599bf1f3920e35c))
+
 ## 7.4.1
 
 **Improvements**
