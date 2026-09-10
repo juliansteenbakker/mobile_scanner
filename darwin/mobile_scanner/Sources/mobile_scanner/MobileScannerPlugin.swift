@@ -65,6 +65,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     var interfaceOrientationObserver: NSObjectProtocol?
 #endif
 
+    /// Observer for the notification that the app is about to terminate.
+    private var willTerminateObserver: NSObjectProtocol?
+
+    /// Whether the app is terminating, and the engine is therefore being destroyed.
+    ///
+    /// Only read and written on the main thread.
+    private var terminating = false
+
+    /// Whether a frame notification is already queued on the main queue.
+    ///
+    /// Written from ``sampleBufferQueue`` and cleared on the main queue, so it is guarded by
+    /// ``frameNotificationLock``.
+    private var pendingFrameNotification = false
+
+    private let frameNotificationLock = NSLock()
+
     private var stopped: Bool {
         return device == nil || captureSession == nil
     }
@@ -101,6 +117,35 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     init(_ registry: FlutterTextureRegistry) {
         self.registry = registry
         super.init()
+
+#if os(iOS)
+        let willTerminate = UIApplication.willTerminateNotification
+#else
+        let willTerminate = NSApplication.willTerminateNotification
+#endif
+        // Stop the camera as soon as the app starts terminating. The engine destroys its shell
+        // during termination, after which any call into the texture registry dereferences
+        // released memory, and the plugin has no way to observe that from the registry itself.
+        willTerminateObserver = NotificationCenter.default.addObserver(
+            forName: willTerminate, object: nil, queue: .main
+        ) { [weak self] _ in
+            self?.terminating = true
+            self?.releaseCamera()
+        }
+    }
+
+    deinit {
+        if let willTerminateObserver {
+            NotificationCenter.default.removeObserver(willTerminateObserver)
+        }
+    }
+
+    public func detachFromEngine(for registrar: FlutterPluginRegistrar) {
+        // Release the camera and texture when the engine detaches this plugin, so the capture
+        // session cannot outlive the engine. Termination is covered by the observer above, but an
+        // engine can also be destroyed while the app keeps running, for example in add-to-app.
+        releaseCamera()
+        releaseTexture()
     }
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -159,6 +204,46 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         return Unmanaged<CVPixelBuffer>.passRetained(buffer)
     }
     
+    /// Notifies the texture registry that a new frame is available.
+    ///
+    /// This is called from ``sampleBufferQueue``, while the Flutter engine is torn down on the
+    /// main thread, so the notification is hopped to the main queue to serialize it against that
+    /// teardown. `FlutterTextureRegistryRelay` holds its parent weakly, but the engine object
+    /// outlives the shell that actually backs the registry, so the weak reference does not guard
+    /// against a call that arrives during teardown.
+    ///
+    /// At most one notification is in flight at a time. The registry always reads the newest
+    /// buffer, so queueing one block per captured frame would only pile up redundant work on a
+    /// main thread that is already behind.
+    private func notifyFrameAvailable(for frameTextureId: Int64) {
+        frameNotificationLock.lock()
+        if pendingFrameNotification {
+            frameNotificationLock.unlock()
+
+            return
+        }
+        pendingFrameNotification = true
+        frameNotificationLock.unlock()
+
+        DispatchQueue.main.async { [weak self] in
+            guard let self else {
+                return
+            }
+
+            self.frameNotificationLock.lock()
+            self.pendingFrameNotification = false
+            self.frameNotificationLock.unlock()
+
+            // Drop the frame if the engine is going away, or if the texture was released or
+            // replaced while this block was queued.
+            guard !self.terminating, self.textureId == frameTextureId else {
+                return
+            }
+
+            self.registry.textureFrameAvailable(frameTextureId)
+        }
+    }
+
     var nextScanTime = 0.0
     var imagesCurrentlyBeingProcessed = false
 
@@ -219,7 +304,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         latestBuffer = imageBuffer
-        registry.textureFrameAvailable(textureId)
+        notifyFrameAvailable(for: textureId)
 
         // Emit a throttled ambient-luminance sample on every frame — independent
         // of barcode detection — so a consumer can auto-enable the torch when the

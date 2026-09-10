@@ -68,7 +68,7 @@ void main() {
           .setMockStreamHandler(
             platform.eventChannel,
             MockStreamHandler.inline(
-              onListen: (Object? arguments, MockStreamHandlerEventSink sink) {
+              onListen: (arguments, sink) {
                 events.forEach(sink.success);
               },
             ),
