@@ -251,7 +251,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     /// Handles both planar (YUV — plane 0 is luma) and packed BGRA pixel
     /// buffers, since `videoSettings` can negotiate either depending on the
     /// device/format. Indexed via `bytesPerRow`, so per-row padding (when the
-    /// stride exceeds the pixel width) is never averaged in.
+    /// stride exceeds the pixel width) is never averaged in. A video-range
+    /// planar buffer carries luma in [16, 235], so it is expanded to the full
+    /// [0, 255] range to match the packed-BGRA path and the documented scale.
     private static func averageLuminance(_ buffer: CVPixelBuffer) -> Double {
         CVPixelBufferLockBaseAddress(buffer, .readOnly)
         defer { CVPixelBufferUnlockBaseAddress(buffer, .readOnly) }
@@ -291,7 +293,14 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 y += sy
             }
         }
-        return count > 0 ? sum / Double(count) : 255.0
+        guard count > 0 else { return 255.0 }
+        let mean = sum / Double(count)
+        if CVPixelBufferIsPlanar(buffer),
+           CVPixelBufferGetPixelFormatType(buffer)
+               == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange {
+            return min(255.0, max(0.0, (mean - 16.0) * 255.0 / 219.0))
+        }
+        return mean
     }
 
     // Gets called when a new image is added to the buffer

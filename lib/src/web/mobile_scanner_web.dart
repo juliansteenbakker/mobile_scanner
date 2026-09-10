@@ -105,7 +105,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// web implementation, built on the browser `BarcodeDetector` API, does not
   /// have. Returns a stream that never emits (rather than throwing), so
   /// cross-platform code that unconditionally listens does not need a
-  /// web-specific branch.
+  /// web-specific branch. `Stream.empty()` is a broadcast stream, so it can be
+  /// listened to more than once, matching the other platforms.
   @override
   Stream<double> get luminanceStream => const Stream<double>.empty();
 
