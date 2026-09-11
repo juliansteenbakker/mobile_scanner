@@ -97,6 +97,14 @@ class MobileScannerHandler(
         barcodeHandler.publishEvent(mapOf("name" to "zoomScaleState", "data" to zoomScale))
     }
 
+    /**
+     * Ambient-luminance samples (0-255), emitted while [MobileScanner.luminanceEnabled]
+     * is on. See [MobileScannerController.luminanceStream].
+     */
+    private val luminanceCallback: LuminanceCallback = {luminance: Double ->
+        barcodeHandler.publishEvent(mapOf("name" to "luminance", "data" to luminance))
+    }
+
     init {
         methodChannel = MethodChannel(binaryMessenger,
             "dev.steenbakker.mobile_scanner/scanner/method")
@@ -109,7 +117,8 @@ class MobileScannerHandler(
         deviceOrientationChannel!!.setStreamHandler(deviceOrientationListener)
 
         mobileScanner = MobileScanner(
-            activity, textureRegistry, callback, errorCallback, deviceOrientationListener)
+            activity, textureRegistry, callback, errorCallback, deviceOrientationListener,
+            luminanceCallback = luminanceCallback)
     }
 
     fun dispose(activityPluginBinding: ActivityPluginBinding) {
@@ -153,6 +162,7 @@ class MobileScannerHandler(
             "pause" -> pause(call, result)
             "stop" -> stop(call, result)
             "toggleTorch" -> toggleTorch(result)
+            "setLuminanceEnabled" -> setLuminanceEnabled(call, result)
             "getSupportedLenses" -> getSupportedLenses(call, result)
             "getBestCloseRangeScanningLens" -> getBestCloseRangeScanningLens(result)
             "analyzeImage" -> analyzeImage(call, result)
@@ -295,6 +305,15 @@ class MobileScannerHandler(
 
     private fun toggleTorch(result: MethodChannel.Result) {
         mobileScanner?.toggleTorch()
+        result.success(null)
+    }
+
+    /**
+     * Turns the native ambient-luminance sampler on or off. Off by default, so a
+     * consumer that never calls this pays no sampling cost.
+     */
+    private fun setLuminanceEnabled(call: MethodCall, result: MethodChannel.Result) {
+        mobileScanner?.luminanceEnabled = (call.arguments as? Boolean) ?: false
         result.success(null)
     }
 

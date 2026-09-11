@@ -37,6 +37,7 @@ See the example app for detailed implementation information.
 | lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
 | getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
 | getBestCloseRangeScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) |
+| luminanceStream | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: (never emits) |
 
 ### Querying supported lens types with facing filter
 
@@ -81,6 +82,28 @@ This returns:
 - **Android**: `CameraLensType.normal` when the device has a camera. `LENS_INFO_MINIMUM_FOCUS_DISTANCE` is only meaningful on physical sub-cameras, which — like the rest of `getSupportedLenses` — are not independently selectable through CameraX, so the main camera (which has the most capable autofocus on virtually all Android devices) is returned unconditionally
 - **Web**: `CameraLensType.normal` when the device has a camera. The MediaDevices API has no concept of lens type, and its `focusDistance` capability, where available at all, is limited to Chrome on Android
 - **All platforms**: `null` if there is no camera for the requested facing direction
+
+### Ambient-luminance sampling (e.g. for auto-enabling the torch in the dark)
+
+`analyzeImage`/`returnImage` only surface a frame once a barcode decodes, so they can't measure a scene that's too dark to decode at all — which is exactly the scene you'd want to detect to offer a "turn on the torch?" prompt. `luminanceStream` fixes that gap: it emits an ambient-brightness sample (`0.0` = black, `255.0` = white) roughly every 500ms, on every analyzed frame, regardless of whether anything decodes.
+
+It's opt-in and off by default — call `setLuminanceEnabled(true)` to start sampling, and `setLuminanceEnabled(false)` (e.g. on pause/stop) to turn it back off, so apps that don't need a brightness signal pay no extra cost:
+
+```dart
+await controller.setLuminanceEnabled(enabled: true);
+
+final subscription = controller.luminanceStream.listen((luminance) {
+  if (luminance < 50 && controller.value.torchState == TorchState.off) {
+    controller.toggleTorch();
+  }
+});
+
+// ...later, e.g. when the scanner is paused or disposed:
+await subscription.cancel();
+await controller.setLuminanceEnabled(enabled: false);
+```
+
+This only decides *when to measure* darkness — whether and how to react (a one-shot auto-enable, a debounce, a threshold) is left to the app, since that policy varies (e.g. avoiding repeated toggles once the torch is already on and lighting the scene).
 
 ## Installation
 
