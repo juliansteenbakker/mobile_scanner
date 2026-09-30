@@ -72,7 +72,8 @@ class MobileScanner(
     private var camera: Camera? = null
     private var cameraSelector: CameraSelector? = null
     private var preview: Preview? = null
-    private var surfaceProducer: TextureRegistry.SurfaceProducer? = null
+    @VisibleForTesting
+    internal var surfaceProducer: TextureRegistry.SurfaceProducer? = null
     @VisibleForTesting
     internal var scanner: BarcodeScanner? = null
     private var lastScanned: List<String?>? = null
@@ -295,6 +296,14 @@ class MobileScanner(
         return Preview.SurfaceProvider {
             request: SurfaceRequest ->
             run {
+                // CameraX delivers the request asynchronously on the main thread.
+                // If the camera was stopped or restarted in the meantime,
+                // the captured surface producer was released and must not be used.
+                if (this.surfaceProducer !== surfaceProducer) {
+                    request.willNotProvideSurface()
+                    return@SurfaceProvider
+                }
+
                 // Set the callback for the surfaceProducer to invalidate Surfaces that it produces
                 // when they get destroyed.
                 surfaceProducer.setCallback(
