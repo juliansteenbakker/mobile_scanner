@@ -489,6 +489,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         options,
       );
 
+      // Abort if the controller was disposed while the camera was starting.
+      // Its dispose() could not release the camera session, because that
+      // session did not exist yet, so release it now, unless another
+      // controller has taken over the session in the meantime.
+      if (_isDisposed) {
+        if (_platformSessionOwner == null) {
+          await MobileScannerPlatform.instance.dispose();
+        }
+
+        return;
+      }
+
       // This controller now holds the platform camera session.
       _platformSessionOwner = this;
 
