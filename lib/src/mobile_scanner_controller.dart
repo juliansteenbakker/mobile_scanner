@@ -150,6 +150,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
 
   bool _isDisposed = false;
+  // Whether a start() of this controller is waiting for,
+  // or holding, the platform session lock.
+  bool _hasPendingPlatformStart = false;
   // This completer keeps track of whether the MobileScanner widget,
   // that is attached to this controller,
   // called its `initState()` lifecycle method.
@@ -166,6 +169,49 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   // See https://github.com/juliansteenbakker/mobile_scanner/issues/1631
   static MobileScannerController? _platformSessionOwner;
 
+  // Starting and releasing the platform camera session are serialized,
+  // so that one controller cannot release a session
+  // that another controller is starting at the same time.
+  static Future<void>? _platformSessionLock;
+
+  static Future<T> _lockPlatformSession<T>(
+    Future<T> Function() operation,
+  ) async {
+    final previous = _platformSessionLock;
+    final current = Completer<void>();
+    _platformSessionLock = current.future;
+
+    try {
+      if (previous != null) {
+        await previous;
+      }
+
+      return await operation();
+    } finally {
+      current.complete();
+
+      if (identical(_platformSessionLock, current.future)) {
+        _platformSessionLock = null;
+      }
+    }
+  }
+
+  // Release the platform camera session,
+  // unless another controller currently holds it.
+  Future<void> _releasePlatformSession() async {
+    // If another controller currently holds the platform camera session,
+    // disposing the platform resources would break that controller.
+    // In that case only this controller's own resources are cleaned up.
+    if (_platformSessionOwner != null &&
+        !identical(_platformSessionOwner, this)) {
+      return;
+    }
+
+    _platformSessionOwner = null;
+
+    await MobileScannerPlatform.instance.dispose();
+  }
+
   /// Reset the shared platform camera session owner.
   ///
   /// This is only intended for use in tests,
@@ -173,6 +219,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   @visibleForTesting
   static void resetPlatformSessionOwner() {
     _platformSessionOwner = null;
+    _platformSessionLock = null;
   }
 
   void _disposeListeners() {
@@ -485,24 +532,37 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     try {
       _setupListeners();
 
-      final viewAttributes = await MobileScannerPlatform.instance.start(
-        options,
-      );
+      _hasPendingPlatformStart = true;
 
-      // Abort if the controller was disposed while the camera was starting.
-      // Its dispose() could not release the camera session, because that
-      // session did not exist yet, so release it now, unless another
-      // controller has taken over the session in the meantime.
-      if (_isDisposed) {
-        if (_platformSessionOwner == null) {
-          await MobileScannerPlatform.instance.dispose();
+      final viewAttributes = await _lockPlatformSession(() async {
+        try {
+          if (_isDisposed) {
+            return null;
+          }
+
+          final attributes = await MobileScannerPlatform.instance.start(
+            options,
+          );
+
+          if (!_isDisposed) {
+            // This controller now holds the platform camera session.
+            _platformSessionOwner = this;
+          }
+
+          return attributes;
+        } finally {
+          _hasPendingPlatformStart = false;
+
+          // dispose() leaves releasing the session to a pending start.
+          if (_isDisposed) {
+            await _releasePlatformSession();
+          }
         }
+      });
 
+      if (viewAttributes == null) {
         return;
       }
-
-      // This controller now holds the platform camera session.
-      _platformSessionOwner = this;
 
       if (!_isDisposed) {
         value = value.copyWith(
@@ -845,17 +905,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     unawaited(_barcodesController.close());
     super.dispose();
 
-    // If another controller currently holds the platform camera session,
-    // disposing the platform resources would break that controller.
-    // In that case only this controller's own resources are cleaned up.
-    if (_platformSessionOwner != null &&
-        !identical(_platformSessionOwner, this)) {
+    // A pending start releases the session itself once it gets the lock,
+    // so that dispose() does not wait for the camera to finish starting.
+    if (_hasPendingPlatformStart) {
       return;
     }
 
-    _platformSessionOwner = null;
-
-    await MobileScannerPlatform.instance.dispose();
+    await _lockPlatformSession(_releasePlatformSession);
   }
 
   /// Signal to this [MobileScannerController] that it is attached
