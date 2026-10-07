@@ -29,8 +29,8 @@ if(POLICY CMP0169)
 endif()
 FetchContent_Declare(
   zxing-cpp
-  URL https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v2.3.0.tar.gz
-  URL_HASH SHA256=64e4139103fdbc57752698ee15b5f0b0f7af9a0331ecbdc492047e0772c417ba
+  URL https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v3.1.1.tar.gz
+  URL_HASH SHA256=7286b1e6ade66fe82b7c8208b4595deeb55d6486b410834fdc65702f46650542
 )
 set(BUILD_SHARED_LIBS OFF)
 set(ZXING_READERS ON CACHE BOOL "" FORCE)
@@ -51,6 +51,8 @@ endif()
 list(APPEND PLUGIN_SOURCES
   "barcode_decoder.cpp"
   "barcode_decoder.h"
+  "barcode_format.cpp"
+  "barcode_format.h"
   "barcode_payload.cpp"
   "barcode_payload.h"
   "camera_capture.cpp"
@@ -131,11 +133,15 @@ set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 set(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# The tests cover the payload parsers, which do not depend on the camera,
-# Media Foundation or zxing-cpp, so only those sources are built in.
+# The tests cover the barcode format mapping and the payload parsers, which do
+# not depend on the camera or Media Foundation, so only those sources are
+# built in.
 add_executable(${TEST_RUNNER}
+  test/barcode_format_test.cpp
   test/barcode_payload_test.cpp
   test/vcard_parser_test.cpp
+  "barcode_format.cpp"
+  "barcode_format.h"
   "barcode_payload.cpp"
   "barcode_payload.h"
   "vcard_parser.cpp"
@@ -143,7 +149,7 @@ add_executable(${TEST_RUNNER}
 )
 apply_standard_settings(${TEST_RUNNER})
 target_include_directories(${TEST_RUNNER} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
-target_link_libraries(${TEST_RUNNER} PRIVATE flutter_wrapper_plugin)
+target_link_libraries(${TEST_RUNNER} PRIVATE flutter_wrapper_plugin ZXing::ZXing)
 target_link_libraries(${TEST_RUNNER} PRIVATE gtest_main gmock)
 # flutter_wrapper_plugin has link dependencies on the Flutter DLL.
 add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
