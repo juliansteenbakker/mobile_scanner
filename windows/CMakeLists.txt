@@ -108,3 +108,50 @@ set(mobile_scanner_bundled_libraries
   ""
   PARENT_SCOPE
 )
+
+# === Tests ===
+# These unit tests can be run from a terminal after building the example, or
+# from Visual Studio after opening the generated solution file.
+
+# Only enable test builds when building the example (which sets this variable)
+# so that plugin clients aren't building the tests.
+if (${include_${PROJECT_NAME}_tests})
+set(TEST_RUNNER "${PROJECT_NAME}_test")
+enable_testing()
+
+# Add the Google Test dependency.
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/refs/tags/v1.15.2.tar.gz
+  URL_HASH SHA256=7b42b4d6ed48810c5362c265a17faebe90dc2373c885e5216439d37927f02926
+)
+# Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+# Disable install commands for gtest so it doesn't end up in the bundle.
+set(INSTALL_GTEST OFF CACHE BOOL "Disable installation of googletest" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+# The tests cover the payload parsers, which do not depend on the camera,
+# Media Foundation or zxing-cpp, so only those sources are built in.
+add_executable(${TEST_RUNNER}
+  test/barcode_payload_test.cpp
+  test/vcard_parser_test.cpp
+  "barcode_payload.cpp"
+  "barcode_payload.h"
+  "vcard_parser.cpp"
+  "vcard_parser.h"
+)
+apply_standard_settings(${TEST_RUNNER})
+target_include_directories(${TEST_RUNNER} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")
+target_link_libraries(${TEST_RUNNER} PRIVATE flutter_wrapper_plugin)
+target_link_libraries(${TEST_RUNNER} PRIVATE gtest_main gmock)
+# flutter_wrapper_plugin has link dependencies on the Flutter DLL.
+add_custom_command(TARGET ${TEST_RUNNER} POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+  "${FLUTTER_LIBRARY}" $<TARGET_FILE_DIR:${TEST_RUNNER}>
+)
+
+# Enable automatic test discovery.
+include(GoogleTest)
+gtest_discover_tests(${TEST_RUNNER})
+endif()
