@@ -267,6 +267,43 @@ jobs:
         working-directory: example
         run: flutter build macos --debug
 
+  build_windows:
+    name: Build Windows
+    needs: [analysis, formatting]
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install Dependencies
+        working-directory: example
+        run: flutter pub get
+
+      # Also builds the plugin's unit tests, which the example app enables
+      # with `include_mobile_scanner_tests`.
+      - name: Build Example App
+        working-directory: example
+        run: flutter build windows --debug
+
+      - name: Run Plugin Unit Tests
+        working-directory: example/build/windows/x64/plugins/mobile_scanner/Debug
+        run: ./mobile_scanner_test.exe --gtest_output=xml:test-report.xml
+
+      - name: Upload Unit Test Report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-unit-test-report
+          path: example/build/windows/x64/plugins/mobile_scanner/Debug/test-report.xml
+
   build_web:
     name: Build Web
     needs: [analysis, formatting]
