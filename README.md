@@ -22,21 +22,21 @@ See the [examples](example/README.md) for runnable examples of various usages, s
 
 | Android | iOS | macOS | Web | Linux | Windows |
 |---------|-----|-------|-----|-------|---------|
-| ✔       | ✔   | ✔     | ✔   | :x:   | :x:     |
+| ✔       | ✔   | ✔     | ✔   | :x:   | ✔       |
 
 ### Features Supported
 
 See the example app for detailed implementation information.
 
-| Features     | Android            | iOS                | macOS              | Web |
-|--------------|--------------------|--------------------|--------------------|-----|
-| analyzeImage | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
-| returnImage  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
-| scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: |
-| autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: |
-| lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: |
-| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: |
-| getBestCloseRangeScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) |
+| Features     | Android            | iOS                | macOS              | Web | Windows            |
+|--------------|--------------------|--------------------|--------------------|-----|--------------------|
+| analyzeImage | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :heavy_check_mark: |
+| returnImage  | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :heavy_check_mark: |
+| scanWindow   | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :x: | :heavy_check_mark: |
+| autoZoom     | :heavy_check_mark: | :x:                | :x:                | :x: | :x:                |
+| lensType     | :heavy_check_mark: | :heavy_check_mark: | :x:                | :x: | :x:                |
+| getSupportedLenses(facing:) | :heavy_check_mark: | :heavy_check_mark: | :x: | :x: | :x: |
+| getBestCloseRangeScanningLens | :heavy_check_mark: (always normal) | :heavy_check_mark: (requires iOS 15, falls back to normal) | :x: (always normal) | :x: (always normal) | :x: (always normal) |
 
 ### Querying supported lens types with facing filter
 
@@ -58,7 +58,7 @@ if (backLenses.contains(CameraLensType.zoom)) {
 
 Without a facing filter, results may include lenses from both the front and back cameras, which can cause incorrect lens-type detection when switching cameras.
 
-The `facing` filter is supported on Android and iOS. On macOS and the web, the filter is ignored and all lenses are returned.
+The `facing` filter is supported on Android and iOS. On macOS, Windows and the web, the filter is ignored and all lenses are returned.
 
 ### Automatic best-lens selection for close-range scanning
 
@@ -78,6 +78,7 @@ if (bestLens != null && supported.contains(bestLens)) {
 This returns:
 - **iOS 15+**: The camera with the shortest `AVCaptureDevice.minimumFocusDistance` — typically the ultra-wide lens on newer iPhones (macro autofocus at ~2cm), or the standard 1x camera on older models
 - **iOS < 15 / macOS**: `CameraLensType.normal`, since `minimumFocusDistance` is not available
+- **Windows**: `CameraLensType.normal` when the device has a camera, since webcams do not report a lens type or focus distance
 - **Android**: `CameraLensType.normal` when the device has a camera. `LENS_INFO_MINIMUM_FOCUS_DISTANCE` is only meaningful on physical sub-cameras, which — like the rest of `getSupportedLenses` — are not independently selectable through CameraX, so the main camera (which has the most capable autofocus on virtually all Android devices) is returned unconditionally
 - **Web**: `CameraLensType.normal` when the device has a camera. The MediaDevices API has no concept of lens type, and its `focusDistance` capability, where available at all, is limited to Chrome on Android
 - **All platforms**: `null` if there is no camera for the requested facing direction
@@ -134,6 +135,22 @@ Example,
 Ensure that you granted camera permission in XCode -> Signing & Capabilities:
 
 <img width="696" alt="Screenshot of XCode where Camera is checked" src="https://user-images.githubusercontent.com/24459435/193464115-d76f81d0-6355-4cb2-8bee-538e413a3ad0.png">
+
+### Windows
+
+No configuration is needed. Camera frames are captured with Media Foundation and barcodes are decoded
+with [zxing-cpp](https://github.com/zxing-cpp/zxing-cpp), which is downloaded and built as part of the
+CMake build, so the first build needs network access.
+
+- Windows has no runtime camera permission prompt. If camera access is turned off in the Windows
+  camera privacy settings (including *Let desktop apps access your camera*), `start()` fails with
+  `MobileScannerErrorCode.permissionDenied`.
+- Cameras built into a device report whether they are front or back facing; other cameras, such as
+  USB webcams, are reported as `CameraFacing.external`. When no camera has the requested facing, the
+  first camera is used.
+- Like a selfie camera on mobile, the preview of a front facing camera is mirrored. Barcode corners
+  and the image from `returnImage` are mirrored to match.
+- Zoom, torch and tap to focus are not supported.
 
 ### Web
 
@@ -409,9 +426,11 @@ Apple Vision decodes the payload as a string internally using a Latin-1 (ISO-885
 
 This means arbitrary binary payloads that happen to contain bytes in the `0x80`–`0x9F` range will result in `rawBytes` being `null` for those formats.
 
-#### Android and Web
+#### Android, Windows and Web
 
 On Android, `rawBytes` is fully supported for all formats and encoding modes via MLKit.
+
+On Windows, `rawBytes` is fully supported for all formats and encoding modes via zxing-cpp.
 
 On Web, support depends on the active detection backend:
 
