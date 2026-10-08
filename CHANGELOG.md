@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+**Bug Fixes**
+
+* [Android] Fixed a crash when the scanner was stopped or disposed right after `start()`.
+
 ## [7.4.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.1...v7.4.2) (2026-09-10)
 
 
