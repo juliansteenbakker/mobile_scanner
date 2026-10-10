@@ -489,10 +489,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         options,
       );
 
-      // This controller now holds the platform camera session.
-      _platformSessionOwner = this;
-
       if (!_isDisposed) {
+        // This controller now holds the platform camera session.
+        //
+        // Not claimed when the controller was disposed while the camera was
+        // being acquired: the session would then point at a dead controller,
+        // and the next controller to dispose would skip the platform
+        // teardown, leaving the camera live.
+        _platformSessionOwner = this;
+
         value = value.copyWith(
           availableCameras: viewAttributes.numberOfCameras,
           cameraDirection: viewAttributes.cameraDirection,
