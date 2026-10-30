@@ -48,12 +48,16 @@ updates:
       prefix: chore
       include: scope
 
+  # The example resolves the plugin through a path dependency. Dependabot would
+  # pin it to the released version, which breaks resolution on the next bump.
   - package-ecosystem: pub
     directory: /example
     schedule:
       interval: weekly
     cooldown:
       default-days: 7
+    ignore:
+      - dependency-name: mobile_scanner
     groups:
       example-dart:
         patterns:
