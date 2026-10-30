@@ -33,8 +33,6 @@ void main() {
     test('do not surface on the torch or zoom streams', () async {
       final uncaught = <Object>[];
 
-      // Use runZonedGuarded to ensure that the uncaught errors are intercepted by the test.
-      // Without it, these are silently swallowed.
       await runZonedGuarded(() async {
         final torch = platform.torchStateStream.listen((_) {});
         final zoom = platform.zoomScaleStateStream.listen((_) {});
