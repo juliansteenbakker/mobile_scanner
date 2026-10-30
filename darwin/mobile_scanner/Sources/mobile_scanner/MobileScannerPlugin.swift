@@ -489,9 +489,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         device = MobileScannerCameraSelector.selectCamera(position: position, lensType: lensType)
 
         if (device == nil) {
-            failStart(FlutterError(code: MobileScannerErrorCodes.NO_CAMERA_ERROR,
-                                   message: MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
-                                   details: nil), result)
+            failStart(result, FlutterError(code: MobileScannerErrorCodes.NO_CAMERA_ERROR,
+                                           message: MobileScannerErrorCodes.NO_CAMERA_ERROR_MESSAGE,
+                                           details: nil))
             return
         }
 
@@ -521,20 +521,22 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             let input = try AVCaptureDeviceInput(device: device)
             
             if (!(captureSession!.canAddInput(input))) {
+                // Commit the open configuration before releasing the camera,
+                // because `stopRunning()` throws an `NSGenericException` inside it.
                 captureSession!.commitConfiguration()
-                failStart(FlutterError(
+                failStart(result, FlutterError(
                     code: MobileScannerErrorCodes.CAMERA_ERROR,
                     message: MobileScannerErrorCodes.CAMERA_ERROR_CAPTURE_SESSION_INPUT_OCCUPIED_MESSAGE,
-                    details: nil), result)
+                    details: nil))
                 return
             }
             
             captureSession!.addInput(input)
         } catch {
             captureSession!.commitConfiguration()
-            failStart(FlutterError(
+            failStart(result, FlutterError(
                 code: MobileScannerErrorCodes.CAMERA_ERROR,
-                message: error.localizedDescription, details: nil), result)
+                message: error.localizedDescription, details: nil))
             return
         }
         captureSession!.sessionPreset = AVCaptureSession.Preset.high
@@ -962,9 +964,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     ///
     /// Otherwise `device` and `captureSession` stay set, and every later start fails
     /// with ``MobileScannerErrorCodes/ALREADY_STARTED_ERROR`` until the app restarts.
-    /// Callers inside `beginConfiguration()` must commit it first, because `stopRunning()`
-    /// throws an `NSGenericException` inside an open configuration.
-    private func failStart(_ error: FlutterError, _ result: FlutterResult) {
+    private func failStart(_ result: FlutterResult, _ error: FlutterError) {
         releaseCamera()
         result(error)
     }
