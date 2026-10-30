@@ -1,4 +1,6 @@
 import 'dart:js_interop';
+
+import 'package:flutter/foundation.dart';
 import 'package:web/web.dart';
 
 /// This extension provides a nullable [mediaDevices] property for [Navigator],
@@ -16,6 +18,59 @@ extension NullableMediaTrackCapabilities on MediaTrackCapabilities {
   /// The `facingMode` property is not supported on Safari.
   @JS('facingMode')
   external JSArray<JSString>? get facingModeNullable;
+
+  /// The raw `torch` capability, as reported by the browser.
+  ///
+  /// Chromium and WebKit report a `boolean`, while the Image Capture
+  /// specification changed this to `sequence<boolean>` in
+  /// https://github.com/w3c/mediacapture-image/pull/305. Typed as [JSAny] so
+  /// that either shape can be read; see [canEnableTorch].
+  @JS('torch')
+  external JSAny? get torchNullable;
+
+  /// Whether the camera is able to turn its torch on.
+  ///
+  /// See [readTorchCapability].
+  bool get canEnableTorch => readTorchCapability(torchNullable);
+}
+
+/// Whether [torch] reports that the camera can turn its torch on.
+///
+/// Accepts either shape of `MediaTrackCapabilities.torch`:
+///
+/// * a JS boolean, or
+/// * a JS array of booleans, which is supported when the array contains
+///   `true`.
+///
+/// JS `null` and `undefined`, and any other shape, are unsupported.
+bool readTorchCapability(JSAny? torch) {
+  if (torch == null) {
+    return false;
+  }
+
+  if (torch.isA<JSBoolean>()) {
+    return (torch as JSBoolean).toDart;
+  }
+
+  if (torch.isA<JSArray<JSAny?>>()) {
+    final values = (torch as JSArray<JSAny?>).toDart;
+
+    if (values.every((value) => value.isA<JSBoolean>())) {
+      return values.any((value) => (value! as JSBoolean).toDart);
+    }
+  }
+
+  assert(() {
+    debugPrint(
+      'mobile_scanner: ignoring the `torch` capability of this camera '
+      'because the browser reported it as neither a boolean nor a '
+      'sequence of booleans. Please report the browser and its version '
+      'at https://github.com/juliansteenbakker/mobile_scanner/issues.',
+    );
+    return true;
+  }(), 'unrecognized torch capability');
+
+  return false;
 }
 
 /// This extension provides nullable properties for [MediaTrackSettings],
