@@ -1,12 +1,5 @@
 # Changelog
 
-## 7.4.3
-
-**Bug Fixes**
-
-* [Apple] Fixed `start()` hanging with a black preview when the system is busy, e.g. right after the app language changes. The capture session now starts on a user-initiated queue instead of a background one, which iOS can starve for many seconds. Previously every later `start()` also failed with `MobileScannerErrorCode.controllerInitializing`.
-* [Apple] Fixed every later `start()` failing with `MobileScannerErrorCode.controllerAlreadyInitialized` after a start failed because no camera was found or the camera input could not be added. The camera is now released when a start fails.
-
 ## [7.4.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.1...v7.4.2) (2026-09-10)
 
 
