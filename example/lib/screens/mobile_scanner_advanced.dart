@@ -27,6 +27,7 @@ enum _PopupMenuItems {
   returnImage,
   invertImage,
   autoZoom,
+  autoTorch,
   useBarcodeOverlay,
   boxFit,
   formats,
@@ -53,6 +54,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
   WebBarcodeReader selectedWebReader = WebBarcodeReader.auto;
 
   bool autoZoom = false;
+  bool autoTorch = false;
   bool invertImage = false;
   bool returnImage = false;
   bool tapToFocus = true;
@@ -81,6 +83,7 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
     formats: selectedFormats,
     returnImage: returnImage,
     // torchEnabled: true,
+    autoTorch: autoTorch,
     invertImage: invertImage,
     autoZoom: autoZoom,
     lensType: currentLensType,
@@ -334,6 +337,8 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   invertImage = !invertImage;
                 case _PopupMenuItems.autoZoom:
                   autoZoom = !autoZoom;
+                case _PopupMenuItems.autoTorch:
+                  autoTorch = !autoTorch;
                 case _PopupMenuItems.useBarcodeOverlay:
                   useBarcodeOverlay = !useBarcodeOverlay;
                 case _PopupMenuItems.scanWindow:
@@ -377,6 +382,12 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
                   value: _PopupMenuItems.autoZoom,
                   checked: autoZoom,
                   child: Text(_PopupMenuItems.autoZoom.name),
+                ),
+              if (!kIsWeb)
+                CheckedPopupMenuItem(
+                  value: _PopupMenuItems.autoTorch,
+                  checked: autoTorch,
+                  child: Text(_PopupMenuItems.autoTorch.name),
                 ),
               if (!kIsWeb && Platform.isAndroid)
                 CheckedPopupMenuItem(

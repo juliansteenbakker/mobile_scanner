@@ -35,6 +35,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     this.formats = const <BarcodeFormat>[],
     this.returnImage = false,
     this.torchEnabled = false,
+    this.autoTorch = false,
     this.invertImage = false,
     this.autoZoom = false,
     this.initialZoom,
@@ -121,6 +122,17 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// Defaults to false.
   final bool torchEnabled;
+
+  /// Whether the flashlight should turn on automatically in low light,
+  /// and off again in bright light.
+  ///
+  /// Ignored when [torchEnabled] is true. Calling [toggleTorch] turns the
+  /// automatic mode off until the camera is started again.
+  ///
+  /// Defaults to false and is only supported on Android, iOS and MacOS.
+  /// Android requires an ambient light sensor, iOS and MacOS require a camera
+  /// that supports the automatic torch mode.
+  final bool autoTorch;
 
   /// Whether the camera should auto zoom if the detected code is to far from
   /// the camera.
@@ -477,6 +489,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       formats: formats,
       returnImage: returnImage,
       torchEnabled: torchEnabled,
+      autoTorch: autoTorch,
       invertImage: invertImage,
       autoZoom: autoZoom,
       initialZoom: initialZoom,
