@@ -461,6 +461,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         let argReader = MapArgumentReader(call.arguments as? [String: Any])
 
         let torch:Bool = argReader.bool(key: "torch") ?? false
+        let autoTorch:Bool = argReader.bool(key: "autoTorch") ?? false
         let facing:Int = argReader.int(key: "facing") ?? 1
         let lensType:Int = argReader.int(key: "lensType") ?? -1
         let speed:Int = argReader.int(key: "speed") ?? 0
@@ -582,6 +583,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
                 if (torch) {
                     self.turnTorchOn()
+                } else if (autoTorch) {
+                    self.turnTorchAuto()
                 }
                 
                 if (initialZoom != nil) {
@@ -696,6 +699,31 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         do {
             try device.lockForConfiguration()
             device.torchMode = .on
+            device.unlockForConfiguration()
+        } catch(_) {
+            // Do nothing.
+        }
+    }
+
+    /// Let the camera turn the torch on and off depending on the light level.
+    private func turnTorchAuto() {
+        guard let device = self.device else {
+            return
+        }
+
+        if (!device.hasTorch || !device.isTorchModeSupported(.auto) || device.torchMode == .auto) {
+            return
+        }
+
+        if #available(macOS 15.0, *) {
+            if(!device.isTorchAvailable) {
+                return
+            }
+        }
+
+        do {
+            try device.lockForConfiguration()
+            device.torchMode = .auto
             device.unlockForConfiguration()
         } catch(_) {
             // Do nothing.

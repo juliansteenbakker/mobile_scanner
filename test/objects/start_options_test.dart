@@ -32,6 +32,7 @@ void main() {
         'timeout': 250,
         'returnImage': false,
         'torch': false,
+        'autoTorch': false,
         'invertImage': false,
         'autoZoom': false,
         'initialZoom': null,
@@ -227,6 +228,25 @@ void main() {
         expect(map['invertImage'], testCase.invertImage);
         expect(map['autoZoom'], testCase.autoZoom);
       }
+    });
+
+    test('toMap includes autoTorch when enabled', () {
+      const options = StartOptions(
+        cameraDirection: CameraFacing.back,
+        cameraLensType: CameraLensType.any,
+        cameraResolution: null,
+        detectionSpeed: DetectionSpeed.normal,
+        detectionTimeoutMs: 250,
+        formats: [],
+        returnImage: false,
+        torchEnabled: false,
+        invertImage: false,
+        autoZoom: false,
+        initialZoom: null,
+        autoTorch: true,
+      );
+
+      expect(options.toMap()['autoTorch'], isTrue);
     });
   });
 }
