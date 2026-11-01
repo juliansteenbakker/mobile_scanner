@@ -697,9 +697,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     switch (value.cameraDirection) {
       case CameraFacing.front:
-        return await start(cameraDirection: CameraFacing.back);
+        await start(cameraDirection: CameraFacing.back);
       case CameraFacing.back:
-        return await start(cameraDirection: CameraFacing.front);
+        await start(cameraDirection: CameraFacing.front);
       case CameraFacing.external:
       case CameraFacing.unknown:
         return;
@@ -757,7 +757,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     await stop();
-    return await start(
+    await start(
       cameraDirection: value.cameraDirection,
       cameraLensType: nextLens,
     );
@@ -784,7 +784,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     await stop();
-    return await start(
+    await start(
       cameraDirection: targetDirection,
       cameraLensType: lensType,
     );
@@ -863,9 +863,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return await MobileScannerPlatform.instance.getSupportedLenses(
+    final lenses = await MobileScannerPlatform.instance.getSupportedLenses(
       facing: facing,
     );
+
+    return lenses;
   }
 
   /// Determine the lens type best suited for close-range scanning.
@@ -906,9 +908,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return await MobileScannerPlatform.instance.getBestCloseRangeScanningLens(
-      facing: facing,
-    );
+    final lens = await MobileScannerPlatform.instance
+        .getBestCloseRangeScanningLens(facing: facing);
+
+    return lens;
   }
 
   /// Dispose the controller.
