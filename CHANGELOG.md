@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.5.0](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.4...v7.5.0) (2026-11-01)
+
+
+### Features
+
+* add autoTorch option to turn the torch on in low light ([#1840](https://github.com/juliansteenbakker/mobile_scanner/issues/1840)) ([c90745c](https://github.com/juliansteenbakker/mobile_scanner/commit/c90745c445f97d7e03060a9233163fd39a1fb467))
+
 ## [7.4.4](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.3...v7.4.4) (2026-11-01)
 
 
