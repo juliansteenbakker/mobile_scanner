@@ -71,8 +71,8 @@ extension type _StubbableMediaDevices(JSObject _) implements JSObject {
 
 /// Replaces `navigator.mediaDevices.getUserMedia` with a stub whose promise
 /// resolves only when the test says so, so that teardown can be interleaved
-/// with an in-flight camera acquisition — the interleaving a user creates by
-/// dismissing the scanner before the camera is ready.
+/// with an in-flight camera acquisition, as when a user dismisses the scanner
+/// before the camera is ready.
 ///
 /// Call [restore] in `tearDown`.
 class GetUserMediaStub {

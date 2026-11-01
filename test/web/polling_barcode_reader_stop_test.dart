@@ -33,16 +33,24 @@ void main() {
       final stream = createLiveVideoStream();
       final tracks = tracksOf(stream);
 
-      expect(tracks, isNotEmpty);
-      expect(allLive(stream), isTrue);
+      expect(tracks, isNotEmpty, reason: 'the test stream must have tracks');
+      expect(allLive(stream), isTrue, reason: 'a new stream starts live');
 
       stopVideoStream(stream);
 
-      expect(allEnded(stream), isTrue);
+      expect(
+        allEnded(stream),
+        isTrue,
+        reason: 'stopping the stream must end every track',
+      );
     });
 
     test('tolerates a null stream', () {
-      expect(() => stopVideoStream(null), returnsNormally);
+      expect(
+        () => stopVideoStream(null),
+        returnsNormally,
+        reason: 'there is nothing to stop when no stream was acquired',
+      );
     });
   });
 
