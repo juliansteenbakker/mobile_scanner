@@ -1,6 +1,7 @@
 import 'dart:js_interop';
 
-import 'package:flutter/foundation.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:web/web.dart';
 
 /// This extension provides a nullable [mediaDevices] property for [Navigator],
@@ -42,7 +43,8 @@ extension NullableMediaTrackCapabilities on MediaTrackCapabilities {
 /// * a JS array of booleans, which is supported when the array contains
 ///   `true`.
 ///
-/// JS `null` and `undefined`, and any other shape, are unsupported.
+/// JS `null` and `undefined` are unsupported. Any other shape throws a
+/// [MobileScannerException].
 bool readTorchCapability(JSAny? torch) {
   if (torch == null) {
     return false;
@@ -60,17 +62,15 @@ bool readTorchCapability(JSAny? torch) {
     }
   }
 
-  assert(() {
-    debugPrint(
-      'mobile_scanner: ignoring the `torch` capability of this camera '
-      'because the browser reported it as neither a boolean nor a '
-      'sequence of booleans. Please report the browser and its version '
-      'at https://github.com/juliansteenbakker/mobile_scanner/issues.',
-    );
-    return true;
-  }(), 'unrecognized torch capability');
-
-  return false;
+  throw const MobileScannerException(
+    errorCode: MobileScannerErrorCode.genericError,
+    errorDetails: MobileScannerErrorDetails(
+      message:
+          'The browser reported the torch capability as neither a boolean '
+          'nor a sequence of booleans. Please report the browser and its '
+          'version at https://github.com/juliansteenbakker/mobile_scanner/issues.',
+    ),
+  );
 }
 
 /// This extension provides nullable properties for [MediaTrackSettings],

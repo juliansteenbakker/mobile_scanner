@@ -5,6 +5,7 @@ import 'dart:js_interop';
 import 'dart:js_interop_unsafe';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/web/media_track_extension.dart';
 import 'package:web/web.dart';
 
@@ -30,6 +31,7 @@ void main() {
       expect(readTorchCapability(withTrue), isTrue);
       expect(readTorchCapability(onlyTrue), isTrue);
       expect(capabilitiesWithTorch(withTrue).canEnableTorch, isTrue);
+      expect(capabilitiesWithTorch(onlyTrue).canEnableTorch, isTrue);
     });
 
     test('is false when an array does not contain true', () {
@@ -50,6 +52,23 @@ void main() {
 
       expect(readTorchCapability(capabilities.torchNullable), isFalse);
       expect(capabilities.canEnableTorch, isFalse);
+    });
+
+    test('throws for an unrecognized shape', () {
+      final notBooleans = <JSString>['on'.toJS].toJS;
+
+      expect(
+        () => readTorchCapability('on'.toJS),
+        throwsA(isA<MobileScannerException>()),
+      );
+      expect(
+        () => readTorchCapability(notBooleans),
+        throwsA(isA<MobileScannerException>()),
+      );
+      expect(
+        () => capabilitiesWithTorch(notBooleans).canEnableTorch,
+        throwsA(isA<MobileScannerException>()),
+      );
     });
 
     test('is false for undefined', () {
