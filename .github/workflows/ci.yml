@@ -166,6 +166,40 @@ jobs:
           name: codecov-flutter-${{ matrix.name }}
           fail_ci_if_error: true
 
+  web_tests:
+    name: Web Tests
+    needs: [analysis, formatting]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Set Up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache Pub Dependencies
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.pub-cache
+            .dart_tool
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Install Dependencies
+        run: flutter pub get --no-example
+
+      # Runs the suite in Chrome, which also covers the browser-only tests
+      # that the VM run above skips.
+      - name: Run Tests in Chrome
+        run: flutter test --platform chrome
+
   build_android:
     name: Build Android
     needs: [analysis, formatting]

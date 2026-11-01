@@ -84,13 +84,13 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.11.0")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
-    testImplementation("org.mockito:mockito-core:5.23.0")
+    testImplementation("org.mockito:mockito-core:5.24.0")
 
     // Robolectric provides real implementations of the Android framework
     // classes (Rect, Point, ArrayMap) that the stub android.jar throws on.
     // It is JUnit 4 based, so the vintage engine runs it on the JUnit
     // Platform alongside the JUnit 5 tests.
-    testImplementation("org.robolectric:robolectric:4.16.1")
+    testImplementation("org.robolectric:robolectric:4.17")
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.vintage:junit-vintage-engine:6.1.3")
 }

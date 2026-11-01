@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.4.4](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.3...v7.4.4) (2026-11-01)
+
+
+### Bug Fixes
+
+* **android:** fixed a crash when the scanner was stopped or disposed right after start ([#1817](https://github.com/juliansteenbakker/mobile_scanner/issues/1817)) ([e102b51](https://github.com/juliansteenbakker/mobile_scanner/commit/e102b518bd326444b26cc068e438dde9ce9aad07))
+* release the camera when a controller is disposed while starting ([#1818](https://github.com/juliansteenbakker/mobile_scanner/issues/1818)) ([c04deba](https://github.com/juliansteenbakker/mobile_scanner/commit/c04deba311a0de95a292d9bc9957751880474e70))
+* **web:** accept sequence&lt;boolean&gt; torch capability in interop bindings ([#1839](https://github.com/juliansteenbakker/mobile_scanner/issues/1839)) ([63ec6a5](https://github.com/juliansteenbakker/mobile_scanner/commit/63ec6a5ab5bdbde2366bd80736ecad391ae4bda2))
+* **web:** release the camera when the scanner is stopped ([#1843](https://github.com/juliansteenbakker/mobile_scanner/issues/1843)) ([0478bff](https://github.com/juliansteenbakker/mobile_scanner/commit/0478bffa74a78260f5086c75e4c68febcdb356b2))
+
 ## [7.4.3](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.2...v7.4.3) (2026-10-30)
 
 

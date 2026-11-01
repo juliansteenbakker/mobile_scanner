@@ -22,6 +22,22 @@ jobs:
           token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
           target-branch: develop
 
+  # release-please never names the authors in the release notes, so thank
+  # them on the GitHub release once it exists.
+  thank-contributors:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Thank contributors in the release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: .github/scripts/thank-contributors.sh "$TAG"
+
   # Once a release lands on develop, fast-track it onto master so that
   # hotfixes can be branched from a branch that always matches the latest
   # release. Master requires PRs but no approvals/checks, so this merges
