@@ -153,9 +153,7 @@ abstract base class PollingBarcodeReader extends BarcodeReader {
     _isDecoding = false;
     _onMediaTrackSettingsChanged = null;
     _scanWindow = null;
-    // Release the camera before dropping the references. Without this the
-    // tracks stay in `readyState: 'live'` after the scanner is closed, so the
-    // device camera and its OS indicator stay on until the page is reloaded.
+    // Dropping the references alone would leave the camera on.
     stopVideoStream(_videoStream);
     _videoElement?.srcObject = null;
     _videoElement = null;

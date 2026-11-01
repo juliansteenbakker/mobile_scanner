@@ -8,10 +8,7 @@ export 'package:mobile_scanner/src/web/web_barcode_utils.dart'
 
 /// Stops every track on [videoStream], releasing the camera device.
 ///
-/// Dropping the reference to a [web.MediaStream] does not release the camera:
-/// its tracks stay in `readyState: 'live'` and the OS camera indicator stays
-/// lit until the page is reloaded. Every code path that finishes with a
-/// stream must call this.
+/// Dropping the reference alone leaves the tracks live and the camera on.
 void stopVideoStream(web.MediaStream? videoStream) {
   final tracks = videoStream?.getTracks().toDart;
 

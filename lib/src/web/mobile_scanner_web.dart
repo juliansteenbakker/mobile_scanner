@@ -46,13 +46,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// The internal barcode reader.
   BarcodeReader? _barcodeReader;
 
-  /// Incremented by every [stop], which [dispose] also routes through.
-  ///
-  /// A [start] that is still in flight compares this against the value it
-  /// captured: if it changed, the scanner was stopped while the camera was
-  /// being acquired, and everything this start acquired must be released.
-  /// Without it the teardown runs before the reader owns the stream, so it
-  /// has nothing to stop, and the acquired camera stays live.
+  /// Incremented by every [stop], so an in-flight [start] can detect it.
   int _teardownGeneration = 0;
 
   /// The stream controller for the barcode stream.
@@ -500,8 +494,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
     _barcodeReader = reader;
 
     // A stop() that lands before the reader owns the stream has nothing to
-    // release, so this start stays responsible for the reader and the stream,
-    // and releases both if it is torn down or anything below fails.
+    // release, so this start releases it if torn down or failing.
     MediaStream? acquiredStream;
 
     try {
@@ -559,6 +552,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
       _throwIfTornDown(generation);
 
+      final MobileScannerViewAttributes viewAttributes;
+
       try {
         _barcodesSubscription = _barcodeReader?.detectBarcodes().listen(
           (barcode) {
@@ -589,7 +584,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
           videoStream,
         );
 
-        return MobileScannerViewAttributes(
+        viewAttributes = MobileScannerViewAttributes(
           cameraDirection: cameraDirection,
           // The torch of a media stream is not available for video tracks.
           // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
@@ -605,6 +600,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
           ),
         );
       }
+
+      // The torch setup awaits, so a stop can still land here.
+      _throwIfTornDown(generation);
+
+      return viewAttributes;
     } catch (_) {
       await _releaseAbandonedStart(reader, acquiredStream);
       rethrow;
@@ -627,22 +627,25 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   /// Releases the camera acquired by a start that failed or was torn down.
   ///
-  /// The scanner state is only reset while it still holds [reader]: a newer
-  /// start may already have replaced it, and stopping that one would release
-  /// a camera that is legitimately in use.
+  /// Only resets the scanner while it still holds [reader], as a newer start
+  /// may have replaced it.
   Future<void> _releaseAbandonedStart(
     BarcodeReader reader,
     MediaStream? videoStream,
   ) async {
-    if (identical(_barcodeReader, reader)) {
-      await _barcodesSubscription?.cancel();
-      _barcodesSubscription = null;
-      await reader.stop();
-      _barcodeReader = null;
-      _activeWebReader = null;
+    try {
+      if (identical(_barcodeReader, reader)) {
+        await _barcodesSubscription?.cancel();
+        _barcodesSubscription = null;
+        await reader.stop();
+        _barcodeReader = null;
+        _activeWebReader = null;
+      }
+    } on Object {
+      // Keep the original start error; the camera is still released below.
+    } finally {
+      stopVideoStream(videoStream);
     }
-
-    stopVideoStream(videoStream);
   }
 
   @override
