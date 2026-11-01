@@ -168,6 +168,7 @@ class MobileScannerHandler(
     @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
         val torch: Boolean = call.argument<Boolean>("torch") ?: false
+        val autoTorch: Boolean = call.argument<Boolean>("autoTorch") ?: false
         val facing: Int = call.argument<Int>("facing") ?: 0
         val lensType: Int = call.argument<Int>("lensType") ?: -1
         val formats: List<Int>? = call.argument<List<Int>>("formats")
@@ -199,6 +200,7 @@ class MobileScannerHandler(
             returnImage,
             position,
             torch,
+            autoTorch,
             detectionSpeed,
             torchStateCallback,
             zoomScaleStateCallback,

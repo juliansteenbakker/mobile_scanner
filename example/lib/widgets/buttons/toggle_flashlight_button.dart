@@ -9,7 +9,7 @@ class ToggleFlashlightButton extends StatelessWidget {
   /// Controller which is used to call toggleTorch
   final MobileScannerController controller;
 
-  Future<void> _onPressed() async => controller.toggleTorch();
+  Future<void> _onPressed() => controller.toggleTorch();
 
   @override
   Widget build(BuildContext context) {

@@ -2,7 +2,7 @@
 enum TorchState {
   /// The flashlight turns on automatically in low light conditions.
   ///
-  /// This is currently only supported on iOS and MacOS.
+  /// This is currently only supported on Android, iOS and MacOS.
   auto(2),
 
   /// The flashlight is off.

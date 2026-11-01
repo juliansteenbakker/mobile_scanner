@@ -7,6 +7,10 @@ analyzer:
     - macos/**
 include: package:very_good_analysis/analysis_options.yaml
 
+formatter:
+  # very_good_analysis 11 switched this to automate.
+  trailing_commas: preserve
+
 linter:
   rules:
     omit_local_variable_types: false
