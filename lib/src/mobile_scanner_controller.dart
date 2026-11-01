@@ -697,9 +697,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
     switch (value.cameraDirection) {
       case CameraFacing.front:
-        return start(cameraDirection: CameraFacing.back);
+        return await start(cameraDirection: CameraFacing.back);
       case CameraFacing.back:
-        return start(cameraDirection: CameraFacing.front);
+        return await start(cameraDirection: CameraFacing.front);
       case CameraFacing.external:
       case CameraFacing.unknown:
         return;
@@ -757,7 +757,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     await stop();
-    return start(
+    return await start(
       cameraDirection: value.cameraDirection,
       cameraLensType: nextLens,
     );
@@ -784,7 +784,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
 
     await stop();
-    return start(cameraDirection: targetDirection, cameraLensType: lensType);
+    return await start(
+      cameraDirection: targetDirection,
+      cameraLensType: lensType,
+    );
   }
 
   /// Switches the flashlight on or off.
@@ -860,7 +863,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return MobileScannerPlatform.instance.getSupportedLenses(facing: facing);
+    return await MobileScannerPlatform.instance.getSupportedLenses(
+      facing: facing,
+    );
   }
 
   /// Determine the lens type best suited for close-range scanning.
@@ -901,7 +906,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    return MobileScannerPlatform.instance.getBestCloseRangeScanningLens(
+    return await MobileScannerPlatform.instance.getBestCloseRangeScanningLens(
       facing: facing,
     );
   }
