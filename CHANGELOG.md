@@ -1,5 +1,13 @@
 # Changelog
 
+## [7.4.3](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.2...v7.4.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* Start the AVCaptureSession on a user-initiated queue and release it when start fails ([#1830](https://github.com/juliansteenbakker/mobile_scanner/issues/1830)) ([a549c4e](https://github.com/juliansteenbakker/mobile_scanner/commit/a549c4efe900d6c97ad0739a07cbada8e1261b3e))
+* stop barcode errors surfacing as uncaught errors on the torch and zoom streams ([#1833](https://github.com/juliansteenbakker/mobile_scanner/issues/1833)) ([fdbde09](https://github.com/juliansteenbakker/mobile_scanner/commit/fdbde09df74431956039964017ea9fd8021421ed))
+
 ## [7.4.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.1...v7.4.2) (2026-09-10)
 
 
