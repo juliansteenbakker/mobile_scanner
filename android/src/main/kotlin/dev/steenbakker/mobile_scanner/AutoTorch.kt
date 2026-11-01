@@ -24,7 +24,7 @@ internal class AutoTorch(
         const val BRIGHT_ENOUGH_LUX = 450f
     }
 
-    var isEnabled = false
+    var isListening = false
         private set
 
     /** The torch state the light level asks for. */
@@ -39,26 +39,29 @@ internal class AutoTorch(
      * Returns false if the device has no light sensor.
      */
     fun start(): Boolean {
+        if (isListening) return true
+
         val lightSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT) ?: return false
 
-        isEnabled = sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
+        isListening = sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
 
-        return isEnabled
+        return isListening
     }
 
     fun stop() {
-        if (!isEnabled) return
+        if (!isListening) return
 
         sensorManager?.unregisterListener(this)
-        isEnabled = false
+        isListening = false
     }
 
     /**
-     * Send the wanted torch state again, for when the camera has reopened.
+     * Start listening again and resend the wanted torch state, for when the camera has reopened.
      *
      * The light sensor only reports changes, so a steady light level would never trigger a retry.
      */
-    fun reapply() {
+    fun resume() {
+        start()
         applied = null
         sendTorch()
     }

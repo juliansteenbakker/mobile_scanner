@@ -35,6 +35,7 @@ import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.BarcodeScanning
@@ -83,6 +84,7 @@ class MobileScanner(
     private var imageAnalysis: ImageAnalysis? = null
     private var analysisExecutor = Executors.newSingleThreadExecutor()
     private var autoTorch: AutoTorch? = null
+    private var torchStateCallback: TorchStateCallback? = null
 
     /// Configurable variables
     var scanWindow: List<Float>? = null
@@ -416,6 +418,7 @@ class MobileScanner(
     ) {
         this.detectionSpeed = detectionSpeed
         this.detectionTimeout = detectionTimeout
+        this.torchStateCallback = torchStateCallback
         this.returnImage = returnImage
         this.invertImage = invertImage
 
@@ -526,31 +529,30 @@ class MobileScanner(
             camera?.let {
                 if (autoTorchEnabled && !torch && it.cameraInfo.hasFlashUnit()) {
                     val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-                    autoTorch = AutoTorch(sensorManager) { enabled, onFailure ->
+                    val candidate = AutoTorch(sensorManager) { enabled, onFailure ->
                         val future = camera?.cameraControl?.enableTorch(enabled)
-                        if (future == null) {
-                            onFailure()
-                            return@AutoTorch
-                        }
-                        future.addListener({
-                            try {
-                                future.get()
-                            } catch (_: Exception) {
-                                onFailure()
-                            }
-                        }, mainExecutor)
-                    }.apply { start() }
+                        if (future == null) onFailure() else future.onFailure(onFailure)
+                    }
 
-                    // The torch is turned off while the camera is closed, so restore it on reopen.
-                    it.cameraInfo.cameraState.observe(activity as LifecycleOwner) { state ->
-                        if (state.type == CameraState.Type.OPEN) autoTorch?.reapply()
+                    // Without a light sensor, the torch state is reported as is.
+                    if (candidate.start()) {
+                        autoTorch = candidate
+
+                        // The torch is turned off while the camera is closed, so only listen while it is open.
+                        it.cameraInfo.cameraState.observe(activity as LifecycleOwner) { state ->
+                            when (state.type) {
+                                CameraState.Type.OPEN -> autoTorch?.resume()
+                                CameraState.Type.OPENING -> {}
+                                else -> autoTorch?.stop()
+                            }
+                        }
                     }
                 }
 
                 // Register the torch listener
                 it.cameraInfo.torchState.observe(activity as LifecycleOwner) { state ->
                     // TorchState.OFF = 0; TorchState.ON = 1
-                    torchStateCallback(if (autoTorch?.isEnabled == true) AutoTorch.TORCH_STATE_AUTO else state)
+                    torchStateCallback(if (autoTorch != null) AutoTorch.TORCH_STATE_AUTO else state)
                 }
 
                 // Register the zoom scale listener
@@ -594,7 +596,7 @@ class MobileScanner(
                     return@let
                 }
 
-                currentTorchState = if (autoTorch?.isEnabled == true) {
+                currentTorchState = if (autoTorch != null) {
                     AutoTorch.TORCH_STATE_AUTO
                 } else {
                     it.torchState.value ?: -1
@@ -703,6 +705,16 @@ class MobileScanner(
         autoTorch = null
     }
 
+    private fun ListenableFuture<Void>.onFailure(block: () -> Unit) {
+        addListener({
+            try {
+                get()
+            } catch (_: Exception) {
+                block()
+            }
+        }, ContextCompat.getMainExecutor(activity))
+    }
+
     private fun isStopped() = camera == null && preview == null
 
     /**
@@ -715,11 +727,21 @@ class MobileScanner(
             }
 
             // A manual toggle ends the automatic mode.
+            val wasAuto = autoTorch != null
             stopAutoTorch()
 
-            when(it.cameraInfo.torchState.value) {
+            val future = when(it.cameraInfo.torchState.value) {
                 TorchState.OFF -> it.cameraControl.enableTorch(true)
                 TorchState.ON -> it.cameraControl.enableTorch(false)
+                else -> null
+            }
+
+            if (wasAuto) {
+                // Dart still shows the auto state, which only a torch change would replace.
+                val reportTorchState: () -> Unit = {
+                    torchStateCallback?.invoke(it.cameraInfo.torchState.value ?: TorchState.OFF)
+                }
+                if (future == null) reportTorchState() else future.onFailure(reportTorchState)
             }
         }
     }

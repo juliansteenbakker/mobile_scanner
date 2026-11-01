@@ -73,16 +73,16 @@ internal class AutoTorchTest {
     }
 
     @Test
-    fun reapply_resendsWantedState() {
+    fun resume_resendsWantedState() {
         autoTorch.onLightChanged(10f)
-        autoTorch.reapply()
+        autoTorch.resume()
 
         assertEquals(listOf(true, true), torchCalls)
     }
 
     @Test
-    fun reapply_withoutReading_doesNothing() {
-        autoTorch.reapply()
+    fun resume_withoutReading_doesNothing() {
+        autoTorch.resume()
 
         assertEquals(emptyList(), torchCalls)
     }
@@ -90,6 +90,6 @@ internal class AutoTorchTest {
     @Test
     fun start_withoutSensorManager_returnsFalse() {
         assertFalse(autoTorch.start())
-        assertFalse(autoTorch.isEnabled)
+        assertFalse(autoTorch.isListening)
     }
 }
