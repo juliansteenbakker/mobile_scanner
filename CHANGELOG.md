@@ -1,10 +1,37 @@
 # Changelog
 
+## [7.4.3](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.2...v7.4.3) (2026-10-30)
+
+
+### Bug Fixes
+
+* Start the AVCaptureSession on a user-initiated queue and release it when start fails ([#1830](https://github.com/juliansteenbakker/mobile_scanner/issues/1830)) ([a549c4e](https://github.com/juliansteenbakker/mobile_scanner/commit/a549c4efe900d6c97ad0739a07cbada8e1261b3e))
+* stop barcode errors surfacing as uncaught errors on the torch and zoom streams ([#1833](https://github.com/juliansteenbakker/mobile_scanner/issues/1833)) ([fdbde09](https://github.com/juliansteenbakker/mobile_scanner/commit/fdbde09df74431956039964017ea9fd8021421ed))
+
+## [7.4.2](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.1...v7.4.2) (2026-09-10)
+
+
+### Bug Fixes
+
+* **android:** defer orientation sensor listener until camera start ([#1803](https://github.com/juliansteenbakker/mobile_scanner/issues/1803)) ([f9c81ea](https://github.com/juliansteenbakker/mobile_scanner/commit/f9c81ea0b573d9146889fc70b599bf1f3920e35c))
+
 ## 7.4.1
+
+**Improvements**
+
+* [Web] Bumped `zxing-wasm` (the `WebBarcodeReader.zxingWasm` backend) from 3.1.1 to 3.1.3.
 
 **Bug Fixes**
 
+* [Android] Fixed the camera preview reporting a stale device orientation on start, when the device was rotated while the camera was stopped.
+* [Android] Fixed device rotations sometimes not being detected while the camera is running, e.g. when the display rotation callback fires before the display reflects the new rotation, or on a seamless 180 degree rotation between the two landscape orientations.
+* [Android] Fixed barcode scanning permanently stalling when a camera frame was never released. The `ImageProxy` is now released on every exit path of the analyzer, including a null image, a failed or cancelled ML Kit request, and any error while building the input image or handling the result. Previously a single leaked frame stopped all further scanning while the preview kept running. (thanks @WladmirJunior !)
 * [Android] Fixed a host-app crash when CameraX fails to initialize while starting the scanner (e.g. "Available cameras: 0", the camera being held by another process, or a transient HAL error). The failure is now routed through the normal error callback so it can be surfaced via `errorBuilder` instead of terminating the app.
+* [Android] Fixed the false-positive `Your app uses the following plugins that apply Kotlin Gradle Plugin (KGP): mobile_scanner` warning on AGP 9. The plugin's Gradle files are now Kotlin DSL, and the Kotlin Gradle Plugin is only applied when built-in Kotlin is disabled, which keeps the build working on older AGP versions. (thanks @AndresMontaniv !)
+* [Android] Added a ProGuard keep rule for the internal ML Kit barcode classes (`com.google.android.gms.internal.mlkit_vision_barcode`), which could be stripped or obfuscated in release builds.
+* [Apple] Fixed a crash when the app is terminated while the camera is running. A capture frame that was still in flight could reach the Flutter engine after its shell had been destroyed, causing an `EXC_BAD_ACCESS`. The capture session is now stopped before the engine is destroyed, and the camera is released when the engine detaches the plugin.
+* [Web] Fixed web builds failing to compile on Dart 3.14 (Flutter 3.48), which rejects `@JS` annotations on extension type constructors. The annotations were already no-ops, so removing them does not change any behavior.
+* Fixed the camera preview no longer following device rotation after `switchCamera()`. Restarting the camera recreated the device orientation stream, and cancelling a listener of the previous stream instance afterwards inadvertently tore down the platform channel of the new one.
 
 ## 7.4.0
 
