@@ -134,10 +134,79 @@ void main() {
         final disposeCalls = platform.disposeCalls;
         await second.dispose();
 
-        expect(platform.stopCalls, 0);
+        expect(
+          platform.stopCalls,
+          1,
+          reason: 'only the early stop from disposing the first controller',
+        );
         expect(platform.disposeCalls, disposeCalls + 1);
       },
     );
+
+    test('disposing a controller while starting stops the platform '
+        'right away', () async {
+      final startGate = Completer<void>();
+      platform.startGate = startGate;
+
+      final controller = MobileScannerController(autoStart: false)..attach();
+      final start = controller.start();
+
+      await controller.dispose();
+
+      expect(
+        platform.stopCalls,
+        1,
+        reason: 'a platform that can abort the start must be told now',
+      );
+
+      startGate.complete();
+      await start;
+    });
+
+    test('a controller waiting for the camera session does not receive '
+        'barcodes from the session of the previous holder', () async {
+      final startGate = Completer<void>();
+      platform.startGate = startGate;
+
+      final first = MobileScannerController(autoStart: false)..attach();
+      final firstStart = first.start();
+
+      final second = MobileScannerController(autoStart: false)..attach();
+      final received = <BarcodeCapture>[];
+      final subscription = second.barcodes.listen(received.add);
+      final secondStart = second.start();
+
+      platform.barcodes.add(const BarcodeCapture());
+      await pumpEventQueue();
+
+      expect(
+        received,
+        isEmpty,
+        reason: 'the second controller does not hold the session yet',
+      );
+
+      startGate.complete();
+      await Future.wait([firstStart, secondStart]);
+      await subscription.cancel();
+      await first.dispose();
+      await second.dispose();
+    });
+
+    test('an error releasing the session after a disposed start '
+        'does not escape start()', () async {
+      final startGate = Completer<void>();
+      platform
+        ..startGate = startGate
+        ..disposeError = StateError('release failed');
+
+      final controller = MobileScannerController(autoStart: false)..attach();
+      final start = controller.start();
+
+      await controller.dispose();
+      startGate.complete();
+
+      await expectLater(start, completes);
+    });
   });
 
   group('dispose while starting with the method channel', () {
@@ -339,8 +408,15 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   /// If set, [start] does not complete until this completer completes.
   Completer<void>? startGate;
 
+  /// Barcodes emitted by the platform session.
+  final StreamController<BarcodeCapture?> barcodes =
+      StreamController.broadcast();
+
+  /// If set, [dispose] throws this error.
+  Object? disposeError;
+
   @override
-  Stream<BarcodeCapture?> get barcodesStream => const Stream.empty();
+  Stream<BarcodeCapture?> get barcodesStream => barcodes.stream;
 
   @override
   Stream<TorchState> get torchStateStream =>
@@ -371,6 +447,11 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   @override
   Future<void> dispose() {
     disposeCalls++;
+
+    if (disposeError case final error?) {
+      return Future.error(error);
+    }
+
     return Future.value();
   }
 }

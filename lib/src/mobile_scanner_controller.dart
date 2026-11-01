@@ -530,8 +530,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     );
 
     try {
-      _setupListeners();
-
       _hasPendingPlatformStart = true;
 
       final viewAttributes = await _lockPlatformSession(() async {
@@ -539,6 +537,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           if (_isDisposed) {
             return null;
           }
+
+          // Listen only once the lock is held, so this controller does not
+          // receive events from the session of the previous holder.
+          _setupListeners();
 
           final attributes = await MobileScannerPlatform.instance.start(
             options,
@@ -555,7 +557,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
           // dispose() leaves releasing the session to a pending start.
           if (_isDisposed) {
-            await _releasePlatformSession();
+            try {
+              await _releasePlatformSession();
+            } on Object {
+              // Nothing is listening to a disposed controller, and the
+              // result or error of the start itself must not be replaced.
+            }
           }
         }
       });
@@ -908,6 +915,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     // A pending start releases the session itself once it gets the lock,
     // so that dispose() does not wait for the camera to finish starting.
     if (_hasPendingPlatformStart) {
+      // Stopping now lets a platform that can abort a start in progress,
+      // such as the web, do so before the camera is acquired.
+      if (_platformSessionOwner == null) {
+        unawaited(
+          MobileScannerPlatform.instance.stop().catchError((Object _) {}),
+        );
+      }
+
       return;
     }
 
