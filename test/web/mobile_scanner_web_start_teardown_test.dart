@@ -2,6 +2,7 @@
 library;
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/web_barcode_reader.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/web/mobile_scanner_web.dart';
@@ -106,6 +107,43 @@ void main() {
         allEnded(stream),
         isTrue,
         reason: 'the camera acquired by the stopped start must be released',
+      );
+    });
+  });
+
+  group('MobileScannerWeb restart after teardown', () {
+    test('stop() while selecting the reader allows a new start', () async {
+      final plugin =
+          MobileScannerWeb()..setWebBarcodeReader(WebBarcodeReader.auto);
+      addTearDown(plugin.stop);
+
+      getUserMedia.resolve();
+
+      // In auto mode, start() is parked on the BarcodeDetector support check,
+      // before it has assigned its reader, when this lands.
+      final startFailure = expectLater(
+        plugin.start(testStartOptions),
+        throwsA(isA<MobileScannerException>()),
+        reason: 'a start that was stopped must not report a running camera',
+      );
+
+      await plugin.stop();
+      await startFailure;
+
+      final restartError = await plugin
+          .start(testStartOptions)
+          .then<Object?>((_) => null, onError: (Object error) => error);
+
+      expect(
+        restartError,
+        isNot(
+          isA<MobileScannerException>().having(
+            (e) => e.errorCode,
+            'errorCode',
+            MobileScannerErrorCode.controllerAlreadyInitialized,
+          ),
+        ),
+        reason: 'the aborted start must not leave its reader behind',
       );
     });
   });

@@ -440,8 +440,6 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
-    final generation = _teardownGeneration;
-
     if (_barcodeReader != null) {
       if (_barcodeReader!.paused ?? false) {
         await _barcodeReader?.resume();
@@ -472,48 +470,54 @@ class MobileScannerWeb extends MobileScannerPlatform {
       await stop();
     }
 
+    // Captured after the reset above, which is part of this start.
+    final generation = _teardownGeneration;
+
     // Select the barcode reader based on the preferred backend.
+    final BarcodeReader reader;
     switch (_preferredWebReader) {
       case WebBarcodeReader.barcodeDetector:
-        _barcodeReader = BarcodeDetectorReader();
+        reader = BarcodeDetectorReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.zxingWasm:
-        _barcodeReader = ZXingWasmBarcodeReader();
+        reader = ZXingWasmBarcodeReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.zxingJs:
-        _barcodeReader = ZXingBarcodeReader();
+        reader = ZXingBarcodeReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.auto:
         // Use the native BarcodeDetector API when available (Chrome/Edge/Safari
         // 17+), fall back to zxing-wasm for Firefox and older browsers.
         if (await BarcodeDetectorReader.isSupported()) {
-          _barcodeReader = BarcodeDetectorReader();
+          reader = BarcodeDetectorReader();
           _activeWebReader = WebBarcodeReader.barcodeDetector;
         } else {
-          _barcodeReader = ZXingWasmBarcodeReader();
+          reader = ZXingWasmBarcodeReader();
           _activeWebReader = WebBarcodeReader.zxingWasm;
         }
     }
 
-    await _barcodeReader?.maybeLoadLibrary(
-      alternateScriptUrl: _alternateScriptUrl,
-    );
+    _barcodeReader = reader;
 
-    // Loading the library can take a while; a scanner dismissed meanwhile
-    // must not go on to prompt for, and briefly light, the camera.
-    _throwIfTornDown(generation);
+    // A stop() that lands before the reader owns the stream has nothing to
+    // release, so this start stays responsible for the reader and the stream,
+    // and releases both if it is torn down or anything below fails.
+    MediaStream? acquiredStream;
 
-    // Request camera permissions and prepare the video stream.
-    final videoStream = await _prepareVideoStream(
-      startOptions.cameraDirection,
-      cameraResolution: startOptions.cameraResolution,
-    );
-
-    // The camera is live from here on, but the reader does not own it yet.
-    // A stop() that lands in this window has nothing to release, so this
-    // start stays responsible for the stream until the reader has it, and for
-    // releasing it if anything below fails.
     try {
+      await reader.maybeLoadLibrary(alternateScriptUrl: _alternateScriptUrl);
+
+      // Loading the library can take a while; a scanner dismissed meanwhile
+      // must not go on to prompt for, and briefly light, the camera.
+      _throwIfTornDown(generation);
+
+      // Request camera permissions and prepare the video stream.
+      final videoStream = await _prepareVideoStream(
+        startOptions.cameraDirection,
+        cameraResolution: startOptions.cameraResolution,
+      );
+      acquiredStream = videoStream;
+
       _throwIfTornDown(generation);
 
       try {
@@ -602,7 +606,7 @@ class MobileScannerWeb extends MobileScannerPlatform {
         );
       }
     } catch (_) {
-      await _releaseAbandonedStart(videoStream, generation);
+      await _releaseAbandonedStart(reader, acquiredStream);
       rethrow;
     }
   }
@@ -623,15 +627,17 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   /// Releases the camera acquired by a start that failed or was torn down.
   ///
-  /// The reader is only torn down when this start still owns the session: a
-  /// newer start may already have replaced it, and stopping that one would
-  /// release a camera that is legitimately in use.
+  /// The scanner state is only reset while it still holds [reader]: a newer
+  /// start may already have replaced it, and stopping that one would release
+  /// a camera that is legitimately in use.
   Future<void> _releaseAbandonedStart(
-    MediaStream videoStream,
-    int generation,
+    BarcodeReader reader,
+    MediaStream? videoStream,
   ) async {
-    if (_teardownGeneration == generation) {
-      await _barcodeReader?.stop();
+    if (identical(_barcodeReader, reader)) {
+      await _barcodesSubscription?.cancel();
+      _barcodesSubscription = null;
+      await reader.stop();
       _barcodeReader = null;
       _activeWebReader = null;
     }
