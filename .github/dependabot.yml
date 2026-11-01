@@ -1,51 +1,81 @@
- version: 2
- updates:
-   - package-ecosystem: "github-actions"
-     directory: "/"
-     schedule:
-       interval: "weekly"
-     reviewers:
-       - "juliansteenbakker"
-     commit-message:
-       prefix: "chore"
-       include: "scope"
-   - package-ecosystem: gradle
-     directory: "/android"
-     schedule:
-       interval: "monthly"
-     reviewers:
-       - "juliansteenbakker"
-     commit-message:
-       prefix: "chore"
-       include: "scope"
-   - package-ecosystem: gradle
-     directory: "/example/android"
-     schedule:
-       interval: "monthly"
-     reviewers:
-       - "juliansteenbakker"
-     commit-message:
-       prefix: "chore"
-       include: "scope"
-   - package-ecosystem: "pub"
-     directory: "/"
-     schedule:
-       interval: "weekly"
-     commit-message:
-       prefix: "chore"
-       include: "scope"
-     reviewers:
-       - "juliansteenbakker"
-   # Tracks the CDN-loaded web barcode libraries via the package.json at the
-   # repository root. The pinned versions in
-   # lib/src/web/web_library_versions.dart must be updated to match; the test
-   # in test/web/web_library_versions_test.dart enforces this.
-   - package-ecosystem: "npm"
-     directory: "/"
-     schedule:
-       interval: "weekly"
-     commit-message:
-       prefix: "chore"
-       include: "scope"
-     reviewers:
-       - "juliansteenbakker"
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: gradle
+    directory: /android
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: gradle
+    directory: /example/android
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      example-android:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: chore
+      include: scope
+
+  - package-ecosystem: pub
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # The example resolves the plugin through a path dependency. Dependabot would
+  # pin it to the released version, which breaks resolution on the next bump.
+  - package-ecosystem: pub
+    directory: /example
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      - dependency-name: mobile_scanner
+    groups:
+      example-dart:
+        patterns:
+          - "*"
+    commit-message:
+      prefix: chore
+      include: scope
+
+  # Tracks the CDN-loaded web barcode libraries via the package.json at the
+  # repository root. The pinned versions in
+  # lib/src/web/web_library_versions.dart must be updated to match; the test
+  # in test/web/web_library_versions_test.dart enforces this.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope

@@ -24,7 +24,6 @@ extension type NativeBarcodeDetector._(JSObject _) implements JSObject {
   external factory NativeBarcodeDetector();
 
   /// Constructs a detector restricted to the given [options].
-  @JS('BarcodeDetector')
   external factory NativeBarcodeDetector.withOptions(
     BarcodeDetectorInit options,
   );
