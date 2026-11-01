@@ -528,25 +528,7 @@ class MobileScanner(
 
             camera?.let {
                 if (autoTorchEnabled && !torch && it.cameraInfo.hasFlashUnit()) {
-                    val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-                    val candidate = AutoTorch(sensorManager) { enabled, onFailure ->
-                        val future = camera?.cameraControl?.enableTorch(enabled)
-                        if (future == null) onFailure() else future.onFailure(onFailure)
-                    }
-
-                    // Without a light sensor, the torch state is reported as is.
-                    if (candidate.start()) {
-                        autoTorch = candidate
-
-                        // The torch is turned off while the camera is closed, so only listen while it is open.
-                        it.cameraInfo.cameraState.observe(activity as LifecycleOwner) { state ->
-                            when (state.type) {
-                                CameraState.Type.OPEN -> autoTorch?.resume()
-                                CameraState.Type.OPENING -> {}
-                                else -> autoTorch?.stop()
-                            }
-                        }
-                    }
+                    startAutoTorch(it)
                 }
 
                 // Register the torch listener
@@ -698,6 +680,30 @@ class MobileScanner(
         analysisExecutor.shutdown()
         // Create a new executor for potential restart
         analysisExecutor = Executors.newSingleThreadExecutor()
+    }
+
+    private fun startAutoTorch(camera: Camera) {
+        val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
+        val candidate = AutoTorch(sensorManager) { enabled, onFailure ->
+            val future = this.camera?.cameraControl?.enableTorch(enabled)
+            if (future == null) onFailure() else future.onFailure(onFailure)
+        }
+
+        // Without a light sensor, the torch state is reported as is.
+        if (!candidate.start()) {
+            return
+        }
+
+        autoTorch = candidate
+
+        // The torch is turned off while the camera is closed, so only listen while it is open.
+        camera.cameraInfo.cameraState.observe(activity as LifecycleOwner) { state ->
+            when (state.type) {
+                CameraState.Type.OPEN -> autoTorch?.resume()
+                CameraState.Type.OPENING -> {}
+                else -> autoTorch?.stop()
+            }
+        }
     }
 
     private fun stopAutoTorch() {
