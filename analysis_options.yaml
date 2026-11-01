@@ -9,3 +9,6 @@ analyzer:
     - android/**
     - ios/**
     - macos/**
+
+formatter:
+  page_width: 80
