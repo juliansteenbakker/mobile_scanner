@@ -16,6 +16,7 @@ import androidx.annotation.VisibleForTesting
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
+import androidx.camera.core.CameraState
 import androidx.camera.core.CameraXConfig
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ExperimentalLensFacing
@@ -525,9 +526,25 @@ class MobileScanner(
             camera?.let {
                 if (autoTorchEnabled && !torch && it.cameraInfo.hasFlashUnit()) {
                     val sensorManager = activity.getSystemService(Context.SENSOR_SERVICE) as? SensorManager
-                    autoTorch = AutoTorch(sensorManager) { enabled ->
-                        camera?.cameraControl?.enableTorch(enabled)
+                    autoTorch = AutoTorch(sensorManager) { enabled, onFailure ->
+                        val future = camera?.cameraControl?.enableTorch(enabled)
+                        if (future == null) {
+                            onFailure()
+                            return@AutoTorch
+                        }
+                        future.addListener({
+                            try {
+                                future.get()
+                            } catch (_: Exception) {
+                                onFailure()
+                            }
+                        }, mainExecutor)
                     }.apply { start() }
+
+                    // The torch is turned off while the camera is closed, so restore it on reopen.
+                    it.cameraInfo.cameraState.observe(activity as LifecycleOwner) { state ->
+                        if (state.type == CameraState.Type.OPEN) autoTorch?.reapply()
+                    }
                 }
 
                 // Register the torch listener
@@ -554,6 +571,7 @@ class MobileScanner(
                             it.cameraControl.setZoomRatio(initialZoom.toFloat())
                         }
                     } catch (e: Exception) {
+                        stopAutoTorch()
                         mobileScannerErrorCallback(ZoomNotInRange())
 
                         return@addListener

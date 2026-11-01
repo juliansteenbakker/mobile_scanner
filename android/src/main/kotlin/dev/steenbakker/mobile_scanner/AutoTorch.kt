@@ -13,7 +13,7 @@ import androidx.annotation.VisibleForTesting
  */
 internal class AutoTorch(
     private val sensorManager: SensorManager?,
-    private val setTorch: (enabled: Boolean) -> Unit,
+    private val setTorch: (enabled: Boolean, onFailure: () -> Unit) -> Unit,
 ) : SensorEventListener {
 
     companion object {
@@ -27,7 +27,11 @@ internal class AutoTorch(
     var isEnabled = false
         private set
 
-    private var torchEnabled: Boolean? = null
+    /** The torch state the light level asks for. */
+    private var wanted: Boolean? = null
+
+    /** The torch state last sent to the camera, or null if it is unknown or the request failed. */
+    private var applied: Boolean? = null
 
     /**
      * Start listening to the light sensor.
@@ -37,7 +41,6 @@ internal class AutoTorch(
     fun start(): Boolean {
         val lightSensor = sensorManager?.getDefaultSensor(Sensor.TYPE_LIGHT) ?: return false
 
-        torchEnabled = null
         isEnabled = sensorManager.registerListener(this, lightSensor, SensorManager.SENSOR_DELAY_NORMAL)
 
         return isEnabled
@@ -48,6 +51,16 @@ internal class AutoTorch(
 
         sensorManager?.unregisterListener(this)
         isEnabled = false
+    }
+
+    /**
+     * Send the wanted torch state again, for when the camera has reopened.
+     *
+     * The light sensor only reports changes, so a steady light level would never trigger a retry.
+     */
+    fun reapply() {
+        applied = null
+        sendTorch()
     }
 
     override fun onSensorChanged(event: SensorEvent) {
@@ -64,9 +77,17 @@ internal class AutoTorch(
             else -> return
         }
 
-        if (enable != torchEnabled) {
-            torchEnabled = enable
-            setTorch(enable)
+        wanted = enable
+        sendTorch()
+    }
+
+    private fun sendTorch() {
+        val enable = wanted ?: return
+        if (enable == applied) return
+
+        applied = enable
+        setTorch(enable) {
+            if (applied == enable) applied = null
         }
     }
 }

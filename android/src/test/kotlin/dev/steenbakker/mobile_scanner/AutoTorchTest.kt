@@ -13,7 +13,14 @@ import kotlin.test.assertFalse
 internal class AutoTorchTest {
 
     private val torchCalls = mutableListOf<Boolean>()
-    private val autoTorch = AutoTorch(null) { torchCalls.add(it) }
+    private var failNextCall = false
+    private val autoTorch = AutoTorch(null) { enabled, onFailure ->
+        torchCalls.add(enabled)
+        if (failNextCall) {
+            failNextCall = false
+            onFailure()
+        }
+    }
 
     @Test
     fun onLightChanged_dark_turnsTorchOn() {
@@ -54,6 +61,30 @@ internal class AutoTorchTest {
         autoTorch.onLightChanged(0f)
 
         assertEquals(listOf(true), torchCalls)
+    }
+
+    @Test
+    fun onLightChanged_afterFailedCall_retries() {
+        failNextCall = true
+        autoTorch.onLightChanged(10f)
+        autoTorch.onLightChanged(5f)
+
+        assertEquals(listOf(true, true), torchCalls)
+    }
+
+    @Test
+    fun reapply_resendsWantedState() {
+        autoTorch.onLightChanged(10f)
+        autoTorch.reapply()
+
+        assertEquals(listOf(true, true), torchCalls)
+    }
+
+    @Test
+    fun reapply_withoutReading_doesNothing() {
+        autoTorch.reapply()
+
+        assertEquals(emptyList(), torchCalls)
     }
 
     @Test
