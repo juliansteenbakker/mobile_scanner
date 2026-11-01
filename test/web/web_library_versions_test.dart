@@ -1,3 +1,7 @@
+// Reads package.json from disk, which needs dart:io.
+@TestOn('vm')
+library;
+
 import 'dart:convert';
 import 'dart:io';
 
