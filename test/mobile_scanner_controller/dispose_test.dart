@@ -1,7 +1,13 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/src/enums/camera_facing.dart';
+import 'package:mobile_scanner/src/enums/mobile_scanner_authorization_state.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
+import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
 import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
@@ -84,6 +90,314 @@ void main() {
         expect(platform.disposeCalls, 1);
       },
     );
+
+    test(
+      'a controller disposed while starting releases the platform '
+      'once the start completes',
+      () async {
+        final startGate = Completer<void>();
+        platform.startGate = startGate;
+
+        final controller = MobileScannerController(autoStart: false)..attach();
+        final start = controller.start();
+
+        await controller.dispose();
+        final disposeCallsBeforeStartCompleted = platform.disposeCalls;
+
+        startGate.complete();
+        await start;
+
+        expect(platform.disposeCalls, disposeCallsBeforeStartCompleted + 1);
+      },
+    );
+
+    test(
+      'a controller disposed while starting does not take over '
+      'the camera session of another controller',
+      () async {
+        final startGate = Completer<void>();
+        platform.startGate = startGate;
+
+        final first = MobileScannerController(autoStart: false)..attach();
+        final firstStart = first.start();
+
+        // The second start waits until the first one has completed.
+        final second = MobileScannerController(autoStart: false)..attach();
+        final secondStart = second.start();
+        await first.dispose();
+
+        startGate.complete();
+        await Future.wait([firstStart, secondStart]);
+
+        expect(second.value.isRunning, isTrue);
+
+        final disposeCalls = platform.disposeCalls;
+        await second.dispose();
+
+        expect(
+          platform.stopCalls,
+          1,
+          reason: 'only the early stop from disposing the first controller',
+        );
+        expect(platform.disposeCalls, disposeCalls + 1);
+      },
+    );
+
+    test('disposing a controller while starting stops the platform '
+        'right away', () async {
+      final startGate = Completer<void>();
+      platform.startGate = startGate;
+
+      final controller = MobileScannerController(autoStart: false)..attach();
+      final start = controller.start();
+
+      await controller.dispose();
+
+      expect(
+        platform.stopCalls,
+        1,
+        reason: 'a platform that can abort the start must be told now',
+      );
+
+      startGate.complete();
+      await start;
+    });
+
+    test('a controller waiting for the camera session does not receive '
+        'barcodes from the session of the previous holder', () async {
+      final startGate = Completer<void>();
+      platform.startGate = startGate;
+
+      final first = MobileScannerController(autoStart: false)..attach();
+      final firstStart = first.start();
+
+      final second = MobileScannerController(autoStart: false)..attach();
+      final received = <BarcodeCapture>[];
+      final subscription = second.barcodes.listen(received.add);
+      final secondStart = second.start();
+
+      platform.barcodes.add(const BarcodeCapture());
+      await pumpEventQueue();
+
+      expect(
+        received,
+        isEmpty,
+        reason: 'the second controller does not hold the session yet',
+      );
+
+      startGate.complete();
+      await Future.wait([firstStart, secondStart]);
+      await subscription.cancel();
+      await first.dispose();
+      await second.dispose();
+    });
+
+    test('an error releasing the session after a disposed start '
+        'does not escape start()', () async {
+      final startGate = Completer<void>();
+      platform
+        ..startGate = startGate
+        ..disposeError = StateError('release failed');
+
+      final controller = MobileScannerController(autoStart: false)..attach();
+      final start = controller.start();
+
+      await controller.dispose();
+      startGate.complete();
+
+      await expectLater(start, completes);
+    });
+  });
+
+  group('dispose while starting with the method channel', () {
+    late MethodChannelMobileScanner channelPlatform;
+
+    // Responses to start and updateScanWindow that the test completes itself.
+    final pendingStarts = <Completer<Object?>>[];
+    final pendingScanWindows = <Completer<Object?>>[];
+    final nativeCalls = <String>[];
+    var holdResponses = true;
+    var nextTextureId = 1;
+
+    void holdChannelResponses() {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channelPlatform.methodChannel, (
+            methodCall,
+          ) {
+            nativeCalls.add(methodCall.method);
+            final response = Completer<Object?>();
+
+            switch (methodCall.method) {
+              case MethodChannelMobileScanner.kAuthorizationStateMethodName:
+                response.complete(
+                  MobileScannerAuthorizationState.authorized.rawValue,
+                );
+              case MethodChannelMobileScanner.kStartCameraMethodName
+                  when holdResponses:
+                pendingStarts.add(response);
+              case MethodChannelMobileScanner.kUpdateScanWindowMethodName
+                  when holdResponses:
+                pendingScanWindows.add(response);
+              default:
+                response.complete();
+            }
+
+            return response.future;
+          });
+    }
+
+    // Complete the held responses in the worst order: the native starts reply
+    // before the updateScanWindow call that releases the camera session.
+    Future<void> releaseHeldResponses() async {
+      await pumpEventQueue();
+
+      while (pendingStarts.isNotEmpty || pendingScanWindows.isNotEmpty) {
+        if (pendingStarts.isNotEmpty) {
+          pendingStarts.removeAt(0).complete(<String, Object?>{
+            'textureId': nextTextureId++,
+            'cameraDirection': CameraFacing.back.rawValue,
+            'numberOfCameras': 1,
+            'currentTorchState': TorchState.unavailable.rawValue,
+            'size': <String, Object?>{'width': 1920.0, 'height': 1080.0},
+          });
+        } else {
+          pendingScanWindows.removeAt(0).complete();
+        }
+
+        await pumpEventQueue();
+      }
+    }
+
+    void expectCameraRunning(MobileScannerController controller) {
+      expect(controller.value.error, isNull);
+      expect(controller.value.isRunning, isTrue);
+      expect(channelPlatform.buildCameraView(), isA<Texture>());
+      expect(
+        nativeCalls.last,
+        MethodChannelMobileScanner.kStartCameraMethodName,
+      );
+    }
+
+    setUp(() {
+      // Use the iOS response format,
+      // which does not need an Android surface producer configuration.
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      channelPlatform = MethodChannelMobileScanner();
+      MobileScannerPlatform.instance = channelPlatform;
+      pendingStarts.clear();
+      pendingScanWindows.clear();
+      nativeCalls.clear();
+      holdResponses = true;
+      nextTextureId = 1;
+    });
+
+    tearDown(() {
+      debugDefaultTargetPlatformOverride = null;
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(channelPlatform.methodChannel, null);
+    });
+
+    test(
+      'the next controller can start after a controller '
+      'was disposed while starting',
+      () async {
+        final firstNativeStart = Completer<void>();
+        var nativeStartCalls = 0;
+
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+            .setMockMethodCallHandler(channelPlatform.methodChannel, (
+              methodCall,
+            ) async {
+              switch (methodCall.method) {
+                case MethodChannelMobileScanner.kAuthorizationStateMethodName:
+                  return MobileScannerAuthorizationState.authorized.rawValue;
+                case MethodChannelMobileScanner.kStartCameraMethodName:
+                  nativeStartCalls++;
+                  if (nativeStartCalls == 1) {
+                    await firstNativeStart.future;
+                  }
+
+                  return <String, Object?>{
+                    'textureId': nativeStartCalls,
+                    'cameraDirection': CameraFacing.back.rawValue,
+                    'numberOfCameras': 1,
+                    'currentTorchState': TorchState.unavailable.rawValue,
+                    'size': <String, Object?>{
+                      'width': 1920.0,
+                      'height': 1080.0,
+                    },
+                  };
+              }
+
+              return null;
+            });
+
+        final first = MobileScannerController(autoStart: false)..attach();
+        final firstStart = first.start();
+        await first.dispose();
+
+        firstNativeStart.complete();
+        await firstStart;
+
+        final second = MobileScannerController(autoStart: false)..attach();
+        addTearDown(second.dispose);
+
+        await second.start();
+
+        expect(second.value.error, isNull);
+        expect(second.value.isRunning, isTrue);
+      },
+    );
+
+    test(
+      'releasing a controller that was disposed while starting '
+      'does not stop the camera of the next controller',
+      () async {
+        holdChannelResponses();
+
+        // The scanner is closed and reopened while the camera is starting.
+        final first = MobileScannerController(autoStart: false)..attach();
+        final firstStart = first.start();
+        await pumpEventQueue();
+
+        final firstDispose = first.dispose();
+        final second = MobileScannerController(autoStart: false)..attach();
+        addTearDown(second.dispose);
+        final secondStart = second.start();
+
+        await releaseHeldResponses();
+        holdResponses = false;
+        await Future.wait([firstStart, firstDispose, secondStart]);
+
+        expectCameraRunning(second);
+      },
+    );
+
+    test(
+      'disposing a running controller does not fail '
+      'the start of the next controller',
+      () async {
+        holdChannelResponses();
+
+        final first = MobileScannerController(autoStart: false)..attach();
+        final firstStart = first.start();
+        await releaseHeldResponses();
+        await firstStart;
+
+        // The next controller starts while the session of the first one
+        // is still being released.
+        final firstDispose = first.dispose();
+        final second = MobileScannerController(autoStart: false)..attach();
+        addTearDown(second.dispose);
+        final secondStart = second.start();
+
+        await releaseHeldResponses();
+        holdResponses = false;
+        await Future.wait([firstDispose, secondStart]);
+
+        expectCameraRunning(second);
+      },
+    );
   });
 }
 
@@ -91,8 +405,18 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   int disposeCalls = 0;
   int stopCalls = 0;
 
+  /// If set, [start] does not complete until this completer completes.
+  Completer<void>? startGate;
+
+  /// Barcodes emitted by the platform session.
+  final StreamController<BarcodeCapture?> barcodes =
+      StreamController.broadcast();
+
+  /// If set, [dispose] throws this error.
+  Object? disposeError;
+
   @override
-  Stream<BarcodeCapture?> get barcodesStream => const Stream.empty();
+  Stream<BarcodeCapture?> get barcodesStream => barcodes.stream;
 
   @override
   Stream<TorchState> get torchStateStream =>
@@ -102,15 +426,15 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   Stream<double> get zoomScaleStateStream => Stream.value(1);
 
   @override
-  Future<MobileScannerViewAttributes> start(StartOptions startOptions) {
-    return Future.value(
-      const MobileScannerViewAttributes(
-        cameraDirection: CameraFacing.back,
-        currentTorchMode: TorchState.unavailable,
-        size: Size(200, 200),
-        numberOfCameras: 3,
-        initialDeviceOrientation: DeviceOrientation.portraitUp,
-      ),
+  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    await startGate?.future;
+
+    return const MobileScannerViewAttributes(
+      cameraDirection: CameraFacing.back,
+      currentTorchMode: TorchState.unavailable,
+      size: Size(200, 200),
+      numberOfCameras: 3,
+      initialDeviceOrientation: DeviceOrientation.portraitUp,
     );
   }
 
@@ -123,6 +447,11 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
   @override
   Future<void> dispose() {
     disposeCalls++;
+
+    if (disposeError case final error?) {
+      return Future.error(error);
+    }
+
     return Future.value();
   }
 }
