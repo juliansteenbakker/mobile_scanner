@@ -46,6 +46,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
   /// The internal barcode reader.
   BarcodeReader? _barcodeReader;
 
+  /// Incremented by every [stop], so an in-flight [start] can detect it.
+  int _teardownGeneration = 0;
+
   /// The stream controller for the barcode stream.
   final StreamController<BarcodeCapture> _barcodesController =
       StreamController.broadcast();
@@ -461,119 +464,187 @@ class MobileScannerWeb extends MobileScannerPlatform {
       await stop();
     }
 
+    // Captured after the reset above, which is part of this start.
+    final generation = _teardownGeneration;
+
     // Select the barcode reader based on the preferred backend.
+    final BarcodeReader reader;
     switch (_preferredWebReader) {
       case WebBarcodeReader.barcodeDetector:
-        _barcodeReader = BarcodeDetectorReader();
+        reader = BarcodeDetectorReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.zxingWasm:
-        _barcodeReader = ZXingWasmBarcodeReader();
+        reader = ZXingWasmBarcodeReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.zxingJs:
-        _barcodeReader = ZXingBarcodeReader();
+        reader = ZXingBarcodeReader();
         _activeWebReader = _preferredWebReader;
       case WebBarcodeReader.auto:
         // Use the native BarcodeDetector API when available (Chrome/Edge/Safari
         // 17+), fall back to zxing-wasm for Firefox and older browsers.
         if (await BarcodeDetectorReader.isSupported()) {
-          _barcodeReader = BarcodeDetectorReader();
+          reader = BarcodeDetectorReader();
           _activeWebReader = WebBarcodeReader.barcodeDetector;
         } else {
-          _barcodeReader = ZXingWasmBarcodeReader();
+          reader = ZXingWasmBarcodeReader();
           _activeWebReader = WebBarcodeReader.zxingWasm;
         }
     }
 
-    await _barcodeReader?.maybeLoadLibrary(
-      alternateScriptUrl: _alternateScriptUrl,
-    );
+    _barcodeReader = reader;
 
-    // Request camera permissions and prepare the video stream.
-    final videoStream = await _prepareVideoStream(
-      startOptions.cameraDirection,
-      cameraResolution: startOptions.cameraResolution,
-    );
+    // A stop() that lands before the reader owns the stream has nothing to
+    // release, so this start releases it if torn down or failing.
+    MediaStream? acquiredStream;
 
     try {
-      // Clear the existing barcodes.
-      if (!_barcodesController.isClosed) {
-        _barcodesController.add(const BarcodeCapture());
+      await reader.maybeLoadLibrary(alternateScriptUrl: _alternateScriptUrl);
+
+      // Loading the library can take a while; a scanner dismissed meanwhile
+      // must not go on to prompt for, and briefly light, the camera.
+      _throwIfTornDown(generation);
+
+      // Request camera permissions and prepare the video stream.
+      final videoStream = await _prepareVideoStream(
+        startOptions.cameraDirection,
+        cameraResolution: startOptions.cameraResolution,
+      );
+      acquiredStream = videoStream;
+
+      _throwIfTornDown(generation);
+
+      try {
+        // Clear the existing barcodes.
+        if (!_barcodesController.isClosed) {
+          _barcodesController.add(const BarcodeCapture());
+        }
+
+        // Listen for changes to the media track settings.
+        _barcodeReader?.setMediaTrackSettingsListener(
+          _handleMediaTrackSettingsChange,
+        );
+
+        _textureId += 1; // Request a new texture.
+
+        _videoElement = _createVideoElement(_textureId);
+
+        maybeFlipVideoPreview(_videoElement, videoStream);
+
+        await _barcodeReader?.start(
+          startOptions,
+          videoElement: _videoElement,
+          videoStream: videoStream,
+        );
+
+        // Re-apply the scan window if one was set before start() was called.
+        if (_scanWindow != null) {
+          _barcodeReader?.updateScanWindow(_scanWindow);
+        }
+      } catch (error, stackTrace) {
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            message: error.toString(),
+            details: stackTrace.toString(),
+          ),
+        );
       }
 
-      // Listen for changes to the media track settings.
-      _barcodeReader?.setMediaTrackSettingsListener(
-        _handleMediaTrackSettingsChange,
-      );
+      _throwIfTornDown(generation);
 
-      _textureId += 1; // Request a new texture.
+      final MobileScannerViewAttributes viewAttributes;
 
-      _videoElement = _createVideoElement(_textureId);
+      try {
+        _barcodesSubscription = _barcodeReader?.detectBarcodes().listen(
+          (barcode) {
+            if (_barcodesController.isClosed) {
+              return;
+            }
 
-      maybeFlipVideoPreview(_videoElement, videoStream);
+            _barcodesController.add(barcode);
+          },
+          onError: (Object error) {
+            if (_barcodesController.isClosed) {
+              return;
+            }
 
-      await _barcodeReader?.start(
-        startOptions,
-        videoElement: _videoElement,
-        videoStream: videoStream,
-      );
+            _barcodesController.addError(error);
+          },
+          // Errors are handled gracefully by forwarding them.
+          cancelOnError: false,
+        );
 
-      // Re-apply the scan window if one was set before start() was called.
-      if (_scanWindow != null) {
-        _barcodeReader?.updateScanWindow(_scanWindow);
+        final hasTorch = await _barcodeReader?.hasTorch() ?? false;
+
+        if (hasTorch && startOptions.torchEnabled) {
+          await _barcodeReader?.setTorchState(TorchState.on);
+        }
+
+        final cameraDirection = _settingsDelegate.getCameraDirection(
+          videoStream,
+        );
+
+        viewAttributes = MobileScannerViewAttributes(
+          cameraDirection: cameraDirection,
+          // The torch of a media stream is not available for video tracks.
+          // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
+          currentTorchMode: TorchState.unavailable,
+          size: _barcodeReader?.videoSize ?? Size.zero,
+        );
+      } catch (error, stackTrace) {
+        throw MobileScannerException(
+          errorCode: MobileScannerErrorCode.genericError,
+          errorDetails: MobileScannerErrorDetails(
+            message: error.toString(),
+            details: stackTrace.toString(),
+          ),
+        );
       }
-    } catch (error, stackTrace) {
-      throw MobileScannerException(
-        errorCode: MobileScannerErrorCode.genericError,
-        errorDetails: MobileScannerErrorDetails(
-          message: error.toString(),
-          details: stackTrace.toString(),
-        ),
-      );
+
+      // The torch setup awaits, so a stop can still land here.
+      _throwIfTornDown(generation);
+
+      return viewAttributes;
+    } catch (_) {
+      await _releaseAbandonedStart(reader, acquiredStream);
+      rethrow;
+    }
+  }
+
+  /// Throws if [stop] ran since the start that captured [generation] began.
+  void _throwIfTornDown(int generation) {
+    if (_teardownGeneration == generation) {
+      return;
     }
 
+    throw const MobileScannerException(
+      errorCode: MobileScannerErrorCode.controllerDisposed,
+      errorDetails: MobileScannerErrorDetails(
+        message: 'The scanner was stopped while the camera was starting.',
+      ),
+    );
+  }
+
+  /// Releases the camera acquired by a start that failed or was torn down.
+  ///
+  /// Only resets the scanner while it still holds [reader], as a newer start
+  /// may have replaced it.
+  Future<void> _releaseAbandonedStart(
+    BarcodeReader reader,
+    MediaStream? videoStream,
+  ) async {
     try {
-      _barcodesSubscription = _barcodeReader?.detectBarcodes().listen(
-        (barcode) {
-          if (_barcodesController.isClosed) {
-            return;
-          }
-
-          _barcodesController.add(barcode);
-        },
-        onError: (Object error) {
-          if (_barcodesController.isClosed) {
-            return;
-          }
-
-          _barcodesController.addError(error);
-        },
-        // Errors are handled gracefully by forwarding them.
-        cancelOnError: false,
-      );
-
-      final hasTorch = await _barcodeReader?.hasTorch() ?? false;
-
-      if (hasTorch && startOptions.torchEnabled) {
-        await _barcodeReader?.setTorchState(TorchState.on);
+      if (identical(_barcodeReader, reader)) {
+        await _barcodesSubscription?.cancel();
+        _barcodesSubscription = null;
+        await reader.stop();
+        _barcodeReader = null;
+        _activeWebReader = null;
       }
-
-      final cameraDirection = _settingsDelegate.getCameraDirection(videoStream);
-
-      return MobileScannerViewAttributes(
-        cameraDirection: cameraDirection,
-        // The torch of a media stream is not available for video tracks.
-        // See https://developer.mozilla.org/en-US/docs/Web/API/MediaTrackConstraints#instance_properties_of_video_tracks
-        currentTorchMode: TorchState.unavailable,
-        size: _barcodeReader?.videoSize ?? Size.zero,
-      );
-    } catch (error, stackTrace) {
-      throw MobileScannerException(
-        errorCode: MobileScannerErrorCode.genericError,
-        errorDetails: MobileScannerErrorDetails(
-          message: error.toString(),
-          details: stackTrace.toString(),
-        ),
-      );
+    } on Object {
+      // Keep the original start error; the camera is still released below.
+    } finally {
+      stopVideoStream(videoStream);
     }
   }
 
@@ -585,6 +656,9 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
   @override
   Future<void> stop() async {
+    // Signal any in-flight start() that its camera is no longer wanted.
+    _teardownGeneration++;
+
     // Ensure the barcode scanner is stopped, by cancelling the subscription.
     await _barcodesSubscription?.cancel();
     _barcodesSubscription = null;

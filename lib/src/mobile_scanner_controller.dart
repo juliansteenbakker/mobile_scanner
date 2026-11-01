@@ -222,6 +222,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     _platformSessionLock = null;
   }
 
+  /// The controller that currently holds the platform camera session,
+  /// or `null` if no controller holds it.
+  ///
+  /// This is only intended for use in tests.
+  @visibleForTesting
+  static MobileScannerController? get platformSessionOwner =>
+      _platformSessionOwner;
+
   void _disposeListeners() {
     unawaited(_barcodesSubscription?.cancel());
     unawaited(_torchStateSubscription?.cancel());
