@@ -12,6 +12,7 @@ import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.Surface
+import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.Camera
@@ -32,6 +33,7 @@ import androidx.camera.core.SurfaceRequest
 import androidx.camera.core.TorchState
 import androidx.camera.core.resolutionselector.ResolutionSelector
 import androidx.camera.core.resolutionselector.ResolutionStrategy
+import androidx.camera.lifecycle.ExperimentalCameraProviderConfiguration
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
@@ -64,7 +66,7 @@ class MobileScanner(
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
     private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
-    @VisibleForTesting internal val inputImageFactory: (image: Image, rotationDegrees: Int) -> InputImage = InputImage::fromMediaImage,
+    @get:VisibleForTesting internal val inputImageFactory: (image: Image, rotationDegrees: Int) -> InputImage = InputImage::fromMediaImage,
 ) {
 
     init {
@@ -98,6 +100,7 @@ class MobileScanner(
     companion object {
         // Configure the `ProcessCameraProvider` to only log errors.
         // This prevents the informational log spam from CameraX.
+        @OptIn(ExperimentalCameraProviderConfiguration::class)
         private fun configureCameraProcessProvider() {
             try {
                 val config = CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig()).apply {
@@ -123,6 +126,7 @@ class MobileScanner(
      */
     @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy ->
+        @OptIn(ExperimentalGetImage::class)
         val mediaImage = imageProxy.image
         if (mediaImage == null) {
             imageProxy.close()
