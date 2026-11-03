@@ -166,14 +166,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   // or holding, the platform session lock.
   bool _hasPendingPlatformStart = false;
   // Whether the platform is starting the camera for this controller,
-  // and was not yet told to abort that start.
-  bool _canAbortPlatformStart = false;
-  // Incremented by every stop(), so that a start() of this controller
-  // that is still pending can tell that it was cancelled.
-  int _stopGeneration = 0;
-  // Completed once a start() that was cancelled by stop() has finished,
-  // so that a later start() can wait for it instead of failing.
-  Completer<void>? _cancelledStart;
+  // as opposed to this start still waiting for the lock.
+  bool _isPlatformStarting = false;
   // This completer keeps track of whether the MobileScanner widget,
   // that is attached to this controller,
   // called its `initState()` lifecycle method.
@@ -190,8 +184,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   // See https://github.com/juliansteenbakker/mobile_scanner/issues/1631
   static MobileScannerController? _platformSessionOwner;
 
-  // Every call that changes the platform camera session is serialized,
-  // so that one controller cannot stop or release a session
+  // Starting, stopping, pausing and releasing the platform camera session
+  // are serialized, so that one controller cannot stop or release a session
   // that another controller is starting at the same time.
   static Future<void>? _platformSessionLock;
 
@@ -217,49 +211,22 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
+  bool get _isOwnedByOtherController =>
+      _platformSessionOwner != null && !identical(_platformSessionOwner, this);
+
   // Release the platform camera session,
   // unless another controller currently holds it.
   Future<void> _releasePlatformSession() async {
     // If another controller currently holds the platform camera session,
     // disposing the platform resources would break that controller.
     // In that case only this controller's own resources are cleaned up.
-    if (_platformSessionOwner != null &&
-        !identical(_platformSessionOwner, this)) {
+    if (_isOwnedByOtherController) {
       return;
     }
 
     _platformSessionOwner = null;
 
     await MobileScannerPlatform.instance.dispose();
-  }
-
-  // Stop the platform camera session.
-  //
-  // Stopping releases the platform camera session,
-  // so that another controller can start it.
-  // Pausing does not, as a paused session is resumed by its own owner.
-  Future<void> _stopPlatformSession() {
-    if (identical(_platformSessionOwner, this)) {
-      _platformSessionOwner = null;
-    }
-
-    return MobileScannerPlatform.instance.stop();
-  }
-
-  // Tell the platform to stop right away if it is starting the camera for
-  // this controller, so that a platform that can abort a start in progress,
-  // such as the web, does so before the camera is acquired.
-  //
-  // A start that is still waiting for the lock is not aborted this way,
-  // as the platform may then be busy with another controller.
-  void _abortPlatformStart() {
-    if (!_canAbortPlatformStart || _platformSessionOwner != null) {
-      return;
-    }
-
-    _canAbortPlatformStart = false;
-
-    unawaited(MobileScannerPlatform.instance.stop().catchError((Object _) {}));
   }
 
   /// Reset the shared platform camera session owner.
@@ -502,12 +469,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If the permission is denied on iOS, MacOS or Web, there is no way to
   /// request it again.
-  ///
-  /// If [stop] is called before this method completes,
-  /// the camera is not started, and this method completes without an error.
-  /// Calling [start] again after such a [stop] waits for the cancelled start
-  /// to complete, and then starts the camera,
-  /// unless the controller was stopped again or disposed in the meantime.
   Future<void> start({
     CameraFacing? cameraDirection,
     CameraLensType? cameraLensType,
@@ -521,10 +482,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       );
     }
 
-    // A stop() that is called before this start completes cancels it.
-    final stopGeneration = _stopGeneration;
-    bool isCancelled() => stopGeneration != _stopGeneration;
-
     // If start was called before the MobileScanner widget
     // had a chance to call its initState method,
     // wait for it to be called, using a timeout.
@@ -535,11 +492,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       await _isAttachedCompleter.future
           .timeout(const Duration(milliseconds: 500))
           .catchError((Object error, StackTrace stackTrace) {
-            // A start that was cancelled in the meantime does not fail.
-            if (isCancelled()) {
-              return;
-            }
-
             throw MobileScannerException(
               errorCode: MobileScannerErrorCode.controllerNotAttached,
               errorDetails: MobileScannerErrorDetails(
@@ -559,12 +511,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           ),
         );
       }
-
-      // Do not start the camera if the controller was stopped
-      // while waiting for the widget to be attached.
-      if (isCancelled()) {
-        return;
-      }
     }
 
     if (cameraDirection == CameraFacing.unknown) {
@@ -573,23 +519,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         errorDetails: MobileScannerErrorDetails(
           message: 'CameraFacing.unknown is not a valid camera direction.',
         ),
-      );
-    }
-
-    // A start after a stop() that cancelled a pending start
-    // waits for that start to finish, and then starts the camera again.
-    if (_cancelledStart case final cancelledStart?) {
-      await cancelledStart.future;
-
-      // Do not start the camera if it was stopped again,
-      // or disposed, in the meantime.
-      if (_isDisposed || isCancelled()) {
-        return;
-      }
-
-      return await start(
-        cameraDirection: cameraDirection,
-        cameraLensType: cameraLensType,
       );
     }
 
@@ -631,7 +560,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
       final viewAttributes = await _lockPlatformSession(() async {
         try {
-          if (_isDisposed || isCancelled()) {
+          if (_isDisposed) {
             return null;
           }
 
@@ -639,24 +568,11 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           // receive events from the session of the previous holder.
           _setupListeners();
 
-          _canAbortPlatformStart = true;
+          _isPlatformStarting = true;
 
           final attributes = await MobileScannerPlatform.instance.start(
             options,
           );
-
-          // stop() leaves stopping the camera to a pending start,
-          // so that no other controller can start in between.
-          if (isCancelled() && !_isDisposed) {
-            try {
-              await _stopPlatformSession();
-            } on Object {
-              // Nothing is waiting for a cancelled start,
-              // and stop() has already returned.
-            }
-
-            return null;
-          }
 
           if (!_isDisposed) {
             // This controller now holds the platform camera session.
@@ -666,7 +582,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           return attributes;
         } finally {
           _hasPendingPlatformStart = false;
-          _canAbortPlatformStart = false;
+          _isPlatformStarting = false;
 
           // dispose() leaves releasing the session to a pending start.
           if (_isDisposed) {
@@ -681,12 +597,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       });
 
       if (viewAttributes == null) {
-        // A start that was cancelled by stop() leaves the camera stopped.
-        if (!_isDisposed) {
-          _disposeListeners();
-          value = value.copyWith(isStarting: false);
-        }
-
         return;
       }
 
@@ -706,15 +616,10 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
         );
       }
     } on MobileScannerException catch (error) {
-      if (isCancelled() && !_isDisposed) {
-        // A cancelled start does not report an error,
-        // which the cancellation itself may have caused.
-        _disposeListeners();
-        value = value.copyWith(isStarting: false);
-      } else if (!_isDisposed) {
-        // The initialization finished with an error.
-        // To avoid stale values, reset the camera direction,
-        // output size, torch state and zoom scale to the defaults.
+      // The initialization finished with an error.
+      // To avoid stale values, reset the camera direction,
+      // output size, torch state and zoom scale to the defaults.
+      if (!_isDisposed) {
         value = value.copyWith(
           cameraDirection: CameraFacing.unknown,
           isInitialized: true,
@@ -726,10 +631,6 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           zoomScale: 1,
         );
       }
-    } finally {
-      // Let a start that waits for this cancelled start continue.
-      _cancelledStart?.complete();
-      _cancelledStart = null;
     }
   }
 
@@ -737,34 +638,21 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// After calling this method, the camera can be restarted using [start].
   ///
-  /// If the camera is still starting, that start is cancelled,
-  /// and the camera is stopped again as soon as the platform has started it.
-  /// This method does not wait for that start to complete.
-  ///
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
-    // Cancel a start() that is still pending.
-    _stopGeneration++;
-
-    // A pending start stops the camera itself once it gets the lock,
-    // so that stop() does not wait for the camera to finish starting.
-    if (_hasPendingPlatformStart) {
-      _cancelledStart ??= Completer<void>();
-      _abortPlatformStart();
-
-      return;
-    }
-
-    await _stopRunningCamera();
-  }
-
-  // Stop the camera if it is running.
-  //
-  // Unlike stop(), this does not cancel a pending start,
-  // as switching cameras starts the camera again right after.
-  Future<void> _stopRunningCamera() async {
     if (_stop()) {
-      await _lockPlatformSession(_stopPlatformSession);
+      await _lockPlatformSession(() async {
+        if (_isOwnedByOtherController) {
+          return;
+        }
+
+        // Stopping releases the platform camera session,
+        // so that another controller can start it.
+        // Pausing does not, as a paused session is resumed by its own owner.
+        _platformSessionOwner = null;
+
+        await MobileScannerPlatform.instance.stop();
+      });
     }
   }
 
@@ -773,13 +661,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// This method stops to update camera frame and scan barcodes.
   /// After calling this method, the camera can be restarted using [start].
   ///
-  /// Does nothing if the camera is already paused or stopped,
-  /// or if it is still starting, in which case that start completes as usual.
+  /// Does nothing if the camera is already paused or stopped.
   Future<void> pause() async {
     if (_stop()) {
-      await _lockPlatformSession(
-        () => MobileScannerPlatform.instance.pause(),
-      );
+      await _lockPlatformSession(() async {
+        if (_isOwnedByOtherController) {
+          return;
+        }
+
+        await MobileScannerPlatform.instance.pause();
+      });
     }
   }
 
@@ -833,7 +724,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    await _stopRunningCamera();
+    await stop();
 
     switch (value.cameraDirection) {
       case CameraFacing.front:
@@ -896,7 +787,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    await _stopRunningCamera();
+    await stop();
     await start(
       cameraDirection: value.cameraDirection,
       cameraLensType: nextLens,
@@ -923,7 +814,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
       return;
     }
 
-    await _stopRunningCamera();
+    await stop();
     await start(
       cameraDirection: targetDirection,
       cameraLensType: lensType,
@@ -960,22 +851,12 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   ///
   /// If [window] is null, the scan window will be reset to the full camera
   /// preview.
-  ///
-  /// The update waits for pending changes to the camera session,
-  /// such as a pending [start], to complete.
   Future<void> updateScanWindow(Rect? window) async {
     if (_isDisposed || !value.isInitialized) {
       return;
     }
 
-    await _lockPlatformSession(() async {
-      // The controller may have been disposed while waiting for the lock.
-      if (_isDisposed) {
-        return;
-      }
-
-      await MobileScannerPlatform.instance.updateScanWindow(window);
-    });
+    await MobileScannerPlatform.instance.updateScanWindow(window);
   }
 
   /// Get the set of supported camera lens types for the current device.
@@ -1081,7 +962,15 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     // A pending start releases the session itself once it gets the lock,
     // so that dispose() does not wait for the camera to finish starting.
     if (_hasPendingPlatformStart) {
-      _abortPlatformStart();
+      // Stopping now lets a platform that can abort a start in progress,
+      // such as the web, do so before the camera is acquired.
+      // While this start still waits for the lock, the platform is busy with
+      // another controller's session, which must not be aborted.
+      if (_isPlatformStarting && _platformSessionOwner == null) {
+        unawaited(
+          MobileScannerPlatform.instance.stop().catchError((Object _) {}),
+        );
+      }
 
       return;
     }

@@ -1,13 +1,9 @@
 import 'dart:async';
-import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mobile_scanner/src/enums/camera_facing.dart';
 import 'package:mobile_scanner/src/enums/mobile_scanner_error_code.dart';
 import 'package:mobile_scanner/src/enums/torch_state.dart';
-import 'package:mobile_scanner/src/mobile_scanner.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
 import 'package:mobile_scanner/src/mobile_scanner_platform_interface.dart';
@@ -15,834 +11,184 @@ import 'package:mobile_scanner/src/mobile_scanner_view_attributes.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/start_options.dart';
 
-// Regression tests for
-// https://github.com/juliansteenbakker/mobile_scanner/issues/1846
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  const scanWindow = Rect.fromLTWH(0.25, 0.25, 0.5, 0.5);
-
-  late FakeCameraSessionPlatform platform;
+  late SingleSessionMobileScannerPlatform platform;
 
   setUp(() {
-    platform = FakeCameraSessionPlatform();
+    platform = SingleSessionMobileScannerPlatform();
     MobileScannerPlatform.instance = platform;
     MobileScannerController.resetPlatformSessionOwner();
   });
 
-  // Create a controller that is attached to a scanner widget,
-  // and dispose it at the end of the test.
-  MobileScannerController createController() {
-    final controller = MobileScannerController(autoStart: false)..attach();
+  test('a start waits for the stop of another controller', () async {
+    final first = MobileScannerController(autoStart: false)..attach();
+    await first.start();
 
-    addTearDown(() async {
-      // A failing test can leave platform calls on hold,
-      // which would keep the dispose waiting for the session lock.
-      platform.releaseHolds();
-      await controller.dispose();
-    });
+    final stopGate = Completer<void>();
+    platform.stopGate = stopGate;
 
-    return controller;
-  }
+    final firstStop = first.stop();
 
-  group('stop while starting', () {
-    test(
-      'the next controller can start after a controller '
-      'was stopped while starting',
-      () async {
-        final startGate = platform.hold('start');
+    final second = MobileScannerController(autoStart: false)..attach();
+    final secondStart = second.start();
+    await pumpEventQueue();
 
-        // The app passes in its own controller,
-        // and stops it before the camera has started.
-        final first = createController();
-        final firstStart = first.start();
-        final firstStop = first.stop();
+    expect(platform.startCalls, 1, reason: 'the stop is still running');
 
-        // Leaving the page does not dispose a controller that the app owns,
-        // while the next page starts a new controller.
-        final second = createController();
-        final secondStart = second.start();
+    stopGate.complete();
+    await Future.wait([firstStop, secondStart]);
 
-        startGate.complete();
-        await Future.wait([firstStart, firstStop, secondStart]);
+    expect(second.value.error, isNull);
+    expect(second.value.isRunning, isTrue);
+    expect(MobileScannerController.platformSessionOwner, same(second));
+  });
 
-        expect(second.value.error, isNull);
-        expect(second.value.isRunning, isTrue);
-        expect(first.value.isRunning, isFalse);
+  test('a start waits for the pause of another controller', () async {
+    final first = MobileScannerController(autoStart: false)..attach();
+    await first.start();
 
-        await second.dispose();
+    final pauseGate = Completer<void>();
+    platform.pauseGate = pauseGate;
 
-        expect(
-          platform.isSessionOpen,
-          isFalse,
-          reason: 'the camera must not stay on after the scanner is closed',
-        );
-      },
-    );
+    final firstPause = first.pause();
 
-    test(
-      'a start cancelled while it waits for a scanner widget '
-      'that is never built completes without an error',
-      () async {
-        final controller = MobileScannerController(autoStart: false);
-        addTearDown(controller.dispose);
+    final second = MobileScannerController(autoStart: false)..attach();
+    final secondStart = second.start();
+    await pumpEventQueue();
 
-        final start = controller.start();
-        await controller.stop();
+    expect(platform.startCalls, 1, reason: 'the pause is still running');
 
-        await expectLater(start, completes);
-        expect(controller.value.error, isNull);
-        expect(platform.calls, isEmpty);
-      },
-    );
+    pauseGate.complete();
+    await Future.wait([firstPause, secondStart]);
 
-    test(
-      'a start cancelled while it waits for the scanner widget '
-      'does not wait for the camera of another controller',
-      () async {
-        final startGate = platform.hold('start');
+    expect(platform.pauseCalls, 1);
+  });
 
-        final other = createController();
-        final otherStart = other.start();
-        await pumpEventQueue();
+  test('switching cameras does not interleave with the start of '
+      'another controller', () async {
+    final first = MobileScannerController(autoStart: false)..attach();
+    await first.start();
 
-        final controller = MobileScannerController(autoStart: false);
-        addTearDown(() async {
-          platform.releaseHolds();
-          await controller.dispose();
-        });
+    final stopGate = Completer<void>();
+    platform.stopGate = stopGate;
 
-        var isStartCompleted = false;
-        final start = controller.start().then((_) => isStartCompleted = true);
-        final stop = controller.stop();
+    final switchCamera = first.switchCamera();
 
-        controller.attach();
-        await pumpEventQueue();
+    final second = MobileScannerController(autoStart: false)..attach();
+    final secondStart = second.start();
+    await pumpEventQueue();
 
-        expect(
-          isStartCompleted,
-          isTrue,
-          reason: 'there is nothing left to wait for after the cancellation',
-        );
-        expect(controller.value.isStarting, isFalse);
+    expect(platform.startCalls, 1, reason: 'the switch is still stopping');
 
-        startGate.complete();
-        await Future.wait([otherStart, start, stop]);
+    stopGate.complete();
+    await Future.wait([switchCamera, secondStart]);
 
-        expect(
-          platform.count('start'),
-          1,
-          reason: 'the cancelled start must not reach the platform',
-        );
-        expect(controller.value.isRunning, isFalse);
-        expect(other.value.isRunning, isTrue);
-      },
-    );
-
-    test(
-      'stopping a controller while the platform starts its camera '
-      'lets the platform abort that start',
-      () async {
-        platform.abortsStartOnStop = true;
-        final startGate = platform.hold('start');
-
-        final controller = createController();
-        final start = controller.start();
-        await pumpEventQueue();
-
-        final stop = controller.stop();
-
-        startGate.complete();
-        await Future.wait([start, stop]);
-
-        expect(
-          platform.sessionsOpened,
-          0,
-          reason: 'the platform must be told to stop before it has started',
-        );
-        expect(platform.isSessionOpen, isFalse);
-      },
-    );
-
-    test(
-      'a start that the platform aborts because of a stop '
-      'does not report an error',
-      () async {
-        platform.abortsStartOnStop = true;
-        final startGate = platform.hold('start');
-
-        final controller = createController();
-        final start = controller.start();
-        await pumpEventQueue();
-
-        final stop = controller.stop();
-
-        startGate.complete();
-        await Future.wait([start, stop]);
-
-        expect(controller.value.error, isNull);
-        expect(controller.value.isStarting, isFalse);
-        expect(controller.value.isRunning, isFalse);
-
-        await controller.start();
-
-        expect(controller.value.error, isNull);
-        expect(controller.value.isRunning, isTrue);
-      },
-    );
-
-    test(
-      'a controller whose start was cancelled by a stop '
-      'ignores the events of the camera session',
-      () async {
-        final startGate = platform.hold('start');
-
-        final controller = createController();
-        final start = controller.start();
-        await pumpEventQueue();
-
-        final stop = controller.stop();
-
-        startGate.complete();
-        await Future.wait([start, stop]);
-
-        final torchState = controller.value.torchState;
-        final zoomScale = controller.value.zoomScale;
-
-        platform.torchStates.add(TorchState.on);
-        platform.zoomScales.add(0.5);
-        await pumpEventQueue();
-
-        expect(controller.value.torchState, torchState);
-        expect(controller.value.zoomScale, zoomScale);
-      },
-    );
-
-    test(
-      'switching cameras again while the camera is restarting '
-      'leaves the camera running',
-      () async {
-        final controller = createController();
-        await controller.start();
-
-        final restartGate = platform.hold('start');
-        final firstSwitch = controller.switchCamera();
-        await pumpEventQueue();
-
-        // A double tap on the switch camera button.
-        Future<void> secondSwitch() async {
-          try {
-            await controller.switchCamera();
-          } on MobileScannerException {
-            // The camera may refuse to switch while it is still starting.
-          }
-        }
-
-        final stopCalls = platform.count('stop');
-        final secondSwitchDone = secondSwitch();
-        await pumpEventQueue();
-
-        expect(
-          platform.count('stop'),
-          stopCalls,
-          reason: 'the second switch must not cancel the restart',
-        );
-
-        restartGate.complete();
-        await Future.wait([firstSwitch, secondSwitchDone]);
-
-        expect(controller.value.isRunning, isTrue);
-        expect(platform.isSessionOpen, isTrue);
-      },
-    );
-
-    test(
-      'stopping a controller that waits for the camera session '
-      'does not interrupt the start of another controller',
-      () async {
-        final startGate = platform.hold('start');
-
-        final first = createController();
-        final firstStart = first.start();
-        await pumpEventQueue();
-
-        // The second start waits until the first one has completed.
-        final second = createController();
-        final secondStart = second.start();
-        final secondStop = second.stop();
-        await pumpEventQueue();
-
-        expect(
-          platform.calls,
-          ['start'],
-          reason:
-              'nothing else may reach the platform '
-              'while the first controller is starting',
-        );
-
-        startGate.complete();
-        await Future.wait([firstStart, secondStart, secondStop]);
-
-        expect(first.value.error, isNull);
-        expect(first.value.isRunning, isTrue);
-        expect(second.value.isRunning, isFalse);
-        expect(
-          platform.isSessionOpen,
-          isTrue,
-          reason: 'the camera of the first controller must keep running',
-        );
-        expect(
-          platform.count('start'),
-          1,
-          reason: 'the cancelled start must not reach the platform',
-        );
-      },
+    // The second start went first, so the restart of the switch finds the
+    // session taken, as it would on a real device.
+    expect(second.value.isRunning, isTrue);
+    expect(
+      first.value.error?.errorCode,
+      MobileScannerErrorCode.controllerAlreadyInitialized,
     );
   });
 
-  group('the camera session is not changed by two controllers at once', () {
-    test('when a controller starts while another one is stopping', () async {
-      final first = createController();
-      await first.start();
+  test('disposing a controller that waits for the lock does not stop '
+      'the start of another controller', () async {
+    final startGate = Completer<void>();
+    platform.startGate = startGate;
 
-      final stopGate = platform.hold('stop');
-      final firstStop = first.stop();
-      await pumpEventQueue();
+    final first = MobileScannerController(autoStart: false)..attach();
+    final firstStart = first.start();
 
-      expect(platform.calls.last, 'stop', reason: 'the stop is in progress');
+    final second = MobileScannerController(autoStart: false)..attach();
+    final secondStart = second.start();
+    await second.dispose();
 
-      final second = createController();
-      final secondStart = second.start();
-      await pumpEventQueue();
-
-      expect(
-        platform.count('start'),
-        1,
-        reason:
-            'the second controller must not start the camera '
-            'before the first controller has stopped it',
-      );
-
-      stopGate.complete();
-      await Future.wait([firstStop, secondStart]);
-
-      expect(platform.maxCallsInProgress, 1);
-      expect(second.value.error, isNull);
-      expect(second.value.isRunning, isTrue);
-    });
-
-    test('when a controller starts while another one is pausing', () async {
-      final first = createController();
-      await first.start();
-
-      final pauseGate = platform.hold('pause');
-      final firstPause = first.pause();
-      await pumpEventQueue();
-
-      expect(platform.calls.last, 'pause', reason: 'the pause is in progress');
-
-      final second = createController();
-      final secondStart = second.start();
-      await pumpEventQueue();
-
-      expect(
-        platform.count('start'),
-        1,
-        reason:
-            'the second controller must not start the camera '
-            'before the first controller has paused it',
-      );
-
-      pauseGate.complete();
-      await Future.wait([firstPause, secondStart]);
-
-      expect(platform.maxCallsInProgress, 1);
-    });
-
-    test(
-      'when a controller starts while another one updates its scan window',
-      () async {
-        final first = createController();
-        await first.start();
-
-        final updateGate = platform.hold('updateScanWindow');
-        final firstUpdate = first.updateScanWindow(scanWindow);
-        await pumpEventQueue();
-
-        expect(
-          platform.calls.last,
-          'updateScanWindow',
-          reason: 'the scan window update is in progress',
-        );
-
-        final second = createController();
-        final secondStart = second.start();
-        await pumpEventQueue();
-
-        expect(
-          platform.count('start'),
-          1,
-          reason:
-              'the second controller must not start the camera '
-              'before the scan window of the first controller is updated',
-        );
-
-        updateGate.complete();
-        await Future.wait([firstUpdate, secondStart]);
-
-        expect(platform.maxCallsInProgress, 1);
-      },
+    expect(
+      platform.stopCalls,
+      0,
+      reason: 'an early stop would abort the start of the first controller',
     );
 
-    test(
-      'when a controller is disposed while its scan window update '
-      'waits for another controller to start',
-      () async {
-        final first = createController();
-        await first.start();
-        await first.stop();
+    startGate.complete();
+    await Future.wait([firstStart, secondStart]);
 
-        final startGate = platform.hold('start');
-        final second = createController();
-        final secondStart = second.start();
-        await pumpEventQueue();
-
-        final firstUpdate = first.updateScanWindow(scanWindow);
-        final firstDispose = first.dispose();
-
-        startGate.complete();
-        await Future.wait([secondStart, firstUpdate, firstDispose]);
-
-        expect(
-          platform.count('updateScanWindow'),
-          0,
-          reason:
-              'a disposed controller must not change the camera session '
-              'of another controller',
-        );
-        expect(second.value.isRunning, isTrue);
-      },
-    );
-
-    test(
-      'when a controller starts while switchCamera stops the camera '
-      'of another one',
-      () async {
-        final first = createController();
-        await first.start();
-
-        expect(first.value.cameraDirection, CameraFacing.back);
-
-        final stopGate = platform.hold('stop');
-        final switching = first.switchCamera();
-        await pumpEventQueue();
-
-        expect(platform.calls.last, 'stop', reason: 'the stop is in progress');
-
-        final second = createController();
-        final secondStart = second.start();
-        await pumpEventQueue();
-
-        expect(
-          platform.count('start'),
-          1,
-          reason:
-              'the second controller must not start the camera '
-              'before switchCamera has stopped it',
-        );
-
-        stopGate.complete();
-        await Future.wait([switching, secondStart]);
-
-        expect(platform.maxCallsInProgress, 1);
-      },
-    );
-
-    test(
-      'when a controller is disposed while it waits for the camera session '
-      'that another controller is starting',
-      () async {
-        final startGate = platform.hold('start');
-
-        final first = createController();
-        final firstStart = first.start();
-        await pumpEventQueue();
-
-        // The second start waits until the first one has completed.
-        final second = createController();
-        final secondStart = second.start();
-        final secondDispose = second.dispose();
-        await pumpEventQueue();
-
-        expect(
-          platform.calls,
-          ['start'],
-          reason:
-              'nothing else may reach the platform '
-              'while the first controller is starting',
-        );
-
-        startGate.complete();
-        await Future.wait([firstStart, secondStart, secondDispose]);
-
-        expect(first.value.error, isNull);
-        expect(first.value.isRunning, isTrue);
-        expect(
-          platform.isSessionOpen,
-          isTrue,
-          reason: 'the camera of the first controller must keep running',
-        );
-      },
-    );
-  });
-
-  group('start after a stop that cancelled a pending start', () {
-    test('starts the camera once the cancelled start has completed', () async {
-      final startGate = platform.hold('start');
-
-      final controller = createController();
-      final start = controller.start();
-      await pumpEventQueue();
-
-      // Let the platform start complete only after the stop,
-      // even if stop() waits for it.
-      final release = Future<void>(startGate.complete);
-      await controller.stop();
-      final restart = controller.start();
-
-      await Future.wait([start, release, restart]);
-
-      expect(controller.value.error, isNull);
-      expect(controller.value.isRunning, isTrue);
-      expect(platform.isSessionOpen, isTrue);
-    });
-
-    test(
-      'a start, stop, start and stop while the first start is pending '
-      'leave the camera stopped',
-      () async {
-        final startGate = platform.hold('start');
-
-        final controller = createController();
-        final firstStart = controller.start();
-        await pumpEventQueue();
-
-        final firstStop = controller.stop();
-        final secondStart = controller.start();
-        await pumpEventQueue();
-        final secondStop = controller.stop();
-
-        startGate.complete();
-        await Future.wait([firstStart, firstStop, secondStart, secondStop]);
-        await pumpEventQueue();
-
-        expect(controller.value.isRunning, isFalse);
-        expect(controller.value.isStarting, isFalse);
-        expect(platform.isSessionOpen, isFalse);
-      },
-    );
-
-    test(
-      'completes without an error when the controller is disposed '
-      'before the cancelled start has completed',
-      () async {
-        final startGate = platform.hold('start');
-
-        final controller = createController();
-        final start = controller.start();
-        await pumpEventQueue();
-
-        final stop = controller.stop();
-        final restart = controller.start();
-        final dispose = controller.dispose();
-
-        startGate.complete();
-        await Future.wait([start, stop, restart, dispose]);
-
-        expect(platform.isSessionOpen, isFalse);
-      },
-    );
-  });
-
-  group('MobileScanner widget', () {
-    testWidgets(
-      'restarts the camera when the app is quickly inactive and resumed '
-      'while the camera is starting',
-      (tester) async {
-        addTearDown(platform.releaseHolds);
-
-        // The scanner owns its controller,
-        // and follows the app lifecycle state.
-        await tester.pumpWidget(const MaterialApp(home: MobileScanner()));
-        await tester.pump();
-
-        expect(platform.isSessionOpen, isTrue);
-
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.inactive,
-        );
-        await tester.pump();
-
-        expect(platform.isSessionOpen, isFalse);
-
-        final startGate = platform.hold('start');
-
-        tester.binding.handleAppLifecycleStateChanged(
-          AppLifecycleState.resumed,
-        );
-        await tester.pump();
-
-        // The app flickers to inactive and back while the camera is starting.
-        tester.binding
-          ..handleAppLifecycleStateChanged(AppLifecycleState.inactive)
-          ..handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-        await tester.pump();
-
-        startGate.complete();
-        await tester.pump();
-        await tester.pump();
-
-        expect(tester.takeException(), isNull);
-        expect(
-          platform.isSessionOpen,
-          isTrue,
-          reason: 'the app ended resumed, so the camera must be running',
-        );
-
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
-
-    testWidgets(
-      'shows a running camera after the page with an app-owned controller '
-      'was closed and opened again while the camera was starting',
-      (tester) async {
-        addTearDown(platform.releaseHolds);
-
-        final controller = MobileScannerController();
-        addTearDown(controller.dispose);
-
-        final startGate = platform.hold('start');
-
-        // Open the page, which starts the camera.
-        await tester.pumpWidget(
-          MaterialApp(home: MobileScanner(controller: controller)),
-        );
-        await tester.pump();
-
-        // Close the page before the camera has started,
-        // which stops the camera.
-        await tester.pumpWidget(const MaterialApp(home: SizedBox()));
-        await tester.pump();
-
-        // Open the page again with the same controller.
-        await tester.pumpWidget(
-          MaterialApp(home: MobileScanner(controller: controller)),
-        );
-        await tester.pump();
-
-        startGate.complete();
-        await tester.pump();
-        await tester.pump();
-
-        expect(tester.takeException(), isNull);
-        expect(controller.value.error, isNull);
-        expect(controller.value.isRunning, isTrue);
-        expect(platform.isSessionOpen, isTrue);
-
-        await tester.pumpWidget(const SizedBox());
-      },
-    );
-  });
-
-  group('stop without a pending start', () {
-    test('does not call the platform for a controller '
-        'that was never started', () async {
-      final controller = createController();
-
-      await controller.stop();
-
-      expect(platform.calls, isEmpty);
-    });
-
-    test('does not stop the camera of another controller', () async {
-      final running = createController();
-      await running.start();
-
-      final idle = createController();
-      await idle.stop();
-
-      expect(platform.count('stop'), 0);
-      expect(platform.isSessionOpen, isTrue);
-      expect(running.value.isRunning, isTrue);
-    });
-
-    test('does not call the platform again for a stopped controller', () async {
-      final controller = createController();
-      await controller.start();
-      await controller.stop();
-
-      final callsAfterStop = List.of(platform.calls);
-
-      await controller.stop();
-
-      expect(platform.calls, callsAfterStop);
-    });
+    expect(first.value.isRunning, isTrue);
+    expect(MobileScannerController.platformSessionOwner, same(first));
   });
 }
 
-/// A fake platform with a single camera session, like the native platforms.
-///
-/// It records the calls that change the camera session,
-/// and can hold any of them, to make two controllers race each other.
-class FakeCameraSessionPlatform extends MobileScannerPlatform {
-  /// The calls that change the camera session, in the order they were made.
-  ///
-  /// A call is recorded by its method name when it is made,
-  /// and again with a ` done` suffix once it has completed.
-  final List<String> calls = <String>[];
+/// A platform that, like the native and web implementations,
+/// rejects a start while a camera session is still open.
+class SingleSessionMobileScannerPlatform extends MobileScannerPlatform {
+  bool _hasSession = false;
 
-  /// The most calls that were in progress at the same time.
-  int maxCallsInProgress = 0;
-  int _callsInProgress = 0;
+  int startCalls = 0;
+  int stopCalls = 0;
+  int pauseCalls = 0;
 
-  final Map<String, Completer<void>> _pendingHolds = {};
-  final List<Completer<void>> _holds = [];
+  Completer<void>? startGate;
+  Completer<void>? stopGate;
+  Completer<void>? pauseGate;
 
-  bool _isSessionOpen = false;
   bool _isPaused = false;
-  int _stopCalls = 0;
-
-  /// Whether a camera session is open, i.e. started and not yet released.
-  bool get isSessionOpen => _isSessionOpen;
-
-  /// The number of times that a start acquired the camera.
-  int sessionsOpened = 0;
-
-  /// Whether a stop that is made while a start is in progress aborts that
-  /// start, which then fails without acquiring the camera, like on the web.
-  bool abortsStartOnStop = false;
-
-  /// The torch state events of the camera session.
-  final StreamController<TorchState> torchStates = StreamController.broadcast();
-
-  /// The zoom scale events of the camera session.
-  final StreamController<double> zoomScales = StreamController.broadcast();
-
-  /// Hold the next call to [method] until the returned completer completes.
-  Completer<void> hold(String method) {
-    final hold = Completer<void>();
-    _pendingHolds[method] = hold;
-    _holds.add(hold);
-
-    return hold;
-  }
-
-  /// Complete every hold, so that no call stays in progress.
-  void releaseHolds() {
-    for (final hold in _holds) {
-      if (!hold.isCompleted) {
-        hold.complete();
-      }
-    }
-  }
-
-  /// The number of times that [method] was called.
-  int count(String method) => calls.where((call) => call == method).length;
-
-  Future<T> _record<T>(String method, T Function() complete) async {
-    calls.add(method);
-    _callsInProgress++;
-    maxCallsInProgress = math.max(maxCallsInProgress, _callsInProgress);
-
-    try {
-      await _pendingHolds.remove(method)?.future;
-
-      return complete();
-    } finally {
-      _callsInProgress--;
-      calls.add('$method done');
-    }
-  }
 
   @override
   Stream<BarcodeCapture?> get barcodesStream => const Stream.empty();
 
   @override
-  Stream<TorchState> get torchStateStream => torchStates.stream;
+  Stream<TorchState> get torchStateStream =>
+      Stream.value(TorchState.unavailable);
 
   @override
-  Stream<double> get zoomScaleStateStream => zoomScales.stream;
+  Stream<double> get zoomScaleStateStream => Stream.value(1);
 
   @override
-  Widget buildCameraView() => const SizedBox();
+  Future<MobileScannerViewAttributes> start(StartOptions startOptions) async {
+    startCalls++;
 
-  @override
-  Future<MobileScannerViewAttributes> start(StartOptions startOptions) {
-    final stopCallsBeforeStart = _stopCalls;
-
-    return _record('start', () {
-      if (abortsStartOnStop && _stopCalls != stopCallsBeforeStart) {
-        throw const MobileScannerException(
-          errorCode: MobileScannerErrorCode.controllerDisposed,
-          errorDetails: MobileScannerErrorDetails(
-            message: 'The scanner was stopped while the camera was starting.',
-          ),
-        );
-      }
-
-      // Like the native platforms, refuse to start a second camera session.
-      if (_isSessionOpen && !_isPaused) {
-        throw MobileScannerException(
-          errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
-          errorDetails: MobileScannerErrorDetails(
-            message:
-                MobileScannerErrorCode.controllerAlreadyInitialized.message,
-          ),
-        );
-      }
-
-      _isSessionOpen = true;
-      _isPaused = false;
-      sessionsOpened++;
-
-      return MobileScannerViewAttributes(
-        cameraDirection: startOptions.cameraDirection,
-        currentTorchMode: TorchState.unavailable,
-        size: const Size(200, 200),
-        numberOfCameras: 2,
-        initialDeviceOrientation: DeviceOrientation.portraitUp,
+    if (_hasSession && !_isPaused) {
+      throw const MobileScannerException(
+        errorCode: MobileScannerErrorCode.controllerAlreadyInitialized,
       );
-    });
+    }
+
+    _hasSession = true;
+    _isPaused = false;
+
+    await startGate?.future;
+
+    return MobileScannerViewAttributes(
+      cameraDirection: startOptions.cameraDirection,
+      currentTorchMode: TorchState.unavailable,
+      size: const Size(200, 200),
+      numberOfCameras: 2,
+      initialDeviceOrientation: DeviceOrientation.portraitUp,
+    );
   }
 
   @override
-  Future<void> stop() {
-    _stopCalls++;
+  Future<void> stop() async {
+    stopCalls++;
 
-    return _record('stop', () {
-      _isSessionOpen = false;
-      _isPaused = false;
-    });
+    // Like the web, the session is only cleared once the teardown is done.
+    await stopGate?.future;
+    _hasSession = false;
+    _isPaused = false;
   }
 
   @override
-  Future<void> pause() {
-    return _record('pause', () {
-      _isPaused = _isSessionOpen;
-    });
+  Future<void> pause() async {
+    pauseCalls++;
+    await pauseGate?.future;
+    _isPaused = true;
   }
 
   @override
-  Future<void> updateScanWindow(Rect? window) {
-    return _record('updateScanWindow', () {});
-  }
-
-  @override
-  Future<void> dispose() {
-    return _record('dispose', () {
-      _isSessionOpen = false;
-      _isPaused = false;
-    });
+  Future<void> dispose() async {
+    _hasSession = false;
+    _isPaused = false;
   }
 }

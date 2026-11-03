@@ -13,6 +13,7 @@ import 'utils/media_stream_test_utils.dart';
 void main() {
   late GetUserMediaStub getUserMedia;
   FailingBarcodeDetectorStub? failingBarcodeDetector;
+  DetectingBarcodeDetectorStub? detectingBarcodeDetector;
 
   setUp(() {
     web.window.localStorage.clear();
@@ -23,6 +24,8 @@ void main() {
     getUserMedia.restore();
     failingBarcodeDetector?.restore();
     failingBarcodeDetector = null;
+    detectingBarcodeDetector?.restore();
+    detectingBarcodeDetector = null;
   });
 
   group('MobileScannerWeb teardown during start', () {
@@ -144,6 +147,42 @@ void main() {
           ),
         ),
         reason: 'the aborted start must not leave its reader behind',
+      );
+    });
+  });
+
+  group('MobileScannerWeb pause', () {
+    test('start() after pause() delivers barcodes again', () async {
+      detectingBarcodeDetector = DetectingBarcodeDetectorStub();
+      final autoplay = MutedAutoplayStub();
+      addTearDown(autoplay.restore);
+
+      final plugin =
+          MobileScannerWeb()
+            ..setWebBarcodeReader(WebBarcodeReader.barcodeDetector);
+      addTearDown(plugin.stop);
+
+      Future<void> nextBarcode() => plugin.barcodesStream
+          .firstWhere(
+            (capture) =>
+                capture?.barcodes.firstOrNull?.rawValue ==
+                DetectingBarcodeDetectorStub.rawValue,
+          )
+          .timeout(const Duration(seconds: 5));
+
+      getUserMedia.resolve();
+
+      final firstBarcode = nextBarcode();
+      await plugin.start(testStartOptions);
+      await firstBarcode;
+
+      await plugin.pause();
+      await plugin.start(testStartOptions);
+
+      await expectLater(
+        nextBarcode(),
+        completes,
+        reason: 'resuming a paused scanner must resume barcode delivery',
       );
     });
   });
