@@ -12,7 +12,6 @@ import android.os.Looper
 import android.util.Log
 import android.util.Size
 import android.view.Surface
-import androidx.annotation.OptIn
 import androidx.annotation.VisibleForTesting
 import androidx.camera.camera2.Camera2Config
 import androidx.camera.core.Camera
@@ -66,7 +65,7 @@ class MobileScanner(
     private val mobileScannerErrorCallback: MobileScannerErrorCallback,
     private val deviceOrientationListener: DeviceOrientationListener,
     private val barcodeScannerFactory: (options: BarcodeScannerOptions?) -> BarcodeScanner = ::defaultBarcodeScannerFactory,
-    @get:VisibleForTesting internal val inputImageFactory: (image: Image, rotationDegrees: Int) -> InputImage = InputImage::fromMediaImage,
+    private val inputImageFactory: (image: Image, rotationDegrees: Int) -> InputImage = InputImage::fromMediaImage,
 ) {
 
     init {
@@ -100,7 +99,7 @@ class MobileScanner(
     companion object {
         // Configure the `ProcessCameraProvider` to only log errors.
         // This prevents the informational log spam from CameraX.
-        @OptIn(ExperimentalCameraProviderConfiguration::class)
+        @androidx.annotation.OptIn(ExperimentalCameraProviderConfiguration::class)
         private fun configureCameraProcessProvider() {
             try {
                 val config = CameraXConfig.Builder.fromConfig(Camera2Config.defaultConfig()).apply {
@@ -124,9 +123,8 @@ class MobileScanner(
     /**
      * callback for the camera. Every frame is passed through this function.
      */
-    @ExperimentalGetImage
     val captureOutput = ImageAnalysis.Analyzer { imageProxy ->
-        @OptIn(ExperimentalGetImage::class)
+        @androidx.annotation.OptIn(ExperimentalGetImage::class)
         val mediaImage = imageProxy.image
         if (mediaImage == null) {
             imageProxy.close()
@@ -412,7 +410,6 @@ class MobileScanner(
      * Start barcode scanning by initializing the camera and barcode scanner.
      */
     @ExperimentalLensFacing
-    @ExperimentalGetImage
     fun start(
         barcodeScannerOptions: BarcodeScannerOptions?,
         returnImage: Boolean,
