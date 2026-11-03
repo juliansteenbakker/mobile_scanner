@@ -8,7 +8,6 @@ import android.net.Uri
 import android.os.Handler
 import android.os.Looper
 import android.util.Size
-import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ExperimentalLensFacing
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import dev.steenbakker.mobile_scanner.objects.BarcodeFormats
@@ -129,7 +128,6 @@ class MobileScannerHandler(
     }
 
     @ExperimentalLensFacing
-    @ExperimentalGetImage
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
         when (call.method) {
             "state" -> result.success(permissions.hasCameraPermission(activity))
@@ -165,7 +163,6 @@ class MobileScannerHandler(
     }
 
     @ExperimentalLensFacing
-    @ExperimentalGetImage
     private fun start(call: MethodCall, result: MethodChannel.Result) {
         val torch: Boolean = call.argument<Boolean>("torch") ?: false
         val autoTorch: Boolean = call.argument<Boolean>("autoTorch") ?: false
