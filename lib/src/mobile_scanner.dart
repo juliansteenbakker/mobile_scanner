@@ -411,6 +411,13 @@ class _MobileScannerState extends State<MobileScanner>
       return;
     }
 
+    // Leave a pending start alone. On the web, the permission prompt makes
+    // the app inactive while the camera starts, and stopping then would
+    // cancel the start that showed the prompt.
+    if (controller.value.isStarting) {
+      return;
+    }
+
     switch (state) {
       case AppLifecycleState.detached:
       case AppLifecycleState.hidden:
