@@ -118,7 +118,11 @@ class MobileScannerWeb extends MobileScannerPlatform {
 
     // Do not show the media controls, as this is a preview element.
     // Also prevent play/pause events from changing the media controls.
+    // WebKit opens a video that is not inline in its full-screen player, and
+    // a muted video may play without a user gesture.
     videoElement
+      ..playsInline = true
+      ..muted = true
       ..controls = false
       ..onplay =
           (JSAny _) {
