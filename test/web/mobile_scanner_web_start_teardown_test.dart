@@ -154,8 +154,6 @@ void main() {
   group('MobileScannerWeb pause', () {
     test('start() after pause() delivers barcodes again', () async {
       detectingBarcodeDetector = DetectingBarcodeDetectorStub();
-      final autoplay = MutedAutoplayStub();
-      addTearDown(autoplay.restore);
 
       final plugin =
           MobileScannerWeb()
@@ -183,6 +181,36 @@ void main() {
         nextBarcode(),
         completes,
         reason: 'resuming a paused scanner must resume barcode delivery',
+      );
+    });
+  });
+
+  group('MobileScannerWeb preview', () {
+    test('plays inline and muted', () async {
+      detectingBarcodeDetector = DetectingBarcodeDetectorStub();
+      final recorder = PlayRecorder();
+      addTearDown(recorder.restore);
+
+      final plugin =
+          MobileScannerWeb()
+            ..setWebBarcodeReader(WebBarcodeReader.barcodeDetector);
+      addTearDown(plugin.stop);
+
+      getUserMedia.resolve();
+
+      await plugin.start(testStartOptions);
+
+      final video = recorder.played.single;
+
+      expect(
+        video.playsInline,
+        isTrue,
+        reason: 'WebKit opens a video that is not inline in full screen',
+      );
+      expect(
+        video.muted,
+        isTrue,
+        reason: 'an unmuted video cannot play without a user gesture',
       );
     });
   });

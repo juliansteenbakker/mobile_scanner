@@ -201,20 +201,18 @@ class DetectingBarcodeDetectorStub {
   void restore() => _restoreBarcodeDetector(_original);
 }
 
-/// Mutes every media element before it plays, so that `play()` is not
-/// rejected by the autoplay policy in a headless browser, where there is no
-/// user gesture.
+/// Records every video element that `play()` is called on, so that its
+/// state at the moment playback starts can be inspected.
 ///
 /// Call [restore] in `tearDown`.
-class MutedAutoplayStub {
-  /// Install the stub.
-  MutedAutoplayStub() : _original = _prototype['play']! as JSFunction {
-    final functionConstructor = globalContext['Function']! as JSFunction;
-    final wrap = functionConstructor.callAsConstructor<JSFunction>(
-      'play'.toJS,
-      'return function() { this.muted = true; return play.call(this); };'.toJS,
-    );
-    _prototype['play'] = wrap.callAsFunction(null, _original);
+class PlayRecorder {
+  /// Install the recorder.
+  PlayRecorder() : _original = _prototype['play']! as JSFunction {
+    _prototype['play'] =
+        ((JSObject element) {
+          played.add(element as web.HTMLVideoElement);
+          return _original.callAsFunction(element);
+        }).toJSCaptureThis;
   }
 
   static final _prototype =
@@ -222,6 +220,9 @@ class MutedAutoplayStub {
           as JSObject;
 
   final JSFunction _original;
+
+  /// The video elements that were played, in order.
+  final played = <web.HTMLVideoElement>[];
 
   /// Put the original `play` back.
   void restore() => _prototype['play'] = _original;
