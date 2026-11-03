@@ -1,5 +1,15 @@
 # Changelog
 
+## [7.5.1](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.5.0...v7.5.1) (2026-11-03)
+
+
+### Bug Fixes
+
+* **android:** opt in to experimental CameraX APIs so lintDebug passes ([#1852](https://github.com/juliansteenbakker/mobile_scanner/issues/1852)) ([afc29ed](https://github.com/juliansteenbakker/mobile_scanner/commit/afc29ed8b6b304e41901abfb55babbb260b62747))
+* serialize stop and pause with the camera session lock ([#1856](https://github.com/juliansteenbakker/mobile_scanner/issues/1856)) ([c6107f7](https://github.com/juliansteenbakker/mobile_scanner/commit/c6107f77f4d0a38fb3c71907712a4c707d7898e7))
+* **web:** play the camera preview inline and muted ([#1855](https://github.com/juliansteenbakker/mobile_scanner/issues/1855)) ([676312e](https://github.com/juliansteenbakker/mobile_scanner/commit/676312ed7a89acdbc4d256ec0c198409474fc8c4))
+* **web:** resume barcode detection after pause ([#1851](https://github.com/juliansteenbakker/mobile_scanner/issues/1851)) ([9b76ebe](https://github.com/juliansteenbakker/mobile_scanner/commit/9b76ebe8089b5fa9e11276527554f4ca134eb0d0))
+
 ## [7.5.0](https://github.com/juliansteenbakker/mobile_scanner/compare/v7.4.4...v7.5.0) (2026-11-01)
 
 
