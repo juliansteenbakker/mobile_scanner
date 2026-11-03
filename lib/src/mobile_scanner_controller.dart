@@ -165,6 +165,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   // Whether a start() of this controller is waiting for,
   // or holding, the platform session lock.
   bool _hasPendingPlatformStart = false;
+  // Whether the platform is starting the camera for this controller,
+  // as opposed to this start still waiting for the lock.
+  bool _isPlatformStarting = false;
   // This completer keeps track of whether the MobileScanner widget,
   // that is attached to this controller,
   // called its `initState()` lifecycle method.
@@ -181,8 +184,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   // See https://github.com/juliansteenbakker/mobile_scanner/issues/1631
   static MobileScannerController? _platformSessionOwner;
 
-  // Starting and releasing the platform camera session are serialized,
-  // so that one controller cannot release a session
+  // Starting, stopping, pausing and releasing the platform camera session
+  // are serialized, so that one controller cannot stop or release a session
   // that another controller is starting at the same time.
   static Future<void>? _platformSessionLock;
 
@@ -208,14 +211,16 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     }
   }
 
+  bool get _isOwnedByOtherController =>
+      _platformSessionOwner != null && !identical(_platformSessionOwner, this);
+
   // Release the platform camera session,
   // unless another controller currently holds it.
   Future<void> _releasePlatformSession() async {
     // If another controller currently holds the platform camera session,
     // disposing the platform resources would break that controller.
     // In that case only this controller's own resources are cleaned up.
-    if (_platformSessionOwner != null &&
-        !identical(_platformSessionOwner, this)) {
+    if (_isOwnedByOtherController) {
       return;
     }
 
@@ -563,6 +568,8 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           // receive events from the session of the previous holder.
           _setupListeners();
 
+          _isPlatformStarting = true;
+
           final attributes = await MobileScannerPlatform.instance.start(
             options,
           );
@@ -575,6 +582,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
           return attributes;
         } finally {
           _hasPendingPlatformStart = false;
+          _isPlatformStarting = false;
 
           // dispose() leaves releasing the session to a pending start.
           if (_isDisposed) {
@@ -633,14 +641,18 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Does nothing if the camera is already stopped.
   Future<void> stop() async {
     if (_stop()) {
-      // Stopping releases the platform camera session,
-      // so that another controller can start it.
-      // Pausing does not, as a paused session is resumed by its own owner.
-      if (identical(_platformSessionOwner, this)) {
-        _platformSessionOwner = null;
-      }
+      await _lockPlatformSession(() async {
+        if (_isOwnedByOtherController) {
+          return;
+        }
 
-      await MobileScannerPlatform.instance.stop();
+        // Stopping releases the platform camera session,
+        // so that another controller can start it.
+        // Pausing does not, as a paused session is resumed by its own owner.
+        _platformSessionOwner = null;
+
+        await MobileScannerPlatform.instance.stop();
+      });
     }
   }
 
@@ -652,7 +664,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   /// Does nothing if the camera is already paused or stopped.
   Future<void> pause() async {
     if (_stop()) {
-      await MobileScannerPlatform.instance.pause();
+      await _lockPlatformSession(() async {
+        if (_isOwnedByOtherController) {
+          return;
+        }
+
+        await MobileScannerPlatform.instance.pause();
+      });
     }
   }
 
@@ -946,7 +964,9 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     if (_hasPendingPlatformStart) {
       // Stopping now lets a platform that can abort a start in progress,
       // such as the web, do so before the camera is acquired.
-      if (_platformSessionOwner == null) {
+      // While this start still waits for the lock, the platform is busy with
+      // another controller's session, which must not be aborted.
+      if (_isPlatformStarting && _platformSessionOwner == null) {
         unawaited(
           MobileScannerPlatform.instance.stop().catchError((Object _) {}),
         );
