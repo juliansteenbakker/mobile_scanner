@@ -129,6 +129,18 @@ extension type _StubbableGlobal(JSObject _) implements JSObject {
   external JSFunction? barcodeDetector;
 }
 
+final _global = _StubbableGlobal(globalContext);
+
+void _restoreBarcodeDetector(JSFunction? original) {
+  if (original == null) {
+    // The browser has no BarcodeDetector (e.g. Firefox): leave none behind,
+    // rather than a `null` global that feature detection would trip over.
+    _global.delete('BarcodeDetector'.toJS);
+  } else {
+    _global.barcodeDetector = original;
+  }
+}
+
 /// Replaces the global `BarcodeDetector` with one whose constructor throws,
 /// so that a start fails at the point where it has already acquired the
 /// camera.
@@ -145,18 +157,72 @@ class FailingBarcodeDetectorStub {
     throw StateError('BarcodeDetector unavailable');
   }
 
-  static final _global = _StubbableGlobal(globalContext);
+  final JSFunction? _original;
+
+  /// Put the original `BarcodeDetector` back.
+  void restore() => _restoreBarcodeDetector(_original);
+}
+
+/// Replaces the global `BarcodeDetector` with one that finds the same QR code
+/// in every frame, so that barcode delivery can be observed without a camera.
+///
+/// Call [restore] in `tearDown`.
+class DetectingBarcodeDetectorStub {
+  /// Install the stub.
+  DetectingBarcodeDetectorStub() : _original = _global.barcodeDetector {
+    // `new` needs a real JS class, which a Dart function converted with `toJS`
+    // is not.
+    final functionConstructor = globalContext['Function']! as JSFunction;
+    final createClass = functionConstructor.callAsConstructor<JSFunction>(
+      '''
+      return class {
+        static async getSupportedFormats() { return ['qr_code']; }
+        async detect() {
+          return [{
+            rawValue: '$rawValue',
+            format: 'qr_code',
+            cornerPoints: [
+              {x: 0, y: 0}, {x: 8, y: 0}, {x: 8, y: 8}, {x: 0, y: 8},
+            ],
+          }];
+        }
+      };
+      '''.toJS,
+    );
+    _global.barcodeDetector = createClass.callAsFunction() as JSFunction?;
+  }
+
+  /// The value of the QR code found in every frame.
+  static const rawValue = 'detected';
 
   final JSFunction? _original;
 
   /// Put the original `BarcodeDetector` back.
-  void restore() {
-    if (_original == null) {
-      // The browser has no BarcodeDetector (e.g. Firefox): leave none behind,
-      // rather than a `null` global that feature detection would trip over.
-      _global.delete('BarcodeDetector'.toJS);
-    } else {
-      _global.barcodeDetector = _original;
-    }
+  void restore() => _restoreBarcodeDetector(_original);
+}
+
+/// Mutes every media element before it plays, so that `play()` is not
+/// rejected by the autoplay policy in a headless browser, where there is no
+/// user gesture.
+///
+/// Call [restore] in `tearDown`.
+class MutedAutoplayStub {
+  /// Install the stub.
+  MutedAutoplayStub() : _original = _prototype['play']! as JSFunction {
+    final functionConstructor = globalContext['Function']! as JSFunction;
+    final wrap = functionConstructor.callAsConstructor<JSFunction>(
+      'play'.toJS,
+      'return function() { this.muted = true; return play.call(this); };'.toJS,
+    );
+    _prototype['play'] = wrap.callAsFunction(null, _original);
   }
+
+  static final _prototype =
+      (globalContext['HTMLMediaElement']! as JSObject)['prototype']!
+          as JSObject;
+
+  final JSFunction _original;
+
+  /// Put the original `play` back.
+  void restore() => _prototype['play'] = _original;
 }

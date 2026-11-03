@@ -437,6 +437,8 @@ class MobileScannerWeb extends MobileScannerPlatform {
     if (_barcodeReader != null) {
       if (_barcodeReader!.paused ?? false) {
         await _barcodeReader?.resume();
+        // Paused in pause(), so no barcodes would be delivered otherwise.
+        _barcodesSubscription?.resume();
 
         final cameraDirection = _settingsDelegate.getCameraDirection(
           _barcodeReader?.videoStream,
