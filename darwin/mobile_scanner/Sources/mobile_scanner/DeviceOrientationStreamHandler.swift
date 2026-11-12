@@ -45,7 +45,8 @@ class DeviceOrientationStreamHandler: NSObject, FlutterStreamHandler {
         return nil
     }
 
-    private func sendCurrentOrientation() {
+    /// Send the current orientation to the Dart code, if it differs from the orientation that was last sent.
+    func sendCurrentOrientation() {
         guard let sink = eventSink else { return }
 
         // Use interface orientation instead of device orientation

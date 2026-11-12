@@ -160,6 +160,7 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
   StreamSubscription<TorchState>? _torchStateSubscription;
   StreamSubscription<double>? _zoomScaleSubscription;
   StreamSubscription<DeviceOrientation>? _deviceOrientationSubscription;
+  StreamSubscription<Size>? _cameraSizeSubscription;
 
   bool _isDisposed = false;
   // Whether a start() of this controller is waiting for,
@@ -252,11 +253,13 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
     unawaited(_torchStateSubscription?.cancel());
     unawaited(_zoomScaleSubscription?.cancel());
     unawaited(_deviceOrientationSubscription?.cancel());
+    unawaited(_cameraSizeSubscription?.cancel());
 
     _barcodesSubscription = null;
     _torchStateSubscription = null;
     _zoomScaleSubscription = null;
     _deviceOrientationSubscription = null;
+    _cameraSizeSubscription = null;
   }
 
   void _setupListeners() {
@@ -310,6 +313,14 @@ class MobileScannerController extends ValueNotifier<MobileScannerState> {
 
             value = value.copyWith(deviceOrientation: orientation);
           });
+
+      _cameraSizeSubscription = implementation.cameraSizeStream.listen((size) {
+        if (_isDisposed) {
+          return;
+        }
+
+        value = value.copyWith(size: size);
+      });
     }
   }
 
