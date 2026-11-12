@@ -43,6 +43,10 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   @visibleForTesting
   static const String kZoomScaleStateEventName = 'zoomScaleState';
 
+  /// The name of the camera size event.
+  @visibleForTesting
+  static const String kCameraSizeEventName = 'cameraSize';
+
   /// The name of the method that gets the camera authorization state.
   @visibleForTesting
   static const String kAuthorizationStateMethodName = 'state';
@@ -274,6 +278,26 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
         .map((event) => event['data'] as double? ?? 0.0);
   }
 
+  /// Get the stream of changes to the size of the camera output.
+  ///
+  /// The size follows the same convention as the size that `start` returns.
+  Stream<Size> get cameraSizeStream {
+    return eventsStream
+        .handleError(_ignoreError)
+        .where((event) => event['name'] == kCameraSizeEventName)
+        .map((event) => _parseSize(event['data']));
+  }
+
+  Size _parseSize(Object? size) {
+    return switch (size) {
+      {'width': final double width, 'height': final double height} => Size(
+        width,
+        height,
+      ),
+      _ => Size.zero,
+    };
+  }
+
   @override
   Future<BarcodeCapture?> analyzeImage(
     String path, {
@@ -439,16 +463,7 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
       startResult['currentTorchState'] as int? ?? -1,
     );
 
-    final Size size;
-
-    if (startResult['size'] case {
-      'width': final double width,
-      'height': final double height,
-    }) {
-      size = Size(width, height);
-    } else {
-      size = Size.zero;
-    }
+    final size = _parseSize(startResult['size']);
 
     _pausing = false;
 
