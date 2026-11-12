@@ -98,10 +98,15 @@ class MobileScannerCameraSelector {
         }
 
 #if os(iOS)
-        // Legacy fallback for iOS < 13.0: filter by position.
+        // Fallback for iOS < 13.0: wide-angle camera at the position.
         // On macOS, DiscoverySession handles 10.15+; older macOS falls
         // through to AVCaptureDevice.default(for:) below.
-        if let device = AVCaptureDevice.devices(for: .video).filter({ $0.position == position }).first {
+        let fallbackSession = AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: position
+        )
+        if let device = fallbackSession.devices.first {
             return device
         }
 #endif
@@ -191,13 +196,17 @@ class MobileScannerCameraSelector {
 
             return bestLensType
         } else {
-            let hasDevice = AVCaptureDevice.devices(for: .video).contains { $0.position == position }
+            let hasDevice = !AVCaptureDevice.DiscoverySession(
+                deviceTypes: [.builtInWideAngleCamera],
+                mediaType: .video,
+                position: position
+            ).devices.isEmpty
             return hasDevice ? LensType.wideAngle.rawValue : nil
         }
 #else
         // macOS: ignore the facing filter (only a front camera is used on macOS),
         // consistent with getSupportedLenses.
-        let hasDevice = !AVCaptureDevice.devices(for: .video).isEmpty
+        let hasDevice = AVCaptureDevice.default(for: .video) != nil
         return hasDevice ? LensType.wideAngle.rawValue : nil
 #endif
     }
