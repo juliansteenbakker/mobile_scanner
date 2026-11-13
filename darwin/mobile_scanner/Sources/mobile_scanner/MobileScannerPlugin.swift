@@ -1107,7 +1107,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #if os(iOS)
         case #keyPath(AVCaptureDevice.videoZoomFactor):
             if let zoomScale = change?[.newKey] as? CGFloat,
-               let device = object as? AVCaptureDevice {
+               object is AVCaptureDevice {
                 
                 let scale = getScaleFromZoomFactor(actualScale: zoomScale)
 
