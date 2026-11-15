@@ -333,7 +333,11 @@ class MyState extends State<MyStatefulWidget> with WidgetsBindingObserver {
         // Don't forget to resume listening to the barcode events.
         _subscription = controller.barcodes.listen(_handleBarcode);
 
-        unawaited(controller.start());
+        // Do not start again while a previous start is still in progress,
+        // as start() throws in that case.
+        if (!controller.value.isStarting) {
+          unawaited(controller.start());
+        }
       case AppLifecycleState.inactive:
         // Stop the scanner when the app is paused.
         // Also stop the barcode events subscription.
