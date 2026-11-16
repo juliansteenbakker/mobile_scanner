@@ -29,8 +29,8 @@ if(POLICY CMP0169)
 endif()
 FetchContent_Declare(
   zxing-cpp
-  URL https://github.com/zxing-cpp/zxing-cpp/archive/refs/tags/v3.1.1.tar.gz
-  URL_HASH SHA256=7286b1e6ade66fe82b7c8208b4595deeb55d6486b410834fdc65702f46650542
+  URL https://github.com/zxing-cpp/zxing-cpp/releases/download/v3.1.1/zxing-cpp-3.1.1.tar.gz
+  URL_HASH SHA256=c3c02c29c0b519de7bd4e25b376e606e87f0761befd1282815642a2246613d14
 )
 set(BUILD_SHARED_LIBS OFF)
 set(ZXING_READERS ON CACHE BOOL "" FORCE)
