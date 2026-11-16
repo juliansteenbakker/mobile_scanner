@@ -33,6 +33,8 @@ constexpr int32_t kDartFormatDataBar = 32768;
 constexpr int32_t kDartFormatDataBarExpanded = 65536;
 constexpr int32_t kDartFormatDataBarLimited = 131072;
 
+// `itf2of5` and `itf2of5WithChecksum` are left out, since zxing-cpp reports
+// all of them as ITF, which `kDartFormatItf` already enables.
 constexpr int32_t kAllDartFormats[] = {
     kDartFormatCode128,   kDartFormatCode39,          kDartFormatCode93,
     kDartFormatCodabar,   kDartFormatDataMatrix,      kDartFormatEan13,

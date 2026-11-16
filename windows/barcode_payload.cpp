@@ -30,6 +30,8 @@ constexpr int32_t kTypeUrl = 8;
 constexpr int32_t kTypeWifi = 9;
 constexpr int32_t kTypeGeo = 10;
 constexpr int32_t kTypeCalendarEvent = 11;
+// `driverLicense` (12) is not detected, since zxing-cpp does not parse AAMVA
+// driver license data.
 
 // `EncryptionType.rawValue` values from lib/src/enums/encryption_type.dart.
 constexpr int32_t kEncryptionOpen = 1;
