@@ -128,7 +128,8 @@ final class ZXingBarcodeReader extends BarcodeReader {
           _reader,
           _reader?.videoElement,
           (Result? result, ZXingException? error) {
-            if (controller.isClosed) {
+            // ZXing keeps decoding the frozen frame of a paused video.
+            if (controller.isClosed || (paused ?? false)) {
               return;
             }
 

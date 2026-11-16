@@ -246,6 +246,11 @@ jobs:
         working-directory: example/android
         run: ./gradlew :mobile_scanner:testDebugUnitTest
 
+      # Host apps that lint their whole Gradle graph fail on plugin lint errors.
+      - name: Lint Plugin
+        working-directory: example/android
+        run: ./gradlew :mobile_scanner:lintDebug
+
       - name: Upload Unit Test Report
         if: failure()
         uses: actions/upload-artifact@v7
