@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "test_utils.h"
 #include "vcard_parser.h"
 
 namespace mobile_scanner {
@@ -13,27 +14,6 @@ namespace {
 using flutter::EncodableList;
 using flutter::EncodableMap;
 using flutter::EncodableValue;
-
-const EncodableMap& Map(const EncodableMap& map, const char* key) {
-  return std::get<EncodableMap>(map.at(EncodableValue(key)));
-}
-
-const EncodableList& List(const EncodableMap& map, const char* key) {
-  return std::get<EncodableList>(map.at(EncodableValue(key)));
-}
-
-std::string String(const EncodableMap& map, const char* key) {
-  return std::get<std::string>(map.at(EncodableValue(key)));
-}
-
-int32_t Int(const EncodableMap& map, const char* key) {
-  return std::get<int32_t>(map.at(EncodableValue(key)));
-}
-
-bool IsNull(const EncodableMap& map, const char* key) {
-  auto it = map.find(EncodableValue(key));
-  return it == map.end() || it->second.IsNull();
-}
 
 }  // namespace
 
@@ -70,7 +50,9 @@ TEST(ParseVCard, Version3) {
   ASSERT_EQ(phones.size(), 3u);
   EXPECT_EQ(String(std::get<EncodableMap>(phones[0]), "number"), "+31 20 123");
   EXPECT_EQ(Int(std::get<EncodableMap>(phones[0]), "type"), 1);  // work
+  EXPECT_EQ(String(std::get<EncodableMap>(phones[1]), "number"), "+31 6 1234");
   EXPECT_EQ(Int(std::get<EncodableMap>(phones[1]), "type"), 4);  // mobile
+  EXPECT_EQ(String(std::get<EncodableMap>(phones[2]), "number"), "+31 20 999");
   EXPECT_EQ(Int(std::get<EncodableMap>(phones[2]), "type"), 3);  // fax
 
   const EncodableList& emails = List(*contact, "emails");
@@ -112,7 +94,9 @@ TEST(ParseVCard, Version21WithQuotedPrintableAndBareTypes) {
 
   const EncodableList& phones = List(*contact, "phones");
   ASSERT_EQ(phones.size(), 2u);
+  EXPECT_EQ(String(std::get<EncodableMap>(phones[0]), "number"), "123");
   EXPECT_EQ(Int(std::get<EncodableMap>(phones[0]), "type"), 1);  // work
+  EXPECT_EQ(String(std::get<EncodableMap>(phones[1]), "number"), "456");
   EXPECT_EQ(Int(std::get<EncodableMap>(phones[1]), "type"), 2);  // home
 }
 

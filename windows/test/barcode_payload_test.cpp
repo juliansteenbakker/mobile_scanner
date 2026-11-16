@@ -4,6 +4,7 @@
 #include <string>
 
 #include "barcode_payload.h"
+#include "test_utils.h"
 
 namespace mobile_scanner {
 namespace test {
@@ -33,23 +34,6 @@ EncodableMap Parse(const std::string& text) {
   EncodableMap barcode;
   AddBarcodePayload(DetectBarcodeType(text), text, barcode);
   return barcode;
-}
-
-const EncodableMap& Map(const EncodableMap& map, const char* key) {
-  return std::get<EncodableMap>(map.at(EncodableValue(key)));
-}
-
-const EncodableList& List(const EncodableMap& map, const char* key) {
-  return std::get<EncodableList>(map.at(EncodableValue(key)));
-}
-
-std::string String(const EncodableMap& map, const char* key) {
-  return std::get<std::string>(map.at(EncodableValue(key)));
-}
-
-bool IsNull(const EncodableMap& map, const char* key) {
-  auto it = map.find(EncodableValue(key));
-  return it == map.end() || it->second.IsNull();
 }
 
 }  // namespace
@@ -164,6 +148,7 @@ TEST(AddBarcodePayload, Mecard) {
 
   const EncodableList& phones = List(contact, "phones");
   ASSERT_EQ(phones.size(), 2u);
+  EXPECT_EQ(String(std::get<EncodableMap>(phones[0]), "number"), "+3161");
   EXPECT_EQ(String(std::get<EncodableMap>(phones[1]), "number"), "+3162");
 
   const EncodableList& emails = List(contact, "emails");
