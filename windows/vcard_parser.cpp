@@ -5,6 +5,8 @@
 #include <cstdlib>
 #include <vector>
 
+#include "string_utils.h"
+
 namespace mobile_scanner {
 
 namespace {
@@ -34,27 +36,6 @@ struct ContentLine {
   // The raw (still escaped) value.
   std::string value;
 };
-
-std::string ToUpper(std::string value) {
-  std::transform(value.begin(), value.end(), value.begin(), [](char c) {
-    return static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-  });
-  return value;
-}
-
-std::string Trim(const std::string& value) {
-  auto is_space = [](char c) {
-    return std::isspace(static_cast<unsigned char>(c)) != 0;
-  };
-  const auto begin = std::find_if_not(value.begin(), value.end(), is_space);
-  const auto end =
-      std::find_if_not(value.rbegin(), value.rend(), is_space).base();
-  return begin < end ? std::string(begin, end) : std::string();
-}
-
-bool StartsWithIgnoreCase(const std::string& value, const std::string& prefix) {
-  return ToUpper(value.substr(0, prefix.size())) == ToUpper(prefix);
-}
 
 // Splits `value` on `separator`, ignoring separators escaped with a
 // backslash or inside double quotes. Escapes are kept.
@@ -297,10 +278,6 @@ std::vector<std::string> Components(const std::string& value) {
     components.push_back(Trim(Unescape(component)));
   }
   return components;
-}
-
-EncodableValue OptionalString(const std::string& value) {
-  return value.empty() ? EncodableValue() : EncodableValue(value);
 }
 
 // Formats an ADR value (PO box; extended; street; locality; region; postal

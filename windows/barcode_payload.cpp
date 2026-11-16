@@ -6,6 +6,7 @@
 #include <optional>
 #include <vector>
 
+#include "string_utils.h"
 #include "vcard_parser.h"
 
 namespace mobile_scanner {
@@ -35,25 +36,7 @@ constexpr int32_t kEncryptionOpen = 1;
 constexpr int32_t kEncryptionWpa = 2;
 constexpr int32_t kEncryptionWep = 3;
 
-bool IsSpace(char c) { return std::isspace(static_cast<unsigned char>(c)); }
 bool IsDigit(char c) { return std::isdigit(static_cast<unsigned char>(c)); }
-
-std::string Trim(const std::string& value) {
-  const auto begin = std::find_if_not(value.begin(), value.end(), IsSpace);
-  const auto end = std::find_if_not(value.rbegin(), value.rend(), IsSpace).base();
-  return begin < end ? std::string(begin, end) : std::string();
-}
-
-std::string ToUpper(std::string value) {
-  std::transform(value.begin(), value.end(), value.begin(), [](char c) {
-    return static_cast<char>(std::toupper(static_cast<unsigned char>(c)));
-  });
-  return value;
-}
-
-bool StartsWith(const std::string& value, const std::string& prefix) {
-  return value.compare(0, prefix.size(), prefix) == 0;
-}
 
 bool AllDigits(const std::string& value) {
   return !value.empty() && std::all_of(value.begin(), value.end(), IsDigit);
@@ -170,10 +153,6 @@ std::vector<std::string> MecardFields(
     }
   }
   return values;
-}
-
-EncodableValue OptionalString(const std::optional<std::string>& value) {
-  return value ? EncodableValue(*value) : EncodableValue();
 }
 
 // `MECARD:N:Doe,Jane;TEL:...;EMAIL:...;ADR:...;;`, the contact format used

@@ -61,6 +61,8 @@ list(APPEND PLUGIN_SOURCES
   "image_utils.h"
   "mobile_scanner_plugin.cpp"
   "mobile_scanner_plugin.h"
+  "string_utils.cpp"
+  "string_utils.h"
   "vcard_parser.cpp"
   "vcard_parser.h"
   "worker_thread.cpp"
@@ -144,6 +146,8 @@ add_executable(${TEST_RUNNER}
   "barcode_format.h"
   "barcode_payload.cpp"
   "barcode_payload.h"
+  "string_utils.cpp"
+  "string_utils.h"
   "vcard_parser.cpp"
   "vcard_parser.h"
 )
