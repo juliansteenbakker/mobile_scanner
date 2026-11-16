@@ -47,6 +47,9 @@ constexpr int32_t kAuthorizationStateAuthorized = 1;
 constexpr int kDetectionSpeedNoDuplicates = 0;
 constexpr int kDetectionSpeedNormal = 1;
 
+// The default of `MobileScannerController.detectionTimeoutMs`.
+constexpr int kDefaultDetectionTimeoutMs = 250;
+
 // Camera frames are scanned many times per second, so a 1D barcode must be
 // found on more scan lines than zxing-cpp's default of 2 before it is
 // accepted. Otherwise noise and textures (like wood grain) occasionally
@@ -81,6 +84,12 @@ std::optional<int64_t> GetIntArg(const EncodableMap* args, const char* key) {
     return std::nullopt;
   }
   return value->LongValue();
+}
+
+bool GetBoolArg(const EncodableMap* args, const char* key) {
+  const EncodableValue* value = GetArg(args, key);
+  return value != nullptr && std::holds_alternative<bool>(*value) &&
+         std::get<bool>(*value);
 }
 
 std::vector<int32_t> GetFormatsArg(const EncodableMap* args) {
@@ -290,11 +299,9 @@ void MobileScannerPlugin::Start(const EncodableMap* args,
     detection_speed_ = static_cast<int>(
         GetIntArg(args, "speed").value_or(kDetectionSpeedNormal));
     detection_timeout_ms_ =
-        static_cast<int>(GetIntArg(args, "timeout").value_or(250));
-    const EncodableValue* return_image = GetArg(args, "returnImage");
-    return_image_ = return_image != nullptr &&
-                    std::holds_alternative<bool>(*return_image) &&
-                    std::get<bool>(*return_image);
+        static_cast<int>(GetIntArg(args, "timeout").value_or(
+            kDefaultDetectionTimeoutMs));
+    return_image_ = GetBoolArg(args, "returnImage");
     last_scanned_values_.clear();
     last_scan_time_ = {};
   }
