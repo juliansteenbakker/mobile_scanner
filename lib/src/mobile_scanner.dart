@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
@@ -11,6 +11,9 @@ import 'package:mobile_scanner/src/mobile_scanner_preview.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/utils/scan_window_utils.dart';
+
+// `Icons.error`, without importing the deprecated Material library.
+const IconData _errorIcon = IconData(0xe237, fontFamily: 'MaterialIcons');
 
 /// This widget displays a live camera preview for the barcode scanner.
 class MobileScanner extends StatefulWidget {
@@ -49,7 +52,7 @@ class MobileScanner extends StatefulWidget {
   /// The error builder for the camera preview.
   ///
   /// If this is null, a black [ColoredBox],
-  /// with a centered white [Icons.error] icon is used as error widget.
+  /// with a centered white Material error icon is used as error widget.
   final Widget Function(BuildContext, MobileScannerException)? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
@@ -316,7 +319,9 @@ class _MobileScannerState extends State<MobileScanner>
       valueListenable: controller,
       builder: (context, value, _) {
         if (!value.isInitialized) {
-          const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
+          const Widget defaultPlaceholder = ColoredBox(
+            color: Color(0xFF000000),
+          );
 
           return widget.placeholderBuilder?.call(context) ?? defaultPlaceholder;
         }
@@ -324,21 +329,24 @@ class _MobileScannerState extends State<MobileScanner>
         final error = value.error;
         if (error != null) {
           final Widget defaultError = ColoredBox(
-            color: Colors.black,
+            color: const Color(0xFF000000),
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
-                    child: Icon(Icons.error, color: Colors.white),
+                    child: Icon(_errorIcon, color: Color(0xFFFFFFFF)),
                   ),
                   Text(
                     error.errorCode.message,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Color(0xFFFFFFFF)),
                   ),
                   if (error.errorDetails?.message case final String message)
-                    Text(message, style: const TextStyle(color: Colors.white)),
+                    Text(
+                      message,
+                      style: const TextStyle(color: Color(0xFFFFFFFF)),
+                    ),
                 ],
               ),
             ),

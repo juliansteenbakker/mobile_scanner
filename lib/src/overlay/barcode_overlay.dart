@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 /// This widget represents an overlay that paints the bounding boxes of detected
@@ -22,7 +22,7 @@ class BarcodeOverlay extends StatefulWidget {
 
   /// The color to use when painting the barcode box.
   ///
-  /// Defaults to [Colors.red], with an opacity of 30%.
+  /// Defaults to red, with an opacity of 30%.
   final Color color;
 
   /// The style to use when painting the barcode box.

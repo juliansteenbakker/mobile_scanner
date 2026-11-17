@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'package:collection/collection.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/utils/scan_window_utils.dart';
 
 /// Calculate the scaling ratios for width and height to fit the provided
@@ -141,7 +141,7 @@ class BarcodePainter extends CustomPainter {
     final textSpan = TextSpan(
       text: barcodeValue,
       style: TextStyle(
-        color: Colors.black, // Ensuring black text
+        color: const Color(0xFF000000), // Ensuring black text
         fontSize: finalTextSize,
         fontWeight: FontWeight.bold,
       ),
@@ -170,7 +170,7 @@ class BarcodePainter extends CustomPainter {
       const Radius.circular(6),
     );
 
-    final textBgPaint = Paint()..color = Colors.white.withValues(alpha: 0.8);
+    final textBgPaint = Paint()..color = const Color(0xCCFFFFFF);
     canvas.drawRRect(textBackground, textBgPaint);
 
     textPainter.paint(
