@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
@@ -21,13 +21,12 @@ void main() {
     BarcodeCapture? value;
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: MobileScanner(
-            onDetect: (barcodes) {
-              value = barcodes;
-            },
-          ),
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: MobileScanner(
+          onDetect: (barcodes) {
+            value = barcodes;
+          },
         ),
       ),
     );

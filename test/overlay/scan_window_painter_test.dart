@@ -1,17 +1,17 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/src/overlay/scan_window_painter.dart';
 
 /// Builds a [ScanWindowPainter] with sensible defaults so individual tests
 /// only have to override what they care about.
 ScanWindowPainter _painter({
-  Color borderColor = Colors.white,
+  Color borderColor = const Color(0xFFFFFFFF),
   BorderRadius borderRadius = BorderRadius.zero,
   StrokeCap borderStrokeCap = StrokeCap.round,
   StrokeJoin borderStrokeJoin = StrokeJoin.round,
   PaintingStyle borderStyle = PaintingStyle.stroke,
   double borderWidth = 2.0,
-  Color color = Colors.black54,
+  Color color = const Color(0x8A000000),
   Rect scanWindow = const Rect.fromLTWH(50, 50, 100, 100),
 }) {
   return ScanWindowPainter(
@@ -32,8 +32,9 @@ void main() {
       final key = UniqueKey();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: CustomPaint(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: CustomPaint(
             key: key,
             size: const Size(300, 300),
             painter: _painter(scanWindow: Rect.zero),
@@ -48,8 +49,9 @@ void main() {
       final key = UniqueKey();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: CustomPaint(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: CustomPaint(
             key: key,
             size: const Size(300, 300),
             painter: _painter(
@@ -73,8 +75,9 @@ void main() {
       final key = UniqueKey();
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: CustomPaint(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: CustomPaint(
             key: key,
             size: const Size(300, 300),
             painter: _painter(),
@@ -89,10 +92,10 @@ void main() {
       expect(
         box,
         paints
-          ..rect(color: Colors.black54)
+          ..rect(color: const Color(0x8A000000))
           ..rrect()
           ..restore()
-          ..rrect(color: Colors.white),
+          ..rrect(color: const Color(0xFFFFFFFF)),
       );
     });
 
@@ -103,8 +106,9 @@ void main() {
       final radius = BorderRadius.circular(12);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: CustomPaint(
+        Directionality(
+          textDirection: TextDirection.ltr,
+          child: CustomPaint(
             key: key,
             size: const Size(300, 300),
             painter: _painter(borderRadius: radius),
@@ -117,10 +121,10 @@ void main() {
       expect(
         box,
         paints
-          ..rect(color: Colors.black54)
+          ..rect(color: const Color(0x8A000000))
           ..rrect()
           ..restore()
-          ..rrect(color: Colors.white),
+          ..rrect(color: const Color(0xFFFFFFFF)),
       );
     });
   });
@@ -135,7 +139,7 @@ void main() {
 
     test('returns true when color changes', () {
       final p1 = _painter();
-      final p2 = _painter(color: Colors.red);
+      final p2 = _painter(color: const Color(0xFFF44336));
 
       expect(p1.shouldRepaint(p2), isTrue);
     });

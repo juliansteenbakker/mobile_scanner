@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/overlay/scan_window_painter.dart';
 
@@ -9,7 +9,7 @@ class ScanWindowOverlay extends StatelessWidget {
     required this.controller,
     required this.scanWindow,
     super.key,
-    this.borderColor = Colors.white,
+    this.borderColor = const Color(0xFFFFFFFF),
     this.borderRadius = BorderRadius.zero,
     this.borderStrokeCap = StrokeCap.butt,
     this.borderStrokeJoin = StrokeJoin.miter,
@@ -20,7 +20,7 @@ class ScanWindowOverlay extends StatelessWidget {
 
   /// The color for the scan window border.
   ///
-  /// Defaults to [Colors.white].
+  /// Defaults to white.
   final Color borderColor;
 
   /// The border radius for the scan window and its border.
@@ -50,7 +50,7 @@ class ScanWindowOverlay extends StatelessWidget {
 
   /// The color for the scan window box.
   ///
-  /// Defaults to [Colors.black] with 50% opacity.
+  /// Defaults to black with 50% opacity.
   final Color color;
 
   /// The controller that manages the camera preview.
