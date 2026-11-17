@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Displays a crosshair widget in the center of the screen, and reacts to
 /// scanner being enabled or not.

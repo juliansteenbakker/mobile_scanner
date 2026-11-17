@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:mobile_scanner_example/widgets/buttons/analyze_image_button.dart';
 import 'package:mobile_scanner_example/widgets/buttons/pause_button.dart';
@@ -267,39 +267,35 @@ class _MobileScannerAdvancedState extends State<MobileScannerAdvanced> {
           })
           .join('\n');
 
-      unawaited(
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Supported Lenses'),
-            content: Text(
-              'Available camera lenses on this device:\n\n$lensNames',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Supported Lenses'),
+          content: Text(
+            'Available camera lenses on this device:\n\n$lensNames',
           ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     } on Exception catch (e) {
       if (!mounted) return;
 
-      unawaited(
-        showDialog<void>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: const Text('Error'),
-            content: Text('Could not retrieve supported lenses:\n$e'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
+      showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: const Text('Error'),
+          content: Text('Could not retrieve supported lenses:\n$e'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('OK'),
+            ),
+          ],
         ),
       );
     }
