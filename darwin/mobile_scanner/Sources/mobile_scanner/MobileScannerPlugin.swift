@@ -69,6 +69,8 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     /// The size that was last reported to the Dart code, while the camera is started.
     private var lastReportedCameraSize: CGSize?
 
+    // Guarded by frameNotificationLock because capture and teardown use different queues.
+    private var lastObservedFrameSize: CGSize?
 #endif
 
     /// Observer for the notification that the app is about to terminate.
@@ -246,11 +248,10 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 
             self.registry.textureFrameAvailable(frameTextureId)
 #if os(iOS)
-            // The interface orientation is not only sent on a rotation of the device,
-            // because it also changes without one, for example when a foldable device is opened or closed.
-            // It is sent before the size, because the Dart code swaps the width and height of the size with it.
-            self.deviceOrientationStreamHandler.sendCurrentOrientation()
-            self.reportCameraSizeIfChanged()
+            // A scene can change orientation without a device notification or a new buffer size.
+            if self.deviceOrientationStreamHandler.sendCurrentOrientation() {
+                self.reportCameraSizeIfChanged()
+            }
 #endif
         }
     }
@@ -268,6 +269,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         latestBuffer = imageBuffer
+#if os(iOS)
+        reportFrameSizeIfChanged(imageBuffer, textureId: textureId)
+#endif
         notifyFrameAvailable(for: textureId)
 
         let currentTime = Date().timeIntervalSince1970
@@ -830,6 +834,24 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         for connection in videoDataOutput?.connections ?? [] {
             VideoRotationController.apply(to: connection, controller: videoRotation)
         }
+        deviceOrientationStreamHandler.sendCurrentOrientation()
+        reportCameraSizeIfChanged()
+    }
+
+    private func reportFrameSizeIfChanged(_ buffer: CVPixelBuffer, textureId frameTextureId: Int64) {
+        let size = CGSize(width: CVPixelBufferGetWidth(buffer), height: CVPixelBufferGetHeight(buffer))
+        frameNotificationLock.lock()
+        let changed = lastObservedFrameSize != size
+        lastObservedFrameSize = size
+        frameNotificationLock.unlock()
+        guard changed else { return }
+
+        // Format dimensions do not include the output buffer's rotation or scaling.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !self.terminating, self.textureId == frameTextureId else { return }
+            self.deviceOrientationStreamHandler.sendCurrentOrientation()
+            self.reportCameraSizeIfChanged()
+        }
     }
 
     /// Report the size of the video frames to the Dart code, if it differs from the size that the Dart code has.
@@ -997,6 +1019,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #if os(iOS)
         removeInterfaceOrientationObserver()
         videoRotation = nil
+        frameNotificationLock.lock()
+        lastObservedFrameSize = nil
+        frameNotificationLock.unlock()
         lastReportedCameraSize = nil
 #endif
 
