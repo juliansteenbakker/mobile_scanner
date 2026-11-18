@@ -281,6 +281,8 @@ class MethodChannelMobileScanner extends MobileScannerPlatform {
   /// Get the stream of changes to the size of the camera output.
   ///
   /// The size follows the same convention as the size that `start` returns.
+  /// This filters the shared native event channel, so platforms that do not
+  /// emit camera size events need no additional event channel or handler.
   Stream<Size> get cameraSizeStream {
     return eventsStream
         .handleError(_ignoreError)
