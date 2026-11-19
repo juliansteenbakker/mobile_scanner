@@ -59,8 +59,18 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     
     var standardZoomFactor: CGFloat = 1
 
+    private var videoRotation: VideoRotationController?
+
 #if os(iOS)
     var interfaceOrientationObserver: NSObjectProtocol?
+
+    private let deviceOrientationStreamHandler = DeviceOrientationStreamHandler()
+
+    /// The size that was last reported to the Dart code, while the camera is started.
+    private var lastReportedCameraSize: CGSize?
+
+    // Guarded by frameNotificationLock because capture and teardown use different queues.
+    private var lastObservedFrameSize: CGSize?
 #endif
 
     /// Observer for the notification that the app is about to terminate.
@@ -108,7 +118,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
 #if os(iOS)
         let orientationEvent = FlutterEventChannel(name:
                                             "dev.steenbakker.mobile_scanner/scanner/deviceOrientation", binaryMessenger: messenger)
-        orientationEvent.setStreamHandler(DeviceOrientationStreamHandler())
+        orientationEvent.setStreamHandler(instance.deviceOrientationStreamHandler)
 #endif
     }
     
@@ -237,6 +247,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             }
 
             self.registry.textureFrameAvailable(frameTextureId)
+#if os(iOS)
+            // A scene can change orientation without a device notification or a new buffer size.
+            if self.deviceOrientationStreamHandler.sendCurrentOrientation() {
+                self.reportCameraSizeIfChanged()
+            }
+#endif
         }
     }
 
@@ -253,6 +269,9 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
             return
         }
         latestBuffer = imageBuffer
+#if os(iOS)
+        reportFrameSizeIfChanged(imageBuffer, textureId: textureId)
+#endif
         notifyFrameAvailable(for: textureId)
 
         let currentTime = Date().timeIntervalSince1970
@@ -320,10 +339,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                             // matching the convention used in start().
                             // The Dart-side BarcodePainter flips these back
                             // when the device is in landscape orientation.
+                            let imageSize = VideoRotationController.portraitInterfaceSize(
+                                ofFrame: CGSize(width: currentImage.width, height: currentImage.height))
                             let imageData: [String: Any?] = [
                                 "bytes": bytes,
-                                "width": Double(min(currentImage.width, currentImage.height)),
-                                "height": Double(max(currentImage.width, currentImage.height)),
+                                "width": Double(imageSize.width),
+                                "height": Double(imageSize.height),
                             ]
 #else
                             let imageData: [String: Any?] = [
@@ -418,33 +439,6 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         )
         
         result(nil)
-    }
-
-    private func getVideoOrientation() -> AVCaptureVideoOrientation {
-#if os(iOS)
-        // Set video orientation to match interface orientation
-        // This ensures the camera feed is correctly oriented
-        if #available(iOS 13.0, *) {
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
-                let orientation = windowScene.interfaceOrientation
-                switch orientation {
-                case .portrait:
-                    return .portrait
-                case .portraitUpsideDown:
-                    return .portraitUpsideDown
-                case .landscapeLeft:
-                    return .landscapeLeft
-                case .landscapeRight:
-                    return .landscapeRight
-                default:
-                    return .portrait
-                }
-            }
-        }
-        return .portrait
-#else
-        return .portrait
-#endif
     }
 
     func start(_ call: FlutterMethodCall, _ result: @escaping FlutterResult) {
@@ -549,12 +543,16 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         videoOutput.alwaysDiscardsLateVideoFrames = true
         videoOutput.setSampleBufferDelegate(self, queue: self.sampleBufferQueue)
         captureSession!.addOutput(videoOutput)
-        let deviceVideoOrientation = self.getVideoOrientation()
+        let deviceVideoOrientation = VideoRotationController.getVideoOrientation()
+
+#if os(iOS)
+        videoRotation = VideoRotationController.make(device: device, onRotationChanged: { [weak self] in
+            self?.updateVideoRotation()
+        })
+#endif
 
         if let connection = videoOutput.connections.first {
-            if connection.isVideoOrientationSupported {
-                connection.videoOrientation = deviceVideoOrientation
-            }
+            VideoRotationController.apply(to: connection, controller: videoRotation)
 
             if position == .front && connection.isVideoMirroringSupported {
                 connection.isVideoMirrored = true
@@ -593,9 +591,12 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 }
        
 #if os(iOS)
-                // The height and width are swapped because the default video orientation for ios is landscape right, but mobile_scanner operates in portrait mode.
-                // When mobile_scanner is opened in landscape mode, the Dart code automatically swaps the width and height parameters back to match the correct orientation.
-                let size = ["width": Double(dimensions.height), "height": Double(dimensions.width)]
+                // The size of the frames is only derived from the format while no frame has arrived yet.
+                // A later frame with another size is reported with an event.
+                let frameSize = VideoRotationController.portraitInterfaceSize(
+                    ofFrame: self.latestFrameSize ?? VideoRotationController.rotatedFrameSize(for: dimensions, connection: self.videoDataOutput?.connections.first))
+                self.lastReportedCameraSize = frameSize
+                let size = MobileScannerPlugin.sizeMap(frameSize)
 #else
                 let size = ["width": Double(dimensions.width), "height": Double(dimensions.height)]
 #endif
@@ -815,7 +816,7 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
                 object: nil,
                 queue: .main
             ) { [weak self] _ in
-                self?.updateVideoOrientationFromInterfaceOrientation()
+                self?.updateVideoRotation()
             }
         }
     }
@@ -828,20 +829,65 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
         }
     }
 
-    /// Update video orientation to match current interface orientation
-    private func updateVideoOrientationFromInterfaceOrientation() {
-        guard let videoOutput = captureSession?.outputs.compactMap({ $0 as? AVCaptureVideoDataOutput }).first else {
+    /// Update the video rotation of the running camera.
+    private func updateVideoRotation() {
+        for connection in videoDataOutput?.connections ?? [] {
+            VideoRotationController.apply(to: connection, controller: videoRotation)
+        }
+        deviceOrientationStreamHandler.sendCurrentOrientation()
+        reportCameraSizeIfChanged()
+    }
+
+    private func reportFrameSizeIfChanged(_ buffer: CVPixelBuffer, textureId frameTextureId: Int64) {
+        let size = CGSize(width: CVPixelBufferGetWidth(buffer), height: CVPixelBufferGetHeight(buffer))
+        frameNotificationLock.lock()
+        let changed = lastObservedFrameSize != size
+        lastObservedFrameSize = size
+        frameNotificationLock.unlock()
+        guard changed else { return }
+
+        // Format dimensions do not include the output buffer's rotation or scaling.
+        DispatchQueue.main.async { [weak self] in
+            guard let self, !self.terminating, self.textureId == frameTextureId else { return }
+            self.deviceOrientationStreamHandler.sendCurrentOrientation()
+            self.reportCameraSizeIfChanged()
+        }
+    }
+
+    /// Report the size of the video frames to the Dart code, if it differs from the size that the Dart code has.
+    ///
+    /// The size is not fixed after the start of the camera,
+    /// because the Dart code only swaps the width and height for the interface orientation,
+    /// while the rotation of the frames also changes without a change of the interface orientation,
+    /// for example when the display of a foldable device changes.
+    private func reportCameraSizeIfChanged() {
+        guard let frameSize = latestFrameSize, let reportedSize = lastReportedCameraSize else {
             return
         }
 
-        let newVideoOrientation = getVideoOrientation()
+        let size = VideoRotationController.portraitInterfaceSize(ofFrame: frameSize)
 
-        for connection in videoOutput.connections {
-            if connection.isVideoOrientationSupported {
-                connection.videoOrientation = newVideoOrientation
-            }
+        if size == reportedSize {
+            return
         }
+
+        lastReportedCameraSize = size
+        sink?(["name": "cameraSize", "data": MobileScannerPlugin.sizeMap(size)])
     }
+
+    /// The size of the latest video frame.
+    private var latestFrameSize: CGSize? {
+        return latestBuffer.map { CGSize(width: CVPixelBufferGetWidth($0), height: CVPixelBufferGetHeight($0)) }
+    }
+
+    private static func sizeMap(_ size: CGSize) -> [String: Double] {
+        return ["width": Double(size.width), "height": Double(size.height)]
+    }
+
+    private var videoDataOutput: AVCaptureVideoDataOutput? {
+        return captureSession?.outputs.compactMap({ $0 as? AVCaptureVideoDataOutput }).first
+    }
+
 #endif
 
     /// Reset the zoom factor of the camera
@@ -972,6 +1018,11 @@ public class MobileScannerPlugin: NSObject, FlutterPlugin, FlutterStreamHandler,
     private func releaseCamera() {
 #if os(iOS)
         removeInterfaceOrientationObserver()
+        videoRotation = nil
+        frameNotificationLock.lock()
+        lastObservedFrameSize = nil
+        frameNotificationLock.unlock()
+        lastReportedCameraSize = nil
 #endif
 
         if let captureSession = captureSession {
