@@ -53,7 +53,10 @@ void main() {
         () => messenger.setMockStreamHandler(platform.eventChannel, null),
       );
 
-      await expectLater(platform.cameraSizeStream, emitsDone);
+      await expectLater(
+        platform.cameraSizeStream.toList(),
+        completion(isEmpty),
+      );
     },
   );
 }
