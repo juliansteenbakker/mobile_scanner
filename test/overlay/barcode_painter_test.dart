@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mobile_scanner/src/overlay/barcode_painter.dart';
 
@@ -22,7 +22,7 @@ void main() {
       barcodeSize: const Size(50, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: Colors.blue,
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -32,9 +32,10 @@ void main() {
     addTearDown(textPainter.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: CustomPaint(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: CustomPaint(
             key: painterKey,
             size: const Size(200, 200),
             painter: barcodePainter,
@@ -47,7 +48,11 @@ void main() {
     expect(
       box,
       paints
-        ..path(color: Colors.blue, style: PaintingStyle.stroke, strokeWidth: 4)
+        ..path(
+          color: const Color(0xFF0000FF),
+          style: PaintingStyle.stroke,
+          strokeWidth: 4,
+        )
         ..save()
         ..translate(x: 35, y: 35)
         ..rotate()
@@ -70,7 +75,7 @@ void main() {
       barcodeSize: const Size(50, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: Colors.blue,
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -80,9 +85,10 @@ void main() {
     addTearDown(textPainter.dispose);
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: CustomPaint(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: Center(
+          child: CustomPaint(
             key: painterKey,
             size: const Size(200, 200),
             painter: barcodePainter,
@@ -112,7 +118,7 @@ void main() {
       barcodeSize: const Size(100, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: Colors.blue,
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -129,7 +135,7 @@ void main() {
       barcodeSize: const Size(100, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: Colors.red, // Changed color
+      color: const Color(0xFFFF0000), // Changed color
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -158,7 +164,7 @@ void main() {
         barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
         cameraPreviewSize: const Size(200, 200),
-        color: Colors.blue,
+        color: const Color(0xFF0000FF),
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,
@@ -175,7 +181,7 @@ void main() {
         barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
         cameraPreviewSize: const Size(200, 200),
-        color: Colors.blue,
+        color: const Color(0xFF0000FF),
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,

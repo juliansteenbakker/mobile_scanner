@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
 import 'package:mobile_scanner/src/method_channel/mobile_scanner_method_channel.dart';
 import 'package:mobile_scanner/src/mobile_scanner_controller.dart';
 import 'package:mobile_scanner/src/mobile_scanner_exception.dart';
@@ -11,6 +11,9 @@ import 'package:mobile_scanner/src/mobile_scanner_preview.dart';
 import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/utils/scan_window_utils.dart';
+
+const Color _black = Color(0xFF000000);
+const Color _white = Color(0xFFFFFFFF);
 
 /// This widget displays a live camera preview for the barcode scanner.
 class MobileScanner extends StatefulWidget {
@@ -49,7 +52,7 @@ class MobileScanner extends StatefulWidget {
   /// The error builder for the camera preview.
   ///
   /// If this is null, a black [ColoredBox],
-  /// with a centered white [Icons.error] icon is used as error widget.
+  /// with a centered white Material error icon is used as error widget.
   final Widget Function(BuildContext, MobileScannerException)? errorBuilder;
 
   /// The [BoxFit] for the camera preview.
@@ -316,7 +319,9 @@ class _MobileScannerState extends State<MobileScanner>
       valueListenable: controller,
       builder: (context, value, _) {
         if (!value.isInitialized) {
-          const Widget defaultPlaceholder = ColoredBox(color: Colors.black);
+          const Widget defaultPlaceholder = ColoredBox(
+            color: _black,
+          );
 
           return widget.placeholderBuilder?.call(context) ?? defaultPlaceholder;
         }
@@ -324,21 +329,27 @@ class _MobileScannerState extends State<MobileScanner>
         final error = value.error;
         if (error != null) {
           final Widget defaultError = ColoredBox(
-            color: Colors.black,
+            color: _black,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
-                    child: Icon(Icons.error, color: Colors.white),
+                    child: CustomPaint(
+                      size: Size.square(24),
+                      painter: _ErrorIconPainter(_white),
+                    ),
                   ),
                   Text(
                     error.errorCode.message,
-                    style: const TextStyle(color: Colors.white),
+                    style: const TextStyle(color: _white),
                   ),
                   if (error.errorDetails?.message case final String message)
-                    Text(message, style: const TextStyle(color: Colors.white)),
+                    Text(
+                      message,
+                      style: const TextStyle(color: _white),
+                    ),
                 ],
               ),
             ),
@@ -427,5 +438,52 @@ class _MobileScannerState extends State<MobileScanner>
   void dispose() {
     super.dispose();
     unawaited(_disposeController());
+  }
+}
+
+/// Draws a warning sign, so the default error widget does not depend on the
+/// Material Icons font being bundled.
+class _ErrorIconPainter extends CustomPainter {
+  const _ErrorIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final stroke = s / 12;
+    final origin = Offset((size.width - s) / 2, (size.height - s) / 2);
+
+    final paint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+
+    final triangle =
+        Path()
+          ..moveTo(s / 2, stroke)
+          ..lineTo(s - stroke, s - stroke * 1.5)
+          ..lineTo(stroke, s - stroke * 1.5)
+          ..close();
+
+    canvas
+      ..save()
+      ..translate(origin.dx, origin.dy)
+      ..drawPath(triangle, paint)
+      ..drawLine(Offset(s / 2, s * 0.38), Offset(s / 2, s * 0.6), paint)
+      ..drawCircle(
+        Offset(s / 2, s * 0.74),
+        stroke * 0.75,
+        paint..style = PaintingStyle.fill,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_ErrorIconPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }
