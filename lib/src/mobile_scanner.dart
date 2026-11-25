@@ -12,8 +12,8 @@ import 'package:mobile_scanner/src/objects/barcode_capture.dart';
 import 'package:mobile_scanner/src/objects/mobile_scanner_state.dart';
 import 'package:mobile_scanner/src/utils/scan_window_utils.dart';
 
-// `Icons.error`, without importing the deprecated Material library.
-const IconData _errorIcon = IconData(0xe237, fontFamily: 'MaterialIcons');
+const Color _black = Color(0xFF000000);
+const Color _white = Color(0xFFFFFFFF);
 
 /// This widget displays a live camera preview for the barcode scanner.
 class MobileScanner extends StatefulWidget {
@@ -320,7 +320,7 @@ class _MobileScannerState extends State<MobileScanner>
       builder: (context, value, _) {
         if (!value.isInitialized) {
           const Widget defaultPlaceholder = ColoredBox(
-            color: Color(0xFF000000),
+            color: _black,
           );
 
           return widget.placeholderBuilder?.call(context) ?? defaultPlaceholder;
@@ -329,23 +329,26 @@ class _MobileScannerState extends State<MobileScanner>
         final error = value.error;
         if (error != null) {
           final Widget defaultError = ColoredBox(
-            color: const Color(0xFF000000),
+            color: _black,
             child: Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   const Padding(
                     padding: EdgeInsets.only(bottom: 16),
-                    child: Icon(_errorIcon, color: Color(0xFFFFFFFF)),
+                    child: CustomPaint(
+                      size: Size.square(24),
+                      painter: _ErrorIconPainter(_white),
+                    ),
                   ),
                   Text(
                     error.errorCode.message,
-                    style: const TextStyle(color: Color(0xFFFFFFFF)),
+                    style: const TextStyle(color: _white),
                   ),
                   if (error.errorDetails?.message case final String message)
                     Text(
                       message,
-                      style: const TextStyle(color: Color(0xFFFFFFFF)),
+                      style: const TextStyle(color: _white),
                     ),
                 ],
               ),
@@ -435,5 +438,52 @@ class _MobileScannerState extends State<MobileScanner>
   void dispose() {
     super.dispose();
     unawaited(_disposeController());
+  }
+}
+
+/// Draws a warning sign, so the default error widget does not depend on the
+/// Material Icons font being bundled.
+class _ErrorIconPainter extends CustomPainter {
+  const _ErrorIconPainter(this.color);
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final s = size.shortestSide;
+    final stroke = s / 12;
+    final origin = Offset((size.width - s) / 2, (size.height - s) / 2);
+
+    final paint =
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = stroke
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round;
+
+    final triangle =
+        Path()
+          ..moveTo(s / 2, stroke)
+          ..lineTo(s - stroke, s - stroke * 1.5)
+          ..lineTo(stroke, s - stroke * 1.5)
+          ..close();
+
+    canvas
+      ..save()
+      ..translate(origin.dx, origin.dy)
+      ..drawPath(triangle, paint)
+      ..drawLine(Offset(s / 2, s * 0.38), Offset(s / 2, s * 0.6), paint)
+      ..drawCircle(
+        Offset(s / 2, s * 0.74),
+        stroke * 0.75,
+        paint..style = PaintingStyle.fill,
+      )
+      ..restore();
+  }
+
+  @override
+  bool shouldRepaint(_ErrorIconPainter oldDelegate) {
+    return oldDelegate.color != color;
   }
 }

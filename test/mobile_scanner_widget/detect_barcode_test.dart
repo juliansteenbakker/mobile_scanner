@@ -6,10 +6,11 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 
 // TODO(navaronbracke): add test for when controller is provided to widget
 // (detect barcodes / dispose controller)
-// TODO(navaronbracke): test for existence of error widget, if start fails
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  setUp(MobileScannerController.resetPlatformSessionOwner);
 
   testWidgets('onDetect is notified of scanned barcodes', (
     tester,
@@ -41,9 +42,37 @@ void main() {
 
     expect(value, barcodeCapture);
   });
+
+  testWidgets('shows the default error widget if start fails', (
+    tester,
+  ) async {
+    MobileScannerPlatform.instance = FakeMobileScannerPlatform(
+      startError: const MobileScannerException(
+        errorCode: MobileScannerErrorCode.permissionDenied,
+      ),
+    );
+
+    await tester.pumpWidget(
+      const Directionality(
+        textDirection: TextDirection.ltr,
+        child: MobileScanner(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text(MobileScannerErrorCode.permissionDenied.message),
+      findsOneWidget,
+    );
+    expect(find.byType(CustomPaint), findsOneWidget);
+  });
 }
 
 class FakeMobileScannerPlatform extends MobileScannerPlatform {
+  FakeMobileScannerPlatform({this.startError});
+
+  final MobileScannerException? startError;
+
   final StreamController<BarcodeCapture> _barcodeStreamController =
       StreamController<BarcodeCapture>.broadcast();
 
@@ -59,6 +88,10 @@ class FakeMobileScannerPlatform extends MobileScannerPlatform {
 
   @override
   Future<MobileScannerViewAttributes> start(StartOptions startOptions) {
+    if (startError case final MobileScannerException error) {
+      return Future.error(error);
+    }
+
     return Future.value(
       const MobileScannerViewAttributes(
         cameraDirection: CameraFacing.back,
