@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 
 /// This class represents a [CustomPainter] that draws a [scanWindow] rectangle.
 class ScanWindowPainter extends CustomPainter {
