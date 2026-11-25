@@ -68,12 +68,7 @@ class MobileScannerCameraSelector {
 
             // Only use fallbacks for non-specific lens requests
             if !isSpecificLensRequest {
-                let fallbackSession = AVCaptureDevice.DiscoverySession(
-                    deviceTypes: [.builtInWideAngleCamera],
-                    mediaType: .video,
-                    position: position
-                )
-                if let device = fallbackSession.devices.first {
+                if let device = wideAngleCameras(position: position).first {
                     return device
                 }
             }
@@ -98,10 +93,10 @@ class MobileScannerCameraSelector {
         }
 
 #if os(iOS)
-        // Legacy fallback for iOS < 13.0: filter by position.
+        // Fallback for iOS < 13.0: wide-angle camera at the position.
         // On macOS, DiscoverySession handles 10.15+; older macOS falls
         // through to AVCaptureDevice.default(for:) below.
-        if let device = AVCaptureDevice.devices(for: .video).filter({ $0.position == position }).first {
+        if let device = wideAngleCameras(position: position).first {
             return device
         }
 #endif
@@ -191,14 +186,28 @@ class MobileScannerCameraSelector {
 
             return bestLensType
         } else {
-            let hasDevice = AVCaptureDevice.devices(for: .video).contains { $0.position == position }
+            let hasDevice = !wideAngleCameras(position: position).isEmpty
             return hasDevice ? LensType.wideAngle.rawValue : nil
         }
 #else
         // macOS: ignore the facing filter (only a front camera is used on macOS),
         // consistent with getSupportedLenses.
-        let hasDevice = !AVCaptureDevice.devices(for: .video).isEmpty
+        let hasDevice = AVCaptureDevice.default(for: .video) != nil
         return hasDevice ? LensType.wideAngle.rawValue : nil
 #endif
     }
+
+#if os(iOS)
+    /// Get the built-in wide-angle video cameras at the given position.
+    ///
+    /// - Parameter position: The camera position (front or back)
+    /// - Returns: The discovered wide-angle cameras, or an empty array if there are none
+    private static func wideAngleCameras(position: AVCaptureDevice.Position) -> [AVCaptureDevice] {
+        return AVCaptureDevice.DiscoverySession(
+            deviceTypes: [.builtInWideAngleCamera],
+            mediaType: .video,
+            position: position
+        ).devices
+    }
+#endif
 }
