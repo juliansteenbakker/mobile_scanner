@@ -139,7 +139,7 @@ void main() {
 
     test('returns true when color changes', () {
       final p1 = _painter();
-      final p2 = _painter(color: const Color(0xFFF44336));
+      final p2 = _painter(color: const Color(0xFFFF0000));
 
       expect(p1.shouldRepaint(p2), isTrue);
     });

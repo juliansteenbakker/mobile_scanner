@@ -22,7 +22,7 @@ void main() {
       barcodeSize: const Size(50, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: const Color(0xFF2196F3),
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -49,7 +49,7 @@ void main() {
       box,
       paints
         ..path(
-          color: const Color(0xFF2196F3),
+          color: const Color(0xFF0000FF),
           style: PaintingStyle.stroke,
           strokeWidth: 4,
         )
@@ -75,7 +75,7 @@ void main() {
       barcodeSize: const Size(50, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: const Color(0xFF2196F3),
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -118,7 +118,7 @@ void main() {
       barcodeSize: const Size(100, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: const Color(0xFF2196F3),
+      color: const Color(0xFF0000FF),
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -135,7 +135,7 @@ void main() {
       barcodeSize: const Size(100, 50),
       boxFit: BoxFit.contain,
       cameraPreviewSize: const Size(200, 200),
-      color: const Color(0xFFF44336), // Changed color
+      color: const Color(0xFFFF0000), // Changed color
       style: PaintingStyle.stroke,
       barcodeValue: '123456',
       textPainter: textPainter,
@@ -164,7 +164,7 @@ void main() {
         barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
         cameraPreviewSize: const Size(200, 200),
-        color: const Color(0xFF2196F3),
+        color: const Color(0xFF0000FF),
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,
@@ -181,7 +181,7 @@ void main() {
         barcodeSize: const Size(100, 50),
         boxFit: BoxFit.contain,
         cameraPreviewSize: const Size(200, 200),
-        color: const Color(0xFF2196F3),
+        color: const Color(0xFF0000FF),
         style: PaintingStyle.stroke,
         barcodeValue: '123456',
         textPainter: textPainter,
