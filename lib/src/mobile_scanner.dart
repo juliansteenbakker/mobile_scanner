@@ -428,7 +428,11 @@ class _MobileScannerState extends State<MobileScanner>
       case AppLifecycleState.paused:
         return;
       case AppLifecycleState.resumed:
-        unawaited(controller.start());
+        // Do not start again while a previous start is still in progress,
+        // as start() throws in that case.
+        if (!controller.value.isStarting) {
+          unawaited(controller.start());
+        }
       case AppLifecycleState.inactive:
         unawaited(controller.stop());
     }
