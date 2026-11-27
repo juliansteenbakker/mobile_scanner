@@ -1,22 +1,29 @@
 package dev.steenbakker.mobile_scanner
 
 import android.app.Activity
+import android.content.Context
 import android.graphics.Point
 import android.media.Image
 import android.util.Size
 import android.view.Surface
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ExperimentalLensFacing
 import androidx.camera.core.ImageInfo
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.SurfaceRequest
+import androidx.camera.lifecycle.ProcessCameraProvider
 import com.google.android.gms.tasks.OnCanceledListener
 import com.google.android.gms.tasks.OnFailureListener
 import com.google.android.gms.tasks.OnSuccessListener
 import com.google.android.gms.tasks.Task
+import com.google.common.util.concurrent.ListenableFuture
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
 import com.google.mlkit.vision.barcode.common.Barcode
 import com.google.mlkit.vision.common.InputImage
+import dev.steenbakker.mobile_scanner.objects.DetectionSpeed
 import io.flutter.view.TextureRegistry
+import java.util.concurrent.Executor
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -25,6 +32,8 @@ import org.mockito.ArgumentCaptor
 import org.mockito.Mockito
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import org.robolectric.annotation.Implementation
+import org.robolectric.annotation.Implements
 
 /*
  * This demonstrates a simple unit test of the Kotlin portion of this plugin's implementation.
@@ -43,12 +52,13 @@ internal class MobileScannerTest {
 
     private fun createMobileScanner(
         barcodeScanner: BarcodeScanner = Mockito.mock(BarcodeScanner::class.java),
+        activity: Activity = Mockito.mock(Activity::class.java),
         inputImageFactory: (Image, Int) -> InputImage = { _, _ ->
             Mockito.mock(InputImage::class.java)
         },
     ): MobileScanner {
         return MobileScanner(
-            Mockito.mock(Activity::class.java),
+            activity,
             Mockito.mock(TextureRegistry::class.java),
             { _: List<Map<String, Any?>>, _: ByteArray?, _: Int?, _: Int? -> },
             { _: String -> },
@@ -324,5 +334,48 @@ internal class MobileScannerTest {
             Mockito.any(),
         )
         Mockito.verify(request, Mockito.never()).willNotProvideSurface()
+    }
+
+    @Test
+    @Config(shadows = [ShadowProcessCameraProviderCompanion::class])
+    @androidx.annotation.OptIn(ExperimentalLensFacing::class)
+    fun start_continuesWhenAvailableCameraInfosThrows() {
+        val activity = Mockito.mock(Activity::class.java)
+        val mobileScanner = createMobileScanner(activity = activity)
+        val cameraProvider = Mockito.mock(ProcessCameraProvider::class.java)
+        @Suppress("UNCHECKED_CAST")
+        val cameraProviderFuture = Mockito.mock(ListenableFuture::class.java)
+            as ListenableFuture<ProcessCameraProvider>
+
+        // CameraX can throw while listing the cameras (issue #1872).
+        Mockito.`when`(cameraProvider.availableCameraInfos)
+            .thenThrow(NullPointerException("CameraInternal.getCameraInfo() on a null object"))
+        Mockito.`when`(cameraProviderFuture.get()).thenReturn(cameraProvider)
+        Mockito.`when`(activity.mainExecutor).thenReturn(Mockito.mock(Executor::class.java))
+        ShadowProcessCameraProviderCompanion.cameraProviderFuture = cameraProviderFuture
+        mobileScanner.surfaceProducer = Mockito.mock(TextureRegistry.SurfaceProducer::class.java)
+
+        mobileScanner.start(
+            null, false, CameraSelector.DEFAULT_BACK_CAMERA, false, false, DetectionSpeed.NORMAL,
+            {}, {}, {}, {}, 250, null, false, null,
+        )
+
+        val listener = ArgumentCaptor.forClass(Runnable::class.java)
+        Mockito.verify(cameraProviderFuture).addListener(listener.capture(), Mockito.any())
+        listener.value.run()
+
+        // Startup carried on past the camera count lookup.
+        Mockito.verify(cameraProvider).unbindAll()
+    }
+
+    // Lets a test hand `start()` its own `ProcessCameraProvider` future.
+    @Implements(ProcessCameraProvider.Companion::class)
+    class ShadowProcessCameraProviderCompanion {
+        companion object {
+            lateinit var cameraProviderFuture: ListenableFuture<ProcessCameraProvider>
+        }
+
+        @Implementation
+        fun getInstance(@Suppress("UNUSED_PARAMETER") context: Context) = cameraProviderFuture
     }
 }

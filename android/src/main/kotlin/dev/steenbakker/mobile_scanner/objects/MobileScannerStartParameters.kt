@@ -8,6 +8,6 @@ class MobileScannerStartParameters(
     val handlesCropAndRotation: Boolean,
     val currentTorchState: Int,
     val id: Long,
-    val numberOfCameras: Int,
+    val numberOfCameras: Int?,
     val cameraDirection: Int?,
 )

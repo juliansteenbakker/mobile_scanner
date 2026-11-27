@@ -481,7 +481,14 @@ class MobileScanner(
 
                 return@addListener
             }
-            val numberOfCameras = cameraProvider?.availableCameraInfos?.size
+            // CameraX can throw while listing the cameras (e.g. a NullPointerException
+            // from CameraInternal.getCameraInfo()). Don't let that crash the host app;
+            // report the number of cameras as unknown (null) instead.
+            val numberOfCameras = try {
+                cameraProvider?.availableCameraInfos?.size
+            } catch (_: Exception) {
+                null
+            }
 
             if (cameraProvider == null) {
                 mobileScannerErrorCallback(CameraError())
@@ -606,7 +613,7 @@ class MobileScanner(
                     surfaceProducer!!.handlesCropAndRotation(),
                     currentTorchState,
                     surfaceProducer!!.id(),
-                    numberOfCameras ?: 0,
+                    numberOfCameras,
                     cameraDirection,
                 )
             )
