@@ -45,21 +45,23 @@ class DeviceOrientationStreamHandler: NSObject, FlutterStreamHandler {
         return nil
     }
 
-    private func sendCurrentOrientation() {
-        guard let sink = eventSink else { return }
+    /// Send the current orientation to the Dart code, if it differs from the orientation that was last sent.
+    @discardableResult
+    func sendCurrentOrientation() -> Bool {
+        guard let sink = eventSink else { return false }
 
         // Use interface orientation instead of device orientation
         // This respects Flutter's setPreferredOrientations
         if #available(iOS 13.0, *) {
             guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene else {
-                return
+                return false
             }
 
             let interfaceOrientation = windowScene.interfaceOrientation
 
             // Only send event if interface orientation has changed
             if lastSentOrientation == interfaceOrientation {
-                return
+                return false
             }
 
             lastSentOrientation = interfaceOrientation
@@ -75,27 +77,29 @@ class DeviceOrientationStreamHandler: NSObject, FlutterStreamHandler {
             case .landscapeRight:
                 orientationString = "LANDSCAPE_RIGHT"
             default:
-                return
+                return false
             }
 
             sink(orientationString)
+            return true
         } else {
             // Fallback for iOS < 13: use device orientation
             let orientation = UIDevice.current.orientation
 
             if orientation == .faceUp || orientation == .faceDown {
-                return
+                return false
             }
             
             // Only send event if device orientation has changed
             if lastSentDeviceOrientation == orientation {
-                return
+                return false
             }
 
             lastSentDeviceOrientation = orientation
 
             let orientationString = orientation.toOrientationString
             sink(orientationString)
+            return true
         }
     }
 }
